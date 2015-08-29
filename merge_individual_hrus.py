@@ -4,7 +4,7 @@ import os
 import glob
 import sys
 
-import prms_lib_v3 as prms
+import prms_lib as prms
 
 __version__ = '0.1'
 

@@ -2,8 +2,6 @@
 import re
 import numpy as np
 import pandas as pd
-import csv
-import copy
 import datetime
 import sys
 
@@ -720,35 +718,35 @@ class streamflow(object):
 
 
 
-    def getRecurrenceInterval(self, thetype):
-        """Returns the recurrence intervals for each station"""
-
-        # Copy the subset of data
-        xx = self.seldata(thetype)
-
-        ri = np.zeros(xx.shape)
-        ri[:,:] = -1.
-
-        # for each station we need to compute the RI for non-zero values
-        for ss in range(0,xx.shape[1]):
-            tmp = xx[:,ss]              # copy values for current station
-
-            # Get array of indices that would result in a sorted array
-            sorted_ind = np.argsort(tmp)
-            #print "sorted_ind.shape:", sorted_ind.shape
-
-            numobs = tmp[(tmp > 0.0),].shape[0]  # Number of observations > 0.
-            nyr = float(numobs / 365)     # Number of years of non-zero observations
-
-            nz_cnt = 0  # non-zero value counter
-            for si in sorted_ind:
-                if tmp[si] > 0.:
-                    nz_cnt += 1
-                    rank = numobs - nz_cnt + 1
-                    ri[si,ss] = (nyr + 1.) / float(rank)
-                    #print "%s: [%d]: %d %d %0.3f %0.3f" % (ss, si,  numobs, rank, tmp[si], ri[si,ss])
-
-        return ri
+    # def getRecurrenceInterval(self, thetype):
+    #     """Returns the recurrence intervals for each station"""
+    #
+    #     # Copy the subset of data
+    #     xx = self.seldata(thetype)
+    #
+    #     ri = np.zeros(xx.shape)
+    #     ri[:,:] = -1.
+    #
+    #     # for each station we need to compute the RI for non-zero values
+    #     for ss in range(0,xx.shape[1]):
+    #         tmp = xx[:,ss]              # copy values for current station
+    #
+    #         # Get array of indices that would result in a sorted array
+    #         sorted_ind = np.argsort(tmp)
+    #         #print "sorted_ind.shape:", sorted_ind.shape
+    #
+    #         numobs = tmp[(tmp > 0.0),].shape[0]  # Number of observations > 0.
+    #         nyr = float(numobs / 365)     # Number of years of non-zero observations
+    #
+    #         nz_cnt = 0  # non-zero value counter
+    #         for si in sorted_ind:
+    #             if tmp[si] > 0.:
+    #                 nz_cnt += 1
+    #                 rank = numobs - nz_cnt + 1
+    #                 ri[si,ss] = (nyr + 1.) / float(rank)
+    #                 #print "%s: [%d]: %d %d %0.3f %0.3f" % (ss, si,  numobs, rank, tmp[si], ri[si,ss])
+    #
+    #     return ri
 
 # ***** END of class streamflow()
 
@@ -1066,7 +1064,7 @@ class parameters(object):
                 # This is a scalar value
                 if isinstance(newvals, float):
                     thevar['values'] = [newvals]
-                elif instance(newvals, int):
+                elif isinstance(newvals, int):
                     thevar['values'] = [newvals]
             else:
                 print "ERROR: Size of oldval array and size of newval array don't match"
@@ -1148,7 +1146,7 @@ class parameters(object):
         # data structure and writing the modify file directly instead of modifying a copy of the
         # original parameter structure and then writing it out.
 
-        split_dims = set(['nhru', 'nssr', 'ngw'])
+        split_dims = {'nhru', 'nssr', 'ngw'}
         ndepl = self.get_dim('ndepl')
         nhru = self.get_dim('nhru')
         order = ['name', 'dimnames', 'valuetype', 'values']

@@ -8,9 +8,6 @@ import pandas as pd
 import datetime
 import calendar
 import operator
-
-import efc_lib as efc
-#import prms_cfg
 import prms_cfg as prms_cfg
 import prms_lib as prms
 import prms_objfcn as objfcn
@@ -281,7 +278,8 @@ for kk, vv in objfcn_link.iteritems():
                 tmp = sim_data.loc[:,curr_of['sim_var']].resample('A-SEP', how='mean')
             else:
                 print "ERROR"
-                exit()
+                tmp = None
+                exit(1)
             df1_join_sim = df1.join(tmp, how='left')
 
         df1_join_sim.rename(columns = {curr_of['sim_var']: 'sim_var'}, inplace=True)

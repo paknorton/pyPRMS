@@ -8,12 +8,7 @@
 __version__ = '0.1'
 
 import argparse
-import prms_cfg_yaml as prms_cfg
-import prms_lib as prms
-import pandas as pd
-import numpy as np
-import math as mth
-import datetime
+import prms_cfg as prms_cfg
 import re
 
 
