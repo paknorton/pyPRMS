@@ -171,7 +171,7 @@ def flowduration(ts):
     # See http://pubs.usgs.gov/sir/2008/5126/section3.html 
     # for the approach used to compute the flow duration
     # NOTE: This routine expects a pandas TimeSeries
-    # TODO: assert error is ts is not a time series
+    # TODO: assert error if ts is not a time series
 
     # We only want valid values, sort the values in descending order
     rankedQ = sorted(ts[ts.notnull()], reverse=True)
@@ -202,13 +202,13 @@ def main():
     import argparse
     # import pandas as pd
     # import collections
-    import prms_cfg_yaml as cfg
+    import prms_cfg as cfg
     # from addict import Dict
 
     months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
               'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
-    cfg_in = cfg.cfg('/Users/pnorton/USGS/Projects/National_Hydrology_Model/code/prms_calib/basin_yaml_out.cfg')
+    cfg_in = cfg.cfg('/Users/pnorton/USGS/Projects/National_Hydrology_Model/code/prms_calib/basin.cfg')
 
     # Command line arguments
     parser = argparse.ArgumentParser(description='Objective function processing')

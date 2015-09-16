@@ -45,7 +45,7 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
         st_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
 
     if not isinstance(en_date, datetime.datetime):
-        date_split = ed_date.split('-')
+        date_split = en_date.split('-')
         en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
 
     # Read in the hru_area from the input parameter file

@@ -28,7 +28,6 @@ control_updates = {'statVar_names': ['hru_streamflow_out', 'pkwater_equiv', 'hru
                    'statsON_OFF': [1]}
 
 
-
 def cbh_subset(infile, outfile, varname, hruindex):
     # Create a *.cbh file with a single HRU
     valid_varnames = ['prcp', 'tmin', 'tmax']
@@ -103,7 +102,6 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
     print '\n'
 
 
-
 def main():
     # Read the control file
     control = prms.control(control_file)
@@ -134,13 +132,11 @@ def main():
     for kk, vv in output_src.iteritems():
         control.replace_values(kk, os.path.basename(vv))
 
-
     # Read the input parameter file
     params = prms.parameters('%s/%s' % (src_dir, input_src['param_file']))
 
     nhru = params.get_dim('nhru')
     print 'Number of HRUs to process:', nhru
-
 
     for hh in xrange(nhru):
         # set and create destination directory

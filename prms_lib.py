@@ -126,7 +126,6 @@ class control(object):
 
         self.load_file(self.__filename)
 
-
     @property
     def vars(self):
         if not self.__isloaded:
@@ -154,8 +153,6 @@ class control(object):
         it = iter(rawdata)
 
         for line in it:
-            #print "Curr:", line
-
             if line[0:4] == '$Id:':
                 self.__header.append(line)
                 continue
@@ -165,9 +162,7 @@ class control(object):
                 # We're dealing with a control parameter/variable
                 # We're in a parameter section
                 vardict = {}    # temporary to build variable info
-
                 varname = line.split(' ')[0]
-                #print 'varname:', varname
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # Check for duplicate variable name
@@ -177,7 +172,7 @@ class control(object):
                     print 'Duplicate variable name, %s, in Parameters section.. skipping' \
                               % varname
 
-                    crap = ''
+                    # crap = ''
                     try:
                         while next(it) != self.__rowdelim:
                             pass
@@ -193,11 +188,10 @@ class control(object):
 
                 numval = int(next(it))    # number of values for this variable
                 valuetype = int(next(it))    # Variable type (1 - integer, 2 - float, 4 - character)
-                #print '\tnumval:', numval
-                #print '\tvaluetype:', valuetype
+                # print '\tnumval:', numval
+                # print '\tvaluetype:', valuetype
 
                 vardict['valuetype'] = int(valuetype)
-
                 vals = []
 
                 for vv in range(0, numval):
@@ -230,8 +224,8 @@ class control(object):
                 except StopIteration:
                     # Hit the end of the file
                     pass
-                    #continue
-                #self.__controldict[varname].append(vardict)
+                    # continue
+                # self.__controldict[varname].append(vardict)
                 self.__controldict[varname] = vardict
         # ***** END for line in it
         self.__isloaded = True
@@ -260,7 +254,6 @@ class control(object):
                 return thevar
         else:
             return None
-
 
     def replace_values(self, varname, newvals):
         if not self.__isloaded:
@@ -1058,6 +1051,10 @@ class parameters(object):
             # We are not changing dimensions of the variable/parameter, just the values
             # Check if size of newvals array matches the oldvals array
             if isinstance(newvals, list) and len(newvals) == thevar['values'].size:
+                # Size of arrays match so replace the oldvals with the newvals
+                thevar['values'][:] = newvals
+            elif isinstance(newvals, np.ndarray) and newvals.size == thevar['values'].size:
+                # newvals is a numpy ndarray
                 # Size of arrays match so replace the oldvals with the newvals
                 thevar['values'][:] = newvals
             elif thevar['values'].size == 1:
