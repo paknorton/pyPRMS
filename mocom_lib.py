@@ -7,7 +7,9 @@ __author__ = 'pnorton'
 
 import pandas as pd
 import prms_cfg as prms_cfg
+import os
 import re
+import shutil
 
 class opt_log(object):
     # Class to handle reading the mocom optimization log file
@@ -173,7 +175,40 @@ class opt_log(object):
         # Create a dataframe from the imported optimization log data
         self.__optlog_data = pd.DataFrame(tmp_data, columns=tmp_hdr).convert_objects(convert_numeric=True)
 
+    def remove_nonpareto_directories(self, modelrunid, keep_seed=True):
+        # Create list of winner runids padded with zeros to match the directory listing
+        # If keep_seed is true then add those to the winners list
+        try:
+            cfg = prms_cfg.cfg(self.configfile)
 
+            modelrun_dir = '%s/%s/runs/%s' % (cfg.base_calib_dir, cfg.get_value('basin'), modelrunid)
+        except:
+            print "ERROR: runs/%s doesn't exist!" % modelrunid
+            return
+
+        winners = []
+        for rr in self.get_modelrunids('last'):
+            winners.append('%05d' % rr)
+
+        if keep_seed:
+            for rr in self.get_modelrunids('seed'):
+                winners.append('%05d' % rr)
+
+        # Get the directory listing of runids from the calibration run
+        stdir = os.getcwd()
+
+        os.chdir(modelrun_dir)
+        directories=[d for d in os.listdir(os.getcwd()) if os.path.isdir(d)]
+
+        # Do a little set magic to find the directories that are not in the winners list.
+        # These are the directories we can safely delete
+        remove_list = list(set(directories) - set(winners))
+
+        for dd in remove_list:
+            shutil.rmtree(dd)
+
+        # Return to starting directory
+        os.chdir(stdir)
 
     def write_csv(self, filename):
         # Write the optimization log out to a csv file
