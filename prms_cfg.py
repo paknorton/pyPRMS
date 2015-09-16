@@ -8,6 +8,7 @@
 
 # import collections
 import yaml
+import pandas as pd
 # from addict import Dict
 
 class cfg(object):
@@ -15,9 +16,23 @@ class cfg(object):
         self.__cfgdict = None
         self.load(filename)
 
+    @property
+    def base_calib_dir(self):
+        return self.get_value('base_calib_dir')
 
     @property
-    def list(self):
+    def basins_file(self):
+        return self.get_value('basins_file')
+
+    @property
+    def param_range_file(self):
+        # Return full path to param_range_file
+        try:
+            return '%s/%s/%s' % (self.get_value('base_calib_dir'), self.get_value('basin'), self.get_value('param_range_file'))
+        except:
+            return '%s/%s' % (self.get_value('base_calib_dir'), self.get_value('param_range_file'))
+
+    def list_config_items(self):
         for kk,vv in self.__cfgdict.iteritems():
             print '%s:' % kk,
 
@@ -35,6 +50,42 @@ class cfg(object):
             self.__cfgdict[var] = value
         else:
             self.__cfgdict[var] = value
+
+
+    def get_basin_list(self):
+        # Returns a list of basin ids
+        try:
+            basinfile = open(self.get_value('basins_file'), 'r')
+            basins = basinfile.read().splitlines()
+            basinfile.close()
+            return basins
+        except:
+            print "ERROR: unable to open/read %s" % self.get_value('basins_file')
+            return None
+
+    def get_log_file(self, runid=None):
+        if runid is None:
+            try:
+                return '%s/%s/%s' % (self.get_value('base_calib_dir'), self.get_value('basin'),self.get_value('log_file'))
+            except:
+                # TODO: assert an error
+                return None
+        else:
+            try:
+                return '%s/%s/runs/%s/%s' % (self.get_value('base_calib_dir'), self.get_value('basin'),
+                                             runid, self.get_value('log_file'))
+            except:
+                # TODO: assert an error
+                return None
+
+    def get_param_limits(self):
+        # Returns a dataframe of the contents of the param_range_file
+        try:
+            return pd.read_csv(self.param_range_file, header=None, names=['parameter', 'maxval', 'minval'],
+                                   sep=r'\s*', engine='python')
+        except:
+            print "ERROR: unable to read %s" % self.param_range_file
+            return None
 
 
     def get_value(self, varname):
