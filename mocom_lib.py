@@ -204,8 +204,9 @@ class opt_log(object):
         # These are the directories we can safely delete
         remove_list = list(set(directories) - set(winners))
 
-        for dd in remove_list:
-            shutil.rmtree(dd)
+        print "Removing:", remove_list
+        #for dd in remove_list:
+        #    shutil.rmtree(dd)
 
         # Return to starting directory
         os.chdir(stdir)

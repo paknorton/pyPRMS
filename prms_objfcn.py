@@ -88,6 +88,32 @@ def get_complete_wyears(ds, obsvar=None):
     c.drop(['wyear', 'month'], axis=1, inplace=True)
     return c
 
+def pbias(data):
+    # Compute the percent bias between simulated and observed
+    if 'obs_var' in data.columns:
+        # single observed values
+        # TODO: write this part
+        pass
+    else:
+        # Assume we're working with ranges of values
+
+        # If all the values in the dataframe are zero then return bias=0
+        if (data==0).all().all():
+            return 0
+
+        data.loc[:,'closest'] = (data['obs_upper'] + data['obs_lower']) / 2.0
+        data.loc[:,'closest'] = np.where(data['sim_var'] < data['obs_lower'], data['obs_lower'] - data['sim_var'], data['closest'])
+        data.loc[:,'closest'] = np.where(data['sim_var'] > data['obs_upper'], data['obs_upper'] - data['sim_var'], data['closest'])
+
+        data['diff'] = 0.
+        data['diff'] = np.where(data['sim_var'] < data['obs_lower'], data['obs_lower'] - data['sim_var'], data['diff'])
+        data['diff'] = np.where(data['sim_var'] > data['obs_upper'], data['obs_upper'] - data['sim_var'], data['diff'])
+
+        num = data['diff'].sum()
+        den = data['closest'].sum()
+
+        return (num/den) * 100.
+
 
 def nrmse(data):
     # Compute the Normalized Root Mean Square error
@@ -189,7 +215,7 @@ def flowduration(ts):
 
 # =============================================================================
 # These lists of functions must be defined after the functions they reference
-of_fcn = {'NRMSE': nrmse, 'NS': nashsutcliffe}
+of_fcn = {'NRMSE': nrmse, 'NS': nashsutcliffe, 'PBIAS': pbias}
 #          'NRMSE_FD': nrmse_flowduration}
 # =============================================================================
 

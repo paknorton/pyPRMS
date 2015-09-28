@@ -57,7 +57,7 @@ for line in it:
         
         while True:
             x = next(it)
-            if x[0:1] == '':
+            if x[0:1] == '' or x[0:26] == 'MOCOM:  WARNING:  Current':
                 break
 
             # Strip out the junk characters ():=

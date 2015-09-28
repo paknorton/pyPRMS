@@ -1143,7 +1143,7 @@ class parameters(object):
         # data structure and writing the modify file directly instead of modifying a copy of the
         # original parameter structure and then writing it out.
 
-        split_dims = {'nhru', 'nssr', 'ngw'}
+        split_dims = ['nhru', 'nssr', 'ngw']
         ndepl = self.get_dim('ndepl')
         nhru = self.get_dim('nhru')
         order = ['name', 'dimnames', 'valuetype', 'values']
