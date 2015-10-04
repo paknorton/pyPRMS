@@ -102,8 +102,8 @@ def pbias(data):
             return 0
 
         data.loc[:,'closest'] = (data['obs_upper'] + data['obs_lower']) / 2.0
-        data.loc[:,'closest'] = np.where(data['sim_var'] < data['obs_lower'], data['obs_lower'] - data['sim_var'], data['closest'])
-        data.loc[:,'closest'] = np.where(data['sim_var'] > data['obs_upper'], data['obs_upper'] - data['sim_var'], data['closest'])
+        data.loc[:,'closest'] = np.where(data['sim_var'] < data['obs_lower'], data['sim_var'] - data['obs_lower'], data['closest'])
+        data.loc[:,'closest'] = np.where(data['sim_var'] > data['obs_upper'], data['sim_var'] - data['obs_upper'], data['closest'])
 
         data['diff'] = 0.
         data['diff'] = np.where(data['sim_var'] < data['obs_lower'], data['sim_var'] - data['obs_lower'], data['diff'])
