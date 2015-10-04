@@ -56,8 +56,12 @@ for line in it:
         #print tmp.split()
         
         while True:
-            x = next(it)
-            if x[0:1] == '' or x[0:26] == 'MOCOM:  WARNING:  Current':
+            try:
+                x = next(it)
+            except StopIteration:
+                break
+
+            if x[0:1] == '' or x[0:25] == 'MOCOM:  WARNING:  Current':
                 break
 
             # Strip out the junk characters ():=

@@ -3,12 +3,17 @@
 # Process streamflow from the Monthly Water Balance Model (MWBM) into individual
 # HRUs for a given region for use by PRMS model calibration by HRU.
 
+import prms_objfcn
 import prms_lib as prms
 import pandas as pd
 import numpy as np
 import datetime
 import sys
-# The runoff error bounds from the Monthly Water Balance Model (MWBM) are located on yeti at /cxfs/projects/usgs/water/mows/MWBMRUNSwGRPparams/MWBMerr. The runoff is broken out by region with a single file for each min and max set of values. Runoff values are in units of mm/day. To convert from mm/day to cubic feet per second the following conversion is used.
+# The runoff error bounds from the Monthly Water Balance Model (MWBM) are
+# located on yeti at /cxfs/projects/usgs/water/mows/MWBMRUNSwGRPparams/MWBMerr.
+# The runoff is broken out by region with a single file for each min and max set of values.
+# Runoff values are in units of mm/day. To convert from mm/day to cubic feet per second the
+# following conversion is used.
 # 
 
 # Regions in the National Hydrology Model
@@ -24,8 +29,9 @@ hrus_by_region = [2462, 4827, 9899, 5936, 7182, 2303, 8205, 4449,
 
 def load_MWBM_streamflow(filename, st_date, en_date): 
     # Load MWBM streamflow error bounds
-    df = pd.read_csv(filename, sep=' ', skipinitialspace=True, 
-                      parse_dates={'thedate': [0, 1]}, index_col=['thedate'])
+    df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
+                     date_parser=prms_objfcn.dparse,
+                     parse_dates={'thedate': [0, 1]}, index_col=['thedate'])
     df = df.resample('M', how='mean')
     return df[st_date:en_date]
 
@@ -73,16 +79,20 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
         ds1_hru = pd.DataFrame(ds1.ix[:,hh])
         ds1_hru.rename(columns={ds1_hru.columns[0]: 'min'}, inplace=True)
 
-        # Convert from mm/day to cfs (see Evernote for units conversion notes)
+        # Convert from mm/month to cfs (see Evernote for units conversion notes)
         # hru_area is converted from acres to square kilometers
-        ds1_hru['min'] = ds1_hru * (hru_area[hh] * 0.00404686) / 2.4465755462
+        ds1_hru['min'] = ds1_hru * hru_area[hh] * 0.0016540916
+        ds1_hru['min'] = ds1_hru.index.day
+        #ds1_hru['min'] = ds1_hru * (hru_area[hh] * 0.00404686) / 2.4465755462
 
         # Create and convert maximum values for HRU
         ds2_hru = pd.DataFrame(ds2.ix[:,hh])
         ds2_hru.rename(columns={ds2_hru.columns[0]: 'max'}, inplace=True)
 
-        # Convert from mm/day to cfs (see Evernote for units conversion notes)
-        ds2_hru['max'] = ds2_hru * (hru_area[hh] * 0.00404686) / 2.4465755462
+        # Convert from mm/month to cfs (see Evernote for units conversion notes)
+        ds2_hru['max'] = ds2_hru * hru_area[hh] * 0.0016540916
+        ds2_hru['max'] /= ds2_hru.index.day
+        #ds2_hru['max'] = ds2_hru * (hru_area[hh] * 0.00404686) / 2.4465755462
 
         # Join min and max value datasets together
         ds_join = ds1_hru.join(ds2_hru, how='outer')
