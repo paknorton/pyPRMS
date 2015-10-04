@@ -106,8 +106,8 @@ def pbias(data):
         data.loc[:,'closest'] = np.where(data['sim_var'] > data['obs_upper'], data['obs_upper'] - data['sim_var'], data['closest'])
 
         data['diff'] = 0.
-        data['diff'] = np.where(data['sim_var'] < data['obs_lower'], data['obs_lower'] - data['sim_var'], data['diff'])
-        data['diff'] = np.where(data['sim_var'] > data['obs_upper'], data['obs_upper'] - data['sim_var'], data['diff'])
+        data['diff'] = np.where(data['sim_var'] < data['obs_lower'], data['sim_var'] - data['obs_lower'], data['diff'])
+        data['diff'] = np.where(data['sim_var'] > data['obs_upper'], data['sim_var'] - data['obs_upper'], data['diff'])
 
         num = data['diff'].sum()
         den = data['closest'].sum()
