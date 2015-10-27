@@ -1287,6 +1287,55 @@ class parameters(object):
         outfile.close()
 
 
+    def write_select_param_file(self, filename, selection):
+        # Write selected subset of parameters to a new parameter file
+        if not self.__isloaded:
+            self.load_file(self.__filename)
+
+        outfile = open(filename, 'w')
+
+        # Write out the Parameter category
+        order = ['name', 'dimnames', 'valuetype', 'values']
+
+        for ss in selection:
+            vv = self.get_var(ss)
+            dimsize = vv['values'].size
+            valtype = vv['valuetype']
+
+            # Set a format string based on the valtype
+            if valtype == 1:
+                fmt = '%s\n'
+            elif valtype == 2:
+                #fmt = '%f\n'
+                fmt = '%s\n'
+            else:
+                fmt = '%s\n'
+
+            for item in order:
+                # Write each variable out separated by self.__rowdelim
+                val = vv[item]
+
+                if item == 'dimnames':
+                    # Write number of dimensions first
+                    outfile.write('%d\n' % len(val))
+                    for dd in val:
+                        # Write dimension names
+                        outfile.write('%s\n' % dd)
+                elif item == 'valuetype':
+                    # dimsize (which is computed) must be written before valuetype
+                    outfile.write('%d\n' % dimsize)
+                    outfile.write('%d\n' % val)
+                elif item == 'values':
+                    # Write one value per line
+                    for xx in val.flatten():
+                        outfile.write(fmt % xx)
+                elif item == 'name':
+                    # Write the self.__rowdelim before the variable name
+                    outfile.write('%s\n' % self.__rowdelim)
+                    outfile.write('%s 10\n' % val)
+
+        outfile.close()
+
 
     def write_param_file(self, filename):
         # Write the parameters out to a file
