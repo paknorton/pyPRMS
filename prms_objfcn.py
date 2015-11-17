@@ -234,7 +234,7 @@ def main():
     months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
               'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
-    cfg_in = cfg.cfg('/Users/pnorton/USGS/Projects/National_Hydrology_Model/code/prms_calib/basin.cfg')
+    cfg_in = cfg.cfg('basin.cfg')
 
     # Command line arguments
     parser = argparse.ArgumentParser(description='Objective function processing')
