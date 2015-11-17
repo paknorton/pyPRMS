@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import prms_lib as prms
 # import efc_lib as efc
 import calendar
 import datetime
@@ -229,6 +228,7 @@ def main():
     # import pandas as pd
     # import collections
     import prms_cfg as cfg
+    import prms_lib as prms
     # from addict import Dict
 
     months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
