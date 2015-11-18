@@ -90,6 +90,21 @@ def to_prms_datetime(date):
        YYYY,MM,DD,HH,mm,ss"""
     return date.strftime('%Y,%m,%d,%H,%M,%S')
 
+# Order to write control file parameters for printing and writing a new control file
+ctl_order = ['start_time', 'end_time', 'print_debug', 'executable_desc', 'executable_model', 'model_mode',
+             'et_module', 'precip_module', 'soilzone_module', 'solrad_module', 'srunoff_module',
+             'strmflow_module', 'temp_module', 'transp_module',
+             'cascade_flag', 'cascadegw_flag', 'cbh_check_flag',
+             'dprst_flag', 'dyn_snareathresh_flag', 'parameter_check_flag',
+             'param_file', 'data_file', 'humidity_day', 'orad_flag', 'potet_day',
+             'precip_day', 'swrad_day', 'tmax_day', 'tmin_day', 'transp_day', 'windspeed_day', 'model_output_file',
+             'csvON_OFF', 'csv_output_file',
+             'nhruOutBase_FileName', 'nhruOutON_OFF', 'nhruOutVar_names', 'nhruOutVars',
+             'nstatVars', 'statVar_element', 'statVar_names', 'stat_var_file', 'statsON_OFF', 'stats_output_file',
+             'aniOutON_OFF', 'aniOutVar_names', 'ani_output_file', 'naniOutVars',
+             'dispGraphsBuffSize', 'dispVar_element', 'dispVar_names', 'dispVar_plot', 'initial_deltat', 'ndispGraphs',
+             'nmapOutVars', 'mapOutON_OFF', 'mapOutVar_names',
+             'init_vars_from_file', 'save_vars_to_file', 'var_init_file', 'var_save_file']
 
 class control(object):
     # Author: Parker Norton (pnorton@usgs.gov)
@@ -104,10 +119,26 @@ class control(object):
         self.__isloaded = False
         self.__filename = filename
         self.__rowdelim = '####'    # Used to delimit variables
-        self.__valtypes = ['', 'integer', 'float', '', 'string']
+        self.__valtypes = ['', 'integer', 'float', 'double', 'string']
 
         self.filename = filename
     # END __init__
+
+    def __getattr__(self, item):
+        return self.get_var(item)
+
+    def __str__(self):
+        outstr = ''
+        for xx in ctl_order:
+            try:
+                pp = self.__controldict[xx]
+                if len(pp['values']) == 1:
+                    outstr += '%s: %s, %s\n' % (xx, self.__valtypes[pp['valuetype']], str(pp['values'][0]))
+                else:
+                    outstr += '%s: %s, %d values\n' % (xx, self.__valtypes[pp['valuetype']], len(pp['values']))
+            except:
+                continue
+        return outstr
 
     @property
     def filename(self):
@@ -172,7 +203,6 @@ class control(object):
                     print 'Duplicate variable name, %s, in Parameters section.. skipping' \
                               % varname
 
-                    # crap = ''
                     try:
                         while next(it) != self.__rowdelim:
                             pass
@@ -230,6 +260,20 @@ class control(object):
         # ***** END for line in it
         self.__isloaded = True
     # END **** load_file()
+
+    def clear_parameter_group(self, grpname):
+        """Given a single parameter group name will clear out values for that parameter
+           and all related parameters. Group name is one of: statVar, ani, map, dispVar, nhru"""
+
+        grp_name = {'ani': {'naniOutVars': 0, 'aniOutON_OFF': 0, 'aniOutVar_names': []},
+                    'dispVar': {'ndispGraphs': 0, 'dispVar_element': [], 'dispVar_names': [], 'dispVar_plot': []},
+                    'map': {'nmapOutVars': 0, 'mapOutON_OFF': 0, 'mapOutVar_names': []},
+                    'nhru': {'nhruOutVars': 0, 'nhruOutON_OFF': 0, 'nhruOutVar_names': []},
+                    'statVar': {'nstatVars': 0, 'statsON_OFF': 0, 'statVar_element': [], 'statVar_names': []}}
+
+        for kk, vv in grp_name[grpname].iteritems():
+            self.replace_values(kk, vv)
+
 
     def get_var(self, varname):
         # Return the given variable
@@ -296,7 +340,13 @@ class control(object):
         #order = ['name', 'dimnames', 'valuetype', 'values']
         order = ['valuetype', 'values']
 
-        for kk, vv in self.__controldict.iteritems():
+        for kk in ctl_order:
+            try:
+                vv = self.__controldict[kk]
+            except:
+                continue
+
+        # for kk, vv in self.__controldict.iteritems():
             valnum = len(vv['values'])
             valtype = vv['valuetype']
 
@@ -764,7 +814,7 @@ class parameters(object):
         self.__rowdelim = '####'    # Used to delimit variables
         self.__valtypes = ['', 'integer', 'float', 'double', 'string']
 
-        self.load_file(self.filename)
+        self.load_file()
     # END __init__
 
     def __getattr__(self, item):
@@ -773,8 +823,8 @@ class parameters(object):
 
     @property
     def filename(self):
-        if not self.__isloaded:
-            self.load_file(self.__filename)
+        # if not self.__isloaded:
+        #     self.load_file(self.__filename)
         return self.__filename
 
     @filename.setter
@@ -786,7 +836,7 @@ class parameters(object):
 
         self.__filename = fname
 
-        self.load_file(self.__filename)
+        self.load_file()
 
     @property
     def headers(self):
@@ -798,7 +848,7 @@ class parameters(object):
     def vars(self):
         """Return a structure of loaded variables"""
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         varlist = []
         parent = self.__paramdict['Parameters']
@@ -812,7 +862,7 @@ class parameters(object):
     def dimensions(self):
         """Return a list of dimensions"""
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         # dimlist = []
         # parent = self.__paramdict['Dimensions']
@@ -828,7 +878,7 @@ class parameters(object):
         """Check all parameter variables for proper array size"""
 
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         parent = self.__paramdict['Parameters']
 
@@ -845,13 +895,14 @@ class parameters(object):
                 print 'BAD'
 
 
-    def load_file(self, filename):
+    def load_file(self):
+        print "*** Entered load_file()"
         # Read the parameter file into memory and parse it
 
         self.__paramdict = {}   # Initialize the parameter dictionary
         self.__header = []      # Initialize the list of file headers
 
-        infile = open(filename, 'r')
+        infile = open(self.__filename, 'r')
         rawdata = infile.read().splitlines()
         infile.close()
 
@@ -859,7 +910,6 @@ class parameters(object):
 
         for line in it:
             dupskip = False
-            #print "Curr:", line
 
             if line[0:4] == '$Id:' or line[0:7] == 'Version' or \
                     line[0:17] == 'Default Parameter' or line[0:15] == 'PRMS version 4':
@@ -881,14 +931,16 @@ class parameters(object):
             else:
                 # We're within a category section and dealing with variables
                 if dimsection:
+                    # -------------------------------------------------------
+                    # DIMENSIONS section
+                    # -------------------------------------------------------
                     # The 'Dimensions' section only has scalar integer variables
-                    #self.__paramdict['Dimensions'].append({'name': line, 'value': int(next(it))})
                     self.__paramdict['Dimensions'][line] = int(next(it))
                 else:
                     # -------------------------------------------------------
-                    # We're in a parameter section
+                    # PARAMETER section
+                    # -------------------------------------------------------
                     vardict = {}    # temporary to build variable info
-
                     varname = line.split(' ')[0]
 
                     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -897,13 +949,12 @@ class parameters(object):
                         # Check for duplicate variables (that couldn't happen! :))
                         # If it does skip to the next variable in the parameter file
                         if varname == kk['name']:
-                            print 'Duplicate variable name, %s, in Parameters section.. skipping' \
+                            print '%s: Duplicate parameter name.. skipping' \
                                   % varname
                             dupskip = True
                             break
 
                     if dupskip:
-                        crap = ''
                         try:
                             while next(it) != self.__rowdelim:
                                 pass
@@ -915,48 +966,49 @@ class parameters(object):
                     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                     vardict['name'] = varname
-                    #print 'varname:', varname
 
+                    # Read in the dimension names
                     numdim = int(next(it))    # number of dimensions for this variable
-                    dimlist = []
-                    for dd in range(0,numdim):
-                        dimlist.append(next(it))
-                    vardict['dimnames'] = dimlist
+                    vardict['dimnames'] = [next(it) for dd in xrange(numdim)]
 
-                    arr_shp = []    # temporary to compute shape of numpy array
-                    for dd in dimlist:
-                        arr_shp.append(self.__paramdict['Dimensions'][dd])
+                    # Lookup dimension size for each dimension name
+                    arr_shp = [self.__paramdict['Dimensions'][dd] for dd in vardict['dimnames']]
 
-                    numval = int(next(it))
-                    valuetype = int(next(it))
+                    numval = int(next(it))  # Denotes the number of data values we have. Should match dimensions.
+                    valuetype = int(next(it))   # Datatype of the values
                     vardict['valuetype'] = int(valuetype)
 
-                    vals = []
-
-                    for vv in range(0, numval):
-                        try:
-                            if valuetype == 1:  # integer
-                                vals.append(int(next(it)))
-                            elif valuetype == 2:    # float
-                                vals.append(float(next(it)))
-                            else:
-                                vals.append(next(it))
-                        except ValueError:
-                            print "varname: %s value type and defined type (%s) don't match" \
-                                    % (varname, self.__valtypes[valuetype])
-                    vardict['values'] = np.array(vals).reshape(arr_shp)
-
-                    self.__paramdict['Parameters'].append(vardict)
-
-                    # Sometimes parameters have too many values for their dimension(s)
-                    # This will silently skip the extra crap
                     try:
-                        while next(it) != self.__rowdelim:
-                            pass
+                        # Read in the data values
+                        vals = []
+
+                        while True:
+                            cval = next(it)
+
+                            if cval == self.__rowdelim or cval == '':
+                                break
+                            vals.append(cval)
                     except StopIteration:
-                        # We hit the end of the file
+                        # Hit the end of the file
                         continue
 
+                    if len(vals) != numval:
+                        print '%s: number of values does not match dimension size (%d != %d).. skipping' \
+                            % (varname, len(vals), numval)
+                    else:
+                        # Convert the values to the correct datatype
+                        try:
+                            if valuetype == 1:      # integer
+                                vals = [int(vals) for vals in vals]
+                            elif valuetype == 2:    # float
+                                vals = [float(vals) for vals in vals]
+                        except ValueError:
+                            print "%s: value type and defined type (%s) don't match" \
+                                  % (varname, self.__valtypes[valuetype])
+
+                        # Add to dictionary as a numpy array
+                        vardict['values'] = np.array(vals).reshape(arr_shp)
+                        self.__paramdict['Parameters'].append(vardict)
         self.__isloaded = True
     # END **** read_params()
 
@@ -964,7 +1016,7 @@ class parameters(object):
         # Return the given variable
 
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         parent = self.__paramdict['Parameters']
 
@@ -977,7 +1029,7 @@ class parameters(object):
         # Return the size of the specified dimension
 
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         parent = self.__paramdict['Dimensions']
 
@@ -989,7 +1041,7 @@ class parameters(object):
     def add_param(self, name, dimnames, valuetype, values):
         # Add a new parameter
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         # Check that valuetype is valid
         if valuetype not in [1, 2, 3, 4]:
@@ -1034,7 +1086,7 @@ class parameters(object):
         # consistent with the given dimensions
 
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         thevar = self.get_var(varname)
 
@@ -1064,7 +1116,7 @@ class parameters(object):
     def replace_values(self, varname, newvals, newdims=None):
         """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         parent = self.__paramdict['Parameters']
         thevar = self.get_var(varname)
@@ -1102,7 +1154,7 @@ class parameters(object):
                         'nssr': ['nhru', 'ngw'], 'ngw': ['nhru', 'nssr']}
 
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         parent = self.__paramdict['Dimensions']
 
@@ -1125,7 +1177,7 @@ class parameters(object):
         """Updates parameter/variable with new values for a a given HRU.
            This is used when merging data from an individual HRU into a region"""
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         parent = self.__paramdict['Parameters']
         thevar = self.get_var(varname)
@@ -1312,7 +1364,7 @@ class parameters(object):
     def write_select_param_file(self, filename, selection):
         # Write selected subset of parameters to a new parameter file
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         outfile = open(filename, 'w')
 
@@ -1363,7 +1415,7 @@ class parameters(object):
         # Write the parameters out to a file
 
         if not self.__isloaded:
-            self.load_file(self.__filename)
+            self.load_file()
 
         outfile = open(filename, 'w')
 
