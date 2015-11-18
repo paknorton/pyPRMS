@@ -767,6 +767,9 @@ class parameters(object):
         self.load_file(self.filename)
     # END __init__
 
+    def __getattr__(self, item):
+        # Undefined attributes will look up the given parameter
+        return self.get_var(item)
 
     @property
     def filename(self):
@@ -821,7 +824,6 @@ class parameters(object):
         return self.__paramdict['Dimensions']
 
 
-    @property
     def vars_integrity(self):
         """Check all parameter variables for proper array size"""
 
@@ -945,6 +947,16 @@ class parameters(object):
                     vardict['values'] = np.array(vals).reshape(arr_shp)
 
                     self.__paramdict['Parameters'].append(vardict)
+
+                    # Sometimes parameters have too many values for their dimension(s)
+                    # This will silently skip the extra crap
+                    try:
+                        while next(it) != self.__rowdelim:
+                            pass
+                    except StopIteration:
+                        # We hit the end of the file
+                        continue
+
         self.__isloaded = True
     # END **** read_params()
 
@@ -1017,7 +1029,6 @@ class parameters(object):
             parent.append({'name': name, 'dimnames': [dimnames], 'valuetype': valuetype, 'values': values})
 
 
-
     def check_var(self, varname):
         # Check a variable to see if the number of values it has is
         # consistent with the given dimensions
@@ -1037,6 +1048,17 @@ class parameters(object):
             print 'OK'
         else:
             print 'BAD'
+
+    def copy_param(self, varname, filename):
+        """Copies selected varname from given src input parameter file (filename).
+        The incoming parameter is verified to have the same dimensions and sizes as
+        the destination."""
+
+        # TODO: Expand this handle either a single varname or a list of varnames
+        srcparamfile = parameters(filename)
+        srcparam = srcparamfile.get_var(varname)
+        self.add_param(srcparam['name'], srcparam['dimnames'], srcparam['valuetype'], srcparam['values'])
+        del(srcparamfile)
 
 
     def replace_values(self, varname, newvals, newdims=None):
@@ -1400,7 +1422,7 @@ class parameters(object):
                 elif item == 'name':
                     # Write the self.__rowdelim before the variable name
                     outfile.write('%s\n' % self.__rowdelim)
-                    outfile.write('%s 10\n' % val)
+                    outfile.write('%s\n' % val)
 
         outfile.close()
 # ***** END of class parameters()
