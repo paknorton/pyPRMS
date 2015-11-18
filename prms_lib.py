@@ -896,7 +896,6 @@ class parameters(object):
 
 
     def load_file(self):
-        print "*** Entered load_file()"
         # Read the parameter file into memory and parse it
 
         self.__paramdict = {}   # Initialize the parameter dictionary
@@ -985,7 +984,7 @@ class parameters(object):
                         while True:
                             cval = next(it)
 
-                            if cval == self.__rowdelim or cval == '':
+                            if cval == self.__rowdelim or cval.strip() == '':
                                 break
                             vals.append(cval)
                     except StopIteration:
@@ -997,6 +996,8 @@ class parameters(object):
                             % (varname, len(vals), numval)
                     else:
                         # Convert the values to the correct datatype
+                        # 20151118 PAN: found a value of 1e+05 in nhm_id for r17 caused this to fail
+                        #               even though manaully converting the value to int works.
                         try:
                             if valuetype == 1:      # integer
                                 vals = [int(vals) for vals in vals]
