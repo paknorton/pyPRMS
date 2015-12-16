@@ -940,10 +940,6 @@ class parameters(object):
         # return dimlist
         return self.__paramdict['Dimensions']
 
-
-
-
-
     def load_file(self):
         # Read the parameter file into memory and parse it
 
