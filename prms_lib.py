@@ -243,8 +243,10 @@ class control(object):
 
         it = iter(rawdata)
 
-        for line in it:
-            if line[0:4] == '$Id:':
+        for fidx, line in enumerate(it):
+        # for line in it:
+            #if line[0:4] == '$Id:':
+            if fidx == 0:
                 self.__header.append(line)
                 continue
             elif line == self.__rowdelim:
