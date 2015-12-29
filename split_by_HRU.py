@@ -116,10 +116,10 @@ def main():
 
     region = args.region
     base_dir = args.basedir
-    src_dir = '%s/%s' % (base_dir, region)
-    dst_dir = '%s/%s_byHRU' % (base_dir, region)
+    src_dir = '%s/r%s' % (base_dir, region)
+    dst_dir = '%s/r%s_byHRU' % (base_dir, region)
     dummy_streamflow_file = '%s/%s' % (base_dir, args.dummy)
-    control_file = '%s/%s' % (base_dir, args.control)
+    control_file = '%s/r%s/%s' % (base_dir, region, args.control)
 
 
 # region = 'r10U'
