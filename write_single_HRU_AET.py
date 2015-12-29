@@ -296,13 +296,13 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 
     print "\tMOD16 AET.."
-    aet_mod16 = pd.read_csv('%s/MOD16_AET_GCPO_2000-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    aet_mod16 = pd.read_csv('%s/MOD16_AET_GCPO_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
 
     print "\tSSEBop AET.."
-    aet_SSEBop = pd.read_csv('%s/SSEBop_AET_GCPO_2000-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    aet_SSEBop = pd.read_csv('%s/SSEBop_AET_GCPO_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
 
     print "\tMWBM AET.."
-    aet_mwbm = pd.read_csv('%s/MWBM_AET_GCPO_2000-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    aet_mwbm = pd.read_csv('%s/MWBM_AET_GCPO_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
 
     print "Writing out HRUs:"
     for hh in xrange(hrus_by_region[regions.index(region)]):
