@@ -107,10 +107,9 @@ def main():
     parser = argparse.ArgumentParser(description='Split PRMS model into individual HRUs')
     parser.add_argument('-b', '--basedir', help='Base directory', required=True)
     parser.add_argument('-c', '--control', help='Name of control file', required=True)
-    # parser.add_argument('-d', '--dstdir', help='Destination directory for individual HRUs', required=True)
-    parser.add_argument('-D', '--dummy', help='Name of dummy streamflow datafile', required=True)
+    parser.add_argument('-d', '--dummy', help='Name of dummy streamflow datafile', required=True)
     parser.add_argument('-r', '--region', help='Region to process', required=True)
-    # parser.add_argument('-s', '--srcdir', help='Source directory', required=True)
+    parser.add_argument('--nocbh', help='Skip CBH file splitting', action='store_true')
 
     args = parser.parse_args()
 
@@ -181,14 +180,15 @@ def main():
         cmd_opts = ' %s %s/.' % (dummy_streamflow_file, cdir)
         subprocess.call('/bin/cp' + cmd_opts, shell=True)
 
-    # Write *.cbh subsets
-    print '\nCBH subsets'
-    for kk, vv in cbh_vars.iteritems():
-        if kk in input_src:
-            print '\tWriting %s' % os.path.basename(input_src[kk])
+    if not args.nocbh:
+        # Write *.cbh subsets
+        print '\nCBH subsets'
+        for kk, vv in cbh_vars.iteritems():
+            if kk in input_src:
+                print '\tWriting %s' % os.path.basename(input_src[kk])
 
-            full_cbh_subset('%s/%s' % (src_dir, input_src[kk]), 
-                            dst_dir, region, vv, nhru)
+                full_cbh_subset('%s/%s' % (src_dir, input_src[kk]),
+                                dst_dir, region, vv, nhru)
 
 
 if __name__ == '__main__':

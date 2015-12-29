@@ -420,6 +420,8 @@ class control(object):
         curr_ctl = Set(self.__controldict.keys())
         curr_order = Set(ctl_order)
         unordered_set = curr_ctl.difference(curr_order)
+
+        # Add parameters that are missing in the ordered set at the end of the list
         ctl_order.extend(list(unordered_set))
 
         for kk in ctl_order:
