@@ -4,19 +4,20 @@ import os
 import pandas as pd
 import subprocess
 import sys
+import argparse
 
 import prms_lib as prms
 
-__version__ = '0.2'
+__version__ = '0.3'
 
-region = 'r10U'
-
-base_dir = '/Volumes/data/Users/pnorton/USGS/Projects/National_Hydrology_Model'
-src_dir = '%s/regions/%s' % (base_dir, region)
-dst_dir = '/Volumes/LaCie/20150720a/regions/%s_byHRU' % region
-
-dummy_streamflow_file = '%s/regions/1960-2010.data.dummy' % (base_dir)
-control_file = '%s/control/daymet.control' % (src_dir)
+# region = 'r10U'
+#
+# base_dir = '/Volumes/data/Users/pnorton/USGS/Projects/National_Hydrology_Model'
+# src_dir = '%s/regions/%s' % (base_dir, region)
+# dst_dir = '/Volumes/LaCie/20150720a/regions/%s_byHRU' % region
+#
+# dummy_streamflow_file = '%s/regions/1960-2010.data.dummy' % (base_dir)
+# control_file = '%s/control/daymet.control' % (src_dir)
 
 cbh_vars = {'tmax_day': 'tmax', 'tmin_day': 'tmin', 'precip_day': 'prcp'}
 input_files = ['param_file', 'tmax_day', 'tmin_day', 'precip_day', 'data_file']
@@ -103,6 +104,33 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Split PRMS model into individual HRUs')
+    parser.add_argument('-b', '--basedir', help='Base directory', required=True)
+    parser.add_argument('-c', '--control', help='Name of control file', required=True)
+    # parser.add_argument('-d', '--dstdir', help='Destination directory for individual HRUs', required=True)
+    parser.add_argument('-D', '--dummy', help='Name of dummy streamflow datafile', required=True)
+    parser.add_argument('-r', '--region', help='Region to process', required=True)
+    # parser.add_argument('-s', '--srcdir', help='Source directory', required=True)
+
+    args = parser.parse_args()
+
+    region = args.region
+    base_dir = args.basedir
+    src_dir = '%s/%s' % (base_dir, region)
+    dst_dir = '%s/%s_byHRU' % (base_dir, region)
+    dummy_streamflow_file = '%s/%s' % (base_dir, args.dummy)
+    control_file = '%s/%s' % (base_dir, args.control)
+
+
+# region = 'r10U'
+#
+# base_dir = '/Volumes/data/Users/pnorton/USGS/Projects/National_Hydrology_Model/regions'
+# src_dir = '%s/%s' % (base_dir, region)
+# dst_dir = '/Volumes/LaCie/20150720a/regions/%s_byHRU' % region
+#
+# dummy_streamflow_file = '%s/1960-2010.data.dummy' % (base_dir)
+# control_file = '%s/control/daymet.control' % (src_dir)
+
     # Read the control file
     control = prms.control(control_file)
 
