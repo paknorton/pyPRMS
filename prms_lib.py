@@ -417,10 +417,12 @@ class control(object):
         # Control file parameters may change. We'll use ctl_order to insure
         # certain parameters are always ordered, but will be followed by any
         # remaining non-ordered parameters.
-        unordered_set = Set(self.__controldict.keys()).difference(Set(ctl_order))
-        proc_order = ctl_order.extend(list(unordered_set))
+        curr_ctl = Set(self.__controldict.keys())
+        curr_order = Set(ctl_order)
+        unordered_set = curr_ctl.difference(curr_order)
+        ctl_order.extend(list(unordered_set))
 
-        for kk in proc_order:
+        for kk in ctl_order:
             try:
                 vv = self.__controldict[kk]
             except:
