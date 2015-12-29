@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import datetime
 import sys
+from sets import Set
 
 
 # Author: Parker Norton (pnorton@usgs.gov)
@@ -410,10 +411,16 @@ class control(object):
             outfile.write('%s\n' % hh)
 
         # Now write out the Parameter category
-        #order = ['name', 'dimnames', 'valuetype', 'values']
+        # order = ['name', 'dimnames', 'valuetype', 'values']
         order = ['valuetype', 'values']
 
-        for kk in ctl_order:
+        # Control file parameters may change. We'll use ctl_order to insure
+        # certain parameters are always ordered, but will be followed by any
+        # remaining non-ordered parameters.
+        ctl_set = Set(ctl_order)
+        proc_order = ctl_set.union(self.__controldict.keys())
+
+        for kk in proc_order:
             try:
                 vv = self.__controldict[kk]
             except:

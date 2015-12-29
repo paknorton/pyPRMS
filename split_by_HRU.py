@@ -121,16 +121,6 @@ def main():
     dummy_streamflow_file = '%s/%s' % (base_dir, args.dummy)
     control_file = '%s/r%s/%s' % (base_dir, region, args.control)
 
-
-# region = 'r10U'
-#
-# base_dir = '/Volumes/data/Users/pnorton/USGS/Projects/National_Hydrology_Model/regions'
-# src_dir = '%s/%s' % (base_dir, region)
-# dst_dir = '/Volumes/LaCie/20150720a/regions/%s_byHRU' % region
-#
-# dummy_streamflow_file = '%s/1960-2010.data.dummy' % (base_dir)
-# control_file = '%s/control/daymet.control' % (src_dir)
-
     # Read the control file
     control = prms.control(control_file)
 
