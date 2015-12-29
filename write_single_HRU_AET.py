@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+    #!/usr/bin/env python
 
 # Process AET datasets to create a range of values to use for PRMS calibration by HRU. 
 # Individual datasets by HRU are created.
@@ -262,28 +262,121 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
 
 
 
+def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
+    # For a given region pull AET for each HRU and write it to the dst_dir
+    #
+    # Parameters:
+    # srcdir    Location of the AET datasets
+    # dstdir    Top-level location to write HRUs
+    # st_date   Start date for output dataset
+    # en_date   End date for output datasdet
+    # region    The region to pull HRUs out of
+
+    # Override the region information for the GCPO
+    regions = ['GCPO']
+    hrus_by_region = [20251]
+
+    if not isinstance(st_date, datetime.datetime):
+        date_split = st_date.split('-')
+        st_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
+
+    if not isinstance(en_date, datetime.datetime):
+        date_split = en_date.split('-')
+        en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
+
+    # Get the zero-based start and end index for the selected region
+    start_idx = sum(hrus_by_region[0:regions.index(region)])
+    end_idx = (sum(hrus_by_region[0:regions.index(region)]) +
+                   hrus_by_region[regions.index(region)] - 1)
+
+    # Load each dataset into memory. These datasets contain HRUs for the GCPO study area
+    print "Loading:"
+
+    # Parser for the date information
+    parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
+
+    print "\tMOD16 AET.."
+    aet_mod16 = pd.read_csv('%s/MOD16_AET_GCPO_2000-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+
+    print "\tSSEBop AET.."
+    aet_SSEBop = pd.read_csv('%s/SSEBop_AET_GCPO_2000-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+
+    print "\tMWBM AET.."
+    aet_mwbm = pd.read_csv('%s/MWBM_AET_GCPO_2000-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+
+    print "Writing out HRUs:"
+    for hh in xrange(hrus_by_region[regions.index(region)]):
+    # for hh in xrange(start_idx+1, end_idx+2):
+    #     sys.stdout.write('\r\t%06d ' % (hh-start_idx-1))
+        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.flush()
+
+        # ---------------------------------------------------------------------------
+        # Retrieve single HRU from each input model
+        # ---------------------------------------------------------------------------
+        modis_ss = pd.DataFrame(aet_mod16.iloc[:,hh])
+        modis_ss.rename(columns={modis_ss.columns[0]: 'modis'}, inplace=True)
+
+        ssebop_ss = pd.DataFrame(aet_SSEBop.iloc[:,hh])
+        ssebop_ss.rename(columns={ssebop_ss.columns[0]: 'ssebop'}, inplace=True)
+
+        mwbm_ss = pd.DataFrame(aet_mwbm.iloc[:,hh])
+        mwbm_ss.rename(columns={mwbm_ss.columns[0]: 'mwbm'}, inplace=True)
+
+        # ---------------------------------------------------------------------------
+        # Join modis, ssebop, and mwbm together
+        # ---------------------------------------------------------------------------
+        ds_join = modis_ss.join(ssebop_ss, how='outer')
+        ds_join = ds_join.join(mwbm_ss, how='outer')
+
+        # Create min and max fields based on the dataset values
+        # Modify dataframe to the format required by PRMS for calibration
+        ds_join['min'] = ds_join.min(axis=1)
+        ds_join['max'] = ds_join.max(axis=1)
+        ds_join.drop(['modis', 'ssebop', 'mwbm'], axis=1, inplace=True)
+        ds_join['year'] = ds_join.index.year
+        ds_join['month'] = ds_join.index.month
+        ds_join.reset_index(inplace=True)
+        ds_join.drop(['thedate'], axis=1, inplace=True)
+
+        # Output HRU into the correct HRU directory
+        # outfile format: <dst_dir>/r10U_000000/AETerror
+        # HRU numbers are relative to the selected region
+        outfile = '%s/r%s_%06d/AETerror' % (dst_dir, region, (hh-start_idx-1))
+        ds_join.to_csv(outfile, sep=' ', float_format='%0.5f', columns=['year', 'month', 'min', 'max'],
+                       header=False, index=False)
+
+    print ''
+
+
+
+
 # ===========================================================================
 def main():
 
     # The HRUs for a particular region can be processed
-    selected_region = '10U'
+    selected_region = 'GCPO'
     src_dir = '/media/scratch/PRMS/datasets/AET'
     dst_dir = '/media/scratch/PRMS/regions/r%s_byHRU' % selected_region
+
     st = datetime.datetime(2000,1,1)
     en = datetime.datetime(2010,12,31)
 
-    start_idx = sum(hrus_by_region[0:regions.index(selected_region)])
-    end_idx = (sum(hrus_by_region[0:regions.index(selected_region)]) + \
-                   hrus_by_region[regions.index(selected_region)] - 1)
+    # start_idx = sum(hrus_by_region[0:regions.index(selected_region)])
+    # end_idx = (sum(hrus_by_region[0:regions.index(selected_region)]) + \
+    #                hrus_by_region[regions.index(selected_region)] - 1)
+    #
+    # print 'Total number of regions:', len(regions)
+    # print 'Selected region:', selected_region
+    # print 'Total HRUs:', sum(hrus_by_region)
+    # print 'Starting zero-based index in NHM for region %s:' % selected_region, start_idx
+    # print 'Ending zero-based index in NHM for region %s:' % selected_region, end_idx
 
-    print 'Total number of regions:', len(regions)
-    print 'Selected region:', selected_region
-    print 'Total HRUs:', sum(hrus_by_region)
-    print 'Starting zero-based index in NHM for region %s:' % selected_region, start_idx
-    print 'Ending zero-based index in NHM for region %s:' % selected_region, end_idx
+    if selected_region == 'GCPO':
+        pull_by_hru_GCPO(src_dir, dst_dir, st, en, selected_region)
+    else:
+        pull_by_hru(src_dir, dst_dir, st, en, selected_region)
 
-
-    pull_by_hru(src_dir, dst_dir, st, en, selected_region)
 
 if __name__ == '__main__':
     main()

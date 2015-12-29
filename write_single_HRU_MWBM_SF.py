@@ -109,18 +109,100 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
     print ''
 
 
+def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
+    # For a given region pull MWBM streamflow for each HRU and write it to the dst_dir
+    #
+    # Parameters:
+    # srcdir        Location of the AET datasets
+    # dstdir        Top-level location to write HRUs
+    # st_date       Start date for output dataset
+    # en_date       End date for output datasdet
+    # region        The region to pull HRUs out of
+    # param_file    Input parameter file to obtain hru_area from
+
+    # Override the region information for the GCPO
+    regions = ['GCPO']
+    hrus_by_region = [20251]
+
+    if not isinstance(st_date, datetime.datetime):
+        date_split = st_date.split('-')
+        st_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
+
+    if not isinstance(en_date, datetime.datetime):
+        date_split = en_date.split('-')
+        en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
+
+    # Read in the hru_area from the input parameter file
+    print "Reading HRU areas from %s" % param_file
+    param = prms.parameters(param_file)
+
+    # hru_area is in units of acres
+    hru_area = param.get_var('hru_area')['values']
+    print 'Number of HRU area values:', len(hru_area)
+
+    # Parser for the date information
+    parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
+
+
+    print "Loading MWBM streamflow:"
+    print "\tMedian runoff error from %s/MWBM_RO_HRU50ERR_GCPO_1980-2010" % src_dir
+    ro_err_mwbm = pd.read_csv('%s/MWBM_RO_HRU50ERR_GCPO_1980-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    # ds1 = load_MWBM_streamflow('%s/roHRUminERR_r%s' % (src_dir, region), st_date, en_date)
+
+    print "\tRunoff from %s/MWBM_RO_HRU_GCPO_1980-2010" % src_dir
+    ro_mwbm = pd.read_csv('%s/MWBM_RO_HRU_GCPO_1980-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    # ds2 = load_MWBM_streamflow('%s/roHRUmaxERR_r%s' % (src_dir, region), st_date, en_date)
+
+    print "Writing out HRUs:"
+    for hh in xrange(hrus_by_region[regions.index(region)]):
+        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.flush()
+
+        # Create and convert actual runoff values for HRU
+        ro_hru = pd.DataFrame(ro_mwbm.ix[:,hh])
+        ro_hru.rename(columns={ro_hru.columns[0]: 'runoff'}, inplace=True)
+
+        # Create and convert median runoff error for HRU
+        ro_err_hru = pd.DataFrame(ro_err_mwbm.ix[:,hh])
+        ro_err_hru.rename(columns={ro_err_hru.columns[0]: 'error'}, inplace=True)
+
+        ro_err_hru['min'] = ro_hru['runoff'] - ro_err_hru['error']
+        ro_err_hru['max'] = ro_hru['runoff'] + ro_err_hru['error']
+
+        # Convert from mm/month to cfs (see Evernote for units conversion notes)
+        # hru_area is converted from acres to square kilometers
+        ro_err_hru['min'] = ro_err_hru * hru_area[hh] * 0.0016540916
+        ro_err_hru['min'] = ro_err_hru.index.day
+
+        ro_err_hru['max'] = ro_err_hru * hru_area[hh] * 0.0016540916
+        ro_err_hru['max'] = ro_err_hru.index.day
+
+        ro_err_hru['Year'] = ro_err_hru.index.year
+        ro_err_hru['Month'] = ro_err_hru.index.month
+        ro_err_hru.reset_index(inplace=True)
+        ro_err_hru.drop(['thedate', 'error'], axis=1, inplace=True)
+
+        # Write out the dataset
+        outfile = '%s/r%s_%06d/MWBMerror' % (dst_dir, region, hh)
+        ro_err_hru.to_csv(outfile, sep=' ', float_format='%0.5f', columns=['Year', 'Month', 'min', 'max'],
+                          header=False, index=False)
+    print ''
+
 
 def main():
-    selected_region = '10U'
+    selected_region = 'GCPO'
     src_dir = '/media/scratch/PRMS/datasets/MWBMerr'
     dst_dir = '/media/scratch/PRMS/regions/r%s_byHRU' % selected_region
 
-    param_file = '/media/scratch/PRMS/regions/r10U/input/params/daymet.params'
+    param_file = '/media/scratch/PRMS/regions/r%s/daymet.params' % selected_region
 
     st = datetime.datetime(1980,1,1)
     en = datetime.datetime(2010,12,31)
 
-    pull_by_hru(src_dir, dst_dir, st, en, selected_region, param_file)
+    if selected_region == 'GCPO':
+        pull_by_hru_GCPO(src_dir, dst_dir, st, en, selected_region, param_file)
+    else:
+        pull_by_hru(src_dir, dst_dir, st, en, selected_region, param_file)
 
 if __name__ == '__main__':
     main()
