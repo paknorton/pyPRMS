@@ -342,7 +342,7 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
         # Output HRU into the correct HRU directory
         # outfile format: <dst_dir>/r10U_000000/AETerror
         # HRU numbers are relative to the selected region
-        outfile = '%s/r%s_%06d/AETerror' % (dst_dir, region, (hh-start_idx-1))
+        outfile = '%s/r%s_%06d/AETerror' % (dst_dir, region, (hh-start_idx))
         ds_join.to_csv(outfile, sep=' ', float_format='%0.5f', columns=['year', 'month', 'min', 'max'],
                        header=False, index=False)
 
