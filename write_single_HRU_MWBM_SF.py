@@ -166,7 +166,13 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
         ro_err_hru = pd.DataFrame(ro_err_mwbm.iloc[:,hh])
         ro_err_hru.rename(columns={ro_err_hru.columns[0]: 'error'}, inplace=True)
 
+        # Minimum error value
         ro_err_hru['min'] = ro_hru['runoff'] - ro_err_hru['error'].abs()
+
+        # Sometimes the min value is negative, set those to zero
+        ro_err_hru['min'] = np.where(ro_err_hru['min']<0.0, 0.0, ro_err_hru['min'])
+
+        # Maximum error value
         ro_err_hru['max'] = ro_hru['runoff'] + ro_err_hru['error'].abs()
 
         # Convert from mm/month to cfs (see Evernote for units conversion notes)
