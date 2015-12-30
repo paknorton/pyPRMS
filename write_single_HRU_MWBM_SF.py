@@ -81,8 +81,8 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
 
         # Convert from mm/month to cfs (see Evernote for units conversion notes)
         # hru_area is converted from acres to square kilometers
-        ds1_hru['min'] = ds1_hru * hru_area[hh] * 0.0016540916
-        ds1_hru['min'] = ds1_hru.index.day
+        ds1_hru['min'] = ds1_hru['min'] * hru_area[hh] * 0.0016540916
+        ds1_hru['min'] /= ds1_hru.index.day
         #ds1_hru['min'] = ds1_hru * (hru_area[hh] * 0.00404686) / 2.4465755462
 
         # Create and convert maximum values for HRU
@@ -90,7 +90,7 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
         ds2_hru.rename(columns={ds2_hru.columns[0]: 'max'}, inplace=True)
 
         # Convert from mm/month to cfs (see Evernote for units conversion notes)
-        ds2_hru['max'] = ds2_hru * hru_area[hh] * 0.0016540916
+        ds2_hru['max'] = ds2_hru['max'] * hru_area[hh] * 0.0016540916
         ds2_hru['max'] /= ds2_hru.index.day
         #ds2_hru['max'] = ds2_hru * (hru_area[hh] * 0.00404686) / 2.4465755462
 
@@ -150,7 +150,7 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
     # ds1 = load_MWBM_streamflow('%s/roHRUminERR_r%s' % (src_dir, region), st_date, en_date)
 
     print "\tRunoff from %s/MWBM_RO_HRU_GCPO_1980-2010" % src_dir
-    ro_mwbm = pd.read_csv('%s/MWBM_RO_HRU_GCPO_1980-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    ro_mwbm = pd.read_csv('%s/MWBM_RO_HRU_GCPO_1980-2010' % src_dir , sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
     # ds2 = load_MWBM_streamflow('%s/roHRUmaxERR_r%s' % (src_dir, region), st_date, en_date)
 
     print "Writing out HRUs:"
@@ -159,11 +159,11 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
         sys.stdout.flush()
 
         # Create and convert actual runoff values for HRU
-        ro_hru = pd.DataFrame(ro_mwbm.ix[:,hh])
+        ro_hru = pd.DataFrame(ro_mwbm.iloc[:,hh])
         ro_hru.rename(columns={ro_hru.columns[0]: 'runoff'}, inplace=True)
 
         # Create and convert median runoff error for HRU
-        ro_err_hru = pd.DataFrame(ro_err_mwbm.ix[:,hh])
+        ro_err_hru = pd.DataFrame(ro_err_mwbm.iloc[:,hh])
         ro_err_hru.rename(columns={ro_err_hru.columns[0]: 'error'}, inplace=True)
 
         ro_err_hru['min'] = ro_hru['runoff'] - ro_err_hru['error']
@@ -171,11 +171,11 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
 
         # Convert from mm/month to cfs (see Evernote for units conversion notes)
         # hru_area is converted from acres to square kilometers
-        ro_err_hru['min'] = ro_err_hru * hru_area[hh] * 0.0016540916
-        ro_err_hru['min'] = ro_err_hru.index.day
+        ro_err_hru['min'] = ro_err_hru['min'] * hru_area[hh] * 0.0016540916
+        ro_err_hru['min'] /= ro_err_hru.index.day
 
-        ro_err_hru['max'] = ro_err_hru * hru_area[hh] * 0.0016540916
-        ro_err_hru['max'] = ro_err_hru.index.day
+        ro_err_hru['max'] = ro_err_hru['max'] * hru_area[hh] * 0.0016540916
+        ro_err_hru['max'] /= ro_err_hru.index.day
 
         ro_err_hru['Year'] = ro_err_hru.index.year
         ro_err_hru['Month'] = ro_err_hru.index.month
