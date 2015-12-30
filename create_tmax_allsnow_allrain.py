@@ -146,8 +146,6 @@ def main():
     base_cbh_dir = args.cbhdir
     base_snodas_dir = args.snodasdir
 
-    print 'Given regions:', args.regions, regions
-
     for ridx, rr in enumerate(regions):
         print 'Region: %s' % rr
 

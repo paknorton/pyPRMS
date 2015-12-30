@@ -1093,7 +1093,7 @@ class parameters(object):
                             vals.append(cval)
                     except StopIteration:
                         # Hit the end of the file
-                        continue
+                        pass
 
                     if len(vals) != numval:
                         print '%s: number of values does not match dimension size (%d != %d).. skipping' \
@@ -1737,7 +1737,7 @@ class parameters(object):
             if valtype == 1:
                 fmt = '%s\n'
             elif valtype == 2:
-                #fmt = '%f\n'
+                # fmt = '%f\n'
                 fmt = '%s\n'
             else:
                 fmt = '%s\n'
