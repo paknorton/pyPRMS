@@ -144,9 +144,11 @@ def to_prms_datetime(date):
     return date.strftime('%Y,%m,%d,%H,%M,%S')
 
 
-def read_cbh(filename):
-    # Read a CBH file
-    missing = [-99.0, -999.0]
+def read_cbh(filename, sep=' ', missing_val=[-99.0, -999.0]):
+    """Read a CBH file"""
+
+    if not isinstance(missing_val, list):
+        missing_val = [missing_val]
 
     infile = open(filename, 'r')
     fheader = ''
@@ -161,9 +163,8 @@ def read_cbh(filename):
         else:
             fheader += line
 
-    df1 = pd.read_csv(infile, sep=' ', skipinitialspace=True, header=None,
+    df1 = pd.read_csv(infile, sep=sep, na_values=missing_val, skipinitialspace=True, header=None,
                       date_parser=dparse, parse_dates={'thedate': [0,1,2,3,4,5]}, index_col='thedate')
-
     infile.close()
 
     # Renumber/rename columns to reflect HRU number
@@ -171,15 +172,20 @@ def read_cbh(filename):
     return df1
 
 
-def read_gdp(filename):
+def read_gdp(filename, missing_val=[255.]):
     """Read files that were created from Geodata Portal jobs"""
 
-    gdp_data = pd.read_csv(filename, na_values=[255.0], header=0, skiprows=[0,2])
+    # TODO: Extend this function to handle the metadata on lines 0 and 2
+
+    if not isinstance(missing_val, list):
+        missing_val = [missing_val]
+
+    gdp_data = pd.read_csv(filename, na_values=missing_val, header=0, skiprows=[0,2])
 
     gdp_data.rename(columns={gdp_data.columns[0]:'thedate'}, inplace=True)
     gdp_data['thedate'] = pd.to_datetime(gdp_data['thedate'])
     gdp_data.set_index('thedate', inplace=True)
-
+    return gdp_data
 
 
 # Order to write control file parameters for printing and writing a new control file

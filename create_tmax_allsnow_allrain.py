@@ -4,44 +4,171 @@ import datetime
 import pandas as pd
 import numpy as np
 import prms_lib as prms
-from prms_objfcn import dparse
+# from prms_objfcn import dparse
 
+region_list = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08',
+           'r09', 'r10L', 'r10U', 'r11', 'r12', 'r13', 'r14', 'r15',
+           'r16', 'r17', 'r18']
 
-regions = ['01', '02', '03', '04', '05', '06', '07', '08', '09',
-           '10U', '10L', '11', '12', '13', '14', '15', '16', '17', '18']
-#regions = ['01']
-
-#event_types = ['liquid', 'snow']
-#event_type = 'liquid' # one of snow, liquid
-#region = '01'
-
-base_daymet_dir = '/media/scratch/PRMS/datasets/daymet'
-base_snodas_dir = '/media/scratch/PRMS/datasets/snodasPrecip'
-prms_region_dir = '/media/scratch/PRMS/regions'
+hrus_by_region = [2462, 4827, 9899, 5936, 7182, 2303, 8205, 4449,
+                  1717, 8603, 10299, 7373, 7815, 1958, 3879, 3441,
+                  2664, 11102, 5837]
 
 rain_max = 38.    # based on 90% probability of rain
 rain_min = 34.7   # based on 50% 
 snow_max = 34.25  # based on 50% probability of snow
 snow_min = 28.2   # based on 95%
 
-st = datetime.datetime(2004,1,1)
-en = datetime.datetime(2010,12,31)
+# st = datetime.datetime(2004,1,1)
+# en = datetime.datetime(2010,12,31)
+
+def create_rain_tmax(rainmask, tmax, prcp):
+    """Compute tmax_allrain from a rain mask and observed tmax and prcp from cbh files"""
+    # Fill in any missing days with NAN
+    rainmask = rainmask.resample('D', how='max')
+    rainmask[rainmask > 0.0] = 1
+
+    # Use numpy (np) to multiply df_tmax and df_mask.
+    # For some reason pandas multiply is horribly broken
+    rain_tmax_m1 = pd.np.multiply(tmax,rainmask)
+    rain_tmax_m1[rain_tmax_m1 == 0.0] = np.nan
+
+    # Create secondary mask
+    rain_tmax_m2 = pd.np.multiply(tmax, prcp)
+
+    # Mask out temperatures values outside the range we need
+    rain_tmax_m1[rain_tmax_m1 > rain_max] = np.nan
+    rain_tmax_m1[rain_tmax_m1 < rain_min] = np.nan
+    rain_tmax_m2[rain_tmax_m2 > rain_max] = np.nan
+    rain_tmax_m2[rain_tmax_m2 < rain_min] = np.nan
+
+    # Resample to monthly mean
+    rain_tmax_m1_mon = rain_tmax_m1.resample('M', how='mean')
+
+    # compute mean monthly tmax for each hru
+    rain_tmax_m1_mnmon = rain_tmax_m1_mon.groupby(rain_tmax_m1_mon.index.month).mean()
+
+    # Do the same for the secondary masked set
+    rain_tmax_m2_mon = rain_tmax_m2.resample('M', how='mean')
+    rain_tmax_m2_mnmon = rain_tmax_m2_mon.groupby(rain_tmax_m2_mon.index.month).mean()
+
+    # Where rain_m1_mnmon is NaN replace with value from rain_m2_mnmon if it exists
+    # otherwise replace with default value
+
+    # First replace any Nan entries with a valid entry from rain_tmax_m2_mnmon
+    # Then replace any remaining NaN entries by padding them with the last valid value
+    rain_tmax_final = rain_tmax_m1_mnmon.fillna(value=rain_tmax_m2_mnmon)
+    rain_tmax_final.fillna(value=38., inplace=True)
+
+    rain_tmax_final.index.name = 'Month'
+    return rain_tmax_final
+
+
+def create_snow_tmax(snowmask, tmax, prcp):
+    """Compute tmax_allsnow from a snow mask and observed tmax and prcp from cbh files"""
+    # Fill in any missing days with NAN
+    snowmask = snowmask.resample('D', how='max')
+    snowmask[snowmask > 0.0] = 1
+
+    # Use numpy (np) to multiply df_tmax and df_mask.
+    # For some reason pandas multiply is horribly broken
+    snow_tmax_m1 = pd.np.multiply(tmax,snowmask)
+    snow_tmax_m1[snow_tmax_m1 == 0.0] = np.nan
+
+    # Create secondary mask
+    snow_tmax_m2 = pd.np.multiply(tmax, prcp)
+
+    # Mask out temperatures values outside the range we need
+    snow_tmax_m1[snow_tmax_m1 > snow_max] = np.nan
+    snow_tmax_m1[snow_tmax_m1 < snow_min] = np.nan
+
+    snow_tmax_m2[snow_tmax_m2 > snow_max] = np.nan
+    snow_tmax_m2[snow_tmax_m2 < snow_min] = np.nan
+
+    # Resample to monthly mean
+    snow_tmax_m1_mon = snow_tmax_m1.resample('M', how='mean')
+
+    # compute mean monthly tmax for each hru
+    snow_tmax_m1_mnmon = snow_tmax_m1_mon.groupby(snow_tmax_m1_mon.index.month).mean()
+
+    # Do the same for the secondary masked set
+    snow_tmax_m2_mon = snow_tmax_m2.resample('M', how='mean')
+    snow_tmax_m2_mnmon = snow_tmax_m2_mon.groupby(snow_tmax_m2_mon.index.month).mean()
+
+    # Where snow_m1_mnmon is NaN replace with value from snow_m2_mnmon if it exists
+    # otherwise replace with default value
+
+    # First replace any Nan entries with a valid entry from snow_tmax_m2_mnmon
+    # Then replace any remaining NaN entries by padding them with the last valid value
+    snow_tmax_final = snow_tmax_m1_mnmon.fillna(value=snow_tmax_m2_mnmon)
+    snow_tmax_final.fillna(value=32., inplace=True)
+
+    snow_tmax_final.index.name = 'Month'
+    return snow_tmax_final
 
 
 def main():
-    for rr in regions:
-        print 'Region: r%s' % rr
+    import argparse
 
-        # Open the master input parameter file for this region
-        prms_region_file = '%s/r%s/daymet.control.param' % (prms_region_dir, rr)
-        prms_region_outfile = '%s/r%s/daymet.params.update.tmax_allsnow' % (prms_region_dir, rr)
+    parser = argparse.ArgumentParser(description='Create tmax_allsnow and tmax_allrain_offset for PRMS')
+    parser.add_argument('-c', '--cbhdir', help='Base directory for cbh files by region', required=True)
+    parser.add_argument('-d', '--daterange', help='Starting and ending date (YYYY-MM-DD YYYY-MM-DD)',
+                        nargs='*', metavar=('startDate','endDate'), required=True)
+    parser.add_argument('-o', '--outputfile', help='Output parameter filename')
+    parser.add_argument('-p', '--paramfile', help='Input parameter filename in region(s)')
+    parser.add_argument('-P', '--prcpfile', help='Name of prcp cbh file in region(s)', required=True)
+    parser.add_argument('-r', '--regiondir', help='Base directory for PRMS models by region', required=True)
+    parser.add_argument('-R', '--regions', help='Region(s) to process', nargs='*', required=True)
+    parser.add_argument('-s', '--snodasdir', help='Base directory for snodas files by region', required=True)
+    parser.add_argument('-T', '--tmaxfile', help='Name of tmax cbh file in region(s)', required=True)
 
-        # Open input parameter file
-        params = prms.parameters(prms_region_file)
+    parser.add_argument('--makeparam', help='Make parameter diff files', action='store_true')
+    parser.add_argument('--makemerge', help='Create merged file from selected regions', action='store_true')
 
-        tmaxfile = '%s/r%s/daymet_1980_2011_tmax.cbh' % (base_daymet_dir, rr)
-        prcpfile = '%s/r%s/daymet_1980_2011_prcp.cbh' % (base_daymet_dir, rr)
+    args = parser.parse_args()
 
+    # Verify and set the date range
+    if len(args.daterange) < 2:
+        print 'ERROR: A start date or start and ending date must be specified'
+        exit()
+    else:
+        st = prms.to_datetime(args.daterange[0])
+        en = prms.to_datetime(args.daterange[1])
+        print 'Date Range: %s to %s' % (args.daterange[0], args.daterange[1])
+
+    if len(args.regions) == 0:
+        print 'ERROR: Must supply at least one region to process'
+        exit()
+    else:
+        regions = args.regions
+
+    prms_region_dir = args.regiondir
+    base_cbh_dir = args.cbhdir
+    base_snodas_dir = args.snodasdir
+
+    print 'Given regions:', args.regions, regions
+
+    for ridx, rr in enumerate(regions):
+        print 'Region: %s' % rr
+
+        # Set various files
+        rainmaskfile = '%s/%s/liquid_only_SNODASPRCP_Daily_%s_byHRU_2004-01-01_2014-12-31.csv' % \
+                       (base_snodas_dir, rr, rr)
+        snowmaskfile = '%s/%s/snow_only_SNODASPRCP_Daily_%s_byHRU_2004-01-01_2014-12-31.csv' % \
+                       (base_snodas_dir, rr, rr)
+
+        tmaxfile = '%s/%s/%s' % (base_cbh_dir, rr, args.tmaxfile)
+        prcpfile = '%s/%s/%s' % (base_cbh_dir, rr, args.prcpfile)
+
+        if args.makeparam:
+            prms_region_file = '%s/%s/%s' % (prms_region_dir, rr, args.paramfile)
+            prms_region_outfile = '%s/%s/%s' % (prms_region_dir, rr, args.outputfile)
+
+            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # Open input parameter file for current region
+            params = prms.parameters(prms_region_file)
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Read the daymet tmax and prcp cbh file
         # Read the tmax CBH file and restrict to the given date range
         df_tmax = prms.read_cbh(tmaxfile)
@@ -57,121 +184,52 @@ def main():
         df_prcp[df_prcp == 0.0] = np.nan
         df_prcp[df_prcp > 0.0] = 1
 
-
         # Load the SNODAS precip masks
-        rainmaskfile = '%s/r%s/liquid_only_SNODASPRCP_Daily_r%s_byHRU_2004-01-01_2014-12-31.csv' % (base_snodas_dir, rr, rr)
-        snowmaskfile = '%s/r%s/snow_only_SNODASPRCP_Daily_r%s_byHRU_2004-01-01_2014-12-31.csv' % (base_snodas_dir, rr, rr)
-
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Load the rain (or liquid) precip mask
         print '\tCreate rain mask'
-        rain_mask =  pd.read_csv(rainmaskfile, na_values=['MAXIMUM(none)', 255.0], header=0, skiprows=[0,2])
-
-        rain_mask.rename(columns={rain_mask.columns[0]:'thedate'}, inplace=True)
-        rain_mask['thedate'] = pd.to_datetime(rain_mask['thedate'])
-        rain_mask.set_index('thedate', inplace=True)
+        rain_mask = prms.read_gdp(rainmaskfile, missing_val=255.)
         rain_mask = rain_mask[st:en]
-
-        # Fill in any missing days with NAN
-        rain_mask = rain_mask.resample('D', how='max')
-        rain_mask[rain_mask > 0.0] = 1
-
-        # Use numpy (np) to multiply df_tmax and df_mask.
-        # For some reason pandas multiply is horribly broken
-        rain_tmax_m1 = pd.np.multiply(df_tmax,rain_mask)
-        rain_tmax_m1[rain_tmax_m1 == 0.0] = np.nan
-
-        # Create secondary mask
-        rain_tmax_m2 = pd.np.multiply(df_tmax, df_prcp)
-
-        # Mask out temperatures values outside the range we need
-        rain_tmax_m1[rain_tmax_m1 > rain_max] = np.nan
-        rain_tmax_m1[rain_tmax_m1 < rain_min] = np.nan
-        rain_tmax_m2[rain_tmax_m2 > rain_max] = np.nan
-        rain_tmax_m2[rain_tmax_m2 < rain_min] = np.nan
-
-        # Resample to monthly mean
-        rain_tmax_m1_mon = rain_tmax_m1.resample('M', how='mean')
-
-        # compute mean monthly tmax for each hru
-        rain_tmax_m1_mnmon = rain_tmax_m1_mon.groupby(rain_tmax_m1_mon.index.month).mean()
-
-        # Do the same for the secondary masked set
-        rain_tmax_m2_mon = rain_tmax_m2.resample('M', how='mean')
-        rain_tmax_m2_mnmon = rain_tmax_m2_mon.groupby(rain_tmax_m2_mon.index.month).mean()
-
-        # Where rain_m1_mnmon is NaN replace with value from rain_m2_mnmon if it exists
-        # otherwise replace with default value
-
-        # First replace any Nan entries with a valid entry from rain_tmax_m2_mnmon
-        # Then replace any remaining NaN entries by padding them with the last valid value
-        rain_tmax_final = rain_tmax_m1_mnmon.fillna(value=rain_tmax_m2_mnmon)
-        rain_tmax_final.fillna(value=38., inplace=True)
-
-        rain_tmax_final.index.name = 'HRU'
-
+        rain_tmax_final = create_rain_tmax(rain_mask, df_tmax, df_prcp)
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Load the snow precip mask
         print '\tCreate snow mask'
-        snow_mask =  pd.read_csv(snowmaskfile, na_values=['MAXIMUM(none)', 255.0], header=0, skiprows=[0,2])
-
-        snow_mask.rename(columns={snow_mask.columns[0]:'thedate'}, inplace=True)
-        snow_mask['thedate'] = pd.to_datetime(snow_mask['thedate'])
-        snow_mask.set_index('thedate', inplace=True)
+        snow_mask = prms.read_gdp(snowmaskfile, missing_val=255.)
         snow_mask = snow_mask[st:en]
+        snow_tmax_final = create_snow_tmax(snow_mask, df_tmax, df_prcp)
 
-        # Fill in any missing days with NAN
-        snow_mask = snow_mask.resample('D', how='max')
-        snow_mask[snow_mask > 0.0] = 1
-
-        # Use numpy (np) to multiply df_tmax and df_mask.
-        # For some reason pandas multiply is horribly broken
-        snow_tmax_m1 = pd.np.multiply(df_tmax,snow_mask)
-        snow_tmax_m1[snow_tmax_m1 == 0.0] = np.nan
-
-        # Create secondary mask
-        snow_tmax_m2 = pd.np.multiply(df_tmax, df_prcp)
-
-        # Mask out temperatures values outside the range we need
-        snow_tmax_m1[snow_tmax_m1 > snow_max] = np.nan
-        snow_tmax_m1[snow_tmax_m1 < snow_min] = np.nan
-
-        snow_tmax_m2[snow_tmax_m2 > snow_max] = np.nan
-        snow_tmax_m2[snow_tmax_m2 < snow_min] = np.nan
-
-        # Resample to monthly mean
-        snow_tmax_m1_mon = snow_tmax_m1.resample('M', how='mean')
-
-        # compute mean monthly tmax for each hru
-        snow_tmax_m1_mnmon = snow_tmax_m1_mon.groupby(snow_tmax_m1_mon.index.month).mean()
-
-        # Do the same for the secondary masked set
-        snow_tmax_m2_mon = snow_tmax_m2.resample('M', how='mean')
-        snow_tmax_m2_mnmon = snow_tmax_m2_mon.groupby(snow_tmax_m2_mon.index.month).mean()
-
-        # Where snow_m1_mnmon is NaN replace with value from snow_m2_mnmon if it exists
-        # otherwise replace with default value
-
-        # First replace any Nan entries with a valid entry from snow_tmax_m2_mnmon
-        # Then replace any remaining NaN entries by padding them with the last valid value
-        snow_tmax_final = snow_tmax_m1_mnmon.fillna(value=snow_tmax_m2_mnmon)
-        snow_tmax_final.fillna(value=32., inplace=True)
-
-        snow_tmax_final.index.name = 'HRU'
-
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Compute the tmax_allrain_offset value
         rain_tmax_offset = pd.np.subtract(rain_tmax_final, snow_tmax_final)
 
-        print '\tUpdate parameters and write out difference file'
-        # Update tmax_allsnow and tmax_allrain_offset
-        params.replace_values('tmax_allsnow', snow_tmax_final.T.values)
-        params.replace_values('tmax_allrain_offset', rain_tmax_offset.T.values)
+        if args.makeparam:
+            # Update tmax_allsnow and tmax_allrain_offset in the input parameter object
+            print '\tUpdate parameters and write out difference file'
+            params.replace_values('tmax_allsnow', snow_tmax_final.T.values)
+            params.replace_values('tmax_allrain_offset', rain_tmax_offset.T.values)
 
-        # Write out new input parameter file
-        #params.write_param_file(prms_region_outfile)
-        params.write_select_param_file(prms_region_outfile, ['tmax_allsnow', 'tmax_allrain_offset'])
+            # Write out new input parameter file
+            params.write_select_param_file(prms_region_outfile, ['tmax_allsnow', 'tmax_allrain_offset'])
 
+        if args.makemerge:
+            # Rename columns to their national id number
+            # start_idx is zero-based and is convert
+            start_idx = sum(hrus_by_region[0:region_list.index(rr)])
+            snow_tmax_final.rename(columns=lambda x: snow_tmax_final.columns.get_loc(x)+start_idx+1, inplace=True)
+            rain_tmax_offset.rename(columns=lambda x: rain_tmax_offset.columns.get_loc(x)+start_idx+1, inplace=True)
+
+            if ridx == 0:
+                tmax_allsnow = snow_tmax_final
+                tmax_allrain_offset = rain_tmax_offset
+            else:
+                tmax_allsnow = pd.concat([tmax_allsnow, snow_tmax_final], axis=1)
+                tmax_allrain_offset = pd.concat([tmax_allrain_offset, rain_tmax_offset], axis=1)
+
+    # If requested, write out the merge files
+    if args.makemerge:
+        tmax_allsnow.to_csv('%s/tmax_allsnow_merged.csv' % base_snodas_dir, index=True, float_format='%7.4f')
+        tmax_allrain_offset.to_csv('%s/tmax_allrain_offset_merged.csv' % base_snodas_dir, index=True, float_format='%7.4f')
 
 if __name__ == '__main__':
     main()
