@@ -146,11 +146,11 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
 
     print "Loading MWBM streamflow:"
     print "\tMedian runoff error from %s/MWBM_RO_HRU50ERR_GCPO_1980-2010" % src_dir
-    ro_err_mwbm = pd.read_csv('%s/MWBM_RO_HRU50ERR_GCPO_1980-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    ro_err_mwbm = pd.read_csv('%s/MWBM_RO_HRU50ERR_GCPO_1980-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
     # ds1 = load_MWBM_streamflow('%s/roHRUminERR_r%s' % (src_dir, region), st_date, en_date)
 
     print "\tRunoff from %s/MWBM_RO_HRU_GCPO_1980-2010" % src_dir
-    ro_mwbm = pd.read_csv('%s/MWBM_RO_HRU_GCPO_1980-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    ro_mwbm = pd.read_csv('%s/MWBM_RO_HRU_GCPO_1980-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
     # ds2 = load_MWBM_streamflow('%s/roHRUmaxERR_r%s' % (src_dir, region), st_date, en_date)
 
     print "Writing out HRUs:"

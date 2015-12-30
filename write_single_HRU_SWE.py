@@ -192,10 +192,10 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 
     print "\tSNODAS SWE.."
-    swe_snodas = pd.read_csv('%s/SNODAS_SWE_GCPO_2003-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    swe_snodas = pd.read_csv('%s/SNODAS_SWE_GCPO_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
 
     print "\tMWBM SWE.."
-    swe_mwbm = pd.read_csv('%s/MWBM_SWE_GCPO_2003-2010', sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    swe_mwbm = pd.read_csv('%s/MWBM_SWE_GCPO_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
 
     print "Writing out HRUs:"
     for hh in xrange(hrus_by_region[regions.index(region)]):
