@@ -190,7 +190,7 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
 
         # Write out the dataset
         outfile = '%s/r%s_%06d/MWBMerror' % (dst_dir, region, hh)
-        ro_err_hru.to_csv(outfile, sep=' ', float_format='%0.5f', columns=['Year', 'Month', 'min', 'max'],
+        ro_err_hru.to_csv(outfile, sep=' ', float_format='%.3f', columns=['Year', 'Month', 'min', 'max'],
                           header=False, index=False)
     print ''
 

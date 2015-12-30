@@ -143,6 +143,45 @@ def to_prms_datetime(date):
        YYYY,MM,DD,HH,mm,ss"""
     return date.strftime('%Y,%m,%d,%H,%M,%S')
 
+
+def read_cbh(filename):
+    # Read a CBH file
+    missing = [-99.0, -999.0]
+
+    infile = open(filename, 'r')
+    fheader = ''
+
+    for ii in range(0,3):
+        line = infile.readline()
+
+        if line[0:4] in ['prcp', 'tmax', 'tmin']:
+            # Change the number of HRUs included to one
+            numhru = int(line[5:])
+            fheader += line[0:5] + ' 1\n'
+        else:
+            fheader += line
+
+    df1 = pd.read_csv(infile, sep=' ', skipinitialspace=True, header=None,
+                      date_parser=dparse, parse_dates={'thedate': [0,1,2,3,4,5]}, index_col='thedate')
+
+    infile.close()
+
+    # Renumber/rename columns to reflect HRU number
+    df1.rename(columns=lambda x: df1.columns.get_loc(x)+1, inplace=True)
+    return df1
+
+
+def read_gdp(filename):
+    """Read files that were created from Geodata Portal jobs"""
+
+    gdp_data = pd.read_csv(filename, na_values=[255.0], header=0, skiprows=[0,2])
+
+    gdp_data.rename(columns={gdp_data.columns[0]:'thedate'}, inplace=True)
+    gdp_data['thedate'] = pd.to_datetime(gdp_data['thedate'])
+    gdp_data.set_index('thedate', inplace=True)
+
+
+
 # Order to write control file parameters for printing and writing a new control file
 ctl_order = ['start_time', 'end_time', 'print_debug', 'executable_desc', 'executable_model', 'model_mode',
              'et_module', 'precip_module', 'soilzone_module', 'solrad_module', 'srunoff_module',
