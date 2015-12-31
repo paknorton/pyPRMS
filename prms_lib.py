@@ -936,8 +936,10 @@ class parameters(object):
         # 2) read file contents
 
         self.__isloaded = False
+        self.__validparamsloaded = False    # Valid params are loaded by load_valid_parameters()
         self.__filename = filename
         self.__paramdict = {}
+        self.__validparams = {}             # Dictionary of valid parameters from *.par_name file
         self.__header = []
         self.__vardict = {}
         self.__vardirty = True      # Flag to trigger rebuild of self.__vardict
@@ -951,6 +953,21 @@ class parameters(object):
     def __getattr__(self, item):
         # Undefined attributes will look up the given parameter
         return self.get_var(item)
+
+    @property
+    def dimensions(self):
+        """Return a list of dimensions"""
+        if not self.__isloaded:
+            self.load_file()
+
+        # dimlist = []
+        # parent = self.__paramdict['Dimensions']
+        #
+        # for kk,vv in parent.iteritems():
+        #     dimlist.append((kk, vv))
+        #
+        # return dimlist
+        return self.__paramdict['Dimensions']
 
     @property
     def filename(self):
@@ -974,7 +991,6 @@ class parameters(object):
         """Returns the headers read from the parameter file"""
         return self.__header
 
-
     @property
     def vars(self):
         """Return a structure of loaded variables"""
@@ -989,20 +1005,381 @@ class parameters(object):
 
         return varlist
 
-    @property
-    def dimensions(self):
-        """Return a list of dimensions"""
+    def add_param(self, name, dimnames, valuetype, values):
+        # Add a new parameter
         if not self.__isloaded:
             self.load_file()
 
-        # dimlist = []
-        # parent = self.__paramdict['Dimensions']
-        #
-        # for kk,vv in parent.iteritems():
-        #     dimlist.append((kk, vv))
-        #
-        # return dimlist
-        return self.__paramdict['Dimensions']
+        # Check that valuetype is valid
+        if valuetype not in [1, 2, 3, 4]:
+            print "ERROR: Invalid valuetype was specified"
+            return
+
+        # Check that total dimension size matches number of values supplied
+        if isinstance(dimnames, list):
+            # multiple dimensions supplied
+            tsize = 1
+
+            for dd in dimnames:
+                tsize *= self.get_dim(dd)
+
+            if tsize != len(values):
+                print "ERROR: Number of values (%d) does not match size of dimensions (%d)" % (len(values), tsize)
+                return
+        else:
+            # single dimension
+            tsize = self.get_dim(dimnames)
+
+            if isinstance(values, list):
+                print "ERROR: Scalar dimensions specified but of list of values given"
+                return
+
+        parent = self.__paramdict['Parameters']
+
+        # Make sure the parameter doesn't already exist
+        if self.var_exists(name):
+            print 'ERROR: Parameter name already exists, use replace_values() instead.'
+            return
+
+        # for ee in parent:
+        #     if ee['name'] == name:
+        #         print 'ERROR: Parameter name already exists, use replace_values() instead.'
+        #         return
+
+        if isinstance(dimnames, list):
+            parent.append({'name': name, 'dimnames': dimnames, 'valuetype': valuetype, 'values': values})
+        else:
+            parent.append({'name': name, 'dimnames': [dimnames], 'valuetype': valuetype, 'values': values})
+
+        self.rebuild_vardict()
+
+    def add_param_from_file(self, fname):
+        """Add a parameter from a file. The file should have only a single
+           parameter in it."""
+
+        tmp_params = []
+
+        infile = open(fname, 'r')
+        rawdata = infile.read().splitlines()
+        infile.close()
+
+        it = iter(rawdata)
+
+        for line in it:
+            dupskip = False
+
+            if line == self.__rowdelim:
+                # Skip to next iteration when a row delimiter is found
+                continue
+            else:
+                vardict = {}    # temporary to build variable info
+                varname = line.split(' ')[0]
+
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                # Check for duplicate variable name
+                for kk in tmp_params:
+                    # Check for duplicate variables (that couldn't happen! :))
+                    # If it does skip to the next variable in the parameter file
+                    if varname == kk['name']:
+                        print '%s: Duplicate parameter name.. skipping' \
+                              % varname
+                        dupskip = True
+                        break
+
+                if dupskip:
+                    try:
+                        while next(it) != self.__rowdelim:
+                            pass
+                    except StopIteration:
+                        # We hit the end of the file
+                        pass
+                    continue
+                # END check for duplicate varnames
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                vardict['name'] = varname
+
+                # Read in the dimension names
+                numdim = int(next(it))    # number of dimensions for this variable
+                vardict['dimnames'] = [next(it) for dd in xrange(numdim)]
+
+                # Lookup dimension size for each dimension name
+                arr_shp = [self.__paramdict['Dimensions'][dd] for dd in vardict['dimnames']]
+
+                numval = int(next(it))  # Denotes the number of data values we have. Should match dimensions.
+                valuetype = int(next(it))   # Datatype of the values
+                vardict['valuetype'] = int(valuetype)
+
+                try:
+                    # Read in the data values
+                    vals = []
+
+                    while True:
+                        cval = next(it)
+
+                        if cval == self.__rowdelim or cval.strip() == '':
+                            break
+                        vals.append(cval)
+                except StopIteration:
+                    # Hit the end of the file
+                    continue
+
+                if len(vals) != numval:
+                    print '%s: number of values does not match dimension size (%d != %d).. skipping' \
+                          % (varname, len(vals), numval)
+                else:
+                    # Convert the values to the correct datatype
+                    # 20151118 PAN: found a value of 1e+05 in nhm_id for r17 caused this to fail
+                    #               even though manaully converting the value to int works.
+                    try:
+                        if valuetype == 1:      # integer
+                            vals = [int(vals) for vals in vals]
+                        elif valuetype == 2:    # float
+                            vals = [float(vals) for vals in vals]
+                    except ValueError:
+                        print "%s: value type and defined type (%s) don't match" \
+                              % (varname, self.__valtypes[valuetype])
+
+                    # Add to dictionary as a numpy array
+                    vardict['values'] = np.array(vals).reshape(arr_shp)
+                    tmp_params.append(vardict)
+
+        # Add or replace parameters depending on whether they already exist
+        for pp in tmp_params:
+            if self.var_exists(pp['name']):
+                print "Replacing existing parameter"
+                self.replace_values(pp['name'], pp['values'], pp['dimnames'])
+            else:
+                print "Adding new parameter"
+                self.add_param(pp['name'], pp['dimnames'], pp['valuetype'], pp['values'])
+
+    def check_var(self, varname):
+        # Check a variable to see if the number of values it has is
+        # consistent with the given dimensions
+
+        if not self.__isloaded:
+            self.load_file()
+
+        thevar = self.get_var(varname)
+
+        # Get the defined size for each dimension used by the variable
+        total_size = 1
+        for dd in thevar['dimnames']:
+            total_size *= self.get_dim(dd)
+
+        if thevar['values'].size == total_size:
+            # The number of values for the defined dimensions match
+            print '%s: OK' % varname
+        else:
+            print '%s: BAD' % varname
+
+    def check_all_vars(self):
+        """Check all parameter variables for proper array size"""
+        if not self.__isloaded:
+            self.load_file()
+
+        parent = self.__paramdict['Parameters']
+
+        for ee in parent:
+            self.check_var(ee['name'])
+
+    def check_all_module_vars(self, fname):
+        """Given a .par_name file verify whether all needed parameters are in the parameter file"""
+
+        module_dict = get_module_parameters(fname)
+
+        for kk, vv in module_dict.iteritems():
+            print 'Module:', kk
+
+            for pp in vv:
+                if not self.var_exists(pp):
+                    print '\t%s: MISSING' % pp
+
+    def copy_param(self, varname, filename):
+        """Copies selected varname from given src input parameter file (filename).
+        The incoming parameter is verified to have the same dimensions and sizes as
+        the destination. This method is intended to work with full parameter files.
+        To copy parameters from partial parameter files use add_param_from_file()."""
+
+        # TODO: Expand this handle one or more varnames
+        srcparamfile = parameters(filename)
+        srcparam = srcparamfile.get_var(varname)
+
+        if self.var_exists(srcparam['name']):
+            print 'Replacing existing parameter'
+            self.replace_values(srcparam['name'], srcparam['values'], srcparam['dimnames'])
+        else:
+            print 'Adding new parameter'
+            self.add_param(srcparam['name'], srcparam['dimnames'], srcparam['valuetype'], srcparam['values'])
+        del(srcparamfile)
+
+    def distribute_mean_value(self, varname, new_mean):
+        #def redistribute_mean(old_vals, new_mean):
+        # Redistribute mean value to set of multiple initial values
+        # see Hay and Umemoto, 2006 (p. 11)
+
+        old_vals = self.get_var(varname)['values']
+        if len(old_vals) > 1:
+            # This parameter is a list of values
+            ZC = 10.    # Constant to avoid zero values
+            new_vals = []
+
+            old_mean = sum(old_vals) / float(len(old_vals))
+
+            for vv in old_vals:
+                new_vals.append((((new_mean + ZC) * (vv + ZC)) / (old_mean + ZC)) - ZC)
+
+            self.replace_values(varname, new_vals)
+        else:
+            self.replace_values(varname, new_mean)
+
+    def expand_params(self):
+        if not self.__validparamsloaded:
+            print "ERROR: Valid parameters not loaded, use load_valid_parameters() to load"
+            return None
+
+        # 1) Build dictionary of valid modules
+        # 2) TODO: Check valid modules against modules used by current parameter file
+        # 3) Check that all parameters required by modules are present and expand them (add as necessary)
+        #    3a) Handle parameters that need conversion and/or renaming (e.g. soil_rechr_max->soil_rechr_max_frac)
+        #    3b) Missing parameters should be added with default values
+        #    3c) Existing parameters should be expanded in place
+        # 4) Remove any remaining deprecated or non-needed parameters
+        # 5) Check parameter integrity
+
+        param_type = {'long': 1, 'float': 2, 'double': 3, 'string': 4}
+
+        # Deprecated parameter relationships
+        depr_params = {'dprst_area': 'dprst_frac',
+                       'hru_percent_imperv': 'imperv_frac',
+                       'soil_moist_init': 'soil_moist_init_frac',
+                       'soil_rechr_init': 'soil_rechr_init_frac',
+                       'soil_rechr_max': 'soil_rechr_max_frac',
+                       'sro_to_dprst': 'sro_to_dprst_perv',
+                       'ssstor_init': 'ssstor_init_frac',
+                       'tmax_allrain': 'tmax_allrain_offset'}
+
+        # Build dictionary of modules with associated parameters
+        module_dict = {}
+
+        for pp, vv in self.__validparams.iteritems():
+            cmodule = vv['Module']
+
+            if cmodule not in module_dict:
+                module_dict[cmodule] = []
+            module_dict[cmodule].append(pp)
+
+        # Iterator through parameters
+        if not self.__isloaded:
+            self.load_file()
+
+        cparams = Set(self.vars)
+        vparams = Set(self.__validparams.keys())
+
+        # Parameters common to the deprecated params (depr_params) and the current input parameters (cparams)
+        conv_params = Set(depr_params.keys()).intersection(cparams)
+
+        # Convert (as necessary) and rename deprecated parameters to new names
+        # This only converts existing data, expansion is done later
+        for cc in conv_params:
+            if cc == 'soil_rechr_max':
+                # Convert with soil_rechr_max_frac = soil_rechr_max / soil_moist_max
+                newparam = self.__validparams[depr_params[cc]]
+                newarr = self.get_var(cc)['values'] / self.get_var('soil_moist_max')['values']
+                self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
+                self.remove_param(cc)
+            elif cc == 'dprst_area':
+                # Convert with dprst_frac = dprst_area / hru_area
+                newparam = self.__validparams[depr_params[cc]]
+                newarr = self.get_var(cc)['values'] / self.get_var('hru_area')['values']
+                self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
+                self.remove_param(cc)
+            elif cc == 'tmax_allrain':
+                # Convert with tmax_allrain_offset = tmax_allrain - tmax_allsnow
+                newparam = self.__validparams[depr_params[cc]]
+                newarr = self.get_var(cc)['values'] - self.get_var('tmax_allsnow')['values']
+                self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
+                self.remove_param(cc)
+            else:
+                # Rename any other deprecated params
+                # TODO: Many of the new _frac parameters need to be handled individually
+                self.rename_param(cc, depr_params[cc])
+
+        # Check for any remaining vparams that are missing from cparams.
+        # These will be created with default values
+        cparams = Set(self.vars)
+        def_params = vparams.difference(cparams)
+        # print 'New parameters to create with default value:', def_params
+
+        for pp in def_params:
+            newparam = self.__validparams[pp]
+            newarr = np.asarray(newparam['Default'])
+
+            # Compute new dimension size
+            newsize = 1
+            for dd in newparam['Dimensions']:
+                newsize *= self.get_dim(dd)
+
+            # Create new array, repeating default value to fill it
+            newarr = np.resize(newarr, newsize)
+            self.add_param(pp, newparam['Dimensions'], param_type[newparam['Type']], newarr)
+
+        # Create set of cparams that are not needed by modules
+        # Not used for now but it could be used to strip out unneeded additional parameters
+        addl_params = cparams.difference(vparams)
+        print 'cparams not in validparams:', addl_params
+        print '-'*40
+
+        for ee in vparams:
+            cvar = self.get_var(ee)
+            cname = cvar['name']
+
+            # Check for changed dimensionality
+            cdimnames = cvar['dimnames']
+            vdimnames = self.__validparams[cname]['Dimensions']
+
+            if Set(vdimnames).issubset(Set(cdimnames)):
+                # print "%s: No dimensionality change" % cname
+                pass
+            else:
+                # Parameter has a change in dimensionality
+
+                # Compute new dimension size
+                newsize = 1
+                for dd in vdimnames:
+                    newsize *= self.get_dim(dd)
+
+                # Create new array, repeating original values to fill it
+                newarr = np.resize(cvar['values'], newsize)
+
+                self.replace_values(cname, newarr, vdimnames)
+        self.rebuild_vardict()
+        return None
+
+    def get_dim(self, dimname):
+        # Return the size of the specified dimension
+
+        if not self.__isloaded:
+            self.load_file()
+
+        parent = self.__paramdict['Dimensions']
+
+        if dimname in parent:
+            return parent[dimname]
+        return None
+
+    def get_var(self, varname):
+        # Return the given variable
+
+        if not self.__isloaded:
+            self.load_file()
+
+        parent = self.__paramdict['Parameters']
+
+        for ee in parent:
+            if ee['name'] == varname:
+                return ee
+        return None
 
     def load_file(self):
         # Read the parameter file into memory and parse it
@@ -1119,386 +1496,90 @@ class parameters(object):
         self.rebuild_vardict()
 
         self.__isloaded = True
-    # END **** read_params()
 
-    def rebuild_vardict(self):
-        # Build the vardict dictionary (links varname to array index in self.__paramdict)
-        self.__vardict = {}
-        for idx, vname in enumerate(self.__paramdict['Parameters']):
-            self.__vardict[vname['name']] = idx
-        self.__vardirty = False
+    def load_valid_parameters(self, fname):
+        """Given a .par_name file (generated by prms -print) returns a dictionary
+           of valid parameters. Returns None if file cannot be opened"""
 
-    def get_var(self, varname):
-        # Return the given variable
+        self.__validparams = {}
+        self.__validparamsloaded = False    # In case we're reloading valid parameters
 
-        if not self.__isloaded:
-            self.load_file()
+        ignore_params = ['hru_lon', 'hru_x', 'hru']
 
-        parent = self.__paramdict['Parameters']
-
-        for ee in parent:
-            if ee['name'] == varname:
-                return ee
-        return None
-
-    def get_dim(self, dimname):
-        # Return the size of the specified dimension
-
-        if not self.__isloaded:
-            self.load_file()
-
-        parent = self.__paramdict['Dimensions']
-
-        if dimname in parent:
-            return parent[dimname]
-        return None
-
-
-    def add_param(self, name, dimnames, valuetype, values):
-        # Add a new parameter
-        if not self.__isloaded:
-            self.load_file()
-
-        # Check that valuetype is valid
-        if valuetype not in [1, 2, 3, 4]:
-            print "ERROR: Invalid valuetype was specified"
-            return
-
-        # Check that total dimension size matches number of values supplied
-        if isinstance(dimnames, list):
-            # multiple dimensions supplied
-            tsize = 1
-
-            for dd in dimnames:
-                tsize *= self.get_dim(dd)
-
-            if tsize != len(values):
-                print "ERROR: Number of values (%d) does not match size of dimensions (%d)" % (len(values), tsize)
-                return
+        # Create parameter default ranges file from from PRMS -print results
+        try:
+            infile = open(fname, 'r')
+        except IOError as err:
+            print "Unable to open file\n", err
+            return None
         else:
-            # single dimension
-            tsize = self.get_dim(dimnames)
+            rawdata = infile.read().splitlines()
+            infile.close()
 
-            if isinstance(values, list):
-                print "ERROR: Scalar dimensions specified but of list of values given"
-                return
+            it = iter(rawdata)
 
-        parent = self.__paramdict['Parameters']
+            for line in it:
+                if line == '--------------- PARAMETERS ---------------':
+                    break
 
-        # Make sure the parameter doesn't already exist
-        if self.var_exists(name):
-            print 'ERROR: Parameter name already exists, use replace_values() instead.'
-            return
+            toss_param = False  # Trigger for removing unwanted parameters
 
-        # for ee in parent:
-        #     if ee['name'] == name:
-        #         print 'ERROR: Parameter name already exists, use replace_values() instead.'
-        #         return
+            for line in it:
+                flds = line.split(':')
 
-        if isinstance(dimnames, list):
-            parent.append({'name': name, 'dimnames': dimnames, 'valuetype': valuetype, 'values': values})
-        else:
-            parent.append({'name': name, 'dimnames': [dimnames], 'valuetype': valuetype, 'values': values})
+                if len(flds) < 2:
+                    continue
 
-        self.rebuild_vardict()
+                key = flds[0].strip()
+                val = flds[1].strip()
 
+                # Only need 'Name' and 'Module' information
+                if key == 'Name':
+                    if toss_param:
+                        # Remove prior parameter if it was not wanted
+                        del self.__validparams[cparam]
+                        toss_param = False
 
-    def add_param_from_file(self, fname):
-        """Add a parameter from a file. The file should have only a single
-           parameter in it."""
-
-        tmp_params = []
-
-        infile = open(fname, 'r')
-        rawdata = infile.read().splitlines()
-        infile.close()
-
-        it = iter(rawdata)
-
-        for line in it:
-            dupskip = False
-
-            if line == self.__rowdelim:
-                # Skip to next iteration when a row delimiter is found
-                continue
-            else:
-                vardict = {}    # temporary to build variable info
-                varname = line.split(' ')[0]
-
-                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                # Check for duplicate variable name
-                for kk in tmp_params:
-                    # Check for duplicate variables (that couldn't happen! :))
-                    # If it does skip to the next variable in the parameter file
-                    if varname == kk['name']:
-                        print '%s: Duplicate parameter name.. skipping' \
-                              % varname
-                        dupskip = True
-                        break
-
-                if dupskip:
-                    try:
-                        while next(it) != self.__rowdelim:
-                            pass
-                    except StopIteration:
-                        # We hit the end of the file
+                    cparam = val    # Save parameter name for the remaining information
+                    self.__validparams[cparam] = {}
+                elif key == 'Module':
+                    if val == 'setup':
+                        # Don't want to include parameters from the setup module
+                        toss_param = True
+                    self.__validparams[cparam][key] = val
+                elif key == 'Ndimen':
+                    # Number of dimensions is superfluous; don't store
+                    pass
+                elif key == 'Dimensions':
+                    # Get the dimension names; discard the sizes
+                    dnames = [xx.split('-')[0].strip() for xx in val.split(',')]
+                    self.__validparams[cparam][key] = dnames
+                elif key == 'Size':
+                    # Don't need the total parameter size
+                    pass
+                elif key == 'Type':
+                    cparam_type = val   # needed to convert max, min, and default values
+                    self.__validparams[cparam][key] = val
+                elif key == 'Units':
+                    if cparam_type == 'string':
+                        # Units for strings are 'none'; no reason to store
                         pass
-                    continue
-                # END check for duplicate varnames
-                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-                vardict['name'] = varname
-
-                # Read in the dimension names
-                numdim = int(next(it))    # number of dimensions for this variable
-                vardict['dimnames'] = [next(it) for dd in xrange(numdim)]
-
-                # Lookup dimension size for each dimension name
-                arr_shp = [self.__paramdict['Dimensions'][dd] for dd in vardict['dimnames']]
-
-                numval = int(next(it))  # Denotes the number of data values we have. Should match dimensions.
-                valuetype = int(next(it))   # Datatype of the values
-                vardict['valuetype'] = int(valuetype)
-
-                try:
-                    # Read in the data values
-                    vals = []
-
-                    while True:
-                        cval = next(it)
-
-                        if cval == self.__rowdelim or cval.strip() == '':
-                            break
-                        vals.append(cval)
-                except StopIteration:
-                    # Hit the end of the file
-                    continue
-
-                if len(vals) != numval:
-                    print '%s: number of values does not match dimension size (%d != %d).. skipping' \
-                          % (varname, len(vals), numval)
+                elif key == 'Width':
+                    # Width currently isn't populated
+                    pass
+                elif key in ['Max', 'Min', 'Default']:
+                    if cparam_type == 'float':
+                        self.__validparams[cparam][key] = float(val)
+                    elif cparam_type == 'long':
+                        self.__validparams[cparam][key] = int(val)
+                    else:
+                        self.__validparams[cparam][key] = val
                 else:
-                    # Convert the values to the correct datatype
-                    # 20151118 PAN: found a value of 1e+05 in nhm_id for r17 caused this to fail
-                    #               even though manaully converting the value to int works.
-                    try:
-                        if valuetype == 1:      # integer
-                            vals = [int(vals) for vals in vals]
-                        elif valuetype == 2:    # float
-                            vals = [float(vals) for vals in vals]
-                    except ValueError:
-                        print "%s: value type and defined type (%s) don't match" \
-                              % (varname, self.__valtypes[valuetype])
+                    self.__validparams[cparam][key] = val
 
-                    # Add to dictionary as a numpy array
-                    vardict['values'] = np.array(vals).reshape(arr_shp)
-                    tmp_params.append(vardict)
-
-        # Add or replace parameters depending on whether they already exist
-        for pp in tmp_params:
-            if self.var_exists(pp['name']):
-                print "Replacing existing parameter"
-                self.replace_values(pp['name'], pp['values'], pp['dimnames'])
-            else:
-                print "Adding new parameter"
-                self.add_param(pp['name'], pp['dimnames'], pp['valuetype'], pp['values'])
-
-
-    def var_exists(self, varname):
-        """Checks to see if a variable exists in the currently loaded parameter file.
-           Returns true if the variable exists, otherwise false."""
-        if not self.__isloaded:
-            self.load_file()
-
-        if varname in self.__vardict:
-            return True
-        return False
-
-
-    def check_var(self, varname):
-        # Check a variable to see if the number of values it has is
-        # consistent with the given dimensions
-
-        if not self.__isloaded:
-            self.load_file()
-
-        thevar = self.get_var(varname)
-
-        # Get the defined size for each dimension used by the variable
-        total_size = 1
-        for dd in thevar['dimnames']:
-            total_size *= self.get_dim(dd)
-
-        if thevar['values'].size == total_size:
-            # The number of values for the defined dimensions match
-            print 'OK'
-        else:
-            print 'BAD'
-
-
-    def check_all_vars(self):
-        """Check all parameter variables for proper array size"""
-        if not self.__isloaded:
-            self.load_file()
-
-        parent = self.__paramdict['Parameters']
-
-        for ee in parent:
-            self.check_var(ee['name'])
-
-    def check_all_module_vars(self, fname):
-        """Given a .par_name file verify whether all needed parameters are in the parameter file"""
-
-        module_dict = get_module_parameters(fname)
-
-        for kk, vv in module_dict.iteritems():
-            print 'Module:', kk
-
-            for pp in vv:
-                if not self.var_exists(pp):
-                    print '\t%s: MISSING' % pp
-
-    def copy_param(self, varname, filename):
-        """Copies selected varname from given src input parameter file (filename).
-        The incoming parameter is verified to have the same dimensions and sizes as
-        the destination. This method is intended to work with full parameter files.
-        To copy parameters from partial parameter files use add_param_from_file()."""
-
-        # TODO: Expand this handle one or more varnames
-        srcparamfile = parameters(filename)
-        srcparam = srcparamfile.get_var(varname)
-
-        if self.var_exists(srcparam['name']):
-            print 'Replacing existing parameter'
-            self.replace_values(srcparam['name'], srcparam['values'], srcparam['dimnames'])
-        else:
-            print 'Adding new parameter'
-            self.add_param(srcparam['name'], srcparam['dimnames'], srcparam['valuetype'], srcparam['values'])
-        del(srcparamfile)
-
-
-    def replace_values(self, varname, newvals, newdims=None):
-        """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
-        if not self.__isloaded:
-            self.load_file()
-
-        parent = self.__paramdict['Parameters']
-        thevar = self.get_var(varname)
-
-        if newdims is None:
-            # We are not changing dimensions of the variable/parameter, just the values
-            # Check if size of newvals array matches the oldvals array
-            if isinstance(newvals, list) and len(newvals) == thevar['values'].size:
-                # Size of arrays match so replace the oldvals with the newvals
-                thevar['values'][:] = newvals
-            elif isinstance(newvals, np.ndarray) and newvals.size == thevar['values'].size:
-                # newvals is a numpy ndarray
-                # Size of arrays match so replace the oldvals with the newvals
-                thevar['values'][:] = newvals
-            elif thevar['values'].size == 1:
-                # This is a scalar value
-                if isinstance(newvals, float):
-                    thevar['values'] = [newvals]
-                elif isinstance(newvals, int):
-                    thevar['values'] = [newvals]
-            else:
-                print "ERROR: Size of oldval array and size of newval array don't match"
-        else:
-            # The dimensions are being changed and new values provided
-
-            # Use the dimension sizes from the parameter file to check the size
-            # of the newvals array. If the size of the newvals array doesn't match the
-            # parameter file's dimensions sizes we have a problem.
-            size_check = 1
-            for dd in newdims:
-                size_check *= self.get_dim(dd)
-
-            if isinstance(newvals, list) and len(newvals) == size_check:
-                # Size of arrays match so replace the oldvals with the newvals
-                thevar['values'] = newvals
-                thevar['dimnames'] = newdims
-            elif isinstance(newvals, np.ndarray) and newvals.size == size_check:
-                # newvals is a numpy ndarray
-                # Size of arrays match so replace the oldvals with the newvals
-                thevar['values'] = newvals
-                thevar['dimnames'] = newdims
-            elif thevar['values'].size == 1:
-                # This is a scalar value
-                thevar['dimnames'] = newdims
-                if isinstance(newvals, float):
-                    thevar['values'] = [newvals]
-                elif isinstance(newvals, int):
-                    thevar['values'] = [newvals]
-            else:
-                print "ERROR: Size of newval array doesn't match dimensions in parameter file"
-
-
-    def resize_dim(self, dimname, newsize):
-        """Changes the size of the given dimension.
-           This does *not* check validity of parameters that use the dimension.
-           Check variable integrity before writing parameter file."""
-
-        # Some dimensions are related to each other.
-        related_dims = {'ndepl': 'ndeplval', 'nhru': ['nssr', 'ngw'],
-                        'nssr': ['nhru', 'ngw'], 'ngw': ['nhru', 'nssr']}
-
-        if not self.__isloaded:
-            self.load_file()
-
-        parent = self.__paramdict['Dimensions']
-
-        if dimname in parent:
-            parent[dimname] = newsize
-
-            # Also update related dimensions
-            if dimname in related_dims:
-                if dimname == 'ndepl':
-                    parent[related_dims[dimname]] = parent[dimname] * 11
-                elif dimname in ['nhru', 'nssr', 'ngw']:
-                    for dd in related_dims[dimname]:
-                        parent[dd] = parent[dimname]
-            return True
-        else:
-            return False
-
-
-    def update_values_by_hru(self, varname, newvals, hru_index):
-        """Updates parameter/variable with new values for a a given HRU.
-           This is used when merging data from an individual HRU into a region"""
-        if not self.__isloaded:
-            self.load_file()
-
-        parent = self.__paramdict['Parameters']
-        thevar = self.get_var(varname)
-
-        if len(newvals) == 1:
-            thevar['values'][(hru_index-1)] = newvals
-        elif len(newvals) == 2:
-            thevar['values'][(hru_index-1), :] = newvals
-        elif len(newvals) == 3:
-            thevar['values'][(hru_index-1), :, :] = newvals
-
-
-    def distribute_mean_value(self, varname, new_mean):
-        #def redistribute_mean(old_vals, new_mean):
-        # Redistribute mean value to set of multiple initial values
-        # see Hay and Umemoto, 2006 (p. 11)
-
-        old_vals = self.get_var(varname)['values']
-        if len(old_vals) > 1:
-            # This parameter is a list of values
-            ZC = 10.    # Constant to avoid zero values
-            new_vals = []
-
-            old_mean = sum(old_vals) / float(len(old_vals))
-
-            for vv in old_vals:
-                new_vals.append((((new_mean + ZC) * (vv + ZC)) / (old_mean + ZC)) - ZC)
-
-            self.replace_values(varname, new_vals)
-        else:
-            self.replace_values(varname, new_mean)
-
+        self.__validparamsloaded = True
+        # print self.__validparams
+        # return self.__validparams
 
     def pull_hru2(self, hru_index, filename):
         # Pulls a single HRU out by index and writes a new parameter file for that HRU
@@ -1649,6 +1730,140 @@ class parameters(object):
 
         outfile.close()
 
+    def rebuild_vardict(self):
+        # Build the vardict dictionary (links varname to array index in self.__paramdict)
+        self.__vardict = {}
+        for idx, vname in enumerate(self.__paramdict['Parameters']):
+            self.__vardict[vname['name']] = idx
+        self.__vardirty = False
+
+    def remove_param(self, varname):
+        """Removes a parameter"""
+        if not self.__isloaded:
+            self.load_file()
+
+        for ii, vv in enumerate(self.__paramdict['Parameters']):
+            if vv['name'] == varname:
+                rmidx = ii
+
+        del self.__paramdict['Parameters'][rmidx]
+
+    def rename_param(self, varname, newname):
+        """Renames a parameter"""
+        if not self.__isloaded:
+            self.load_file()
+
+        thevar = self.get_var(varname)
+        thevar['name'] = newname
+
+    def replace_values(self, varname, newvals, newdims=None):
+        """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
+        if not self.__isloaded:
+            self.load_file()
+
+        # parent = self.__paramdict['Parameters']
+        thevar = self.get_var(varname)
+
+        if newdims is None:
+            # We are not changing dimensions of the variable/parameter, just the values
+            # Check if size of newvals array matches the oldvals array
+            if isinstance(newvals, list) and len(newvals) == thevar['values'].size:
+                # Size of arrays match so replace the oldvals with the newvals
+                thevar['values'][:] = newvals
+            elif isinstance(newvals, np.ndarray) and newvals.size == thevar['values'].size:
+                # newvals is a numpy ndarray
+                # Size of arrays match so replace the oldvals with the newvals
+                thevar['values'][:] = newvals
+            elif thevar['values'].size == 1:
+                # This is a scalar value
+                if isinstance(newvals, float):
+                    thevar['values'] = [newvals]
+                elif isinstance(newvals, int):
+                    thevar['values'] = [newvals]
+            else:
+                print "ERROR: Size of oldval array and size of newval array don't match"
+        else:
+            # The dimensions are being changed and new values provided
+
+            # Use the dimension sizes from the parameter file to check the size
+            # of the newvals array. If the size of the newvals array doesn't match the
+            # parameter file's dimensions sizes we have a problem.
+            size_check = 1
+            for dd in newdims:
+                size_check *= self.get_dim(dd)
+
+            if isinstance(newvals, list) and len(newvals) == size_check:
+                # Size of arrays match so replace the oldvals with the newvals
+                thevar['values'] = newvals
+                thevar['dimnames'] = newdims
+            elif isinstance(newvals, np.ndarray) and newvals.size == size_check:
+                # newvals is a numpy ndarray
+                # Size of arrays match so replace the oldvals with the newvals
+                thevar['values'] = newvals
+                thevar['dimnames'] = newdims
+            elif thevar['values'].size == 1:
+                # This is a scalar value
+                thevar['dimnames'] = newdims
+                if isinstance(newvals, float):
+                    thevar['values'] = [newvals]
+                elif isinstance(newvals, int):
+                    thevar['values'] = [newvals]
+            else:
+                print "ERROR: Size of newval array doesn't match dimensions in parameter file"
+
+    def resize_dim(self, dimname, newsize):
+        """Changes the size of the given dimension.
+           This does *not* check validity of parameters that use the dimension.
+           Check variable integrity before writing parameter file."""
+
+        # Some dimensions are related to each other.
+        related_dims = {'ndepl': 'ndeplval', 'nhru': ['nssr', 'ngw'],
+                        'nssr': ['nhru', 'ngw'], 'ngw': ['nhru', 'nssr']}
+
+        if not self.__isloaded:
+            self.load_file()
+
+        parent = self.__paramdict['Dimensions']
+
+        if dimname in parent:
+            parent[dimname] = newsize
+
+            # Also update related dimensions
+            if dimname in related_dims:
+                if dimname == 'ndepl':
+                    parent[related_dims[dimname]] = parent[dimname] * 11
+                elif dimname in ['nhru', 'nssr', 'ngw']:
+                    for dd in related_dims[dimname]:
+                        parent[dd] = parent[dimname]
+            return True
+        else:
+            return False
+
+    def update_values_by_hru(self, varname, newvals, hru_index):
+        """Updates parameter/variable with new values for a a given HRU.
+           This is used when merging data from an individual HRU into a region"""
+        if not self.__isloaded:
+            self.load_file()
+
+        # parent = self.__paramdict['Parameters']
+        thevar = self.get_var(varname)
+
+        if len(newvals) == 1:
+            thevar['values'][(hru_index-1)] = newvals
+        elif len(newvals) == 2:
+            thevar['values'][(hru_index-1), :] = newvals
+        elif len(newvals) == 3:
+            thevar['values'][(hru_index-1), :, :] = newvals
+
+    def var_exists(self, varname):
+        """Checks to see if a variable exists in the currently loaded parameter file.
+           Returns true if the variable exists, otherwise false."""
+        if not self.__isloaded:
+            self.load_file()
+
+        if varname in self.__vardict:
+            return True
+        return False
 
     def write_select_param_file(self, filename, selection):
         # Write selected subset of parameters to a new parameter file
@@ -1698,7 +1913,6 @@ class parameters(object):
                     outfile.write('%s 10\n' % val)
 
         outfile.close()
-
 
     def write_param_file(self, filename):
         # Write the parameters out to a file
