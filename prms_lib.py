@@ -1429,7 +1429,7 @@ class parameters(object):
                         vals.append(cval)
                 except StopIteration:
                     # Hit the end of the file
-                    continue
+                    pass
 
                 if len(vals) != numval:
                     print '%s: number of values does not match dimension size (%d != %d).. skipping' \
@@ -1454,10 +1454,10 @@ class parameters(object):
         # Add or replace parameters depending on whether they already exist
         for pp in tmp_params:
             if self.var_exists(pp['name']):
-                print "Replacing existing parameter"
+                print "Replacing existing parameter: %s" % pp['name']
                 self.replace_values(pp['name'], pp['values'], pp['dimnames'])
             else:
-                print "Adding new parameter"
+                print "Adding new parameter: %s" % pp['name']
                 self.add_param(pp['name'], pp['dimnames'], pp['valuetype'], pp['values'])
 
     def check_var(self, varname):
