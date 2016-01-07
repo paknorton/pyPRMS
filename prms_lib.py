@@ -1459,33 +1459,61 @@ class parameters(object):
         conv_params = Set(depr_params.keys()).intersection(cparams)
 
         # =====================================================================
-        # Deprecate parameters conversion
+        # Deprecated parameters conversion
         # Convert (as necessary) and rename deprecated parameters to new names
         # This only converts existing data, expansion is done later
+        remove_list = []
         for cc in conv_params:
             if cc == 'soil_rechr_max':
                 # Convert with soil_rechr_max_frac = soil_rechr_max / soil_moist_max
                 newparam = valid_params[depr_params[cc]]
                 newarr = self.get_var(cc)['values'] / self.get_var('soil_moist_max')['values']
                 self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
-                self.remove_param(cc)
+                remove_list.append(cc)
             elif cc == 'dprst_area':
                 # Convert with dprst_frac = dprst_area / hru_area
                 newparam = valid_params[depr_params[cc]]
                 newarr = self.get_var(cc)['values'] / self.get_var('hru_area')['values']
                 self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
-                self.remove_param(cc)
+                remove_list.append(cc)
             elif cc == 'tmax_allrain':
                 # Convert with tmax_allrain_offset = tmax_allrain - tmax_allsnow
                 newparam = valid_params[depr_params[cc]]
                 newarr = self.get_var(cc)['values'] - self.get_var('tmax_allsnow')['values']
                 self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
-                self.remove_param(cc)
+                remove_list.append(cc)
+            elif cc == 'soil_moist_init':
+                # Convert with soil_moist_init_frac = soil_moist_init / soil_moist_max
+                newparam = valid_params[depr_params[cc]]
+                newarr = self.get_var(cc)['values'] / self.get_var('soil_moist_max')['values']
+                newarr[newarr > 1.0] = 1.0
+                self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
+                remove_list.append(cc)
+            elif cc == 'soil_rechr_init':
+                # Convert with soil_rechr_init_frac = soil_rechr_init / soil_rechr_max
+                newparam = valid_params[depr_params[cc]]
+                newarr = self.get_var(cc)['values'] / self.get_var('soil_rechr_max')['values']
+                newarr[newarr > 1.0] = 1.0
+                self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
+                remove_list.append(cc)
+            elif cc == 'ssstor_init':
+                # Convert with ssstor_init_frac = sstor_init / sat_threshold
+                newparam = valid_params[depr_params[cc]]
+                newarr = self.get_var(cc)['values'] / self.get_var('sat_threshold')['values']
+                newarr[newarr > 1.0] = 1.0
+                self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
+                remove_list.append(cc)
             else:
                 # Rename any other deprecated params
                 # TODO: Many of the new _frac parameters need to be handled individually
                 self.rename_param(cc, depr_params[cc])
+
+        # Remove parameters that are deprecated
+        for pp in remove_list:
+            print "Removing deprecated parameter %s" % pp
+            self.remove_param(pp)
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
         # =====================================================================
         # Add missing parameters using default values

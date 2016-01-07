@@ -143,7 +143,6 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
     # Parser for the date information
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 
-
     print "Loading MWBM streamflow:"
     print "\tMedian runoff error from %s/MWBM_RO_HRU50ERR_GCPO_1980-2010" % src_dir
     ro_err_mwbm = pd.read_csv('%s/MWBM_RO_HRU50ERR_GCPO_1980-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
