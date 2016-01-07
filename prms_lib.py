@@ -504,20 +504,19 @@ class control(object):
         self.__isloaded = True
     # END **** load_file()
 
-
-    def clear_parameter_group(self, grpname):
+    def clear_parameter_group(self, group_name):
         """Given a single parameter group name will clear out values for that parameter
            and all related parameters. Group name is one of: statVar, ani, map, dispVar, nhru"""
 
-        grp_name = {'ani': {'naniOutVars': 0, 'aniOutON_OFF': 0, 'aniOutVar_names': []},
+        groups = {'ani': {'naniOutVars': 0, 'aniOutON_OFF': 0, 'aniOutVar_names': []},
                     'dispVar': {'ndispGraphs': 0, 'dispVar_element': [], 'dispVar_names': [], 'dispVar_plot': []},
                     'map': {'nmapOutVars': 0, 'mapOutON_OFF': 0, 'mapOutVar_names': []},
                     'nhru': {'nhruOutVars': 0, 'nhruOutON_OFF': 0, 'nhruOutVar_names': []},
                     'statVar': {'nstatVars': 0, 'statsON_OFF': 0, 'statVar_element': [], 'statVar_names': []}}
 
-        for kk, vv in grp_name[grpname].iteritems():
-            self.replace_values(kk, vv)
-
+        for kk, vv in groups[group_name].iteritems():
+            if kk  in self.__controldict:
+                self.replace_values(kk, vv)
 
     def get_var(self, varname):
         # Return the given variable
@@ -1361,8 +1360,7 @@ class parameters(object):
         self.rebuild_vardict()
 
     def add_param_from_file(self, fname):
-        """Add a parameter from a file. The file should have only a single
-           parameter in it."""
+        """Add one or more parameter(s) from a file."""
 
         tmp_params = []
 
