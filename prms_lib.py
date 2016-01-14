@@ -1530,11 +1530,17 @@ class parameters(object):
             # Compute new dimension size
             newsize = 1
             for dd in newparam['Dimensions']:
-                newsize *= self.get_dim(dd)
+                if self.get_dim(dd) is None:
+                    print "Not adding %s because %s doesn't exist" % (pp, dd)
+                    newsize = 0
+                    break
+                else:
+                    newsize *= self.get_dim(dd)
 
-            # Create new array, repeating default value to fill it
-            newarr = np.resize(newarr, newsize)
-            self.add_param(pp, newparam['Dimensions'], param_type[newparam['Type']], newarr)
+            if newsize > 0:
+                # Create new array, repeating default value to fill it
+                newarr = np.resize(newarr, newsize)
+                self.add_param(pp, newparam['Dimensions'], param_type[newparam['Type']], newarr)
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         # =====================================================================
@@ -1548,30 +1554,34 @@ class parameters(object):
         # Expand parameters whose dimensionality has changed
         for ee in vparams:
             cvar = self.get_var(ee)
-            cname = cvar['name']
 
-            # Check for changed dimensionality
-            cdimnames = cvar['dimnames']
-            vdimnames = valid_params[cname]['Dimensions']
-
-            if Set(vdimnames).issubset(Set(cdimnames)):
-                # NOTE: This doesn't properly handle the case when number of
-                #       dimensions has shrunk.
-                # print "%s: No dimensionality change" % cname
-                pass
+            if cvar is None:
+                print "Not expanding %s because parameter doesn't exist" % ee
             else:
-                # Parameter has a change in dimensionality
-                print "%s: Dimensionality changed from" % cname, cdimnames, 'to', vdimnames
+                cname = cvar['name']
 
-                # Compute new dimension size
-                newsize = 1
-                for dd in vdimnames:
-                    newsize *= self.get_dim(dd)
+                # Check for changed dimensionality
+                cdimnames = cvar['dimnames']
+                vdimnames = valid_params[cname]['Dimensions']
 
-                # Create new array, repeating original values to fill it
-                newarr = np.resize(cvar['values'], newsize)
+                if Set(vdimnames).issubset(Set(cdimnames)):
+                    # NOTE: This doesn't properly handle the case when number of
+                    #       dimensions has shrunk.
+                    # print "%s: No dimensionality change" % cname
+                    pass
+                else:
+                    # Parameter has a change in dimensionality
+                    print "%s: Dimensionality changed from" % cname, cdimnames, 'to', vdimnames
 
-                self.replace_values(cname, newarr, vdimnames)
+                    # Compute new dimension size
+                    newsize = 1
+                    for dd in vdimnames:
+                        newsize *= self.get_dim(dd)
+
+                    # Create new array, repeating original values to fill it
+                    newarr = np.resize(cvar['values'], newsize)
+
+                    self.replace_values(cname, newarr, vdimnames)
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         self.rebuild_vardict()
@@ -1879,11 +1889,12 @@ class parameters(object):
         if not self.__isloaded:
             self.load_file()
 
-        for ii, vv in enumerate(self.__paramdict['Parameters']):
-            if vv['name'] == varname:
-                rmidx = ii
+        if self.get_var(varname) is not None:
+            for ii, vv in enumerate(self.__paramdict['Parameters']):
+                if vv['name'] == varname:
+                    rmidx = ii
 
-        del self.__paramdict['Parameters'][rmidx]
+            del self.__paramdict['Parameters'][rmidx]
 
     def rename_param(self, varname, newname):
         """Renames a parameter"""
