@@ -1047,7 +1047,18 @@ class param_db(object):
                     if val == 'setup':
                         # Don't want to include parameters from the setup module
                         toss_param = True
-                    validparams[cparam][key] = [val]
+
+                    # Override module(s) for select parameters
+                    if cparam in ['tmin_adj', 'tmax_adj']:
+                        validparams[cparam][key] = ['temp_1sta', 'temp_laps', 'ide_dist', 'xyz_dist']
+                    elif cparam in ['hru_tsta']:
+                        validparams[cparam][key] = ['temp_1sta', 'temp_laps']
+                    elif cparam in ['basin_tsta']:
+                        validparams[cparam][key] = ['temp_1sta', 'temp_laps', 'temp_dist2']
+                    elif cparam in ['hru_pansta']:
+                        validparams[cparam][key] = ['potet_jh']
+                    else:
+                        validparams[cparam][key] = [val]
                 elif key == 'Ndimen':
                     # Number of dimensions is superfluous; don't store
                     pass
@@ -1525,6 +1536,19 @@ class parameters(object):
         # print 'New parameters to create with default value:', def_params
 
         for pp in def_params:
+            if pp in ['basin_solsta', 'hru_solsta', 'rad_conv'] and not self.get_dim('nsol'):
+                # Shouldn't be added if nsol == 0
+                continue
+            elif pp in ['hru_pansta'] and not self.get_dim('nevapl'):
+                # Shouldn't be added if nevapl == 0
+                continue
+            elif pp in ['lake_hru_id'] and not self.get_dim('nlake'):
+                # Shouldn't be added if nlake == 0
+                continue
+            elif pp in ['irr_type'] and not self.get_dim('nwateruse'):
+                # Shouldn't be added if nwateruser == 0
+                continue
+
             newparam = valid_params[pp]
             newarr = np.asarray(newparam['Default'])
 
