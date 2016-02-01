@@ -1439,7 +1439,8 @@ class parameters(object):
         param_type = {'long': 1, 'float': 2, 'double': 3, 'string': 4}
 
         # Deprecated parameter relationships
-        depr_params = {'dprst_area': 'dprst_frac',
+        depr_params = {'smidx_coef': 'carea_min',
+                       'dprst_area': 'dprst_frac',
                        'hru_percent_imperv': 'imperv_frac',
                        'soil_moist_init': 'soil_moist_init_frac',
                        'soil_rechr_init': 'soil_rechr_init_frac',
