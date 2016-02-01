@@ -941,6 +941,19 @@ class param_db(object):
     # Description: Object for the database of valid input parameters
 
     def __init__(self, filename):
+        # Mapping of certain parameters to their correct module
+        self.__mod_map = {'hru_pansta': ['potet_pan'],
+                          'tmin_adj': ['temp_1sta', 'temp_laps', 'ide_dist', 'xyz_dist'],
+                          'tmax_adj': ['temp_1sta', 'temp_laps', 'ide_dist', 'xyz_dist'],
+                          'hru_tsta': ['temp_1sta', 'temp_laps'],
+                          'basin_tsta': ['temp_1sta', 'temp_laps', 'temp_dist2'],
+                          'elevlake_init': ['muskingum_lake'],
+                          'gw_seep_coef': ['muskingum_lake'],
+                          'lake_evap_adj': ['muskingum_lake'],
+                          'lake_hru_id': ['muskingum_lake'],
+                          'lake_seep_elev': ['muskingum_lake'],
+                          'lake_type': ['muskingum_lake']}
+
         self.__filename = filename
         self.__paramdb = None
 
@@ -1049,14 +1062,17 @@ class param_db(object):
                         toss_param = True
 
                     # Override module(s) for select parameters
-                    if cparam in ['tmin_adj', 'tmax_adj']:
-                        validparams[cparam][key] = ['temp_1sta', 'temp_laps', 'ide_dist', 'xyz_dist']
-                    elif cparam in ['hru_tsta']:
-                        validparams[cparam][key] = ['temp_1sta', 'temp_laps']
-                    elif cparam in ['basin_tsta']:
-                        validparams[cparam][key] = ['temp_1sta', 'temp_laps', 'temp_dist2']
-                    elif cparam in ['hru_pansta']:
-                        validparams[cparam][key] = ['potet_pan']
+                    if cparam in self.__mod_map:
+                        validparams[cparam][key] = self.__mod_map[cparam]
+
+                    # if cparam in ['tmin_adj', 'tmax_adj']:
+                    #     validparams[cparam][key] = ['temp_1sta', 'temp_laps', 'ide_dist', 'xyz_dist']
+                    # elif cparam in ['hru_tsta']:
+                    #     validparams[cparam][key] = ['temp_1sta', 'temp_laps']
+                    # elif cparam in ['basin_tsta']:
+                    #     validparams[cparam][key] = ['temp_1sta', 'temp_laps', 'temp_dist2']
+                    # elif cparam in ['hru_pansta']:
+                    #     validparams[cparam][key] = ['potet_pan']
                     else:
                         validparams[cparam][key] = [val]
                 elif key == 'Ndimen':
@@ -1401,6 +1417,9 @@ class parameters(object):
                     continue
                 elif cparam in ['basin_solsta', 'hru_solsta', 'rad_conv'] and not self.get_dim('nlake'):
                     continue
+                elif cparam in ['irr_type'] and not self.get_dim('nwateruser'):
+                    continue
+
                 if not self.var_exists(cparam):
                     print '\t%s: MISSING' % cparam
 
