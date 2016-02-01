@@ -1056,7 +1056,7 @@ class param_db(object):
                     elif cparam in ['basin_tsta']:
                         validparams[cparam][key] = ['temp_1sta', 'temp_laps', 'temp_dist2']
                     elif cparam in ['hru_pansta']:
-                        validparams[cparam][key] = ['potet_jh']
+                        validparams[cparam][key] = ['potet_pan']
                     else:
                         validparams[cparam][key] = [val]
                 elif key == 'Ndimen':
@@ -1396,6 +1396,11 @@ class parameters(object):
             print 'Module:', cmodule
 
             for cparam in params:
+                if cparam in ['gw_seep_coef', 'elevlake_init', 'lake_hru_id',
+                              'lake_seep_elev', 'lake_hru', 'lake_type'] and not self.get_dim('nlake'):
+                    continue
+                elif cparam in ['basin_solsta', 'hru_solsta', 'rad_conv'] and not self.get_dim('nlake'):
+                    continue
                 if not self.var_exists(cparam):
                     print '\t%s: MISSING' % cparam
 
