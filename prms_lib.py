@@ -1067,15 +1067,6 @@ class param_db(object):
                     # Override module(s) for select parameters
                     if cparam in self.__mod_map:
                         validparams[cparam][key] = self.__mod_map[cparam]
-
-                    # if cparam in ['tmin_adj', 'tmax_adj']:
-                    #     validparams[cparam][key] = ['temp_1sta', 'temp_laps', 'ide_dist', 'xyz_dist']
-                    # elif cparam in ['hru_tsta']:
-                    #     validparams[cparam][key] = ['temp_1sta', 'temp_laps']
-                    # elif cparam in ['basin_tsta']:
-                    #     validparams[cparam][key] = ['temp_1sta', 'temp_laps', 'temp_dist2']
-                    # elif cparam in ['hru_pansta']:
-                    #     validparams[cparam][key] = ['potet_pan']
                     else:
                         validparams[cparam][key] = [val]
                 elif key == 'Ndimen':
@@ -1607,6 +1598,19 @@ class parameters(object):
         for ee in vparams:
             cvar = self.get_var(ee)
 
+            if cvar in ['basin_solsta', 'hru_solsta', 'rad_conv'] and not self.get_dim('nsol'):
+                # Shouldn't be added if nsol == 0
+                continue
+            elif cvar in ['hru_pansta'] and not self.get_dim('nevapl'):
+                # Shouldn't be added if nevapl == 0
+                continue
+            elif cvar in ['lake_hru_id'] and not self.get_dim('nlake'):
+                # Shouldn't be added if nlake == 0
+                continue
+            elif cvar in ['irr_type'] and not self.get_dim('nwateruse'):
+                # Shouldn't be added if nwateruser == 0
+                continue
+                
             if cvar is None:
                 print "Not expanding %s because parameter doesn't exist" % ee
             else:
