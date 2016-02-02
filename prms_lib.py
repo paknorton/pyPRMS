@@ -1596,21 +1596,20 @@ class parameters(object):
         # =====================================================================
         # Expand parameters whose dimensionality has changed
         for ee in vparams:
-            cvar = self.get_var(ee)
-
-            if cvar in ['basin_solsta', 'hru_solsta', 'rad_conv'] and not self.get_dim('nsol'):
+            if ee in ['basin_solsta', 'hru_solsta', 'rad_conv'] and not self.get_dim('nsol'):
                 # Shouldn't be added if nsol == 0
                 continue
-            elif cvar in ['hru_pansta'] and not self.get_dim('nevapl'):
+            elif ee in ['hru_pansta'] and not self.get_dim('nevapl'):
                 # Shouldn't be added if nevapl == 0
                 continue
-            elif cvar in ['lake_hru_id'] and not self.get_dim('nlake'):
+            elif ee in ['lake_hru_id'] and not self.get_dim('nlake'):
                 # Shouldn't be added if nlake == 0
                 continue
-            elif cvar in ['irr_type'] and not self.get_dim('nwateruse'):
+            elif ee in ['irr_type'] and not self.get_dim('nwateruse'):
                 # Shouldn't be added if nwateruser == 0
                 continue
                 
+            cvar = self.get_var(ee)
             if cvar is None:
                 print "Not expanding %s because parameter doesn't exist" % ee
             else:
