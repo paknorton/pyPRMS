@@ -1567,6 +1567,8 @@ class parameters(object):
             elif pp in ['irr_type'] and not self.get_dim('nwateruse'):
                 # Shouldn't be added if nwateruser == 0
                 continue
+            elif pp in ['gvr_hru_id'] and not self.get_dim('nhrucell'):
+                continue
 
             newparam = valid_params[pp]
             newarr = np.asarray(newparam['Default'])
@@ -1608,6 +1610,8 @@ class parameters(object):
                 continue
             elif ee in ['irr_type'] and not self.get_dim('nwateruse'):
                 # Shouldn't be added if nwateruser == 0
+                continue
+            elif pp in ['gvr_hru_id'] and not self.get_dim('nhrucell'):
                 continue
 
             cvar = self.get_var(ee)
