@@ -953,6 +953,7 @@ class param_db(object):
                           'elevlake_init': ['muskingum_lake'],
                           'gw_seep_coef': ['muskingum_lake'],
                           'lake_evap_adj': ['muskingum_lake'],
+                          'lake_hru': ['muskingum_lake'],
                           'lake_hru_id': ['muskingum_lake'],
                           'lake_seep_elev': ['muskingum_lake'],
                           'lake_type': ['muskingum_lake']}
@@ -1608,7 +1609,7 @@ class parameters(object):
             elif ee in ['irr_type'] and not self.get_dim('nwateruse'):
                 # Shouldn't be added if nwateruser == 0
                 continue
-                
+
             cvar = self.get_var(ee)
             if cvar is None:
                 print "Not expanding %s because parameter doesn't exist" % ee
