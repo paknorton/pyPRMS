@@ -202,6 +202,10 @@ def main():
         rain_tmax_offset = pd.np.subtract(rain_tmax_final, snow_tmax_final)
 
         if args.makeparam:
+            if not (params.var_exists('tmax_allsnow') or params.var_exists('tmax_allrain_offset')):
+                print "ERROR: tmax_allsnow and tmax_allrain_offset must exist in the parameter file"
+                exit(1)
+
             # Update tmax_allsnow and tmax_allrain_offset in the input parameter object
             print '\tUpdate parameters and write out difference file'
             params.replace_values('tmax_allsnow', snow_tmax_final.T.values)
