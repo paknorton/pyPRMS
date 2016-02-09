@@ -1522,10 +1522,21 @@ class parameters(object):
                 remove_list.append(cc)
             elif cc == 'soil_rechr_init':
                 # Convert with soil_rechr_init_frac = soil_rechr_init / soil_rechr_max
-                newparam = valid_params[depr_params[cc]]
-                newarr = self.get_var(cc)['values'] / self.get_var('soil_rechr_max')['values']
-                newarr[newarr > 1.0] = 1.0
-                self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
+                if self.var_exists('soil_rechr_init'):
+                    if self.var_exists('soil_rechr_max'):
+                        newparam = valid_params[depr_params[cc]]
+                        newarr = self.get_var(cc)['values'] / self.get_var('soil_rechr_max')['values']
+                        newarr[newarr > 1.0] = 1.0
+                        self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
+                    elif self.var_exists('soil_rechr_max_frac'):
+                        # Compute with alternative equation of
+                        # soil_rechr_init_frac = soil_rechr_init / (soil_rechr_max_frac * soil_moist_max)
+                        newparam = valid_params[depr_params[cc]]
+                        newarr = self.get_var(cc)['values'] / (self.get_var('soil_rechr_max_frac')['values'] * self.get_var('soil_moist_max')['values'])
+                        newarr[newarr > 1.0] = 1.0
+                        self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
+                else:
+                    print 'ERROR: Missing parameters required for converting to %s' % valid_params[depr_params[cc]]
                 remove_list.append(cc)
             elif cc == 'ssstor_init':
                 # Convert with ssstor_init_frac = sstor_init / sat_threshold
