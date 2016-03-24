@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+from builtins import range
+from six import iteritems
+
 import os
 import pandas as pd
 import subprocess
@@ -39,7 +43,7 @@ def cbh_subset(infile, outfile, varname, hruindex):
     # Read the header information
     fheader = ''
     
-    for ii in xrange(0,3):
+    for ii in range(0, 3):
         line = in_hdl.readline()
         
         if line[0:4] in valid_varnames:
@@ -72,7 +76,7 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
     # Read the header information
     fheader = ''
     
-    for ii in xrange(0,3):
+    for ii in range(0, 3):
         line = in_hdl.readline()
         
         if line[0:4] in valid_varnames:
@@ -86,7 +90,7 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
     df1 = pd.read_csv(in_hdl, sep=' ', skipinitialspace=True, engine='c', header=None)
     in_hdl.close()
     
-    for hh in xrange(nhru):
+    for hh in range(nhru):
         sys.stdout.write('\r\t\t%06d ' % (hh+1))
         sys.stdout.flush()
 
@@ -99,7 +103,7 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
         
         df1_ss.to_csv(out_hdl, sep=' ', float_format='%0.4f', header=False, index=False)
         out_hdl.close()
-    print '\n'
+    print('\n')
 
 
 def main():
@@ -133,11 +137,11 @@ def main():
         output_src[ii] = control.get_var(ii)['values'][0]
 
     # Update specified control variables
-    for kk, vv in control_updates.iteritems():
+    for kk, vv in iteritems(control_updates):
         control.replace_values(kk, vv)
         
     # Modify the input and output file entries to remove the path
-    for kk, vv in input_src.iteritems():
+    for kk, vv in iteritems(input_src):
         if kk == 'data_file':
             newfilename = os.path.basename(dummy_streamflow_file)
         else:
@@ -145,18 +149,18 @@ def main():
             
         control.replace_values(kk, newfilename)
         
-    for kk, vv in output_src.iteritems():
+    for kk, vv in iteritems(output_src):
         control.replace_values(kk, os.path.basename(vv))
 
     # Read the input parameter file
     params = prms.parameters('%s/%s' % (src_dir, input_src['param_file']))
 
     nhru = params.get_dim('nhru')
-    print 'Number of HRUs to process:', nhru
+    print('Number of HRUs to process:', nhru)
 
-    for hh in xrange(nhru):
+    for hh in range(nhru):
         # set and create destination directory
-        cdir = '%s/%s_%06d' % (dst_dir, region, hh)
+        cdir = '%s/r%s_%06d' % (dst_dir, region, hh)
         
         # Create the destination directory
         try:
@@ -181,10 +185,10 @@ def main():
 
     if not args.nocbh:
         # Write *.cbh subsets
-        print '\nCBH subsets'
-        for kk, vv in cbh_vars.iteritems():
+        print('\nCBH subsets')
+        for kk, vv in iteritems(cbh_vars):
             if kk in input_src:
-                print '\tWriting %s' % os.path.basename(input_src[kk])
+                print('\tWriting %s' % os.path.basename(input_src[kk]))
 
                 full_cbh_subset('%s/%s' % (src_dir, input_src[kk]),
                                 dst_dir, region, vv, nhru)
