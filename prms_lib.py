@@ -1755,15 +1755,16 @@ class parameters(object):
 
                     # Lookup dimension size for each dimension name
                     arr_shp = [self.__paramdict['Dimensions'][dd] for dd in vardict['dimnames']]
+                    dim_size = reduce(lambda x, y: x*y, arr_shp)
 
                     numval = int(next(it))  # Denotes the number of data values we have. Should match dimensions.
                     valuetype = int(next(it))  # Datatype of the values
                     vardict['valuetype'] = int(valuetype)
 
-                    if numval != len(arr_shp):
+                    if numval != dim_size:
                         # The declared total size doesn't match the total size of the declared dimensions
                         print('%s: Declared total size for parameter does not match the total size of the declared dimension(s) (%d != %d).. skipping' \
-                              % (varname, numval, len(arr_shp)))
+                              % (varname, numval, dim_size))
 
                         # Still have to read all the values to skip this properly
                         try:
