@@ -263,8 +263,8 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
     # region    The region to pull HRUs out of
 
     # Override the region information for the GCPO
-    regions = tuple('GCPO')
-    hrus_by_region = tuple(20251)
+    regions = tuple('GCPO',)
+    hrus_by_region = tuple(20251,)
 
     if not isinstance(st_date, datetime.datetime):
         date_split = st_date.split('-')
@@ -276,7 +276,7 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
 
     # Get the zero-based start and end index for the selected region
     start_idx = sum(hrus_by_region[0:regions.index(region)])
-    end_idx = (sum(hrus_by_region[0:regions.index(region)]) + hrus_by_region[regions.index(region)] - 1)
+    # end_idx = (sum(hrus_by_region[0:regions.index(region)]) + hrus_by_region[regions.index(region)] - 1)
 
     # Load each dataset into memory. These datasets contain HRUs for the GCPO study area
     print("Loading:")
