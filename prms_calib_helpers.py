@@ -66,6 +66,7 @@ def adjust_param_ranges(paramfile, calib_params, default_ranges, outfilename, ma
     for kk, vv in calib_params.iteritems():
         # Grab the current param (kk) from the .params file and verify the
         # upper and lower bounds. Modify them if necessary.
+        print kk, vv
         src_vals = src_params.get_var(kk)['values']
         src_mean = np.mean(src_vals)
         src_min = np.min(src_vals)
