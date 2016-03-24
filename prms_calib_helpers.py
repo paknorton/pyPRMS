@@ -60,7 +60,8 @@ def read_sens_params(filename, include_params=None, exclude_params=None):
 def adjust_param_ranges(paramfile, calib_params, default_ranges, outfilename, make_dups=False):
     """Adjust and write out the calibration parameters and ranges"""
     src_params = prms.parameters(paramfile)
-                     
+    print src_params.vars
+    
     # Write the param_list file
     outfile = open(outfilename, 'w')
     for kk, vv in calib_params.iteritems():
