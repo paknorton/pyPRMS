@@ -1764,6 +1764,17 @@ class parameters(object):
                         # The declared total size doesn't match the total size of the declared dimensions
                         print('%s: Declared total size for parameter does not match the total size of the declared dimension(s) (%d != %d).. skipping' \
                               % (varname, numval, len(arr_shp)))
+
+                        # Still have to read all the values to skip this properly
+                        try:
+                            while True:
+                                cval = next(it)
+
+                                if cval == self.__rowdelim or cval.strip() == '':
+                                    break
+                        except StopIteration:
+                            # Hit the end of the file
+                            pass
                     else:
                         # Check if number of values written match the number of values declared
                         try:
