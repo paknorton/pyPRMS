@@ -1760,10 +1760,10 @@ class parameters(object):
                     valuetype = int(next(it))  # Datatype of the values
                     vardict['valuetype'] = int(valuetype)
 
-                    if numval != arr_shp.size:
+                    if numval != len(arr_shp):
                         # The declared total size doesn't match the total size of the declared dimensions
                         print('%s: Declared total size for parameter does not match the total size of the declared dimension(s) (%d != %d).. skipping' \
-                              % (varname, numval, arr_shp.size))
+                              % (varname, numval, len(arr_shp)))
                     else:
                         # Check if number of values written match the number of values declared
                         try:
