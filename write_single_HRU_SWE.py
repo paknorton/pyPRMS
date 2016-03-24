@@ -4,8 +4,8 @@
 # by the PRMS model calibration by HRU.
 
 from __future__ import print_function
-from builtins import range
-from six import iteritems
+# from builtins import range
+# from six import iteritems
 
 import pandas as pd
 import datetime
@@ -228,7 +228,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Split MWBM model output into individual HRUs')
     parser.add_argument('-b', '--basedir', help='Base directory for regions', required=True)
-    parser.add_argument('-s', '--srcdir', help='MWBM directory', required=True)
+    parser.add_argument('-s', '--srcdir', help='Source data directory', required=True)
     parser.add_argument('-r', '--region', help='Region to process', required=True)
     parser.add_argument('--range', help='Create error range files', action='store_true')
 
