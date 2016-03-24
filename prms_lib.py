@@ -1760,39 +1760,45 @@ class parameters(object):
                     valuetype = int(next(it))  # Datatype of the values
                     vardict['valuetype'] = int(valuetype)
 
-                    try:
-                        # Read in the data values
-                        vals = []
-
-                        while True:
-                            cval = next(it)
-
-                            if cval == self.__rowdelim or cval.strip() == '':
-                                break
-                            vals.append(cval)
-                    except StopIteration:
-                        # Hit the end of the file
-                        pass
-
-                    if len(vals) != numval:
-                        print '%s: number of values does not match dimension size (%d != %d).. skipping' \
-                              % (varname, len(vals), numval)
+                    if numval != arr_shp.size:
+                        # The declared total size doesn't match the total size of the declared dimensions
+                        print('%s: Declared total size for parameter does not match the total size of the declared dimension(s) (%d != %d).. skipping' \
+                              % (varname, numval, arr_shp.size))
                     else:
-                        # Convert the values to the correct datatype
-                        # 20151118 PAN: found a value of 1e+05 in nhm_id for r17 caused this to fail
-                        #               even though manaully converting the value to int works.
+                        # Check if number of values written match the number of values declared
                         try:
-                            if valuetype == 1:  # integer
-                                vals = [int(vals) for vals in vals]
-                            elif valuetype == 2:  # float
-                                vals = [float(vals) for vals in vals]
-                        except ValueError:
-                            print "%s: value type and defined type (%s) don't match" \
-                                  % (varname, self.__valtypes[valuetype])
+                            # Read in the data values
+                            vals = []
 
-                        # Add to dictionary as a numpy array
-                        vardict['values'] = np.array(vals).reshape(arr_shp)
-                        self.__paramdict['Parameters'].append(vardict)
+                            while True:
+                                cval = next(it)
+
+                                if cval == self.__rowdelim or cval.strip() == '':
+                                    break
+                                vals.append(cval)
+                        except StopIteration:
+                            # Hit the end of the file
+                            pass
+
+                        if len(vals) != numval:
+                            print '%s: number of values does not match dimension size (%d != %d).. skipping' \
+                                  % (varname, len(vals), numval)
+                        else:
+                            # Convert the values to the correct datatype
+                            # 20151118 PAN: found a value of 1e+05 in nhm_id for r17 caused this to fail
+                            #               even though manaully converting the value to int works.
+                            try:
+                                if valuetype == 1:  # integer
+                                    vals = [int(vals) for vals in vals]
+                                elif valuetype == 2:  # float
+                                    vals = [float(vals) for vals in vals]
+                            except ValueError:
+                                print "%s: value type and defined type (%s) don't match" \
+                                      % (varname, self.__valtypes[valuetype])
+
+                            # Add to dictionary as a numpy array
+                            vardict['values'] = np.array(vals).reshape(arr_shp)
+                            self.__paramdict['Parameters'].append(vardict)
 
         # Build the vardict dictionary (links varname to array index in self.__paramdict)
         self.rebuild_vardict()
@@ -1802,7 +1808,7 @@ class parameters(object):
     def pull_hru2(self, hru_index, filename):
         # Pulls a single HRU out by index and writes a new parameter file for that HRU
         # This version greatly improves on the original pull_hru by just reading from the parameter
-        # data structure and writing the modify file directly instead of modifying a copy of the
+        # data structure and writing the modified file directly instead of modifying a copy of the
         # original parameter structure and then writing it out.
 
         split_dims = ['nhru', 'nssr', 'ngw']
@@ -1811,11 +1817,13 @@ class parameters(object):
         order = ['name', 'dimnames', 'valuetype', 'values']
 
         # Parameters that need parent information saved
-        parent_info = {'hru_segment': 'parent_hru',
-                       'tosegment': 'parent_segment'}
+        # parent_info = {'hru_segment': 'parent_hru',
+        #                'tosegment': 'parent_segment' }
 
-        # segvars = ['K_coef', 'obsin_segment', 'tosegment', 'x_coef', 'segment_type', 'segment_flow_init', 'parent_segment']
-        segvars = ['K_coef', 'obsin_segment', 'x_coef', 'segment_type', 'segment_flow_init', 'parent_segment']
+        # List of vars that have dimension of nsegment
+        # TODO: This should be auto-created from the parameter file based on the dimension type
+        segvars = ['K_coef', 'obsin_segment', 'x_coef', 'segment_type', 'segment_flow_init', 'parent_segment',
+                   'nhm_seg', 'tosegment_nhm']
 
         # Adjustment values for select dimensions
         dim_adj = {'nobs': 1, 'nsegment': 1, 'npoigages': 1,}

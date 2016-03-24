@@ -278,7 +278,6 @@ def main():
     objfcn_link = cfg_in.get_value('of_link')
     of_dict = cfg_in.get_value('objfcn')
 
-
     for kk, vv in objfcn_link.iteritems():
         of_result = 0
         # Each object function link can use one or more objective functions weighted together
