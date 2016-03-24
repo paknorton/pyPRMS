@@ -263,8 +263,8 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
     # region    The region to pull HRUs out of
 
     # Override the region information for the GCPO
-    regions = tuple('GCPO',)
-    hrus_by_region = tuple(20251,)
+    regions = ['GCPO']
+    hrus_by_region = [20251]
 
     if not isinstance(st_date, datetime.datetime):
         date_split = st_date.split('-')
