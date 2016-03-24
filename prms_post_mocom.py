@@ -221,7 +221,7 @@ missing = [-999.0, -99.0]
 
 # Equate objfcn values to columns and order expected in the data file
 colnm_lookup = {'range': ['obs_lower', 'obs_upper'],
-                'value': ['obs_val'],
+                'value': ['obs_var'],
                 'daily': ['year', 'month', 'day'],
                 'monthly': ['year', 'month'],
                 'annual': ['year'],
@@ -330,7 +330,7 @@ for kk, vv in objfcn_link.iteritems():
             df_final = monthly.resample('M', how='mean').groupby(monthly.index.month).mean()
         elif curr_of['of_intv'] in months:
             # We are working with a single month over the time period
-            df_final = df_final[df_final.index.month==(months.index(curr_of['of_intv'])+1)]
+            df_final = df_final[df_final.index.month == (months.index(curr_of['of_intv'])+1)]
 
             # TODO: strip rows with NaN observations out of dataframe
         df_final = df_final.dropna(axis=0, how='any', thresh=None, inplace=False).copy()
