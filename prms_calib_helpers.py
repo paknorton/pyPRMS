@@ -24,7 +24,7 @@ def read_default_params(filename):
     return def_ranges
 
 
-def read_sens_params(filename, include_params=None, exclude_params=None):
+def read_sens_params(filename, include_params=(), exclude_params=()):
     # Read in the sensitive parameters
     
     try:
@@ -42,7 +42,9 @@ def read_sens_params(filename, include_params=None, exclude_params=None):
     for line in it:
         flds = line.split(',')
         for ff in flds:
-            try: 
+            ff = ff.strip()
+
+            try:
                 int(ff)
             except:
                 if ff not in exclude_params:
@@ -60,14 +62,13 @@ def read_sens_params(filename, include_params=None, exclude_params=None):
 def adjust_param_ranges(paramfile, calib_params, default_ranges, outfilename, make_dups=False):
     """Adjust and write out the calibration parameters and ranges"""
     src_params = prms.parameters(paramfile)
-    print src_params.vars
-    
+
     # Write the param_list file
     outfile = open(outfilename, 'w')
     for kk, vv in calib_params.iteritems():
         # Grab the current param (kk) from the .params file and verify the
         # upper and lower bounds. Modify them if necessary.
-        print kk, vv
+
         src_vals = src_params.get_var(kk)['values']
         src_mean = np.mean(src_vals)
         src_min = np.min(src_vals)
