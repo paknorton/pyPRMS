@@ -1840,7 +1840,7 @@ class parameters(object):
                    'nhm_seg', 'tosegment_nhm']
 
         # Adjustment values for select dimensions
-        dim_adj = {'nobs': 1, 'nsegment': 1, 'npoigages': 1,}
+        dim_adj = {'nobs': 1, 'nsegment': 1, 'npoigages': 0}
 
         # ===================================================================
         outfile = open(filename, 'w')
@@ -1916,9 +1916,12 @@ class parameters(object):
             elif vv['name'] == 'hru_segment':
                 the_values = np.array([1])
                 dimsize = 1
-            elif vv['name'] in ['tosegment', 'poi_gage_segment', 'poi_type', 'poi_gage_id']:
+            elif vv['name'] in ['tosegment']:
                 the_values = np.array([0])
                 dimsize = 1
+            elif vv['name'] in ['poi_gage_segment', 'poi_type', 'poi_gage_id']:
+                # 2016-03-24: Having these parameters causes PRMS to error out
+                continue
 
             for item in order:
                 # Write each variable write out separated by self.__rowdelim
