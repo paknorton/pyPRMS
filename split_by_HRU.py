@@ -83,8 +83,7 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
             fheader += line
                          
     # Read the data
-    df1 = pd.read_csv(in_hdl, sep=' ', skipinitialspace=True, engine='c',
-                      header=None)
+    df1 = pd.read_csv(in_hdl, sep=' ', skipinitialspace=True, engine='c', header=None)
     in_hdl.close()
     
     for hh in xrange(nhru):
@@ -164,7 +163,7 @@ def main():
             os.makedirs(cdir)
         except OSError:
             # One option if the directory already exists is to erase it
-            # and re-create. For we'll just pass
+            # and re-create. For now we'll just pass
             pass
             # Directory already exists, delete it and re-create
             #shutil.rmtree(cdir)
