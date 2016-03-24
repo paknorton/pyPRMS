@@ -1442,19 +1442,21 @@ class parameters(object):
         # see Hay and Umemoto, 2006 (p. 11)
 
         old_vals = self.get_var(varname)['values']
-        if len(old_vals) > 1:
+
+        if old_vals.size > 1:
             # This parameter is a list of values
             ZC = 10.  # Constant to avoid zero values
             new_vals = []
 
-            old_mean = sum(old_vals) / float(len(old_vals))
+            old_mean = old_vals.sum() / float(old_vals.size)
 
-            for vv in old_vals:
+            for vv in old_vals.flatten():
                 new_vals.append((((new_mean + ZC) * (vv + ZC)) / (old_mean + ZC)) - ZC)
 
-            self.replace_values(varname, new_vals)
+            self.replace_values(varname, np.array(new_vals).reshape(old_vals.shape))
         else:
-            self.replace_values(varname, new_mean)
+            # Even scalar values are stored as numpy arrays
+            self.replace_values(varname, np.array(new_mean).reshape(old_vals.shape))
 
     def expand_params(self, valid_params):
         """Given a dictionary of valid parameters from paramdb will expand the
@@ -2013,12 +2015,13 @@ class parameters(object):
                 # newvals is a numpy ndarray
                 # Size of arrays match so replace the oldvals with the newvals
                 thevar['values'][:] = newvals
-            elif thevar['values'].size == 1:
-                # This is a scalar value
-                if isinstance(newvals, float):
-                    thevar['values'] = [newvals]
-                elif isinstance(newvals, int):
-                    thevar['values'] = [newvals]
+            # NOTE: removed the following because even scalars should be stored as numpy array
+            # elif thevar['values'].size == 1:
+            #     # This is a scalar value
+            #     if isinstance(newvals, float):
+            #         thevar['values'] = [newvals]
+            #     elif isinstance(newvals, int):
+            #         thevar['values'] = [newvals]
             else:
                 print "ERROR: Size of oldval array and size of newval array don't match"
         else:
