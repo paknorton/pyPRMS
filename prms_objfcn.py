@@ -161,16 +161,16 @@ def nrmse_fcn(data, obsvar, simvar):
     return np.sqrt(sq_os_diff.sum() / sq_olt_diff.sum())
 
 
-def nashsutcliffe(data, obsvar, simvar):
+def nashsutcliffe(data):
     # Compute Nash-Sutcliffe
     # NS == 1 perfect fit between observed and simulated data
     # NS == 0 fit is as good as using the average value of all observed data
 
     if 'obs_var' in data.columns:
         # Single observed values
-        numerator = np.sum((data[obsvar] - data[simvar])**2)
-        lt_mean = data[obsvar].mean(axis=0)
-        denominator = np.sum((data[obsvar] - lt_mean)**2)
+        numerator = np.sum((data['obs_var'] - data['sim_var'])**2)
+        lt_mean = data['obs_var'].mean(axis=0)
+        denominator = np.sum((data['obs_var'] - lt_mean)**2)
         ns = 1 - numerator / denominator
     else:
         # Assume we are working with a range of values
@@ -179,10 +179,11 @@ def nashsutcliffe(data, obsvar, simvar):
         data['closest'] = np.where(data['sim_var'] < data['obs_lower'], data['obs_lower'] - data['sim_var'], data['closest'])
         data['closest'] = np.where(data['sim_var'] > data['obs_upper'], data['obs_upper'] - data['sim_var'], data['closest'])
 
-        numerator = np.sum((data[obsvar] - data[simvar])**2)
+        numerator = np.sum(data['closest']**2)
+        # numerator = np.sum((data[obsvar] - data[simvar])**2)
         lt_mean = ((data['obs_upper'] + data['obs_lower']) / 2.0).mean(axis=0)
         #ltmean = data[obsvar].mean(axis=0)
-        denominator = np.sum((data[obsvar] - lt_mean)**2)
+        denominator = np.sum((data['closest'] - lt_mean)**2)
         ns = 1 - numerator / denominator
 
 
