@@ -193,7 +193,6 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
 
     # Load each dataset into memory. These datasets contain all regions
     print("Loading:")
-    print("\tMOD16 AET..")
     # Parser for the date information
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 

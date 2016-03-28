@@ -122,11 +122,24 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
         en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
 
     print("Loading SWE:")
+
+    # Parser for the date information
+    parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
+
     print("\tSNODAS SWE..")
-    ds1 = load_snodas_swe('%s/SNODAS_SWE.r%s' % (src_dir, region), st_date, en_date)
+    ds1 = pd.read_csv('%s/SNODAS_SWE_CONUS_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
+                             index_col='thedate')
 
     print("\tMWBM SWE..")
-    ds2 = load_mwbm_swe('%s/mwbm_swe_r%s' % (src_dir, region), st_date, en_date)
+    ds2 = pd.read_csv('%s/MWBM_SWE_CONUS_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
+                           index_col='thedate')
+
+
+    # print("\tSNODAS SWE..")
+    # ds1 = load_snodas_swe('%s/SNODAS_SWE.r%s' % (src_dir, region), st_date, en_date)
+    #
+    # print("\tMWBM SWE..")
+    # ds2 = load_mwbm_swe('%s/mwbm_swe_r%s' % (src_dir, region), st_date, en_date)
 
     print("Writing out HRUs:")
     for hh in range(hrus_by_region[regions.index(region)]):
