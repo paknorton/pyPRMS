@@ -108,6 +108,70 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
     print ''
 
 
+
+def pull_RO_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
+    # For a given region pull MWBM streamflow for each HRU and write it to the dst_dir
+    #
+    # Parameters:
+    # srcdir        Location of the AET datasets
+    # dstdir        Top-level location to write HRUs
+    # st_date       Start date for output dataset
+    # en_date       End date for output datasdet
+    # region        The region to pull HRUs out of
+    # param_file    Input parameter file to obtain hru_area from
+
+    if not isinstance(st_date, datetime.datetime):
+        date_split = st_date.split('-')
+        st_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
+
+    if not isinstance(en_date, datetime.datetime):
+        date_split = en_date.split('-')
+        en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
+
+    # Read in the hru_area from the input parameter file
+    print "Reading HRU areas from %s" % param_file
+    param = prms.parameters(param_file)
+
+    # hru_area is in units of acres
+    hru_area = param.get_var('hru_area')['values']
+    print 'Number of HRU area values:', len(hru_area)
+
+    # Parser for the date information
+    parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
+
+    print "\tRunoff from %s/MWBM_RO_HRU_CONUS_1980-2010" % src_dir
+    ro_mwbm = pd.read_csv('%s/MWBM_RO_HRU_CONUS_1980-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
+                          index_col='thedate')
+    # ds2 = load_MWBM_streamflow('%s/roHRUmaxERR_r%s' % (src_dir, region), st_date, en_date)
+
+    print "Writing out HRUs:"
+    for hh in xrange(hrus_by_region[regions.index(region)]):
+        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.flush()
+
+        # Create and convert actual runoff values for HRU
+        ro_hru = pd.DataFrame(ro_mwbm.iloc[:, hh])
+        ro_hru.rename(columns={ro_hru.columns[0]: 'runoff'}, inplace=True)
+
+        # Convert from mm/month to cfs (see Evernote for units conversion notes)
+        # hru_area is converted from acres to square kilometers
+        ro_hru['runoff'] = ro_hru['runoff'] * hru_area[hh] * 0.0016540916
+        ro_hru['runoff'] /= ro_hru.index.day
+
+        ro_hru['Year'] = ro_hru.index.year
+        ro_hru['Month'] = ro_hru.index.month
+        ro_hru.reset_index(inplace=True)
+        ro_hru.drop(['thedate'], axis=1, inplace=True)
+
+        # Write out the dataset
+        outfile = '%s/r%s_%06d/MWBM' % (dst_dir, region, hh)
+        ro_hru.to_csv(outfile, sep=' ', float_format='%.3f', columns=['Year', 'Month', 'runoff'], header=False, index=False)
+    print ''
+
+
+
+
+
 def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
     # For a given region pull MWBM streamflow for each HRU and write it to the dst_dir
     #
@@ -289,7 +353,10 @@ def main():
         else:
             pull_RO_by_hru_GCPO(src_dir, dst_dir, st, en, selected_region, param_file)
     else:
-        pull_by_hru(src_dir, dst_dir, st, en, selected_region, param_file)
+        if args.range:
+            pull_RO_by_hru(src_dir, dst_dir, st, en, selected_region, param_file)
+        else:
+            pull_by_hru(src_dir, dst_dir, st, en, selected_region, param_file)
 
 if __name__ == '__main__':
     main()
