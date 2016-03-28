@@ -95,7 +95,7 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
         sys.stdout.flush()
 
         # Write the HRU subset of data out to a file
-        out_hdl = open('%s/%s_%06d/%s' % (dst_dir, region, hh, os.path.basename(src_file)), 'w')
+        out_hdl = open('%s/r%s_%06d/%s' % (dst_dir, region, hh, os.path.basename(src_file)), 'w')
         out_hdl.write(fheader)
         
         # Subset dataframe to current HRU
