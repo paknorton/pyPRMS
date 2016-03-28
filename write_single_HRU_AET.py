@@ -194,15 +194,15 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
     # Load each dataset into memory. These datasets contain all regions
     print("Loading:")
     print("\tMOD16 AET..")
-    aet_mod16 = load_mod16_aet('%s/MOD16.CONUS' % src_dir, st_date, en_date)
+    aet_mod16 = load_mod16_aet('%s/MOD16_AET_CONUS_2000-2010' % src_dir, st_date, en_date)
     aet_mod16 *= 0.0393700787   # convert to inches
 
     print("\tSSEBop AET..")
-    aet_SSEBop = load_ssebop_aet('%s/SSEBop.CONUS' % src_dir, st_date, en_date)
+    aet_SSEBop = load_ssebop_aet('%s/SSEBop_AET_CONUS_2000-2010' % src_dir, st_date, en_date)
     aet_SSEBop *= 0.0393700787   # convert to inches
 
     print("\tMWBM AET..")
-    aet_mwbm = load_mwbm_aet('%s/MWBM.CONUS' % src_dir, st_date, en_date)
+    aet_mwbm = load_mwbm_aet('%s/MWBM_AET_CONUS_2000-2010' % src_dir, st_date, en_date)
     aet_mwbm *= 0.0393700787   # convert to inches
 
     # hru_index is not zero-based, it is one-based; it is referencing the column names not the position
