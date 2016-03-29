@@ -1905,6 +1905,9 @@ class parameters(object):
                 elif len(vv['dimnames']) == 1:
                     the_values = vv['values'][hru_index]
                     dimsize = vv['values'][hru_index].size
+            elif bool(set(vv['dimnames']).intersection(set('ndeplval'))):
+                the_values = vv['values'][hru_index]
+                dimsize = 1
             else:
                 dimsize = vv['values'].size
                 the_values = vv['values']
