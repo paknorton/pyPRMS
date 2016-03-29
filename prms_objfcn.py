@@ -270,7 +270,7 @@ def main():
 
     # Equate objfcn values to columns and order expected in the data file
     colnm_lookup = {'range': ['obs_lower', 'obs_upper'],
-                    'value': ['obs_val'],
+                    'value': ['obs_var'],
                     'daily': ['year', 'month', 'day'],
                     'monthly': ['year', 'month'],
                     'annual': ['year'],
@@ -392,7 +392,7 @@ def main():
                 # TODO: strip rows with NaN observations out of dataframe
             df_final = df_final.dropna(axis=0, how='any', thresh=None, inplace=False).copy()
 
-            # ** objective function looks for sim_val for simulated and either obs_val or obs_lower, obs_upper
+            # ** objective function looks for sim_val for simulated and either obs_var or obs_lower, obs_upper
             of_result += vv['of_wgts'][ii] * compute_objfcn(curr_of['of_stat'], df_final)
         # **** for of in vv['of_names']:
 
