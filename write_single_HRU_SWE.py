@@ -126,13 +126,22 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
     # Parser for the date information
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 
+    # When using the CONUS file we have to pull the region from it
+    region_start = sum(hrus_by_region[0:regions.index(region)]) + 1
+    region_end = region_start + hrus_by_region[regions.index(region)]
+
+    # Build the set of columns to load
+    # Column 0 is the date and is always included
+    column_set = [0]
+    column_set.extend(range(region_start, region_end))
+
     print("\tSNODAS SWE..")
     ds1 = pd.read_csv('%s/SNODAS_SWE_CONUS_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                             index_col='thedate')
+                      index_col='thedate', usecols=column_set)
 
     print("\tMWBM SWE..")
     ds2 = pd.read_csv('%s/MWBM_SWE_CONUS_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                           index_col='thedate')
+                      index_col='thedate', usecols=column_set)
 
 
     # print("\tSNODAS SWE..")
