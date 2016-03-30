@@ -155,10 +155,10 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
         sys.stdout.write('\r\t%06d ' % hh)
         sys.stdout.flush()
 
-        modis = pd.DataFrame(ds1.ix[:, hh+1])
+        modis = pd.DataFrame(ds1.ix[:, hh])
         modis.rename(columns={modis.columns[0]: 'modis'}, inplace=True)
 
-        wb = pd.DataFrame(ds2.ix[:, hh+1])
+        wb = pd.DataFrame(ds2.ix[:, hh])
         wb.rename(columns={wb.columns[0]: 'mwbm'}, inplace=True)
 
         ds_join = modis.join(wb)
