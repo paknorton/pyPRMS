@@ -129,7 +129,7 @@ def read_cbh(filename, sep=' ', missing_val=[-99.0, -999.0]):
 
         if line[0:4] in ['prcp', 'tmax', 'tmin']:
             # Change the number of HRUs included to one
-            numhru = int(line[5:])
+            # numhru = int(line[5:])
             fheader += line[0:5] + ' 1\n'
         else:
             fheader += line
@@ -188,7 +188,8 @@ def read_gdp(filename, missing_val=[255.]):
 
 # Order to write control file parameters for printing and writing a new control file
 ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'model_mode', 'param_file', 'data_file',
-             'model_output_file', 'parameter_check_flag', 'print_debug', 'et_module', 'precip_module', 'soilzone_module',
+             'model_output_file', 'parameter_check_flag', 'print_debug', 'et_module', 'precip_module',
+             'soilzone_module',
              'solrad_module',
              'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module', 'prms_warmup', 'init_vars_from_file',
              'save_vars_to_file', 'var_init_file', 'var_save_file', 'cbh_binary_flag', 'cbh_check_flag',
@@ -199,7 +200,8 @@ ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'm
              'nstatVars', 'statVar_element', 'statVar_names', 'aniOutON_OFF', 'ani_output_file', 'naniOutVars',
              'aniOutVar_names', 'dispGraphsBuffSize', 'ndispGraphs', 'dispVar_element', 'dispVar_names',
              'dispVar_plot', 'initial_deltat', 'cascade_flag', 'cascadegw_flag', 'dprst_flag', 'dyn_covden_flag',
-             'dyn_covtype_flag', 'dyn_dprst_flag', 'dyn_fallfrost_flag', 'dyn_imperv_flag', 'dyn_intcp_flag', 'dyn_potet_flag',
+             'dyn_covtype_flag', 'dyn_dprst_flag', 'dyn_fallfrost_flag', 'dyn_imperv_flag', 'dyn_intcp_flag',
+             'dyn_potet_flag',
              'dyn_radtrncf_flag', 'dyn_snareathresh_flag', 'dyn_soil_flag', 'dyn_springfrost_flag',
              'dyn_sro2dprst_imperv_flag', 'dyn_sro2dprst_perv_flag', 'dyn_transp_flag', 'frozen_flag',
              'gwr_swale_flag', 'stream_temp_flag', 'subbasin_flag', 'covden_sum_dynamic', 'covden_win_dynamic',
@@ -230,6 +232,9 @@ class control(object):
 
         self.__isloaded = False
         self.__filename = filename
+        self.__controldict = {}
+        self.__modules = {}  # Initialize dictionary of selected module names
+        self.__header = []
         self.__rowdelim = '####'  # Used to delimit variables
         self.__valtypes = ['', 'integer', 'float', 'double', 'string']
 
@@ -540,10 +545,7 @@ class control(object):
                     # Write one value per line
                     for xx in val:
                         outfile.write(fmt % xx)
-
         outfile.close()
-
-
 # ***** END class control()
 
 
@@ -567,6 +569,7 @@ class streamflow(object):
         self.__types = None
         self.__units = []
         self.__stations = None
+        self.__stationIndex = {}  # Lookup of station id to header info
         self.__rawdata = None
         self.__selectedStations = None
         self.__isloaded = False
@@ -582,8 +585,8 @@ class streamflow(object):
         self.__stations = []  # list of gage stations
         self.__stationIndex = {}  # Lookup of station id to header info
 
-        headerNext = False
-        stationNext = False
+        # headerNext = False
+        # stationNext = False
 
         infile = open(filename, 'r')
         rawdata = infile.read().splitlines()
@@ -690,7 +693,6 @@ class streamflow(object):
         self.__rawdata.replace(to_replace=self.__missing, value=np.nan, inplace=True)
 
         # print self.__rawdata.head()
-
         self.__isloaded = True
 
     @property
@@ -835,44 +837,44 @@ class streamflow(object):
         # runoff <number of stations for each type>
         # ################################################################################
 
-        topLine = '$Id:$\n'
-        sectionSep = '////////////////////////////////////////////////////////////\n'
-        metaHeader1 = '// Station metadata (listed in the same order as the data):\n'
+        top_line = '$Id:$\n'
+        section_sep = '////////////////////////////////////////////////////////////\n'
+        meta_header_1 = '// Station metadata (listed in the same order as the data):\n'
         # metaHeader2 = '// ID    Type Latitude Longitude Elevation'
-        metaHeader2 = '// %s\n' % ' '.join(self.metaheader)
-        dataSection = '################################################################################\n'
+        meta_header_2 = '// %s\n' % ' '.join(self.metaheader)
+        data_section = '################################################################################\n'
 
         # ----------------------------------
         # Get the station information for each selected station
-        typeCount = {}  # Counts the number of stations for each type of data (e.g. 'runoff')
+        type_count = {}  # Counts the number of stations for each type of data (e.g. 'runoff')
         stninfo = ''
         if self.__selectedStations is None:
             for xx in self.__stations:
-                if xx[1] not in typeCount:
+                if xx[1] not in type_count:
                     # index 1 should be the type field
-                    typeCount[xx[1]] = 0
-                typeCount[xx[1]] += 1
+                    type_count[xx[1]] = 0
+                type_count[xx[1]] += 1
 
                 stninfo += '// %s\n' % ' '.join(xx)
         else:
             for xx in self.__selectedStations:
                 cstn = self.__stations[self.__stationIndex[xx]]
 
-                if cstn[1] not in typeCount:
+                if cstn[1] not in type_count:
                     # index 1 should be the type field
-                    typeCount[cstn[1]] = 0
+                    type_count[cstn[1]] = 0
 
-                typeCount[cstn[1]] += 1
+                type_count[cstn[1]] += 1
 
                 stninfo += '// %s\n' % ' '.join(cstn)
         # stninfo = stninfo.rstrip('\n')
 
         # ----------------------------------
         # Get the units information
-        unitLine = '// Unit:'
+        unit_line = '// Unit:'
         for uu in self.__units:
-            unitLine += ' %s,' % ' = '.join(uu)
-        unitLine = '%s\n' % unitLine.rstrip(',')
+            unit_line += ' %s,' % ' = '.join(uu)
+        unit_line = '%s\n' % unit_line.rstrip(',')
 
         # ----------------------------------
         # Create the list of types of data that are being included
@@ -880,26 +882,26 @@ class streamflow(object):
 
         # Create list of types in the correct order
         for (kk, vv) in iteritems(self.__types):
-            if kk in typeCount:
-                tmpl.insert(vv[0], [kk, typeCount[kk]])
+            if kk in type_count:
+                tmpl.insert(vv[0], [kk, type_count[kk]])
 
-        typeLine = ''
+        type_line = ''
         for tt in tmpl:
-            typeLine += '%s %d\n' % (tt[0], tt[1])
+            type_line += '%s %d\n' % (tt[0], tt[1])
         # typeLine = typeLine.rstrip('\n')
 
         # Write out the header to the new file
         outfile = open(filename, 'w')
-        outfile.write(topLine)
-        outfile.write(sectionSep)
-        outfile.write(metaHeader1)
-        outfile.write(metaHeader2)
+        outfile.write(top_line)
+        outfile.write(section_sep)
+        outfile.write(meta_header_1)
+        outfile.write(meta_header_2)
         outfile.write(stninfo)
-        outfile.write(sectionSep)
-        outfile.write(unitLine)
-        outfile.write(sectionSep)
-        outfile.write(typeLine)
-        outfile.write(dataSection)
+        outfile.write(section_sep)
+        outfile.write(unit_line)
+        outfile.write(section_sep)
+        outfile.write(type_line)
+        outfile.write(data_section)
 
         # Write out the data to the new file
         # Using quoting=csv.QUOTE_NONE results in an error when using a customized  date_format
@@ -992,6 +994,7 @@ class param_db(object):
 
     def __build_paramdb(self):
         """Build the input parameter db from a collection of par_name files in a directory"""
+        filelist = []
 
         if os.path.isfile(self.__filename):
             # A single input par_name file was specified
@@ -1452,13 +1455,13 @@ class parameters(object):
 
         if old_vals.size > 1:
             # This parameter is a list of values
-            ZC = 10.  # Constant to avoid zero values
+            zc = 10.  # Constant to avoid zero values
             new_vals = []
 
             old_mean = old_vals.sum() / float(old_vals.size)
 
             for vv in old_vals.flatten():
-                new_vals.append((((new_mean + ZC) * (vv + ZC)) / (old_mean + ZC)) - ZC)
+                new_vals.append((((new_mean + zc) * (vv + zc)) / (old_mean + zc)) - zc)
 
             self.replace_values(varname, np.array(new_vals).reshape(old_vals.shape))
         else:
@@ -2242,6 +2245,17 @@ class statvar(object):
     def __init__(self, filename=None, missing=-999.0):
         self.__timecols = 6  # number columns for time in the file
         self.__missing = missing  # what is considered a missing value?
+
+        self.__isloaded = False
+        self.__vars = None
+        self.__rawdata = None
+        self.__metaheader = None
+        self.__header = None
+        self.__headercount = None
+        self.__types = None
+        self.__units = {}
+        self.__stations = None
+        self.__filename = ''
         self.filename = filename  # trigger the filename setter
 
     @property
