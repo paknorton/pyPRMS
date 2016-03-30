@@ -97,20 +97,25 @@ def get_complete_wyears(ds, obsvar=None):
 
 def pbias(data):
     # Compute the percent bias between simulated and observed
+    # pbias = 100 * sum(sim - obs) / sum(obs)
+
+    # If all the values in the dataframe are zero then return bias=0
+    if (data == 0).all().all():
+        return 0
+
     if 'obs_var' in data.columns:
         # single observed values
-        # TODO: write this part
-        pass
+        data['diff'] = 0.
+        data['diff'] = data['sim_var'] - data['obs_var']
+        num = data['diff'].sum()
+        den = data['obs_var'].sum()
     else:
         # Assume we're working with ranges of values
-
-        # If all the values in the dataframe are zero then return bias=0
-        if (data == 0).all().all():
-            return 0
-
         data.loc[:, 'closest'] = (data['obs_upper'] + data['obs_lower']) / 2.0
-#        data.loc[:,'closest'] = np.where(data['sim_var'] < data['obs_lower'], data['sim_var'] - data['obs_lower'], data['closest'])
-#        data.loc[:,'closest'] = np.where(data['sim_var'] > data['obs_upper'], data['sim_var'] - data['obs_upper'], data['closest'])
+        # data.loc[:,'closest'] = np.where(data['sim_var'] < data['obs_lower'], data['sim_var'] - data['obs_lower'],
+        #                                  data['closest'])
+        # data.loc[:,'closest'] = np.where(data['sim_var'] > data['obs_upper'], data['sim_var'] - data['obs_upper'],
+        #                                  data['closest'])
 
         data['diff'] = 0.
         data['diff'] = np.where(data['sim_var'] < data['obs_lower'], data['sim_var'] - data['obs_lower'], data['diff'])
@@ -118,8 +123,7 @@ def pbias(data):
 
         num = data['diff'].sum()
         den = data['closest'].sum()
-
-        return (num/den) * 100.
+    return (num/den) * 100.
 
 
 def nrmse(data):
