@@ -1,15 +1,23 @@
 #!/usr/bin/env python2.7
-__author__ = 'pnorton'
+
 
 # Description: support library for MOCOM calibration
 #     Created: 2015-09-15
 #      Author: Parker Norton (pnorton@usgs.gov)
 
+from __future__ import (absolute_import, division,
+                        print_function)
+# , unicode_literals)
+from future.utils import iteritems
+
 import pandas as pd
 import prms_cfg as prms_cfg
 import os
 import re
-import shutil
+# import shutil
+
+__author__ = 'pnorton'
+
 
 class opt_log(object):
     # Class to handle reading the mocom optimization log file
@@ -39,7 +47,6 @@ class opt_log(object):
         # Return the optimization log dataframe
         return self.__optlog_data
 
-
     @property
     def filename(self):
         # Return the current optimization log filename
@@ -63,7 +70,6 @@ class opt_log(object):
         # Return a list of the objective function column names
         return [col for col in self.__optlog_data.columns if 'OF_' in col]
 
-
     def get_modelrunids(self, generation):
         # Returns a list of modelrunids in a given generation
         # Can specify generation = 'last' or 'final' to get the last generation
@@ -75,7 +81,6 @@ class opt_log(object):
                 return self.__optlog_data['soln_num'].loc[self.__optlog_data['gennum'] == self.lastgen].tolist()
             elif generation in ['seed']:
                 return self.__optlog_data['soln_num'].loc[self.__optlog_data['gennum'] == 0].tolist()
-
         return None
 
     def read_log(self):
@@ -97,7 +102,7 @@ class opt_log(object):
                 gennum = 0
 
                 tmp_hdr = next(it).split()
-                tmp_hdr.insert(0,'setnum')
+                tmp_hdr.insert(0, 'setnum')
                 hdr_flag = True
 
                 while True:
@@ -123,16 +128,16 @@ class opt_log(object):
                             ofunc = []
 
                             # Get the friendly name for each objective function
-                            for kk, vv in cfg.get_value('of_link').iteritems():
+                            for (kk, vv) in iteritems(cfg.get_value('of_link')):
                                 ofunc.append(vv['of_desc'])
 
                             # Populate the test columns with friendly OF names
-                            for pp in range(0,(len(x) - len(tmp_hdr) - 3)):
+                            for pp in range(0, (len(x) - len(tmp_hdr) - 3)):
                                 tmp_hdr.append('OF_%s' % ofunc[pp])
                                 # tmp_hdr.append('test%d' % pp)
                         except:
                             # No configfile specified so write generic objective function header
-                            for pp in range(0,(len(x) - len(tmp_hdr) - 3)):
+                            for pp in range(0, (len(x) - len(tmp_hdr) - 3)):
                                 tmp_hdr.append('OF_%d' % pp)
 
                         # Add the remaining headers columns
@@ -187,7 +192,7 @@ class opt_log(object):
 
             modelrun_dir = '%s/%s/runs/%s' % (cfg.base_calib_dir, cfg.get_value('basin'), modelrunid)
         except:
-            print "ERROR: runs/%s doesn't exist!" % modelrunid
+            print("ERROR: runs/%s doesn't exist!" % modelrunid)
             return
 
         winners = []
@@ -202,15 +207,15 @@ class opt_log(object):
         stdir = os.getcwd()
 
         os.chdir(modelrun_dir)
-        directories=[d for d in os.listdir(os.getcwd()) if os.path.isdir(d)]
+        directories = [d for d in os.listdir(os.getcwd()) if os.path.isdir(d)]
 
         # Do a little set magic to find the directories that are not in the winners list.
         # These are the directories we can safely delete
         remove_list = list(set(directories) - set(winners))
 
-        print "Removing:", remove_list
-        #for dd in remove_list:
-        #    shutil.rmtree(dd)
+        print("Removing:", remove_list)
+        # for dd in remove_list:
+        #     shutil.rmtree(dd)
 
         # Return to starting directory
         os.chdir(stdir)

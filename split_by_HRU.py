@@ -99,7 +99,7 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
         out_hdl.write(fheader)
         
         # Subset dataframe to current HRU
-        df1_ss = df1.iloc[:,[0, 1, 2, 3, 4, 5,hh+6]]
+        df1_ss = df1.iloc[:, [0, 1, 2, 3, 4, 5, hh+6]]
         
         df1_ss.to_csv(out_hdl, sep=' ', float_format='%0.4f', header=False, index=False)
         out_hdl.close()
@@ -170,8 +170,8 @@ def main():
             # and re-create. For now we'll just pass
             pass
             # Directory already exists, delete it and re-create
-            #shutil.rmtree(cdir)
-            #os.makedirs(cdir)
+            # shutil.rmtree(cdir)
+            # os.makedirs(cdir)
         
         # Write an input parameter file for the current HRU 
         params.pull_hru2(hh, '%s/%s' % (cdir, os.path.basename(input_src['param_file'])))

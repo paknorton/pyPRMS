@@ -52,8 +52,9 @@ def link_data(src, dst):
                 os.remove(tmpfile)
         except OSError, (errno, strerror):
             print "I/O error({0}): {1}".format(errno, strerror)
+
             if not os.path.exists(tmpfile):
-                print "\tHmmm... file must be gone already."
+                print("\tHmmm... file must be gone already.")
 
     # Now create the symbolic link
     os.symlink(src, dst_file)
@@ -119,14 +120,14 @@ for rr in pfile:
 pfile.close()
 
 if len(params) != len(args.parameters):
-    print "ERROR: mismatch between number of parameters (%d vs. %d)" % (len(params), len(args.parameters))
+    print("ERROR: mismatch between number of parameters (%d vs. %d)" % (len(params), len(args.parameters)))
     exit(1)
 
 
 # ************************************
 # Check related parameters here
 # ************************************
-for ii,pp in enumerate(params):
+for ii, pp in enumerate(params):
     if pp in related_params:
         for kk, vv in related_params[pp].iteritems():
             if kk in params:
@@ -134,7 +135,8 @@ for ii,pp in enumerate(params):
                 if not vv(args.parameters[ii], args.parameters[params.index(kk)]):
                     # Write the stats.txt file with -1 for each objective function and
                     # skip running PRMS, return stats.txt with -1.0 for each objective function
-                    print '%s = %s failed relationship with %s = %s' % (pp, args.parameters[ii], kk, args.parameters[params.index(kk)])
+                    print('%s = %s failed relationship with %s = %s' %
+                          (pp, args.parameters[ii], kk, args.parameters[params.index(kk)]))
                     tmpfile = open('tmpstats', 'w')
                     objfcn_link = cfg.get_value('of_link')
 
@@ -245,16 +247,17 @@ for kk, vv in objfcn_link.iteritems():
         # Read in the observation values/ranges
         if curr_of['obs_intv'] == 'mnmonth':
             # The index won't be a datetime, instead it's a month value
-            df1 = pd.read_csv(curr_of['obs_file'], sep=r"\s*", engine='python', usecols=range(0,len(thecols)),
+            df1 = pd.read_csv(curr_of['obs_file'], sep=r"\s*", engine='python', usecols=range(0, len(thecols)),
                               header=None, na_values=missing, names=thecols, index_col=0)
         else:
             # NOTE: When parsing year-month dates pandas defaults to the 21st of each month. I'm not sure yet
             #       if this will cause a problem.
             #       Annual dates are parsed as Jan-1 of the given year.
             # TODO: if 'obsfile' == statvar then read the observed values in from the statvar file
-            df1 = pd.read_csv(curr_of['obs_file'], sep=r"\s*", engine='python', usecols=range(0,len(thecols)),
+            df1 = pd.read_csv(curr_of['obs_file'], sep=r"\s*", engine='python', usecols=range(0, len(thecols)),
                               header=None, na_values=missing, date_parser=dparse,
-                              names=thecols, parse_dates={'thedate': colnm_lookup[curr_of['obs_intv']]}, index_col='thedate')
+                              names=thecols, parse_dates={'thedate': colnm_lookup[curr_of['obs_intv']]},
+                              index_col='thedate')
 
             if curr_of['obs_intv'] == 'monthly':
                 df1 = df1.resample('M', how='mean')
@@ -262,27 +265,27 @@ for kk, vv in objfcn_link.iteritems():
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Merge simulated with observed; resample simulated if necessary
         if curr_of['obs_intv'] == 'daily':
-            df1_join_sim = df1.join(sim_data.loc[:,curr_of['sim_var']], how='left')
+            df1_join_sim = df1.join(sim_data.loc[:, curr_of['sim_var']], how='left')
         else:
             if curr_of['obs_intv'] == 'monthly':
                 if curr_of['sim_var'] in ['hru_actet']:
                     # This is for variables that should be summed instead of averaged
                     # FIXME: make this dynamic - maybe embed in basin.cfg?
-                    tmp = sim_data.loc[:,curr_of['sim_var']].resample('M', how='sum')
+                    tmp = sim_data.loc[:, curr_of['sim_var']].resample('M', how='sum')
                 else:
-                    tmp = sim_data.loc[:,curr_of['sim_var']].resample('M', how='mean')
+                    tmp = sim_data.loc[:, curr_of['sim_var']].resample('M', how='mean')
             elif curr_of['obs_intv'] == 'mnmonth':
-                monthly = sim_data.loc[:,curr_of['sim_var']].resample('M', how='mean')
+                monthly = sim_data.loc[:, curr_of['sim_var']].resample('M', how='mean')
                 tmp = monthly.resample('M', how='mean').groupby(monthly.index.month).mean()
             elif curr_of['obs_intv'] == 'annual':
-                tmp = sim_data.loc[:,curr_of['sim_var']].resample('A-SEP', how='mean')
+                tmp = sim_data.loc[:, curr_of['sim_var']].resample('A-SEP', how='mean')
             else:
-                print "ERROR"
+                print("ERROR")
                 tmp = None
                 exit(1)
             df1_join_sim = df1.join(tmp, how='left')
 
-        df1_join_sim.rename(columns = {curr_of['sim_var']: 'sim_var'}, inplace=True)
+        df1_join_sim.rename(columns={curr_of['sim_var']: 'sim_var'}, inplace=True)
 
         # =================================================================
         # Read in the subdivide data, if specified
@@ -291,14 +294,14 @@ for kk, vv in objfcn_link.iteritems():
             thecols = ['year', 'month', 'day', 'sdval']
 
             # Read the subdivide data
-            df2 = pd.read_csv(curr_of['sd_file'], sep=r"\s*", engine='python', usecols=range(0,len(thecols)),
+            df2 = pd.read_csv(curr_of['sd_file'], sep=r"\s*", engine='python', usecols=range(0, len(thecols)),
                               header=None, na_values=missing,
                               names=thecols, parse_dates={'thedate': ['year', 'month', 'day']}, index_col='thedate')
 
             # Merge the subdivide data with the observed data
             if curr_of['obs_intv'] != 'daily':
                 # The observed data is not a daily timestep (subdivide data is daily) so raise an error.
-                print 'ERROR: observed data must be daily timestep when using subdivide data'
+                print('ERROR: observed data must be daily timestep when using subdivide data')
                 exit()
 
             # Merge statvar and observed data
@@ -339,7 +342,7 @@ for kk, vv in objfcn_link.iteritems():
         of_result += vv['of_wgts'][ii] * objfcn.compute_objfcn(curr_of['of_stat'], df_final)
     # **** for of in vv['of_names']:
 
-    print '%s: %0.6f' % (vv['of_desc'], of_result)
+    print('%s: %0.6f' % (vv['of_desc'], of_result))
     tmpfile.write('%0.6f ' % of_result)
 # **** for kk, vv in objfcn_link.iteritems():
 
@@ -355,4 +358,3 @@ os.rename('tmpstats', 'stats.txt')
 
 # Return to the starting directory
 os.chdir(cdir)
-
