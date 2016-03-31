@@ -8,6 +8,7 @@
 import numpy as np
 import prms_lib as prms
 
+
 def read_default_params(filename):
     # Read in the default parameter ranges
     default_rng_file = open(filename, 'r')
@@ -30,8 +31,8 @@ def read_sens_params(filename, include_params=(), exclude_params=()):
     try:
         sensparams_file = open(filename, 'r')
     except IOError:
-        #print "\tERROR: Missing hruSens.csv file for %s... skipping" % bb
-        print '\tERROR: Missing %s file... skipping' % filename
+        # print "\tERROR: Missing hruSens.csv file for %s... skipping" % bb
+        print('\tERROR: Missing %s file... skipping' % filename)
         return {}
         
     rawdata = sensparams_file.read().splitlines()
@@ -88,9 +89,9 @@ def adjust_param_ranges(paramfile, calib_params, default_ranges, outfilename, ma
         adjMax = ((user_max + C) * (src_mean + C) / (src_max + C)) - C
                 
         if round(adjMin, 5) != round(default_ranges[kk]['min'], 5):
-            print '\t%s: lower bound adjusted (%f to %f)' % (kk, default_ranges[kk]['min'], adjMin)
+            print('\t%s: lower bound adjusted (%f to %f)' % (kk, default_ranges[kk]['min'], adjMin))
         if round(adjMax, 5) != round(default_ranges[kk]['max'], 5):
-            print '\t%s: upper bound adjusted (%f to %f)' % (kk, default_ranges[kk]['max'], adjMax)
+            print('\t%s: upper bound adjusted (%f to %f)' % (kk, default_ranges[kk]['max'], adjMax))
         
         if make_dups:
             # Duplicate each parameter by the number of times it occurred

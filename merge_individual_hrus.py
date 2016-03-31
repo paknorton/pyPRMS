@@ -18,7 +18,7 @@ parent_dir = '%s/regions/%s' % (base_dir, region)
 src_dir = '/Volumes/LaCie/20150720a/regions/%s_byHRU' % region
 dst_dir = '/Volumes/LaCie/20150720a/regions/%s_byHRU' % region
 
-control_file = '%s/control/daymet.control' % (parent_dir)
+control_file = '%s/control/daymet.control' % parent_dir
 
 # Read the control file
 control = prms.control(control_file)
@@ -29,9 +29,9 @@ orig_params = prms.parameters('%s/%s' % (parent_dir, control.get_var('param_file
 param_filename = os.path.basename(control.get_var('param_file')['values'][0])
 
 # TODO: Right now only nhru is handled for checking in changed parameters; this should be expanded for nssr and ngw
-#split_dims = set(['nhru', 'nssr', 'ngw'])
+# split_dims = set(['nhru', 'nssr', 'ngw'])
 
-print '%s/%s_*/%s' % (src_dir, region, param_filename)
+print('%s/%s_*/%s' % (src_dir, region, param_filename))
 proc_list = [el for el in glob.glob('%s/%s_*/%s' % (src_dir, region, param_filename))]
 
 for dd in proc_list:
@@ -47,8 +47,6 @@ for dd in proc_list:
     for ii in mod_params:
         curr_param = new_params.get_var(ii)
         orig_params.update_values_by_hru(ii, curr_param['values'], parent_hru)
-print ''
+print('')
 
 orig_params.write_param_file('crap_new_param')
-
-

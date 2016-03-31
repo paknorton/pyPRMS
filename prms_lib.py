@@ -1,4 +1,20 @@
 #!/usr/bin/env python
+
+from __future__ import (absolute_import, division,
+                        print_function)
+# , unicode_literals)
+from future.utils import iteritems
+
+# from builtins import (
+#     bytes, dict, int, list, object, range, str,
+#     ascii, chr, hex, input, next, oct, open,
+#     pow, round, super,
+#     filter, map, zip)
+
+# import past
+# import six
+
+from functools import reduce
 import glob
 import re
 import numpy as np
@@ -44,7 +60,7 @@ def create_default_range_file(in_filename, out_filename):
     try:
         infile = open(in_filename, 'r')
     except IOError as err:
-        print "Unable to open file\n", err
+        print("Unable to open file\n", err)
         return False
     else:
         rawdata = infile.read().splitlines()
@@ -75,12 +91,12 @@ def create_default_range_file(in_filename, out_filename):
         try:
             outfile = open(out_filename, 'w')
         except IOError as err:
-            print "Unable to write file\n", err
+            print("Unable to write file\n", err)
             return False
         else:
             outfile.write('parameter max min\n')
 
-            for kk, vv in param_dict.iteritems():
+            for (kk, vv) in iteritems(param_dict):
                 outfile.write('%s %f %f\n' % (kk, float(vv['Max']), float(vv['Min'])))
 
             outfile.close()
@@ -113,7 +129,7 @@ def read_cbh(filename, sep=' ', missing_val=[-99.0, -999.0]):
 
         if line[0:4] in ['prcp', 'tmax', 'tmin']:
             # Change the number of HRUs included to one
-            numhru = int(line[5:])
+            # numhru = int(line[5:])
             fheader += line[0:5] + ' 1\n'
         else:
             fheader += line
@@ -172,7 +188,8 @@ def read_gdp(filename, missing_val=[255.]):
 
 # Order to write control file parameters for printing and writing a new control file
 ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'model_mode', 'param_file', 'data_file',
-             'model_output_file', 'parameter_check_flag', 'print_debug', 'et_module', 'precip_module', 'soilzone_module',
+             'model_output_file', 'parameter_check_flag', 'print_debug', 'et_module', 'precip_module',
+             'soilzone_module',
              'solrad_module',
              'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module', 'prms_warmup', 'init_vars_from_file',
              'save_vars_to_file', 'var_init_file', 'var_save_file', 'cbh_binary_flag', 'cbh_check_flag',
@@ -183,7 +200,8 @@ ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'm
              'nstatVars', 'statVar_element', 'statVar_names', 'aniOutON_OFF', 'ani_output_file', 'naniOutVars',
              'aniOutVar_names', 'dispGraphsBuffSize', 'ndispGraphs', 'dispVar_element', 'dispVar_names',
              'dispVar_plot', 'initial_deltat', 'cascade_flag', 'cascadegw_flag', 'dprst_flag', 'dyn_covden_flag',
-             'dyn_covtype_flag', 'dyn_dprst_flag', 'dyn_fallfrost_flag', 'dyn_imperv_flag', 'dyn_intcp_flag', 'dyn_potet_flag',
+             'dyn_covtype_flag', 'dyn_dprst_flag', 'dyn_fallfrost_flag', 'dyn_imperv_flag', 'dyn_intcp_flag',
+             'dyn_potet_flag',
              'dyn_radtrncf_flag', 'dyn_snareathresh_flag', 'dyn_soil_flag', 'dyn_springfrost_flag',
              'dyn_sro2dprst_imperv_flag', 'dyn_sro2dprst_perv_flag', 'dyn_transp_flag', 'frozen_flag',
              'gwr_swale_flag', 'stream_temp_flag', 'subbasin_flag', 'covden_sum_dynamic', 'covden_win_dynamic',
@@ -214,6 +232,9 @@ class control(object):
 
         self.__isloaded = False
         self.__filename = filename
+        self.__controldict = {}
+        self.__modules = {}  # Initialize dictionary of selected module names
+        self.__header = []
         self.__rowdelim = '####'  # Used to delimit variables
         self.__valtypes = ['', 'integer', 'float', 'double', 'string']
 
@@ -283,7 +304,7 @@ class control(object):
         cvars = self.vars
 
         if varname in cvars:
-            print "ERROR: %s already exists, use replace_values() instead"
+            print("ERROR: %s already exists, use replace_values() instead")
             return
 
         if not isinstance(val, list):
@@ -324,8 +345,7 @@ class control(object):
                 if varname in self.__controldict:
                     # Check for duplicate variables (that couldn't happen! :))
                     # If it does skip to the next variable in the parameter file
-                    print 'Duplicate variable name, %s, in Parameters section.. skipping' \
-                          % varname
+                    print('Duplicate variable name, %s, in Parameters section.. skipping' % varname)
 
                     try:
                         while next(it) != self.__rowdelim:
@@ -357,13 +377,13 @@ class control(object):
                         else:  # character
                             vals.append(next(it))
                     except ValueError:
-                        print "varname: %s value type and defined type (%s) don't match" \
-                              % (varname, self.__valtypes[valuetype])
+                        print("varname: %s value type and defined type (%s) don't match" %
+                              (varname, self.__valtypes[valuetype]))
                 vardict['values'] = vals
 
                 if len(vals) != numval:
-                    print 'ERROR: Not enough values provided for %s' % (varname)
-                    print '       Expect %d, got %d' % (numval, len(vals))
+                    print('ERROR: Not enough values provided for %s' % varname)
+                    print('       Expect %d, got %d' % (numval, len(vals)))
 
                 # Check if there are too many values specified
                 try:
@@ -372,9 +392,9 @@ class control(object):
                         cnt += 1
 
                     if cnt > numval:
-                        print 'WARNING: Too many values specified for %s' % varname
-                        print '       %d expected, %d given' % (numval, cnt)
-                        print '       Keeping first %d values' % (numval)
+                        print('WARNING: Too many values specified for %s' % varname)
+                        print('       %d expected, %d given' % (numval, cnt))
+                        print('       Keeping first %d values' % numval)
                 except StopIteration:
                     # Hit the end of the file
                     pass
@@ -385,7 +405,7 @@ class control(object):
                 # If this is a module-related parameter then add to __modules
                 if varname in ctl_module_params:
                     if len(vardict['values']) != 1:
-                        print "ERROR: %s should only have a single entry" % varname
+                        print("ERROR: %s should only have a single entry" % varname)
                     else:
                         if vardict['values'][0] not in self.__modules:
                             self.__modules[vardict['values'][0]] = []
@@ -397,7 +417,7 @@ class control(object):
                     'intcp': ['intcp_def'], 'snowcomp': ['snow_def'],
                     'gwflow': ['gw_def'], 'soilzone': ['soil_def'],
                     'basin_sum': ['summary_def']}
-        for kk, vv in def_mods.iteritems():
+        for (kk, vv) in iteritems(def_mods):
             self.__modules[kk] = vv
 
         self.__isloaded = True
@@ -414,7 +434,7 @@ class control(object):
                   'nhruOut': {'nhruOutVars': 0, 'nhruOutON_OFF': 0, 'nhruOutVar_names': []},
                   'statVar': {'nstatVars': 0, 'statsON_OFF': 0, 'statVar_element': [], 'statVar_names': []}}
 
-        for kk, vv in groups[group_name].iteritems():
+        for (kk, vv) in iteritems(groups[group_name]):
             if kk in self.__controldict:
                 self.replace_values(kk, vv)
 
@@ -525,13 +545,8 @@ class control(object):
                     # Write one value per line
                     for xx in val:
                         outfile.write(fmt % xx)
-
         outfile.close()
-
-
 # ***** END class control()
-
-
 
 
 class streamflow(object):
@@ -554,6 +569,7 @@ class streamflow(object):
         self.__types = None
         self.__units = []
         self.__stations = None
+        self.__stationIndex = {}  # Lookup of station id to header info
         self.__rawdata = None
         self.__selectedStations = None
         self.__isloaded = False
@@ -569,8 +585,8 @@ class streamflow(object):
         self.__stations = []  # list of gage stations
         self.__stationIndex = {}  # Lookup of station id to header info
 
-        headerNext = False
-        stationNext = False
+        # headerNext = False
+        # stationNext = False
 
         infile = open(filename, 'r')
         rawdata = infile.read().splitlines()
@@ -594,7 +610,7 @@ class streamflow(object):
 
         cnt = 0
         order = 0  # defines the order of the data types in the dataset
-        curr_fcnt = 0
+        # curr_fcnt = 0
         st = 0
 
         # print '-'*10,'metaheader','-'*10
@@ -614,9 +630,9 @@ class streamflow(object):
             # Check that number of fields remains constant
             if curr_fcnt != len(self.__metaheader):
                 if self.__verbose:
-                    print "WARNING: number of header fields changed from %d to %d" % (
-                    len(self.__metaheader), curr_fcnt),
-                    print "\t", words
+                    print("WARNING: number of header fields changed from %d to %d" %
+                          (len(self.__metaheader), curr_fcnt)),
+                    print("\t", words)
                     # exit()
 
             if words[self.__metaheader.index('Type')] not in self.__types:
@@ -677,7 +693,6 @@ class streamflow(object):
         self.__rawdata.replace(to_replace=self.__missing, value=np.nan, inplace=True)
 
         # print self.__rawdata.head()
-
         self.__isloaded = True
 
     @property
@@ -743,7 +758,7 @@ class streamflow(object):
         first_date = tmpdf[tmpdf.notnull()].index.min()
         last_date = tmpdf[tmpdf.notnull()].index.max()
 
-        return (first_date, last_date)
+        return first_date, last_date
 
     @property
     def numdays(self):
@@ -774,7 +789,7 @@ class streamflow(object):
 
             return b
         else:
-            print "not found"
+            print("not found")
 
     def getStationsByType(self, thetype):
         """Returns station IDs for a given type (e.g. runoff)"""
@@ -788,7 +803,7 @@ class streamflow(object):
 
             return b
         else:
-            print "not found"
+            print("not found")
 
     def selectByStation(self, streamgages):
         """Selects one or more streamgages from the dataset"""
@@ -822,71 +837,71 @@ class streamflow(object):
         # runoff <number of stations for each type>
         # ################################################################################
 
-        topLine = '$Id:$\n'
-        sectionSep = '////////////////////////////////////////////////////////////\n'
-        metaHeader1 = '// Station metadata (listed in the same order as the data):\n'
+        top_line = '$Id:$\n'
+        section_sep = '////////////////////////////////////////////////////////////\n'
+        meta_header_1 = '// Station metadata (listed in the same order as the data):\n'
         # metaHeader2 = '// ID    Type Latitude Longitude Elevation'
-        metaHeader2 = '// %s\n' % ' '.join(self.metaheader)
-        dataSection = '################################################################################\n'
+        meta_header_2 = '// %s\n' % ' '.join(self.metaheader)
+        data_section = '################################################################################\n'
 
         # ----------------------------------
         # Get the station information for each selected station
-        typeCount = {}  # Counts the number of stations for each type of data (e.g. 'runoff')
+        type_count = {}  # Counts the number of stations for each type of data (e.g. 'runoff')
         stninfo = ''
         if self.__selectedStations is None:
             for xx in self.__stations:
-                if xx[1] not in typeCount:
+                if xx[1] not in type_count:
                     # index 1 should be the type field
-                    typeCount[xx[1]] = 0
-                typeCount[xx[1]] += 1
+                    type_count[xx[1]] = 0
+                type_count[xx[1]] += 1
 
                 stninfo += '// %s\n' % ' '.join(xx)
         else:
             for xx in self.__selectedStations:
                 cstn = self.__stations[self.__stationIndex[xx]]
 
-                if cstn[1] not in typeCount:
+                if cstn[1] not in type_count:
                     # index 1 should be the type field
-                    typeCount[cstn[1]] = 0
+                    type_count[cstn[1]] = 0
 
-                typeCount[cstn[1]] += 1
+                type_count[cstn[1]] += 1
 
                 stninfo += '// %s\n' % ' '.join(cstn)
         # stninfo = stninfo.rstrip('\n')
 
         # ----------------------------------
         # Get the units information
-        unitLine = '// Unit:'
+        unit_line = '// Unit:'
         for uu in self.__units:
-            unitLine += ' %s,' % ' = '.join(uu)
-        unitLine = '%s\n' % unitLine.rstrip(',')
+            unit_line += ' %s,' % ' = '.join(uu)
+        unit_line = '%s\n' % unit_line.rstrip(',')
 
         # ----------------------------------
         # Create the list of types of data that are being included
         tmpl = []
 
         # Create list of types in the correct order
-        for kk, vv in self.__types.iteritems():
-            if kk in typeCount:
-                tmpl.insert(vv[0], [kk, typeCount[kk]])
+        for (kk, vv) in iteritems(self.__types):
+            if kk in type_count:
+                tmpl.insert(vv[0], [kk, type_count[kk]])
 
-        typeLine = ''
+        type_line = ''
         for tt in tmpl:
-            typeLine += '%s %d\n' % (tt[0], tt[1])
+            type_line += '%s %d\n' % (tt[0], tt[1])
         # typeLine = typeLine.rstrip('\n')
 
         # Write out the header to the new file
         outfile = open(filename, 'w')
-        outfile.write(topLine)
-        outfile.write(sectionSep)
-        outfile.write(metaHeader1)
-        outfile.write(metaHeader2)
+        outfile.write(top_line)
+        outfile.write(section_sep)
+        outfile.write(meta_header_1)
+        outfile.write(meta_header_2)
         outfile.write(stninfo)
-        outfile.write(sectionSep)
-        outfile.write(unitLine)
-        outfile.write(sectionSep)
-        outfile.write(typeLine)
-        outfile.write(dataSection)
+        outfile.write(section_sep)
+        outfile.write(unit_line)
+        outfile.write(section_sep)
+        outfile.write(type_line)
+        outfile.write(data_section)
 
         # Write out the data to the new file
         # Using quoting=csv.QUOTE_NONE results in an error when using a customized  date_format
@@ -898,8 +913,6 @@ class streamflow(object):
         old = open(filename, 'r').read()
         new = re.sub('["]', '', old)
         open(filename, 'w').write(new)
-
-
 
         # def getRecurrenceInterval(self, thetype):
         #     """Returns the recurrence intervals for each station"""
@@ -930,8 +943,6 @@ class streamflow(object):
         #                 #print "%s: [%d]: %d %d %0.3f %0.3f" % (ss, si,  numobs, rank, tmp[si], ri[si,ss])
         #
         #     return ri
-
-
 # ***** END of class streamflow()
 
 
@@ -947,7 +958,6 @@ class param_db(object):
                           'tmax_adj': ['temp_1sta', 'temp_laps', 'ide_dist', 'xyz_dist'],
                           'hru_tsta': ['temp_1sta', 'temp_laps'],
                           'basin_tsta': ['temp_1sta', 'temp_laps', 'temp_dist2'],
-                          'hru_tsta': ['temp_1sta', 'temp_laps'],
                           'psta_elev': ['precip_laps', 'ide_dist', 'xyz_dist'],
                           'tsta_elev': ['temp_1sta', 'temp_laps', 'temp_dist2', 'ide_dist', 'xyz_dist'],
                           'elevlake_init': ['muskingum_lake'],
@@ -984,6 +994,7 @@ class param_db(object):
 
     def __build_paramdb(self):
         """Build the input parameter db from a collection of par_name files in a directory"""
+        filelist = []
 
         if os.path.isfile(self.__filename):
             # A single input par_name file was specified
@@ -1002,7 +1013,7 @@ class param_db(object):
                 curr_dict = self.__read_parname_file(ff)
 
                 # Add new control parameters or update module field for existing parameters
-                for kk, vv in curr_dict.iteritems():
+                for (kk, vv) in iteritems(curr_dict):
                     if kk in self.__paramdb:
                         # Control parameter already exists, check if this is a new module
                         if isinstance(self.__paramdb[kk]['Module'], list):
@@ -1028,7 +1039,7 @@ class param_db(object):
         try:
             infile = open(fname, 'r')
         except IOError as err:
-            print "Unable to open file\n", err
+            print("Unable to open file\n", err)
             return None
         else:
             rawdata = infile.read().splitlines()
@@ -1107,7 +1118,7 @@ class param_db(object):
 
         param_by_module = self.module_params(mods)
 
-        for cmod, params in param_by_module.iteritems():
+        for (cmod, params) in iteritems(param_by_module):
             for param in params:
                 subset[param] = self.__paramdb[param]
 
@@ -1122,10 +1133,10 @@ class param_db(object):
         params_by_module = {}
 
         # Build params by modules
-        for cmodname, val_mod in mod.iteritems():
+        for (cmodname, val_mod) in iteritems(mod):
             # Can have one or more set
             for c_mod in val_mod:
-                for kk, vv in self.__paramdb.iteritems():
+                for (kk, vv) in iteritems(self.__paramdb):
                     if cmodname in vv['Module']:
                         if kk in ['potet_cbh_adj'] and cmodname == 'climate_hru' and c_mod != 'et_module':
                             # Only include potet_cbh_adj if et_module == climate_hru
@@ -1229,7 +1240,7 @@ class parameters(object):
 
         # Check that valuetype is valid
         if valuetype not in [1, 2, 3, 4]:
-            print "ERROR: Invalid valuetype was specified"
+            print("ERROR: Invalid valuetype was specified")
             return
 
         # Check that total dimension size matches number of values supplied
@@ -1241,21 +1252,21 @@ class parameters(object):
                 tsize *= self.get_dim(dd)
 
             if tsize != len(values):
-                print "ERROR: Number of values (%d) does not match size of dimensions (%d)" % (len(values), tsize)
+                print("ERROR: Number of values (%d) does not match size of dimensions (%d)" % (len(values), tsize))
                 return
         else:
             # single dimension
             tsize = self.get_dim(dimnames)
 
             if isinstance(values, list):
-                print "ERROR: Scalar dimensions specified but of list of values given"
+                print("ERROR: Scalar dimensions specified but of list of values given")
                 return
 
         parent = self.__paramdict['Parameters']
 
         # Make sure the parameter doesn't already exist
         if self.var_exists(name):
-            print 'ERROR: Parameter name already exists, use replace_values() instead.'
+            print('ERROR: Parameter name already exists, use replace_values() instead.')
             return
 
         # for ee in parent:
@@ -1297,8 +1308,7 @@ class parameters(object):
                     # Check for duplicate variables (that couldn't happen! :))
                     # If it does skip to the next variable in the parameter file
                     if varname == kk['name']:
-                        print '%s: Duplicate parameter name.. skipping' \
-                              % varname
+                        print('%s: Duplicate parameter name.. skipping' % varname)
                         dupskip = True
                         break
 
@@ -1317,7 +1327,7 @@ class parameters(object):
 
                 # Read in the dimension names
                 numdim = int(next(it))  # number of dimensions for this variable
-                vardict['dimnames'] = [next(it) for dd in xrange(numdim)]
+                vardict['dimnames'] = [next(it) for dd in range(numdim)]
 
                 # Lookup dimension size for each dimension name
                 arr_shp = [self.__paramdict['Dimensions'][dd] for dd in vardict['dimnames']]
@@ -1341,8 +1351,8 @@ class parameters(object):
                     pass
 
                 if len(vals) != numval:
-                    print '%s: number of values does not match dimension size (%d != %d).. skipping' \
-                          % (varname, len(vals), numval)
+                    print('%s: number of values does not match dimension size (%d != %d).. skipping' %
+                          (varname, len(vals), numval))
                 else:
                     # Convert the values to the correct datatype
                     # 20151118 PAN: found a value of 1e+05 in nhm_id for r17 caused this to fail
@@ -1353,8 +1363,8 @@ class parameters(object):
                         elif valuetype == 2:  # float
                             vals = [float(vals) for vals in vals]
                     except ValueError:
-                        print "%s: value type and defined type (%s) don't match" \
-                              % (varname, self.__valtypes[valuetype])
+                        print("%s: value type and defined type (%s) don't match" %
+                              (varname, self.__valtypes[valuetype]))
 
                     # Add to dictionary as a numpy array
                     vardict['values'] = np.array(vals).reshape(arr_shp)
@@ -1363,10 +1373,10 @@ class parameters(object):
         # Add or replace parameters depending on whether they already exist
         for pp in tmp_params:
             if self.var_exists(pp['name']):
-                print "Replacing existing parameter: %s" % pp['name']
+                print("Replacing existing parameter: %s" % pp['name'])
                 self.replace_values(pp['name'], pp['values'], pp['dimnames'])
             else:
-                print "Adding new parameter: %s" % pp['name']
+                print("Adding new parameter: %s" % pp['name'])
                 self.add_param(pp['name'], pp['dimnames'], pp['valuetype'], pp['values'])
 
     def check_var(self, varname):
@@ -1385,9 +1395,9 @@ class parameters(object):
 
         if thevar['values'].size == total_size:
             # The number of values for the defined dimensions match
-            print '%s: OK' % varname
+            print('%s: OK' % varname)
         else:
-            print '%s: BAD' % varname
+            print('%s: BAD' % varname)
 
     def check_all_vars(self):
         """Check all parameter variables for proper array size"""
@@ -1403,8 +1413,8 @@ class parameters(object):
         """Given a .par_name file verify whether all needed parameters are in the parameter file"""
         # mods      Dictionary created by param_db.module_params()
 
-        for cmodule, params in mods.iteritems():
-            print 'Module:', cmodule
+        for (cmodule, params) in iteritems(mods):
+            print('Module:', cmodule)
 
             for cparam in params:
                 if cparam in ['gw_seep_coef', 'elevlake_init', 'lake_hru_id',
@@ -1416,7 +1426,7 @@ class parameters(object):
                     continue
 
                 if not self.var_exists(cparam):
-                    print '\t%s: MISSING' % cparam
+                    print('\t%s: MISSING' % cparam)
 
     def copy_param(self, varname, filename):
         """Copies selected varname from given src input parameter file (filename).
@@ -1429,12 +1439,12 @@ class parameters(object):
         srcparam = srcparamfile.get_var(varname)
 
         if self.var_exists(srcparam['name']):
-            print 'Replacing existing parameter'
+            print('Replacing existing parameter')
             self.replace_values(srcparam['name'], srcparam['values'], srcparam['dimnames'])
         else:
-            print 'Adding new parameter'
+            print('Adding new parameter')
             self.add_param(srcparam['name'], srcparam['dimnames'], srcparam['valuetype'], srcparam['values'])
-        del (srcparamfile)
+        del srcparamfile
 
     def distribute_mean_value(self, varname, new_mean):
         # def redistribute_mean(old_vals, new_mean):
@@ -1445,13 +1455,13 @@ class parameters(object):
 
         if old_vals.size > 1:
             # This parameter is a list of values
-            ZC = 10.  # Constant to avoid zero values
+            zc = 10.  # Constant to avoid zero values
             new_vals = []
 
             old_mean = old_vals.sum() / float(old_vals.size)
 
             for vv in old_vals.flatten():
-                new_vals.append((((new_mean + ZC) * (vv + ZC)) / (old_mean + ZC)) - ZC)
+                new_vals.append((((new_mean + zc) * (vv + zc)) / (old_mean + zc)) - zc)
 
             self.replace_values(varname, np.array(new_vals).reshape(old_vals.shape))
         else:
@@ -1538,7 +1548,7 @@ class parameters(object):
                         newarr[newarr > 1.0] = 1.0
                         self.add_param(depr_params[cc], self.get_var(cc)['dimnames'], param_type[newparam['Type']], newarr)
                 else:
-                    print 'ERROR: Missing parameters required for converting to %s' % valid_params[depr_params[cc]]
+                    print('ERROR: Missing parameters required for converting to %s' % valid_params[depr_params[cc]])
                 remove_list.append(cc)
             elif cc == 'ssstor_init':
                 # Convert with ssstor_init_frac = sstor_init / sat_threshold
@@ -1554,10 +1564,9 @@ class parameters(object):
 
         # Remove parameters that are deprecated
         for pp in remove_list:
-            print "Removing deprecated parameter %s" % pp
+            print("Removing deprecated parameter %s" % pp)
             self.remove_param(pp)
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
         # =====================================================================
         # Add missing parameters using default values
@@ -1590,7 +1599,7 @@ class parameters(object):
             newsize = 1
             for dd in newparam['Dimensions']:
                 if self.get_dim(dd) is None:
-                    print "Not adding %s because %s doesn't exist" % (pp, dd)
+                    print("Not adding %s because %s doesn't exist" % (pp, dd))
                     newsize = 0
                     break
                 else:
@@ -1606,8 +1615,8 @@ class parameters(object):
         # Create set of cparams that are not needed by modules
         # Not used for now but it could be used to strip out unneeded additional parameters
         addl_params = cparams.difference(vparams)
-        print 'cparams not in validparams:', addl_params
-        print '-' * 40
+        print('cparams not in validparams:', addl_params)
+        print('-' * 40)
 
         # =====================================================================
         # Expand parameters whose dimensionality has changed
@@ -1629,7 +1638,7 @@ class parameters(object):
 
             cvar = self.get_var(ee)
             if cvar is None:
-                print "Not expanding %s because parameter doesn't exist" % ee
+                print("Not expanding %s because parameter doesn't exist" % ee)
             else:
                 cname = cvar['name']
 
@@ -1644,7 +1653,7 @@ class parameters(object):
                     pass
                 else:
                     # Parameter has a change in dimensionality
-                    print "%s: Dimensionality changed from" % cname, cdimnames, 'to', vdimnames
+                    print("%s: Dimensionality changed from" % cname, cdimnames, 'to', vdimnames)
 
                     # Compute new dimension size
                     newsize = 1
@@ -1733,8 +1742,7 @@ class parameters(object):
                         # Check for duplicate variables (that couldn't happen! :))
                         # If it does skip to the next variable in the parameter file
                         if varname == kk['name']:
-                            print '%s: Duplicate parameter name.. skipping' \
-                                  % varname
+                            print('%s: Duplicate parameter name.. skipping' % varname)
                             dupskip = True
                             break
 
@@ -1753,7 +1761,7 @@ class parameters(object):
 
                     # Read in the dimension names
                     numdim = int(next(it))  # number of dimensions for this variable
-                    vardict['dimnames'] = [next(it) for dd in xrange(numdim)]
+                    vardict['dimnames'] = [next(it) for dd in range(numdim)]
 
                     # Lookup dimension size for each dimension name
                     arr_shp = [self.__paramdict['Dimensions'][dd] for dd in vardict['dimnames']]
@@ -1765,7 +1773,7 @@ class parameters(object):
 
                     if numval != dim_size:
                         # The declared total size doesn't match the total size of the declared dimensions
-                        print('%s: Declared total size for parameter does not match the total size of the declared dimension(s) (%d != %d).. skipping' \
+                        print('%s: Declared total size for parameter does not match the total size of the declared dimension(s) (%d != %d).. skipping'
                               % (varname, numval, dim_size))
 
                         # Still have to read all the values to skip this properly
@@ -1795,8 +1803,8 @@ class parameters(object):
                             pass
 
                         if len(vals) != numval:
-                            print '%s: number of values does not match dimension size (%d != %d).. skipping' \
-                                  % (varname, len(vals), numval)
+                            print('%s: number of values does not match dimension size (%d != %d).. skipping' %
+                                  (varname, len(vals), numval))
                         else:
                             # Convert the values to the correct datatype
                             # 20151118 PAN: found a value of 1e+05 in nhm_id for r17 caused this to fail
@@ -1807,8 +1815,8 @@ class parameters(object):
                                 elif valuetype == 2:  # float
                                     vals = [float(vals) for vals in vals]
                             except ValueError:
-                                print "%s: value type and defined type (%s) don't match" \
-                                      % (varname, self.__valtypes[valuetype])
+                                print("%s: value type and defined type (%s) don't match" %
+                                      (varname, self.__valtypes[valuetype]))
 
                             # Add to dictionary as a numpy array
                             vardict['values'] = np.array(vals).reshape(arr_shp)
@@ -1856,7 +1864,7 @@ class parameters(object):
         outfile.write('%s Dimensions %s\n' % (self.__catdelim, self.__catdelim))
 
         # -------------------------------------------------------------------
-        for kk, vv in dimparent.iteritems():
+        for (kk, vv) in iteritems(dimparent):
             # Write the dimension names and values separated by self.__rowdelim
             outfile.write('%s\n' % self.__rowdelim)
             outfile.write('%s\n' % kk)
@@ -2029,7 +2037,7 @@ class parameters(object):
             #     elif isinstance(newvals, int):
             #         thevar['values'] = [newvals]
             else:
-                print "ERROR: Size of oldval array and size of newval array don't match"
+                print("ERROR: Size of oldval array and size of newval array don't match")
         else:
             # The dimensions are being changed and new values provided
 
@@ -2057,7 +2065,7 @@ class parameters(object):
                 elif isinstance(newvals, int):
                     thevar['values'] = [newvals]
             else:
-                print "ERROR: Size of newval array doesn't match dimensions in parameter file"
+                print("ERROR: Size of newval array doesn't match dimensions in parameter file")
 
     def resize_dim(self, dimname, newsize):
         """Changes the size of the given dimension.
@@ -2179,7 +2187,7 @@ class parameters(object):
 
         outfile.write('%s Dimensions %s\n' % (self.__catdelim, self.__catdelim))
 
-        for kk, vv in dimparent.iteritems():
+        for (kk, vv) in iteritems(dimparent):
             # Write the dimension names and values separated by self.__rowdelim
             outfile.write('%s\n' % self.__rowdelim)
             outfile.write('%s\n' % kk)
@@ -2233,12 +2241,21 @@ class parameters(object):
 # ***** END of class parameters()
 
 
-
-
 class statvar(object):
     def __init__(self, filename=None, missing=-999.0):
         self.__timecols = 6  # number columns for time in the file
         self.__missing = missing  # what is considered a missing value?
+
+        self.__isloaded = False
+        self.__vars = None
+        self.__rawdata = None
+        self.__metaheader = None
+        self.__header = None
+        self.__headercount = None
+        self.__types = None
+        self.__units = {}
+        self.__stations = None
+        self.__filename = ''
         self.filename = filename  # trigger the filename setter
 
     @property

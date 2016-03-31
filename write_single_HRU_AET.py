@@ -188,25 +188,34 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
         en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
 
     # Get the zero-based start and end index for the selected region
-    start_idx = sum(hrus_by_region[0:regions.index(region)])
-    end_idx = (sum(hrus_by_region[0:regions.index(region)]) + hrus_by_region[regions.index(region)] - 1)
+    # start_idx = sum(hrus_by_region[0:regions.index(region)])
+    # end_idx = (sum(hrus_by_region[0:regions.index(region)]) + hrus_by_region[regions.index(region)] - 1)
 
     # Load each dataset into memory. These datasets contain all regions
     print("Loading:")
     # Parser for the date information
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 
+    # When using the CONUS file we have to pull the region from it
+    region_start = sum(hrus_by_region[0:regions.index(region)]) + 1
+    region_end = region_start + hrus_by_region[regions.index(region)]
+
+    # Build the set of columns to load
+    # Column 0 is the date and is always included
+    column_set = [0]
+    column_set.extend(range(region_start, region_end))
+
     print("\tMOD16 AET..")
     aet_mod16 = pd.read_csv('%s/MOD16_AET_CONUS_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                            index_col='thedate')
+                            index_col='thedate', usecols=column_set)
 
     print("\tSSEBop AET..")
     aet_SSEBop = pd.read_csv('%s/SSEBop_AET_CONUS_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                             index_col='thedate')
+                             index_col='thedate', usecols=column_set)
 
     print("\tMWBM AET..")
     aet_mwbm = pd.read_csv('%s/MWBM_AET_CONUS_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                           index_col='thedate')
+                           index_col='thedate', usecols=column_set)
 
 
     # aet_mod16 = load_mod16_aet('%s/MOD16_AET_CONUS_2000-2010' % src_dir, st_date, en_date)
@@ -224,20 +233,21 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
     #hru_index = start_idx + 1
 
     print("Writing out HRUs:")
-    for hh in range(start_idx+1, end_idx+2):
-        sys.stdout.write('\r\t%06d ' % (hh-start_idx-1))
+    for hh in range(hrus_by_region[regions.index(region)]):
+        # for hh in range(start_idx+1, end_idx+2):
+        sys.stdout.write('\r\t%06d ' % hh)
         sys.stdout.flush()
 
         # ---------------------------------------------------------------------------
         # Retrieve single HRU from each input model
         # ---------------------------------------------------------------------------
-        modis_ss = pd.DataFrame(aet_mod16.ix[:,hh])
+        modis_ss = pd.DataFrame(aet_mod16.ix[:, hh])
         modis_ss.rename(columns={modis_ss.columns[0]: 'modis'}, inplace=True)
 
-        ssebop_ss = pd.DataFrame(aet_SSEBop.ix[:,hh])
+        ssebop_ss = pd.DataFrame(aet_SSEBop.ix[:, hh])
         ssebop_ss.rename(columns={ssebop_ss.columns[0]: 'ssebop'}, inplace=True)
 
-        mwbm_ss = pd.DataFrame(aet_mwbm.ix[:,hh])
+        mwbm_ss = pd.DataFrame(aet_mwbm.ix[:, hh])
         mwbm_ss.rename(columns={mwbm_ss.columns[0]: 'mwbm'}, inplace=True)
 
         # ---------------------------------------------------------------------------
@@ -245,7 +255,7 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
         # ---------------------------------------------------------------------------
         ds_join = modis_ss.join(ssebop_ss, how='outer')
         ds_join = ds_join.join(mwbm_ss, how='outer')
-        #print ds_join.head()
+        # print ds_join.head()
 
         # Create min and max fields based on the dataset values
         # Modify dateframe to the format required by PRMS for calibration
@@ -260,7 +270,7 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
         # Output HRU into the correct HRU directory
         # outfile format: <dst_dir>/r10U_000000/AETerror
         # HRU numbers are relative to the selected region
-        outfile = '%s/r%s_%06d/AETerror' % (dst_dir, region, (hh-start_idx-1))
+        outfile = '%s/r%s_%06d/AETerror' % (dst_dir, region, hh)
         ds_join.to_csv(outfile, sep=' ', float_format='%0.5f', columns=['year', 'month', 'min', 'max'], 
                        header=False, index=False)
 
