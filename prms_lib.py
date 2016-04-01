@@ -1914,7 +1914,9 @@ class parameters(object):
                     the_values = vv['values'][hru_index]
                     dimsize = vv['values'][hru_index].size
             elif bool(set(vv['dimnames']).intersection(set(['ndeplval']))):
-                the_values = vv['values'][hru_index:hru_index+11]
+                # The ndeplval dimension is actually nhru x 11
+                the_values = vv['values'].reshape((-1, 11))[hru_index]
+                # the_values = vv['values'][hru_index:hru_index+11]
                 dimsize = 11
             else:
                 dimsize = vv['values'].size
