@@ -1233,6 +1233,18 @@ class parameters(object):
 
         return varlist
 
+    def add_dimension(self, dimname, value):
+        """Add a new dimension"""
+        if not self.__isloaded:
+            self.load_file()
+
+        parent = self.__paramdict['Dimensions']
+
+        if dimname in parent:
+            print('ERROR: Dimension already exists. %s = %d' % (dimname, parent[dimname]))
+        else:
+            parent[dimname] = int(value)
+
     def add_param(self, name, dimnames, valuetype, values):
         # Add a new parameter
         if not self.__isloaded:
@@ -2022,6 +2034,10 @@ class parameters(object):
         # parent = self.__paramdict['Parameters']
         thevar = self.get_var(varname)
 
+        # NOTE: Need to figure out whether this function should expect row-major ordering
+        #       or column-major ordering when called. Right it expects column-major ordering
+        #       for newvals, which means no re-ordering of the array is necessary when
+        #       replacing values.
         if newdims is None:
             # We are not changing dimensions of the variable/parameter, just the values
             # Check if size of newvals array matches the oldvals array
@@ -2030,7 +2046,7 @@ class parameters(object):
                 # Lookup dimension size for each dimension name
                 arr_shp = [self.__paramdict['Dimensions'][dd] for dd in thevar['dimnames']]
 
-                thevar['values'][:] = np.array(newvals).reshape(arr_shp, order='F')
+                thevar['values'][:] = np.array(newvals).reshape(arr_shp)
             elif isinstance(newvals, np.ndarray) and newvals.size == thevar['values'].size:
                 # newvals is a numpy ndarray
                 # Size of arrays match so replace the oldvals with the newvals

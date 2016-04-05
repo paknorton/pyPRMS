@@ -209,11 +209,13 @@ def main():
                 exit(1)
 
             # Update tmax_allsnow and tmax_allrain_offset in the input parameter object
+            # 20160405 PAN: Used to send the transpose of the values but now just using
+            #               a flattened copy of the array. The parameters must be stored
+            #               column-major order for PRMS; this is handled in prms_lib. These
+            #               two statements may be able to be simplified.
             print '\tUpdate parameters and write out difference file'
             params.replace_values('tmax_allsnow', snow_tmax_final.values.flatten())
             params.replace_values('tmax_allrain_offset', rain_tmax_offset.values.flatten())
-            # params.replace_values('tmax_allsnow', snow_tmax_final.values)
-            # params.replace_values('tmax_allrain_offset', rain_tmax_offset.values)
 
             # Write out new input parameter file
             params.write_select_param_file(prms_region_outfile, ['tmax_allsnow', 'tmax_allrain_offset'])
