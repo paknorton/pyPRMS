@@ -1819,7 +1819,8 @@ class parameters(object):
                                       (varname, self.__valtypes[valuetype]))
 
                             # Add to dictionary as a numpy array
-                            vardict['values'] = np.array(vals).reshape(arr_shp)
+                            # Use column-major ordering for Fortran
+                            vardict['values'] = np.array(vals).reshape(arr_shp, order='F')
                             self.__paramdict['Parameters'].append(vardict)
 
         # Build the vardict dictionary (links varname to array index in self.__paramdict)
@@ -1915,7 +1916,7 @@ class parameters(object):
                     dimsize = vv['values'][hru_index].size
             elif bool(set(vv['dimnames']).intersection(set(['ndeplval']))):
                 # The ndeplval dimension is actually nhru x 11
-                the_values = vv['values'].reshape((-1, 11))[hru_index]
+                the_values = vv['values'].reshape((-1, 11), order='A')[hru_index]
                 # the_values = vv['values'][hru_index:hru_index+11]
                 dimsize = 11
             else:
@@ -2230,7 +2231,7 @@ class parameters(object):
                     outfile.write('%d\n' % val)
                 elif item == 'values':
                     # Write one value per line
-                    for xx in val.flatten():
+                    for xx in val.flatten(order='A'):
                         outfile.write(fmt % xx)
                 elif item == 'name':
                     # Write the self.__rowdelim before the variable name
