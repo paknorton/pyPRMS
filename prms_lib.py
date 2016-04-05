@@ -2037,7 +2037,7 @@ class parameters(object):
                 # Lookup dimension size for each dimension name
                 arr_shp = [self.__paramdict['Dimensions'][dd] for dd in thevar['dimnames']]
 
-                thevar['values'][:] = newvals.reshape(arr_shp, order='F')
+                thevar['values'][:] = newvals.reshape(arr_shp)
             # NOTE: removed the following because even scalars should be stored as numpy array
             # elif thevar['values'].size == 1:
             #     # This is a scalar value

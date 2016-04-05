@@ -210,10 +210,10 @@ def main():
 
             # Update tmax_allsnow and tmax_allrain_offset in the input parameter object
             print '\tUpdate parameters and write out difference file'
-            # params.replace_values('tmax_allsnow', snow_tmax_final.T.values)
-            # params.replace_values('tmax_allrain_offset', rain_tmax_offset.T.values)
-            params.replace_values('tmax_allsnow', snow_tmax_final.values)
-            params.replace_values('tmax_allrain_offset', rain_tmax_offset.values)
+            params.replace_values('tmax_allsnow', snow_tmax_final.values.flatten())
+            params.replace_values('tmax_allrain_offset', rain_tmax_offset.values.flatten())
+            # params.replace_values('tmax_allsnow', snow_tmax_final.values)
+            # params.replace_values('tmax_allrain_offset', rain_tmax_offset.values)
 
             # Write out new input parameter file
             params.write_select_param_file(prms_region_outfile, ['tmax_allsnow', 'tmax_allrain_offset'])
