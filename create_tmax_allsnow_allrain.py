@@ -169,10 +169,12 @@ def main():
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Read the daymet tmax and prcp cbh file
         # Read the tmax CBH file and restrict to the given date range
+        print '\tReading tmax CBH file'
         df_tmax = prms.read_cbh(tmaxfile)
         df_tmax = df_tmax[st:en]
 
         # Read the prcp CBH file and restrict to the given date range
+        print '\tReading prcp CBH file'
         df_prcp = prms.read_cbh(prcpfile)
         df_prcp = df_prcp[st:en]
 

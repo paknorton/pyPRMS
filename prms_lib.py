@@ -2027,11 +2027,17 @@ class parameters(object):
             # Check if size of newvals array matches the oldvals array
             if isinstance(newvals, list) and len(newvals) == thevar['values'].size:
                 # Size of arrays match so replace the oldvals with the newvals
-                thevar['values'][:] = newvals
+                # Lookup dimension size for each dimension name
+                arr_shp = [self.__paramdict['Dimensions'][dd] for dd in thevar['dimnames']]
+
+                thevar['values'][:] = np.array(newvals).reshape(arr_shp, order='F')
             elif isinstance(newvals, np.ndarray) and newvals.size == thevar['values'].size:
                 # newvals is a numpy ndarray
                 # Size of arrays match so replace the oldvals with the newvals
-                thevar['values'][:] = newvals
+                # Lookup dimension size for each dimension name
+                arr_shp = [self.__paramdict['Dimensions'][dd] for dd in thevar['dimnames']]
+
+                thevar['values'][:] = newvals.reshape(arr_shp, order='F')
             # NOTE: removed the following because even scalars should be stored as numpy array
             # elif thevar['values'].size == 1:
             #     # This is a scalar value
