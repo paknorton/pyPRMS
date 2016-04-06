@@ -1,32 +1,17 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
+
+from __future__ import (absolute_import, division, print_function)
+from future.utils import iteritems
 
 import argparse
 import os
 import shutil
 import subprocess
-import pandas as pd
-import datetime
-import calendar
-import operator
 import prms_cfg as prms_cfg
 import prms_lib as prms
-import prms_objfcn as objfcn
+from prms_calib_helpers import get_sim_obs_stat, related_params
 
 __version__ = 0.5
-
-
-def dparse(*dstr):
-    dint = [int(x) for x in dstr]
-
-    if len(dint) == 2:
-        # For months we want the last day of each month
-        dint.append(calendar.monthrange(*dint)[1])
-    if len(dint) == 1:
-        # For annual we want the last day of the year
-        dint.append(12)
-        dint.append(calendar.monthrange(*dint)[1])
-
-    return datetime.datetime(*dint)
 
 
 def link_data(src, dst):
@@ -50,8 +35,8 @@ def link_data(src, dst):
                 os.unlink(tmpfile)
             else:
                 os.remove(tmpfile)
-        except OSError, (errno, strerror):
-            print "I/O error({0}): {1}".format(errno, strerror)
+        except OSError as (errno, strerror):
+            print("I/O error({0}): {1}".format(errno, strerror))
 
             if not os.path.exists(tmpfile):
                 print("\tHmmm... file must be gone already.")
@@ -59,15 +44,12 @@ def link_data(src, dst):
     # Now create the symbolic link
     os.symlink(src, dst_file)
 
-
-# Related parameters
-# These parameters need to satisfy relationships before PRMS is allowed to run
-related_params = {'soil_rechr_max': {'soil_moist_max': operator.le},
-                  'tmax_allsnow': {'tmax_allrain': operator.lt}}
-
-
-months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-          'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+# # Related parameters
+# # These parameters need to satisfy relationships before PRMS is allowed to run
+# related_params = {'soil_rechr_max': {'soil_moist_max': operator.le},
+#                   'tmax_allsnow': {'tmax_allrain': operator.lt}}
+#
+# months = ('JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC')
 
 # Command line arguments
 parser = argparse.ArgumentParser(description='Post MOCOM processing')
@@ -123,13 +105,12 @@ if len(params) != len(args.parameters):
     print("ERROR: mismatch between number of parameters (%d vs. %d)" % (len(params), len(args.parameters)))
     exit(1)
 
-
 # ************************************
-# Check related parameters here
+# Check related parameters
 # ************************************
 for ii, pp in enumerate(params):
     if pp in related_params:
-        for kk, vv in related_params[pp].iteritems():
+        for kk, vv in iteritems(related_params[pp]):
             if kk in params:
                 # Test if the parameter meets the condition for the related parameter
                 if not vv(args.parameters[ii], args.parameters[params.index(kk)]):
@@ -142,7 +123,7 @@ for ii, pp in enumerate(params):
 
                     # must use version of MOCOM that has been modified to detect
                     # -9999.0 as a bad set.
-                    for kk, vv in objfcn_link.iteritems():
+                    for mm in objfcn_link:
                         tmpfile.write('-9999.0\n')
 
                     tmpfile.close()
@@ -152,21 +133,9 @@ for ii, pp in enumerate(params):
 
                     # Return to the starting directory
                     os.chdir(cdir)
-
                     exit(0)     # We'll skip the model run and return success to MOCOM
 
-
-# Check the distr_method in the config file
-# If equal to 'distr_val' then:
-#   strip trailing number off of each parameter
-#   find the parameter in the input parameter file
-#   check if number of given parameters matches one of the dimension size for the input parameter
-#       - if not ERROR
-#   loop through ndimensions and copy new values to parameter
-#
-# If equal to 'distr_mean' use the code below
-
-# For each parameter, redistribute the mean to the original parameters
+# For each parameter, either write individual values or redistribute the mean to the original parameters
 # and update the input parameter file
 pobj = prms.parameters(cfg.get_value('prms_input_file'))
 
@@ -202,159 +171,16 @@ subprocess.call(cfg.get_value('cmd_prms') + cmd_opts, shell=True)
 # ***************************************************************************
 # ***************************************************************************
 # Generate the statistics for the run
-
-# Get the name of the observation file
-cobj = prms.control(cfg.get_value('prms_control_file'))
-statvar_file = cobj.get_var('stat_var_file')['values'][0]
-
 tmpfile = open("tmpstats", 'w')
-outputstats = []
-
-# Load the simulation data
-sim_data = prms.statvar(statvar_file).data
-sim_data = sim_data[st_date_calib:en_date]
-
-# print '='*40
-# print 'Read statvar data'
-
-# Load the statvar dataframe
-# Range files from Lauren use -99.0 as missing, other files use -999.0
-missing = [-999.0, -99.0]
-
-# Equate objfcn values to columns and order expected in the data file
-colnm_lookup = {'range': ['obs_lower', 'obs_upper'],
-                'value': ['obs_var'],
-                'daily': ['year', 'month', 'day'],
-                'monthly': ['year', 'month'],
-                'annual': ['year'],
-                'mnmonth': ['month']}
-
 objfcn_link = cfg.get_value('of_link')
-of_dict = cfg.get_value('objfcn')
 
-for kk, vv in objfcn_link.iteritems():
-    of_result = 0
-
-    for ii, of in enumerate(vv['of_names']):
-        curr_of = of_dict[of]
-
-        # Get the total number of columns for the dtype and obs_intv and build the names to use for the dataframe.
-        thecols = []
-        thecols.extend(colnm_lookup[curr_of['obs_intv']])
-        thecols.extend(colnm_lookup[curr_of['obs_type']])
-
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Read in the observation values/ranges
-        if curr_of['obs_intv'] == 'mnmonth':
-            # The index won't be a datetime, instead it's a month value
-            df1 = pd.read_csv(curr_of['obs_file'], sep=r"\s*", engine='python', usecols=range(0, len(thecols)),
-                              header=None, na_values=missing, names=thecols, index_col=0)
-        else:
-            # NOTE: When parsing year-month dates pandas defaults to the 21st of each month. I'm not sure yet
-            #       if this will cause a problem.
-            #       Annual dates are parsed as Jan-1 of the given year.
-            # TODO: if 'obsfile' == statvar then read the observed values in from the statvar file
-            df1 = pd.read_csv(curr_of['obs_file'], sep=r"\s*", engine='python', usecols=range(0, len(thecols)),
-                              header=None, na_values=missing, date_parser=dparse,
-                              names=thecols, parse_dates={'thedate': colnm_lookup[curr_of['obs_intv']]},
-                              index_col='thedate')
-
-            if curr_of['obs_intv'] == 'monthly':
-                df1 = df1.resample('M', how='mean')
-
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Merge simulated with observed; resample simulated if necessary
-        if curr_of['obs_intv'] == 'daily':
-            df1_join_sim = df1.join(sim_data.loc[:, curr_of['sim_var']], how='left')
-        else:
-            if curr_of['obs_intv'] == 'monthly':
-                if curr_of['sim_var'] in ['hru_actet']:
-                    # This is for variables that should be summed instead of averaged
-                    # FIXME: make this dynamic - maybe embed in basin.cfg?
-                    tmp = sim_data.loc[:, curr_of['sim_var']].resample('M', how='sum')
-                else:
-                    tmp = sim_data.loc[:, curr_of['sim_var']].resample('M', how='mean')
-            elif curr_of['obs_intv'] == 'mnmonth':
-                monthly = sim_data.loc[:, curr_of['sim_var']].resample('M', how='mean')
-                tmp = monthly.resample('M', how='mean').groupby(monthly.index.month).mean()
-            elif curr_of['obs_intv'] == 'annual':
-                tmp = sim_data.loc[:, curr_of['sim_var']].resample('A-SEP', how='mean')
-            else:
-                print("ERROR")
-                tmp = None
-                exit(1)
-            df1_join_sim = df1.join(tmp, how='left')
-
-        df1_join_sim.rename(columns={curr_of['sim_var']: 'sim_var'}, inplace=True)
-
-        # =================================================================
-        # Read in the subdivide data, if specified
-        if curr_of['sd_file'] is not None:
-            # The subdivide file must be a daily timestep
-            thecols = ['year', 'month', 'day', 'sdval']
-
-            # Read the subdivide data
-            df2 = pd.read_csv(curr_of['sd_file'], sep=r"\s*", engine='python', usecols=range(0, len(thecols)),
-                              header=None, na_values=missing,
-                              names=thecols, parse_dates={'thedate': ['year', 'month', 'day']}, index_col='thedate')
-
-            # Merge the subdivide data with the observed data
-            if curr_of['obs_intv'] != 'daily':
-                # The observed data is not a daily timestep (subdivide data is daily) so raise an error.
-                print('ERROR: observed data must be daily timestep when using subdivide data')
-                exit()
-
-            # Merge statvar and observed data
-            df_final = df1_join_sim.join(df2, how='left')
-
-            # Subset to only include values which match 'sdval'
-            df_final = df_final[df_final['sdval'] == curr_of['sd_val']]
-        else:
-            df_final = df1_join_sim
-
-        # -----------------------------------------------------------------
-        # Now resample to specified of_intv
-        if curr_of['of_intv'] == 'monthly':
-            # We only want to include complete months
-            df_final = objfcn.get_complete_months(df_final)
-
-            df_final = df_final.resample('M', how='mean')
-        elif curr_of['of_intv'] == 'annual':
-            # We only want to include complete water years
-            df_final = objfcn.get_complete_wyears(df_final)
-
-            # TODO: For now the annual interval is assumed to be water-year based
-            df_final = df_final.resample('A-SEP', how='mean')
-        elif curr_of['of_intv'] == 'mnmonth':
-            # We only want to include complete months
-            df_final = objfcn.get_complete_months(df_final)
-
-            monthly = df_final.resample('M', how='mean')
-            df_final = monthly.resample('M', how='mean').groupby(monthly.index.month).mean()
-        elif curr_of['of_intv'] in months:
-            # We are working with a single month over the time period
-            df_final = df_final[df_final.index.month == (months.index(curr_of['of_intv'])+1)]
-
-            # TODO: strip rows with NaN observations out of dataframe
-        df_final = df_final.dropna(axis=0, how='any', thresh=None, inplace=False).copy()
-
-        # ** objective function looks for sim_val for simulated and either obs_val or obs_lower, obs_upper
-        of_result += vv['of_wgts'][ii] * objfcn.compute_objfcn(curr_of['of_stat'], df_final)
-    # **** for of in vv['of_names']:
-
-    print('%s: %0.6f' % (vv['of_desc'], of_result))
-    tmpfile.write('%0.6f ' % of_result)
-# **** for kk, vv in objfcn_link.iteritems():
-
+for vv in objfcn_link:
+    tmpfile.write('%0.6f ' % get_sim_obs_stat(cfg, vv))
 tmpfile.write('\n')
 tmpfile.close()
 
 # Move the stats file to its final place - MOCOM looks for this file
 os.rename('tmpstats', 'stats.txt')
-
-# NOTE: Could extend this to generate all sorts of statistics that aren't
-#        necessarily written to the mocom stats.txt file.
-# ---------------------------------------------------------------------------
 
 # Return to the starting directory
 os.chdir(cdir)

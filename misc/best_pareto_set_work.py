@@ -54,8 +54,8 @@ for bb in basins:
 
     # The minimum composite OF result is used to select the pareto set member
     # for each HRU that will be merge back into the parent region
-    lastgen_data.loc[:, 'OF_comp'] = 0.45*lastgen_data['OF_AET'] + 0.45*lastgen_data['OF_SWE'] + \
-                                     0.1*lastgen_data['OF_runoff']
+    lastgen_data.loc[:, 'OF_comp'] = 0.45 * lastgen_data['OF_AET'] + 0.45 * lastgen_data['OF_SWE'] + \
+                                     0.1 * lastgen_data['OF_runoff']
     # lastgen_data.loc[:, 'OF_comp'] = 0.5*lastgen_data['OF_AET'] + 0.5*lastgen_data['OF_SWE']
     
     print(hrunum,)
@@ -106,8 +106,6 @@ for bb in basins:
         # Load the simulation data
         sim_data = prms.statvar(statvar_file).data
         sim_data = sim_data[st_date_calib:en_date]
-        # print '='*40
-        # print 'Read statvar data'
 
         # Load the statvar dataframe
         # Range files from Lauren use -99.0 as missing, other files use -999.0
@@ -135,7 +133,6 @@ for bb in basins:
 
             for ii, of in enumerate(vv['of_names']):
                 curr_of = of_dict[of]
-#                 print vv['of_desc']
                 
                 # Replace a couple of entries
                 curr_of['of_stat'] = 'PBIAS'
@@ -184,7 +181,8 @@ for bb in basins:
                     elif curr_of['obs_intv'] == 'annual':
                         tmp = sim_data.loc[:, curr_of['sim_var']].resample('A-SEP', how='mean')
                     else:
-                        print("ERROR")
+                        print("ERROR: Objective function invterval (%s) is not an acceptable interval." %
+                              curr_of['obs_intv'])
                         tmp = None
                         exit(1)
                     df1_join_sim = df1.join(tmp, how='left')

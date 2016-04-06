@@ -15,6 +15,7 @@ from future.utils import iteritems
 # import six
 
 from functools import reduce
+import calendar
 import glob
 import re
 import numpy as np
@@ -42,14 +43,27 @@ from sets import Set
 __version__ = '0.5'
 
 
-def dparse(yr, mo, dy, hr, minute, sec):
-    # Date parser for working with the date format from PRMS files
+def dparse(*dstr):
+    dint = [int(x) for x in dstr]
 
-    # Convert to integer first
-    yr, mo, dy, hr, minute, sec = [int(x) for x in [yr, mo, dy, hr, minute, sec]]
+    if len(dint) == 2:
+        # For months we want the last day of each month
+        dint.append(calendar.monthrange(*dint)[1])
+    if len(dint) == 1:
+        # For annual we want the last day of the year
+        dint.append(12)
+        dint.append(calendar.monthrange(*dint)[1])
 
-    dt = datetime.datetime(yr, mo, dy, hr, minute, sec)
-    return dt
+    return datetime.datetime(*dint)
+
+# def dparse(yr, mo, dy, hr, minute, sec):
+#     # Date parser for working with the date format from PRMS files
+#
+#     # Convert to integer first
+#     yr, mo, dy, hr, minute, sec = [int(x) for x in [yr, mo, dy, hr, minute, sec]]
+#
+#     dt = datetime.datetime(yr, mo, dy, hr, minute, sec)
+#     return dt
 
 
 def create_default_range_file(in_filename, out_filename):
