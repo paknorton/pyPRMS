@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import (absolute_import, division, print_function)
-# from future.utils import iteritems
+from future.utils import itervalues
 
 # import calendar
 # import datetime
@@ -253,14 +253,14 @@ def main():
     parser.add_argument('-d', '--daterange',
                         help='Date range for statistics (YYYY-MM-DD YYYY-MM-DD)',
                         nargs=2, metavar=('stDate', 'enDate'), required=True)
-    parser.add_argument('-o', '--output', help='Human-readable stats filename')
+    # parser.add_argument('-o', '--output', help='Human-readable stats filename')
 
     args = parser.parse_args()
 
     tmpfile = open(args.mocomstats, 'w')
     objfcn_link = cfg.get_value('of_link')
 
-    for vv in objfcn_link:
+    for vv in itervalues(objfcn_link):
         tmpfile.write('%0.6f ' % get_sim_obs_stat(cfg, vv))
     tmpfile.write('\n')
     tmpfile.close()

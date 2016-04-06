@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 
 from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems
+from future.utils import iteritems, itervalues
 
 import argparse
 import os
@@ -174,7 +174,7 @@ subprocess.call(cfg.get_value('cmd_prms') + cmd_opts, shell=True)
 tmpfile = open("tmpstats", 'w')
 objfcn_link = cfg.get_value('of_link')
 
-for vv in objfcn_link:
+for vv in itervalues(objfcn_link):
     tmpfile.write('%0.6f ' % get_sim_obs_stat(cfg, vv))
 tmpfile.write('\n')
 tmpfile.close()
