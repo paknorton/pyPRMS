@@ -237,6 +237,7 @@ def get_sim_obs_stat(cfg, of_info):
 
             if curr_of['obs_intv'] == 'monthly':
                 df1 = df1.resample('M').mean()
+                print(df1.head())
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Merge simulated with observed; resample simulated if necessary
@@ -248,7 +249,7 @@ def get_sim_obs_stat(cfg, of_info):
                     # Variables that should be summed instead of averaged
                     tmp = sim_data.loc[:, curr_of['sim_var']].resample('M').sum()
                 else:
-                    tmp = sim_data.loc[:, curr_of['sim_var']].resample('M').sum()
+                    tmp = sim_data.loc[:, curr_of['sim_var']].resample('M').mean()
             elif curr_of['obs_intv'] == 'mnmonth':
                 monthly = sim_data.loc[:, curr_of['sim_var']].resample('M').mean()
                 tmp = monthly.resample('M').mean().groupby(monthly.index.month).mean()
@@ -313,6 +314,7 @@ def get_sim_obs_stat(cfg, of_info):
 
             # TODO: strip rows with NaN observations out of dataframe
         df_final = df_final.dropna(axis=0, how='any', thresh=None, inplace=False).copy()
+        # print(df_final.head())
 
         # ** objective function looks for sim_val for simulated and either obs_val or obs_lower, obs_upper
         of_result += of_info['of_wgts'][ii] * objfcn.compute_objfcn(curr_of['of_stat'], df_final)

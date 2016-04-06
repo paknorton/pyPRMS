@@ -238,32 +238,34 @@ def compute_objfcn(objfcn, data):
 
 # =============================================================================
 def main():
-    import argparse
+    # import argparse
     import prms_cfg
     from prms_calib_helpers import get_sim_obs_stat
 
     cfg = prms_cfg.cfg('basin.cfg')
 
     # Command line arguments
-    parser = argparse.ArgumentParser(description='Objective function processing')
-    parser.add_argument('data', help='Simulated data')
+    # parser = argparse.ArgumentParser(description='Objective function processing')
+    # parser.add_argument('data', help='Simulated data')
     # parser.add_argument('obsvar', help='Observed variable')
     # parser.add_argument('simvar', help='Simulate variable')
-    parser.add_argument('mocomstats', help='Output stats file for MOCOM')
-    parser.add_argument('-d', '--daterange',
-                        help='Date range for statistics (YYYY-MM-DD YYYY-MM-DD)',
-                        nargs=2, metavar=('stDate', 'enDate'), required=True)
+    # parser.add_argument('mocomstats', help='Output stats file for MOCOM')
+    # parser.add_argument('-d', '--daterange',
+    #                     help='Date range for statistics (YYYY-MM-DD YYYY-MM-DD)',
+    #                     nargs=2, metavar=('stDate', 'enDate'), required=True)
     # parser.add_argument('-o', '--output', help='Human-readable stats filename')
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
-    tmpfile = open(args.mocomstats, 'w')
+    # tmpfile = open(args.mocomstats, 'w')
     objfcn_link = cfg.get_value('of_link')
 
     for vv in itervalues(objfcn_link):
-        tmpfile.write('%0.6f ' % get_sim_obs_stat(cfg, vv))
-    tmpfile.write('\n')
-    tmpfile.close()
+        get_sim_obs_stat(cfg, vv)
+        # print('%0.6f ' % get_sim_obs_stat(cfg, vv))
+        # tmpfile.write('%0.6f ' % get_sim_obs_stat(cfg, vv))
+    # tmpfile.write('\n')
+    # tmpfile.close()
 
 
 if __name__ == '__main__':
