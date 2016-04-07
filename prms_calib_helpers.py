@@ -237,7 +237,6 @@ def get_sim_obs_stat(cfg, of_info):
 
             if curr_of['obs_intv'] == 'monthly':
                 df1 = df1.resample('M').mean()
-                print(df1.head())
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Merge simulated with observed; resample simulated if necessary
