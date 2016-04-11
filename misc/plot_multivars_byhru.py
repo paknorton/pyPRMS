@@ -125,7 +125,7 @@ for bb in basins:
     # Get the 'best' solution number for OF_comp
     # csoln = '%05d' % lastgen_data[lastgen_data['OF_comp'] == lastgen_data['OF_comp'].min()]['soln_num']
 
-    csoln = '%s' % df2[df2.index == hrunum].loc[:, 'soln_num']
+    csoln = '%05d' % df2[df2.index == hrunum]['soln_num']
     print('(%d) For %s best solution is: %s' % (hrunum, 'OF_comp', csoln))
 
     soln_workdir = '%s/%s' % (workdir, csoln)
