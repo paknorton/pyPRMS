@@ -190,7 +190,10 @@ def adjust_param_ranges(paramfile, calib_params, default_ranges, outfilename, ma
 
 
 def get_sim_obs_stat(cfg, of_info):
-    """Create a dataframe containing observed and simulated data"""
+    """Create a dataframe containing observed and simulated data and compute the objective function
+    :type of_info: object function information object
+    :type cfg: configuration object
+    """
 
     # NOTE: cfg must be a prms_cfg object
 

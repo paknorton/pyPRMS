@@ -56,6 +56,18 @@ class cfg(object):
         else:
             self.__cfgdict[var] = value
 
+    def change_objfcn_stat(self, of_name, newval):
+        if of_name in self.__cfgdict['objfcn']:
+            self.__cfgdict['objfcn'][of_name]['of_stat'] = newval
+        else:
+            print('ERROR: %s does not exist' % of_name)
+
+    def change_objfcn_interval(self, of_name, newinterval):
+        if of_name in self.__cfgdict['objfcn']:
+            self.__cfgdict['objfcn'][of_name]['of_intv'] = newinterval
+        else:
+            print('ERROR: %s does not exist' % of_name)
+
     def get_basin_list(self):
         # Returns a list of basin ids
         try:
