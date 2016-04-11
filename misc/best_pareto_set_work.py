@@ -92,10 +92,10 @@ for bb in basins:
         objfcn_link = cfg.get_value('of_link')
 
         # Change the objective functions to percent bias of the mean monthly interval
-        for vv in itervalues(cfg.get_value('objfcn')):
-            print('objfcn:', vv)
-            cfg.change_objfcn_stat(vv, 'PBIAS')
-            cfg.change_objfcn_interval(vv, 'mnmonth')
+        for (kk, vv) in iteritems(cfg.get_value('objfcn')):
+            print('objfcn:', kk)
+            cfg.change_objfcn_stat(kk, 'PBIAS')
+            cfg.change_objfcn_interval(kk, 'mnmonth')
 
         tmp_data = [hrunum, csoln, tt]
 
