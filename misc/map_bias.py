@@ -89,8 +89,9 @@ missing_color = '#00BFFF'  # for missing values
 # fig, ax = plt.subplots(1,figsize=(20,30))
 # ax = plt.gca()
 fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(30, 20))
+axes.set_title('Percent bias\nRUNID = %s' % runid)
 ax = axes.flatten()
-ax.set_title('Percent bias\nRUNID = %s' % runid)
+
 
 for jj, curr_best in enumerate(best_ofs):
     print('Working on best %s:' % curr_best)
