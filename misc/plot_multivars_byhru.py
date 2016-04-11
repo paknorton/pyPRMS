@@ -123,7 +123,7 @@ for bb in basins:
         print('Awww... crap!')
         os.chdir(cdir)
 
-    basin_cfg.update_value('start_date_model', '1981-10-01')
+    basin_cfg.update_value('start_date', '1981-10-01')
     # st_date_calib = datetime.datetime(1982, 10, 1)
     st_date_calib = prms.to_datetime(basin_cfg.get_value('start_date_model'))
     en_date = prms.to_datetime(basin_cfg.get_value('end_date'))
