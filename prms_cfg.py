@@ -57,6 +57,7 @@ class cfg(object):
             self.__cfgdict[var] = value
 
     def change_objfcn_stat(self, of_name, newval):
+        print(self.__cfgdict['objfcn'])
         if of_name in self.__cfgdict['objfcn']:
             self.__cfgdict['objfcn'][of_name]['of_stat'] = newval
         else:

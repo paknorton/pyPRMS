@@ -93,6 +93,7 @@ for bb in basins:
 
         # Change the objective functions to percent bias of the mean monthly interval
         for vv in itervalues(cfg.get_value('objfcn')):
+            print('objfcn:', vv)
             cfg.change_objfcn_stat(vv, 'PBIAS')
             cfg.change_objfcn_interval(vv, 'mnmonth')
 
