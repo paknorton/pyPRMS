@@ -17,7 +17,7 @@ import pandas as pd
 import sys
 
 parser = argparse.ArgumentParser(description='Display map showing best calibration percent bias')
-parser.add_argument('-b', '--bestruns', help='CSV file of best calibration run ids', require=True)
+parser.add_argument('-b', '--bestruns', help='CSV file of best calibration run ids', required=True)
 # parser.add_argument('-c', '--config', help='Primary basin configuration file', required=True)
 parser.add_argument('-r', '--runid', help='Runid of the calibration to display', required=True)
 parser.add_argument('-s', '--shapefile', help='Filename and path of shapefile for the map', required=True)
