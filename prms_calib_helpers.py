@@ -189,7 +189,7 @@ def adjust_param_ranges(paramfile, calib_params, default_ranges, outfilename, ma
     outfile.close()
 
 
-def get_sim_obs_stat(cfg, of_info):
+def get_sim_obs_stat(cfg, of_info, verbose=True):
     """Create a dataframe containing observed and simulated data and compute the objective function
     :type of_info: object function information object
     :type cfg: configuration object
@@ -322,7 +322,8 @@ def get_sim_obs_stat(cfg, of_info):
         of_result += of_info['of_wgts'][ii] * objfcn.compute_objfcn(curr_of['of_stat'], df_final)
         # **** for of in vv['of_names']:
 
-        print('%s: %0.6f' % (of_info['of_desc'], of_result))
+        if verbose:
+            print('%s: %0.6f' % (of_info['of_desc'], of_result))
 
         return of_result
         # **** for kk, vv in objfcn_link.iteritems():

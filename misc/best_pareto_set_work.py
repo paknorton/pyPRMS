@@ -93,14 +93,13 @@ for bb in basins:
 
         # Change the objective functions to percent bias of the mean monthly interval
         for (kk, vv) in iteritems(cfg.get_value('objfcn')):
-            print('objfcn:', kk)
             cfg.change_objfcn_stat(kk, 'PBIAS')
             cfg.change_objfcn_interval(kk, 'mnmonth')
 
         tmp_data = [hrunum, csoln, tt]
 
         for vv in itervalues(objfcn_link):
-            tmp_data.append(get_sim_obs_stat(cfg, vv))
+            tmp_data.append(get_sim_obs_stat(cfg, vv, verbose=False))
 
         # Add results to the test_out list
         test_out.append(tmp_data)
