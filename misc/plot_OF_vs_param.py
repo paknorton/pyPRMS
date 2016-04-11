@@ -39,9 +39,7 @@ print('base_calib_dir:', base_calib_dir)
 # Plot last 25% of the generations? If false return all
 top_qtr = True
 
-# ### Read in parameter file used for MOCOM calibration
-have_limits = False
-
+# Read in parameter file used for MOCOM calibration
 try:
     limits = cfg.get_param_limits()
 
@@ -49,10 +47,10 @@ try:
     have_limits = True
     # print(limits)
 except IOError:
-    print("ERROR: %s does not exist.\nLimits will not be plotted." % cfg.param_range_file)
+    print("WARNING: %s does not exist.\nLimits will not be plotted." % cfg.param_range_file)
+    have_limits = False
 
-# ### Read input parameter file to get the default parameter values
-
+# Read input parameter file to get the default parameter values
 # Read the initial input parameters values and compute the mean for each one
 initial_param_values = prms.parameters('%s/%s/%s' % (cfg.get_value('template_dir'), basinid,
                                                      cfg.get_value('prms_input_file')))
