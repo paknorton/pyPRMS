@@ -87,11 +87,11 @@ print('Starting directory:', cdir)
 outpdf = PdfPages(args.pdf)
 
 df = pd.read_csv(args.bestruns, index_col=0)
-df2 = df[df['best'] == 'OF_comp'].copy()
-df2.reset_index(inplace=True)
-df2.drop(['index'], axis=1, inplace=True)
-df2.set_index('HRU', inplace=True)
-print(df2.head())
+df_bestrun = df[df['best'] == 'OF_comp'].copy()
+df_bestrun.reset_index(inplace=True)
+df_bestrun.drop(['index'], axis=1, inplace=True)
+df_bestrun.set_index('HRU', inplace=True)
+print(df_bestrun.head())
 
 for bb in basins:
     print(bb)
@@ -112,7 +112,7 @@ for bb in basins:
 
     hrunum = int(bb.split('_')[1]) + 1
 
-    csoln = '%05d' % df2[df2.index == hrunum]['soln_num']
+    csoln = '%05d' % df_bestrun[df_bestrun.index == hrunum]['soln_num']
     print('(%d) For %s best solution is: %s' % (hrunum, 'OF_comp', csoln))
 
     soln_workdir = '%s/%s' % (workdir, csoln)
@@ -123,8 +123,8 @@ for bb in basins:
         print('Awww... crap!')
         os.chdir(cdir)
 
+    # Override the start_date so all data is plotted, not just the calibration data
     basin_cfg.update_value('start_date', '1981-10-01')
-    # st_date_calib = datetime.datetime(1982, 10, 1)
     st_date_calib = prms.to_datetime(basin_cfg.get_value('start_date_model'))
     en_date = prms.to_datetime(basin_cfg.get_value('end_date'))
 

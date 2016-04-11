@@ -13,22 +13,30 @@ import matplotlib.cm as cm
 import prms_lib as prms
 import prms_cfg
 import mocom_lib as mocom
-# import pandas as pd
+import argparse
 import numpy as np
-# import math as mth
-# import datetime
-# import re
 import os
 
 print(os.getcwd())
 
+parser = argparse.ArgumentParser(description='Display map showing PRMS calibration status')
+parser.add_argument('-c', '--config', help='Primary basin configuration file', required=True)
+# parser.add_argument('-p', '--pdf', help='PDF output filename', required=True)
+parser.add_argument('-r', '--runid', help='Runid of the calibration to display', required=True)
+
+args = parser.parse_args()
+
+configfile = args.config
+runid = args.runid
+
 # Setup model run information
-runid = '2016-04-05_1017'
-basinid = 'rPipestem_002290'
-configfile = '/media/scratch/PRMS/calib_runs/pipestem_1/%s/basin.cfg' % basinid
+# runid = '2016-04-05_1017'
+# basinid = 'rPipestem_002290'
+# configfile = '/media/scratch/PRMS/calib_runs/pipestem_1/%s/basin.cfg' % basinid
 
 cfg = prms_cfg.cfg(configfile)
 
+basinid = cfg.basin
 base_calib_dir = cfg.base_calib_dir
 limits_file = cfg.param_range_file
 # limits_file = '%s/%s/%s/%s' % (base_calib_dir, basinid, runid, cfg.get_value('param_range_file'))
