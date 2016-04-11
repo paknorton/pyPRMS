@@ -112,19 +112,6 @@ for bb in basins:
 
     hrunum = int(bb.split('_')[1]) + 1
 
-    # Read in mocom file
-    # mocom_log = mocom.opt_log(basin_cfg.get_log_file(runid), basin_config_file)
-    # objfcns = mocom_log.objfcnNames
-    # lastgen_data = mocom_log.data[mocom_log.data['gennum'] == mocom_log.lastgen]
-    #
-    # # The minimum composite OF result is used to select the pareto set member
-    # # for each HRU that will be merge back into the parent region
-    # lastgen_data.loc[:, 'OF_comp'] = 0.5*lastgen_data['OF_AET'] + 0.4*lastgen_data['OF_SWE'] + \
-    #                                  0.1*lastgen_data['OF_runoff']
-    #
-    # Get the 'best' solution number for OF_comp
-    # csoln = '%05d' % lastgen_data[lastgen_data['OF_comp'] == lastgen_data['OF_comp'].min()]['soln_num']
-
     csoln = '%05d' % df2[df2.index == hrunum]['soln_num']
     print('(%d) For %s best solution is: %s' % (hrunum, 'OF_comp', csoln))
 
@@ -136,8 +123,9 @@ for bb in basins:
         print('Awww... crap!')
         os.chdir(cdir)
 
-    st_date_calib = datetime.datetime(1982, 10, 1)
-#     st_date_calib = prms.to_datetime(basin_cfg.get_value('start_date_model'))
+    basin_cfg.update_value('start_date_model', '1981-10-01')
+    # st_date_calib = datetime.datetime(1982, 10, 1)
+    st_date_calib = prms.to_datetime(basin_cfg.get_value('start_date_model'))
     en_date = prms.to_datetime(basin_cfg.get_value('end_date'))
 
     fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(17, 11), sharex=True)
@@ -149,7 +137,7 @@ for bb in basins:
     for kk, vv in iteritems(objfcn_link):
         for ii, of in enumerate(vv['of_names']):
             curr_of = cfg.get_value('objfcn')[of]
-            df_final = get_sim_obs_data(cfg, curr_of)
+            df_final = get_sim_obs_data(basin_cfg, curr_of)
 
             # ==================================================================
             # PLOT stuff here
@@ -202,8 +190,6 @@ for bb in basins:
             
         # **** for of in vv['of_names']:
     outpdf.savefig()
-    
 os.chdir(cdir)
-
 outpdf.close()
-plt.show()
+# plt.show()
