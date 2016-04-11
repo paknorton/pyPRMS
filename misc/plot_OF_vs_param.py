@@ -15,9 +15,9 @@ import prms_cfg
 import mocom_lib as mocom
 import argparse
 import numpy as np
-import os
+# import os
 
-print(os.getcwd())
+# print(os.getcwd())
 
 parser = argparse.ArgumentParser(description='Display map showing PRMS calibration status')
 parser.add_argument('-c', '--config', help='Primary basin configuration file', required=True)
@@ -29,20 +29,12 @@ args = parser.parse_args()
 configfile = args.config
 runid = args.runid
 
-# Setup model run information
-# runid = '2016-04-05_1017'
-# basinid = 'rPipestem_002290'
-# configfile = '/media/scratch/PRMS/calib_runs/pipestem_1/%s/basin.cfg' % basinid
-
 cfg = prms_cfg.cfg(configfile)
 
 basinid = cfg.get_value('basin')
 base_calib_dir = cfg.base_calib_dir
-limits_file = cfg.param_range_file
-# limits_file = '%s/%s/%s/%s' % (base_calib_dir, basinid, runid, cfg.get_value('param_range_file'))
 
 print('base_calib_dir:', base_calib_dir)
-print('limits_file:', limits_file)
 
 # Plot last 25% of the generations? If false return all
 top_qtr = True
@@ -55,9 +47,9 @@ try:
 
     params = limits['parameter'].tolist()
     have_limits = True
-    print(limits)
+    # print(limits)
 except IOError:
-    print("ERROR: %s does not exist.\nLimits will not be plotted." % limits_file)
+    print("ERROR: %s does not exist.\nLimits will not be plotted." % cfg.param_range_file)
 
 # ### Read input parameter file to get the default parameter values
 
@@ -98,7 +90,7 @@ colors = cm.autumn(np.linspace(0, 1, mocom_log.lastgen))
 # Setup output to a pdf file
 outpdf = PdfPages(pdf_filename)
 numrows = int(round(len(params) / 4. + 0.5))
-print(numrows)
+# print(numrows)
 
 for oo in objfcns:
     miny = min(log_data[oo])
@@ -153,4 +145,5 @@ for oo in objfcns:
     outpdf.savefig()
 
 outpdf.close()
-plt.show()
+print('Output written to %s' % pdf_filename)
+# plt.show()
