@@ -139,10 +139,6 @@ for bb in basins:
     st_date_calib = datetime.datetime(1982, 10, 1)
 #     st_date_calib = prms.to_datetime(basin_cfg.get_value('start_date_model'))
     en_date = prms.to_datetime(basin_cfg.get_value('end_date'))
-    
-    # Load up the control file and the statvar file
-    # cobj = prms.control(basin_cfg.get_value('prms_control_file'))
-    # statvar_file = cobj.get_var('stat_var_file')['values'][0]
 
     fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(17, 11), sharex=True)
     ax = axes.flatten()
@@ -151,7 +147,8 @@ for bb in basins:
     objfcn_link = basin_cfg.get_value('of_link')
 
     for kk, vv in iteritems(objfcn_link):
-        for ii, curr_of in enumerate(vv['of_names']):
+        for ii, of in enumerate(vv['of_names']):
+            curr_of = cfg.get_value('objfcn')[of]
             df_final = get_sim_obs_data(cfg, curr_of)
 
             # ==================================================================
