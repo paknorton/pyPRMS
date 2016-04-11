@@ -9,9 +9,65 @@ from matplotlib.backends.backend_pdf import PdfPages
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
+
+import argparse
 import numpy as np
+from osgeo import ogr
 import pandas as pd
 import sys
+
+parser = argparse.ArgumentParser(description='Display map showing best calibration percent bias')
+parser.add_argument('-b', '--bestruns', help='CSV file of best calibration run ids', require=True)
+# parser.add_argument('-c', '--config', help='Primary basin configuration file', required=True)
+parser.add_argument('-r', '--runid', help='Runid of the calibration to display', required=True)
+parser.add_argument('-s', '--shapefile', help='Filename and path of shapefile for the map', required=True)
+parser.add_argument('-k', '--key', help='Shapefile record key for HRUs', default='hru_id_loc')
+parser.add_argument('-p', '--pdf', help='PDF output filename', required=True)
+parser.add_argument('-e', '--extent', help='Extent of shapefile to show', nargs=4,
+                    metavar=('minLon', 'maxLon', 'minLat', 'maxLat'), required=False)
+
+args = parser.parse_args()
+
+# configfile = args.config
+runid = args.runid
+shpfile = args.shapefile
+shape_key = args.key
+
+# Get a Layer's Extent
+extent = args.extent
+
+if not extent or len(extent) != 4:
+    print('Using extent information from shapefile')
+
+    # Use gdal/ogr to get the extent information
+    inDriver = ogr.GetDriverByName("ESRI Shapefile")
+    inDataSource = inDriver.Open(shpfile, 0)
+    inLayer = inDataSource.GetLayer()
+    extent = inLayer.GetExtent()
+
+east, west, south, north = extent
+print('\tExtent: (%f, %f, %f, %f)' % (north, south, east, west))
+
+best_ofs = ['OF_AET', 'OF_SWE', 'OF_runoff', 'OF_comp']
+ofs_to_plot = ['OF_AET', 'OF_SWE', 'OF_runoff']
+
+# Setup output to a pdf file
+# outpdf = PdfPages('map_pbias_v%d.pdf' % theversion)
+outpdf = PdfPages(args.pdf)
+
+# Load the data to plot
+varname = 'Composite'
+best_of = 'OF_comp'
+of_to_plot = 'OF_AET'
+theversion = 1
+
+# df = pd.read_csv('/media/scratch/PRMS/calib_runs/pipestem_1/%s_best.csv' % runid, index_col=0)
+df = pd.read_csv(args.bestruns, index_col=0)
+df2 = df[df['best'] == best_of].copy()
+df2.reset_index(inplace=True)
+df2.set_index('HRU', inplace=True)
+df3 = df2[of_to_plot]
+print(df3.head())
 
 # Create the colormap
 # cmap = 'YlGnBu_r'
@@ -27,54 +83,13 @@ if isinstance(cmap, (list, tuple)):
 else:
     cmap = plt.get_cmap(cmap)
 
-runid = '2016-04-05_0846'
-best_ofs = ['OF_AET', 'OF_SWE', 'OF_runoff', 'OF_comp']
-ofs_to_plot = ['OF_AET', 'OF_SWE', 'OF_runoff']
-
-# Load the data to plot
-varname = 'Composite'
-best_of = 'OF_comp'
-of_to_plot = 'OF_AET'
-theversion = 1
-df = pd.read_csv('/media/scratch/PRMS/notebooks/02_test_and_prototype/%s_best.csv' % runid, index_col=0)
-
 cblabel = 'Percent bias'
-
 missing_color = '#00BFFF'  # for missing values
-
-df2 = df[df['best'] == best_of].copy()
-df2.reset_index(inplace=True)
-df2.set_index('HRU', inplace=True)
-df3 = df2[of_to_plot]
-print(df3.head())
-# Select the month to plot on the basemap
-# Series_data = df.iloc[:,1]
-# print df.min().min()
-# print df.max().max()
-
-
-# Name of shapefile
-shpfile = '/media/scratch/PRMS/notebooks/shapefiles/upper_pipestem_ll'
-# shpfile = '/media/scratch/PRMS/notebooks/nhru_10U/nhru_10U_simpl'
-
-# Name of attribute to use
-shape_key = 'hru_id_loc'
-# shape_key = 'hru_id_reg'
-
-# Setup output to a pdf file
-outpdf = PdfPages('map_pbias_v%d.pdf' % theversion)
 
 # fig, ax = plt.subplots(1,figsize=(20,30))
 # ax = plt.gca()
 fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(30, 20))
 ax = axes.flatten()
-
-extent = (47.6, 47, -98.5, -99.9)  # Extent for Pipestem creek watershed
-# extent = (50, 42, -95, -114)  # Extent for r10U
-north, south, east, west = extent
-
-# Subset the data
-# Series_data = df.iloc[:]
 
 for jj, curr_best in enumerate(best_ofs):
     print('curr_best:', curr_best)
@@ -90,7 +105,7 @@ for jj, curr_best in enumerate(best_ofs):
         axes[jj, ii].set_title('%s Percent Bias for %s' % (curr_of, curr_best))
 
         df3 = df2[curr_of]
-        #     print "Loading basemap..."
+        print("Loading basemap...")
         # Load the basemap
         m = Basemap(llcrnrlon=west, llcrnrlat=south, urcrnrlon=east, urcrnrlat=north, resolution='c',
                     projection='laea', lat_0=(south+north)/2, lon_0=(east+west)/2, ax=axes[jj, ii])
@@ -109,12 +124,10 @@ for jj, curr_best in enumerate(best_ofs):
         m.readshapefile(shpfile, 'nhruDd', drawbounds=False)
 
         # find minimum and maximum of the dataset to normalize the colors
-        max_val = 100.
-        min_val = -100.
-        # max_val = df3.max()
-        # min_val = df3.min()
+        max_val = 200.
+        min_val = -200.
 
-        #     print 'Color HRUs...'
+        # print 'Color HRUs...'
         # m.nhruDd contains the lines of the borders
         # m.nhruDd_info contains the info on the hru, like the name
         for nhruDd_borders, nhruDd_info in zip(m.nhruDd, m.nhruDd_info):
@@ -153,4 +166,4 @@ for jj, curr_best in enumerate(best_ofs):
     
 outpdf.savefig()
 outpdf.close()
-# plt.show()
+plt.show()

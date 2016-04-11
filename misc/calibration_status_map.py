@@ -23,9 +23,6 @@ import numpy as np
 import os
 from osgeo import ogr
 import pandas as pd
-import sys
-
-import prms_lib
 import prms_cfg
 
 parser = argparse.ArgumentParser(description='Display map showing PRMS calibration status')
@@ -76,6 +73,7 @@ cfg = prms_cfg.cfg(configfile)
 base_calib_dir = cfg.base_calib_dir
 
 cblabel = 'Calibration Status'
+missing_color = '#00BFFF'  # for missing values
 
 # Read the basins_file. Single basin per line
 bfile = open(cfg.get_value('basins_file'), "r")
@@ -111,11 +109,11 @@ df.set_index(['HRU'], inplace=True)
 Series_data = df.iloc[:]
 
 fig, ax = plt.subplots(1, figsize=(20, 30))
-ax.set_title('Calibration status\n%s\nRUNID = %s' % (base_calib_dir, runid));
+ax.set_title('Calibration status\n%s\nRUNID = %s' % (base_calib_dir, runid))
 
-print "Loading basemap..."
+print("Loading basemap...")
 # Load the basemap
-m = Basemap(llcrnrlon=west,llcrnrlat=south,urcrnrlon=east,urcrnrlat=north, resolution='c',
+m = Basemap(llcrnrlon=west, llcrnrlat=south, urcrnrlon=east, urcrnrlat=north, resolution='c',
             projection='laea', lat_0=(south+north)/2, lon_0=(east+west)/2, ax=ax)
 
 # Draw parallels.
