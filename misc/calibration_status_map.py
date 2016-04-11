@@ -10,7 +10,7 @@
 # shall the fact of distribution constitute any such warranty, and no
 # responsibility is assumed by the USGS in connection therewith.
 
-#mpl.use('Agg')
+# mpl.use('Agg')
 # from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -47,7 +47,7 @@ basinConfigFile = 'basin.cfg'
 extent = args.extent
 
 if not extent or len(extent) != 4:
-    print 'Using extent information from shapefile'
+    print('Using extent information from shapefile')
 
     # Use gdal/ogr to get the extent information
     inDriver = ogr.GetDriverByName("ESRI Shapefile")
@@ -56,7 +56,7 @@ if not extent or len(extent) != 4:
     extent = inLayer.GetExtent()
 
 east, west, south, north = extent
-print '\tExtent: (%f, %f, %f, %f)' % (north, south, east, west)
+print('\tExtent: (%f, %f, %f, %f)' % (north, south, east, west))
 
 # Name of shapefile
 # shpfile='/media/scratch/PRMS/notebooks/nhru_10U/nhru_10U_simpl'
@@ -76,14 +76,15 @@ cblabel = 'Calibration Status'
 missing_color = '#00BFFF'  # for missing values
 
 # Read the basins_file. Single basin per line
-bfile = open(cfg.get_value('basins_file'), "r")
-basins = bfile.read().splitlines()
-bfile.close()
-print 'Total basins:', len(basins)
+# bfile = open(cfg.get_value('basins_file'), "r")
+# basins = bfile.read().splitlines()
+# bfile.close()
+basins = cfg.get_basin_list()
+print('Total basins:', len(basins))
 
 # Check if the runid exists for the first basin
 if not os.path.exists('%s/%s/runs/%s' % (base_calib_dir, basins[0], runid)):
-    print "ERROR: runid = %s does not exist." % runid
+    print("ERROR: runid = %s does not exist." % runid)
     exit(1)
 
 # success list
@@ -127,7 +128,7 @@ m.drawmapboundary()
 # Use basemap to read and draw the shapefile
 # Two variables are added to the basemap, m.nhruDd and m.nhruDd_info
 #     print 'Loading shapefile...'
-m.readshapefile(os.path.splitext(shpfile)[0], 'nhruDd', drawbounds=False);
+m.readshapefile(os.path.splitext(shpfile)[0], 'nhruDd', drawbounds=False)
 
 max_val = 4.
 min_val = 0.

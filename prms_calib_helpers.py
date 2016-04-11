@@ -327,3 +327,130 @@ def get_sim_obs_stat(cfg, of_info, verbose=True):
 
         return of_result
         # **** for kk, vv in objfcn_link.iteritems():
+
+
+def get_sim_obs_data(cfg, curr_of, verbose=True):
+    """Create a dataframe containing observed and simulated data and compute the objective function
+    :type curr_of: object function
+    :type cfg: configuration object
+    """
+
+    # NOTE: cfg must be a prms_cfg object
+
+    # Range files from Lauren use -99.0 as missing, other files use -999.0
+    missing = [-999.0, -99.0]
+
+    # Get the name of the observation file
+    prms_control = prms.control(cfg.get_value('prms_control_file'))
+    statvar_file = prms_control.get_var('stat_var_file')['values'][0]
+
+    st_date_calib = prms.to_datetime(cfg.get_value('start_date'))
+    en_date = prms.to_datetime(cfg.get_value('end_date'))
+
+    # Load the simulation data
+    sim_data = prms.statvar(statvar_file).data
+    sim_data = sim_data[st_date_calib:en_date]
+
+    # of_dict = cfg.get_value('objfcn')
+
+    # Get the total number of columns for the dtype and obs_intv and build the names to use for the dataframe.
+    thecols = []
+    thecols.extend(colnm_lookup[curr_of['obs_intv']])
+    thecols.extend(colnm_lookup[curr_of['obs_type']])
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Read in the observation values/ranges
+    if curr_of['obs_intv'] == 'mnmonth':
+        # The index won't be a datetime, instead it's a month value
+        df1 = pd.read_csv(curr_of['obs_file'], sep=r"\s*", engine='python', usecols=range(0, len(thecols)),
+                          header=None, na_values=missing, names=thecols, index_col=0)
+    else:
+        # NOTE: When parsing year-month dates pandas defaults to the 21st of each month. I'm not sure yet
+        #       if this will cause a problem.
+        #       Annual dates are parsed as Jan-1 of the given year.
+        # TODO: if 'obsfile' == statvar then read the observed values in from the statvar file
+        df1 = pd.read_csv(curr_of['obs_file'], sep=r"\s*", engine='python', usecols=range(0, len(thecols)),
+                          header=None, na_values=missing, date_parser=prms.dparse,
+                          names=thecols, parse_dates={'thedate': colnm_lookup[curr_of['obs_intv']]},
+                          index_col='thedate')
+
+        if curr_of['obs_intv'] == 'monthly':
+            df1 = df1.resample('M').mean()
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Merge simulated with observed; resample simulated if necessary
+    if curr_of['obs_intv'] == 'daily':
+        df1_join_sim = df1.join(sim_data.loc[:, curr_of['sim_var']], how='left')
+    else:
+        if curr_of['obs_intv'] == 'monthly':
+            if curr_of['sim_var'] in accum_vars:
+                # Variables that should be summed instead of averaged
+                tmp = sim_data.loc[:, curr_of['sim_var']].resample('M').sum()
+            else:
+                tmp = sim_data.loc[:, curr_of['sim_var']].resample('M').mean()
+        elif curr_of['obs_intv'] == 'mnmonth':
+            monthly = sim_data.loc[:, curr_of['sim_var']].resample('M').mean()
+            tmp = monthly.resample('M').mean().groupby(monthly.index.month).mean()
+        elif curr_of['obs_intv'] == 'annual':
+            tmp = sim_data.loc[:, curr_of['sim_var']].resample('A-SEP').mean()
+        else:
+            print("ERROR: Objective function invterval (%s) is not an acceptable interval." %
+                  curr_of['obs_intv'])
+            tmp = None
+            exit(1)
+        df1_join_sim = df1.join(tmp, how='left')
+
+    df1_join_sim.rename(columns={curr_of['sim_var']: 'sim_var'}, inplace=True)
+
+    # =================================================================
+    # Read in the subdivide data, if specified
+    if curr_of['sd_file'] is not None:
+        # The subdivide file must be a daily timestep
+        thecols = ['year', 'month', 'day', 'sdval']
+
+        # Read the subdivide data
+        df2 = pd.read_csv(curr_of['sd_file'], sep=r"\s*", engine='python', usecols=range(0, len(thecols)),
+                          header=None, na_values=missing,
+                          names=thecols, parse_dates={'thedate': ['year', 'month', 'day']}, index_col='thedate')
+
+        # Merge the subdivide data with the observed data
+        if curr_of['obs_intv'] != 'daily':
+            # The observed data is not a daily timestep (subdivide data is daily) so raise an error.
+            print('ERROR: observed data must be daily timestep when using subdivide data')
+            exit()
+
+        # Merge statvar and observed data
+        df_final = df1_join_sim.join(df2, how='left')
+
+        # Subset to only include values which match 'sdval'
+        df_final = df_final[df_final['sdval'] == curr_of['sd_val']]
+    else:
+        df_final = df1_join_sim
+
+    # -----------------------------------------------------------------
+    # Now resample to specified of_intv
+    if curr_of['of_intv'] == 'monthly':
+        # We only want to include complete months
+        df_final = get_complete_months(df_final)
+
+        df_final = df_final.resample('M').mean()
+    elif curr_of['of_intv'] == 'annual':
+        # We only want to include complete water years
+        df_final = get_complete_wyears(df_final)
+
+        # TODO: For now the annual interval is assumed to be water-year based
+        df_final = df_final.resample('A-SEP').mean()
+    elif curr_of['of_intv'] == 'mnmonth':
+        # We only want to include complete months
+        df_final = get_complete_months(df_final)
+
+        monthly = df_final.resample('M').mean()
+        df_final = monthly.resample('M').mean().groupby(monthly.index.month).mean()
+    elif curr_of['of_intv'] in months:
+        # We are working with a single month over the time period
+        df_final = df_final[df_final.index.month == (months.index(curr_of['of_intv']) + 1)]
+
+        # TODO: strip rows with NaN observations out of dataframe
+    df_final = df_final.dropna(axis=0, how='any', thresh=None, inplace=False).copy()
+
+    return df_final

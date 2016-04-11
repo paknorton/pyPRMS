@@ -84,11 +84,7 @@ for bb in basins:
             print('Awww... crap!')
             os.chdir(cdir)
 
-        # ====================================================================
-        # 2015-09-28 PAN: taken from prms_post_mocom.py
-        # Get the name of the observation file
         outputstats = []
-
         objfcn_link = cfg.get_value('of_link')
 
         # Change the objective functions to percent bias of the mean monthly interval
