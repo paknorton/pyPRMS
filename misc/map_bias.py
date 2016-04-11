@@ -64,11 +64,10 @@ theversion = 1
 
 # df = pd.read_csv('/media/scratch/PRMS/calib_runs/pipestem_1/%s_best.csv' % runid, index_col=0)
 df = pd.read_csv(args.bestruns, index_col=0)
-df2 = df[df['best'] == best_of].copy()
-df2.reset_index(inplace=True)
-df2.set_index('HRU', inplace=True)
-df3 = df2[of_to_plot]
-print(df3.head())
+# df2 = df[df['best'] == best_of].copy()
+# df2.reset_index(inplace=True)
+# df2.set_index('HRU', inplace=True)
+# df3 = df2[of_to_plot]
 
 # Create the colormap
 # cmap = 'YlGnBu_r'
@@ -91,9 +90,10 @@ missing_color = '#00BFFF'  # for missing values
 # ax = plt.gca()
 fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(30, 20))
 ax = axes.flatten()
+ax.set_title('Percent bias\nRUNID = %s' % runid)
 
 for jj, curr_best in enumerate(best_ofs):
-    print('curr_best:', curr_best)
+    print('Working on best %s:' % curr_best)
     sys.stdout.flush()
     
     df2 = df[df['best'] == curr_best].copy()
@@ -106,7 +106,7 @@ for jj, curr_best in enumerate(best_ofs):
         axes[jj, ii].set_title('%s Percent Bias for %s' % (curr_of, curr_best))
 
         df3 = df2[curr_of]
-        print("Loading basemap...")
+        # print("Loading basemap...")
         # Load the basemap
         m = Basemap(llcrnrlon=west, llcrnrlat=south, urcrnrlon=east, urcrnrlat=north, resolution='c',
                     projection='laea', lat_0=(south+north)/2, lon_0=(east+west)/2, ax=axes[jj, ii])
