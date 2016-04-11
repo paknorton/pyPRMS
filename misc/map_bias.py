@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 import argparse
 import numpy as np
+import os
 from osgeo import ogr
 import pandas as pd
 import sys
@@ -121,7 +122,7 @@ for jj, curr_best in enumerate(best_ofs):
         # use basemap to read and draw the shapefile
         # Two variables are added to the basemap, m.nhruDd and m.nhruDd_info
         #     print 'Loading shapefile...'
-        m.readshapefile(shpfile, 'nhruDd', drawbounds=False)
+        m.readshapefile(os.path.splitext(shpfile)[0], 'nhruDd', drawbounds=False)
 
         # find minimum and maximum of the dataset to normalize the colors
         max_val = 200.
