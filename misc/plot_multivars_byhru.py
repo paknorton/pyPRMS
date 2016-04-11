@@ -89,6 +89,7 @@ outpdf = PdfPages(args.pdf)
 df = pd.read_csv(args.bestruns, index_col=0)
 df2 = df[df['best'] == 'OF_comp'].copy()
 df2.reset_index(inplace=True)
+df2.drop(columns=['index'], inplace=True)
 df2.set_index('HRU', inplace=True)
 print(df2.head())
 
