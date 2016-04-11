@@ -182,7 +182,7 @@ class opt_log(object):
                     tmp_data.append(x.split())
 
         # Create a dataframe from the imported optimization log data
-        self.__optlog_data = pd.to_numeric(pd.DataFrame(tmp_data, columns=tmp_hdr))
+        self.__optlog_data = pd.DataFrame(tmp_data, columns=tmp_hdr).convert_objects(convert_numeric=True)
 
     def remove_nonpareto_directories(self, modelrunid, keep_seed=True):
         # Create list of winner runids padded with zeros to match the directory listing
