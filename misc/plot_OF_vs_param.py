@@ -36,7 +36,7 @@ runid = args.runid
 
 cfg = prms_cfg.cfg(configfile)
 
-basinid = cfg.basin
+basinid = cfg.get_value('basin')
 base_calib_dir = cfg.base_calib_dir
 limits_file = cfg.param_range_file
 # limits_file = '%s/%s/%s/%s' % (base_calib_dir, basinid, runid, cfg.get_value('param_range_file'))
