@@ -44,12 +44,6 @@ def link_data(src, dst):
     # Now create the symbolic link
     os.symlink(src, dst_file)
 
-# # Related parameters
-# # These parameters need to satisfy relationships before PRMS is allowed to run
-# related_params = {'soil_rechr_max': {'soil_moist_max': operator.le},
-#                   'tmax_allsnow': {'tmax_allrain': operator.lt}}
-#
-# months = ('JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC')
 
 # Command line arguments
 parser = argparse.ArgumentParser(description='Post MOCOM processing')

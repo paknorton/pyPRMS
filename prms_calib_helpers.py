@@ -31,6 +31,14 @@ colnm_lookup = {'range': ['obs_lower', 'obs_upper'],
 # These are parameters/variables which should be summed for statistics
 accum_vars = ['hru_actet']
 
+# def dparse_HL(yr, mo, dy):
+#     # Date parser for working with the date format from PRMS files
+#
+#     # Convert to integer first
+#     yr, mo, dy = [int(x) for x in [yr, mo, dy]]
+#     dt = datetime.datetime(yr, mo, dy)
+#     return dt
+
 
 def get_complete_months(ds, obsvar=None):
     # Steps to remove "bad" months from dataset

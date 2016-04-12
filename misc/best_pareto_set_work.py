@@ -3,18 +3,30 @@
 from __future__ import (absolute_import, division, print_function)
 from future.utils import iteritems, itervalues
 
+import argparse
 import os
 import pandas as pd
 import prms_cfg
 from prms_calib_helpers import get_sim_obs_stat
 import mocom_lib as mocom
 
-runid = '2016-04-06_1609'
+
+parser = argparse.ArgumentParser(description='Find the best pareto sets from a calibration run')
+parser.add_argument('-c', '--config', help='Primary basin configuration file', required=True)
+parser.add_argument('-r', '--runid', help='Runid of the calibration to display', required=True)
+
+args = parser.parse_args()
+
+configfile = args.config
+runid = args.runid
+
 basinConfigFile = 'basin.cfg'
-calibConfigFile = '/media/scratch/PRMS/calib_runs/pipestem_1/%s' % basinConfigFile
+
+# runid = '2016-04-06_1609'
+# configfile = '/media/scratch/PRMS/calib_runs/pipestem_1/basin.cfg'
 
 # Read the calibration configuration file
-cfg = prms_cfg.cfg(calibConfigFile)
+cfg = prms_cfg.cfg(configfile)
 
 print(os.getcwd())
 print('runid:', runid)

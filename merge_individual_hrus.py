@@ -15,6 +15,7 @@ import prms_lib as prms
 
 __version__ = '0.1'
 
+# TODO: Get parameters to merge from the calibration
 mod_params = ['tmax_allsnow', 'rad_trncf', 'freeh2o_cap',
               'emis_noppt', 'cecn_coef', 'potet_sublim', 'tmin_cbh_adj']
 
