@@ -83,7 +83,7 @@ else:
     log_data = mocom_log.data
 
 # Generate the colors array
-colors = cm.autumn(np.linspace(0, 1, mocom_log.lastgen))
+colors = cm.autumn(np.linspace(0, 1, mocom_log.lastgen*10))
 # --------------------------------------------------------------
 
 # Setup output to a pdf file
