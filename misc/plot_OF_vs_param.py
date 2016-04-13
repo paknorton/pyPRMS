@@ -23,6 +23,7 @@ parser = argparse.ArgumentParser(description='Display map showing PRMS calibrati
 parser.add_argument('-c', '--config', help='Primary basin configuration file', required=True)
 # parser.add_argument('-p', '--pdf', help='PDF output filename', required=True)
 parser.add_argument('-r', '--runid', help='Runid of the calibration to display', required=True)
+parser.add_argument('--lastqtr', help='Only plot last 25% of runs', action='store_true', default=False)
 
 args = parser.parse_args()
 
@@ -37,7 +38,7 @@ base_calib_dir = cfg.base_calib_dir
 print('base_calib_dir:', base_calib_dir)
 
 # Plot last 25% of the generations? If false return all
-top_qtr = True
+top_qtr = args.lastqtr
 
 # Read in parameter file used for MOCOM calibration
 try:
