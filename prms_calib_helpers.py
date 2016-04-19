@@ -353,11 +353,14 @@ def get_sim_obs_data(cfg, curr_of, verbose=True):
     statvar_file = prms_control.get_var('stat_var_file')['values'][0]
 
     st_date_calib = prms.to_datetime(cfg.get_value('start_date'))
+    st_date_model = prms.to_datetime(cfg.get_value('start_date_model'))
     en_date = prms.to_datetime(cfg.get_value('end_date'))
 
     # Load the simulation data
+    # We load any data within the entire model range
+    # The get_sim_obs_stat() function only loads data in the calibration range
     sim_data = prms.statvar(statvar_file).data
-    sim_data = sim_data[st_date_calib:en_date]
+    sim_data = sim_data[st_date_model:en_date]
 
     # of_dict = cfg.get_value('objfcn')
 

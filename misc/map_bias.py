@@ -46,8 +46,13 @@ if not extent or len(extent) != 4:
     inLayer = inDataSource.GetLayer()
     extent = inLayer.GetExtent()
 
-east, west, south, north = extent
-print('\tExtent: (%f, %f, %f, %f)' % (north, south, east, west))
+west, east, south, north = extent
+pad = 0.02
+east += pad
+west -= pad
+south -= pad
+north += pad
+print('\tExtent: (%f, %f, %f, %f)' % (west, east, south, north))
 
 best_ofs = ['OF_AET', 'OF_SWE', 'OF_runoff', 'OF_comp']
 ofs_to_plot = ['OF_AET', 'OF_SWE', 'OF_runoff']
@@ -91,7 +96,6 @@ missing_color = '#00BFFF'  # for missing values
 fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(30, 20))
 fig.suptitle('Percent bias\nRUNID = %s' % runid)
 ax = axes.flatten()
-
 
 for jj, curr_best in enumerate(best_ofs):
     print('Working on best %s:' % curr_best)

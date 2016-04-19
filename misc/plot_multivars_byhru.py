@@ -14,14 +14,9 @@ from matplotlib.dates import YearLocator
 import prms_cfg
 import prms_lib as prms
 from prms_calib_helpers import get_sim_obs_data
-import prms_objfcn
-import mocom_lib as mocom
-# import re
+
 import argparse
 import pandas as pd
-# import numpy as np
-# import math as mth
-import datetime
 import os
 
 
