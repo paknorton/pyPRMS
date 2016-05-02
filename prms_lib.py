@@ -1942,8 +1942,9 @@ class parameters(object):
                     dimsize = vv['values'][hru_index].size
             elif bool(set(vv['dimnames']).intersection(set(['ndeplval']))):
                 # The ndeplval dimension is actually nhru x 11
-                the_values = vv['values'].reshape((-1, 11), order='A')[hru_index]
-                # the_values = vv['values'][hru_index:hru_index+11]
+                # The index for ndeplval for each HRU is stored in hru_deplcrv
+                crv_idx = self.get_var('hru_deplcrv')['values'][hru_index] - 1
+                the_values = vv['values'].reshape((-1, 11), order='A')[crv_idx]
                 dimsize = 11
             else:
                 dimsize = vv['values'].size
@@ -1952,6 +1953,11 @@ class parameters(object):
             # Special overrides for some parameters
             if vv['name'] in segvars:
                 the_values = np.array([vv['values'][seg_idx - 1]])
+                dimsize = 1
+            elif vv['name'] == 'hru_deplcrv':
+                # The hru_deplcrv parameter is the snarea_curve index for each HRU.
+                # For a single HRU this should be reset to 1.
+                the_values = np.array([1])
                 dimsize = 1
             elif vv['name'] == 'hru_segment':
                 the_values = np.array([1])

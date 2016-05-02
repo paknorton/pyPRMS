@@ -144,22 +144,23 @@ for bb in basins:
             if 'obs_var' in df_final.columns:
                 # Working with individual observations
                 # Plot obs/sim plot
-                maxy = df_final['obs_var'].max()
+                # maxy = df_final['obs_var'].max()
                 stuff = ax[cc].plot(df_final.index.to_pydatetime(), df_final['obs_var'], color='grey',
                                     label=curr_of['obs_var'])
                 stuff = ax[cc].plot(df_final.index.to_pydatetime(), df_final['sim_var'], color='red',
                                     label=curr_of['sim_var'])
             else:
                 # Working with observation ranges
-                maxy = df_final['obs_upper'].max()
+                # maxy = df_final['obs_upper'].max()
                 stuff = ax[cc].plot(df_final.index.to_pydatetime(), df_final['obs_upper'], 
                                     linewidth=1.0, color='#3399cc', label='%s upper' % curr_of['obs_var'])
                 stuff = ax[cc].plot(df_final.index.to_pydatetime(), df_final['obs_lower'], 'k--',
                                     linewidth=1.0, color='#3399cc', label='%s lower' % curr_of['obs_var'])
                 stuff = ax[cc].plot(df_final.index.to_pydatetime(), df_final['sim_var'], color='red',
                                     label=curr_of['sim_var'])
-            
-            ax[cc].plot([minx, maxx], [maxy, maxy], linewidth=5.0, color=topbarcolor, alpha=0.5)
+
+            miny, maxy = ax[cc].get_ylim()
+            ax[cc].plot([minx, maxx], [maxy, maxy], linewidth=10.0, color=topbarcolor, alpha=0.5)
             ax[cc].set_title('Simulated v. observed', fontsize=10)
             
             ax[cc].xaxis.set_major_locator(YearLocator(base=1, month=1, day=1))
@@ -168,7 +169,7 @@ for bb in basins:
             ax[cc].get_xaxis().set_major_formatter(dates.DateFormatter('\n%Y'))
 
             ax[cc].set_xlim([st_date_calib, en_date])
-            ax[cc].legend(loc='upper right', framealpha=0.5)
+            ax[cc].legend(loc='upper left', framealpha=0.5)
             
             plt.suptitle('basin: %s\nHRU: %d\nrunid: %s (%s)' % (bb, hrunum, runid, csoln), fontsize=title_size)
             cc += 1
