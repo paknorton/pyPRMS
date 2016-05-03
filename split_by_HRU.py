@@ -73,7 +73,7 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
 
     fheader = ''
 
-    if os.path.splitext(src_file)[1] == 'h5':
+    if os.path.splitext(src_file)[1] == '.h5':
         # HDF5 file given
         df1 = pd.read_hdf(src_file, key=varname)
         df1['year'] = df1.index.year
