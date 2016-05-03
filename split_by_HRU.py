@@ -117,7 +117,7 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru, hdf=False):
         # Subset dataframe to current HRU
         if hdf:
         # if os.path.splitext(src_file)[1] == '.h5':
-            df1_ss = df1.loc[:, ['year', 'month', 'day', 'hour', 'minute', 'second', str(hh)]]
+            df1_ss = df1.ix[:, ['year', 'month', 'day', 'hour', 'minute', 'second', hh]]
         else:
             df1_ss = df1.iloc[:, [0, 1, 2, 3, 4, 5, hh+6]]
         
