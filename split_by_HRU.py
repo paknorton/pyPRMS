@@ -104,8 +104,6 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru, hdf=False):
         df1 = pd.read_csv(in_hdl, sep=' ', skipinitialspace=True, engine='c', header=None)
         in_hdl.close()
 
-    print(df1.head())
-
     for hh in range(nhru):
         sys.stdout.write('\r\t\t%06d ' % (hh+1))
         sys.stdout.flush()
