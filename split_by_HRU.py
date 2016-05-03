@@ -67,15 +67,16 @@ def cbh_subset(infile, outfile, varname, hruindex):
     out_hdl.close()
     
 
-def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
+def full_cbh_subset(src_file, dst_dir, region, varname, nhru, hdf=False):
     valid_varnames = ['prcp', 'tmin', 'tmax']
     missing = [-99.0, -999.0]
 
     fheader = ''
 
-    if os.path.splitext(src_file)[1] == '.h5':
+    if hdf:
+    # if os.path.splitext(src_file)[1] == '.h5':
         # HDF5 file given
-        df1 = pd.read_hdf(src_file, key=varname)
+        df1 = pd.read_hdf('%s.h5' % os.path.splitext(src_file)[0], key=varname)
         df1['year'] = df1.index.year
         df1['month'] = df1.index.month
         df1['day'] = df1.index.day
@@ -102,7 +103,9 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
         # Read the data
         df1 = pd.read_csv(in_hdl, sep=' ', skipinitialspace=True, engine='c', header=None)
         in_hdl.close()
-    
+
+    print(df1.head())
+
     for hh in range(nhru):
         sys.stdout.write('\r\t\t%06d ' % (hh+1))
         sys.stdout.flush()
@@ -112,8 +115,9 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
         out_hdl.write(fheader)
         
         # Subset dataframe to current HRU
-        if os.path.splitext(src_file)[1] == '.h5':
-            df1_ss = df1.loc[:, ['year', 'month', 'day', 'hour', 'minute', 'second', hh]]
+        if hdf:
+        # if os.path.splitext(src_file)[1] == '.h5':
+            df1_ss = df1.loc[:, ['year', 'month', 'day', 'hour', 'minute', 'second', str(hh)]]
         else:
             df1_ss = df1.iloc[:, [0, 1, 2, 3, 4, 5, hh+6]]
         
@@ -208,9 +212,9 @@ def main():
                 print('\tWriting %s' % os.path.basename(input_src[kk]))
 
                 if args.hdf:
-                    input_src[kk] = '%s.h5' % os.path.splitext(input_src[kk])[0]
-
-                full_cbh_subset('%s/%s' % (src_dir, input_src[kk]), dst_dir, region, vv, nhru)
+                    full_cbh_subset('%s/%s' % (src_dir, input_src[kk]), dst_dir, region, vv, nhru, hdf=True)
+                else:
+                    full_cbh_subset('%s/%s' % (src_dir, input_src[kk]), dst_dir, region, vv, nhru)
 
 
 if __name__ == '__main__':
