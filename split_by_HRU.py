@@ -71,24 +71,37 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
     valid_varnames = ['prcp', 'tmin', 'tmax']
     missing = [-99.0, -999.0]
 
-    in_hdl = open(src_file, 'r')
-    
-    # Read the header information
     fheader = ''
-    
-    for ii in range(0, 3):
-        line = in_hdl.readline()
-        
-        if line[0:4] in valid_varnames:
-            # Increment number of HRUs that are included
-            numhru = int(line[5:])
-            fheader += line[0:5] + ' 1\n'
-        else:
-            fheader += line
-                         
-    # Read the data
-    df1 = pd.read_csv(in_hdl, sep=' ', skipinitialspace=True, engine='c', header=None)
-    in_hdl.close()
+
+    if os.path.splitext(src_file)[1] == 'h5':
+        # HDF5 file given
+        df1 = pd.read_hdf(src_file, key=varname)
+        df1['year'] = df1.index.year
+        df1['month'] = df1.index.month
+        df1['day'] = df1.index.day
+        df1['hour'] = 0
+        df1['minute'] = 0
+        df1['second'] = 0
+        df1.reset_index(drop=True, inplace=True)
+
+        fheader = '%s 1\n####\n' % varname
+    else:
+        in_hdl = open(src_file, 'r')
+
+        # Read the header information
+        for ii in range(0, 3):
+            line = in_hdl.readline()
+
+            if line[0:4] in valid_varnames:
+                # Increment number of HRUs that are included
+                # numhru = int(line[5:])
+                fheader += line[0:5] + ' 1\n'
+            else:
+                fheader += line
+
+        # Read the data
+        df1 = pd.read_csv(in_hdl, sep=' ', skipinitialspace=True, engine='c', header=None)
+        in_hdl.close()
     
     for hh in range(nhru):
         sys.stdout.write('\r\t\t%06d ' % (hh+1))
@@ -99,7 +112,10 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru):
         out_hdl.write(fheader)
         
         # Subset dataframe to current HRU
-        df1_ss = df1.iloc[:, [0, 1, 2, 3, 4, 5, hh+6]]
+        if os.path.splitext(src_file)[1] == '.h5':
+            df1_ss = df1.loc[:, ['year', 'month', 'day', 'hour', 'minute', 'second', hh]]
+        else:
+            df1_ss = df1.iloc[:, [0, 1, 2, 3, 4, 5, hh+6]]
         
         df1_ss.to_csv(out_hdl, sep=' ', float_format='%0.4f', header=False, index=False)
         out_hdl.close()
@@ -112,6 +128,7 @@ def main():
     parser.add_argument('-c', '--control', help='Name of control file', required=True)
     parser.add_argument('-d', '--dummy', help='Name of dummy streamflow datafile', required=True)
     parser.add_argument('-r', '--region', help='Region to process', required=True)
+    parser.add_argument('--hdf', help='Read hdf5 CBH files', action='store_true')
     parser.add_argument('--nocbh', help='Skip CBH file splitting', action='store_true')
 
     args = parser.parse_args()
@@ -190,8 +207,10 @@ def main():
             if kk in input_src:
                 print('\tWriting %s' % os.path.basename(input_src[kk]))
 
-                full_cbh_subset('%s/%s' % (src_dir, input_src[kk]),
-                                dst_dir, region, vv, nhru)
+                if args.hdf:
+                    input_src[kk] = '%s.h5' % os.path.splitext(input_src[kk])[0]
+
+                full_cbh_subset('%s/%s' % (src_dir, input_src[kk]), dst_dir, region, vv, nhru)
 
 
 if __name__ == '__main__':
