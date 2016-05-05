@@ -11,14 +11,32 @@ from __future__ import (absolute_import, division,
 from future.utils import iteritems
 
 # import collections
+import os
+import re
 import yaml
 import pandas as pd
 # from addict import Dict
+
+# define the regex pattern that the parser will use to 'implicitely' tag your node
+# {TMPDIR}
+env_pattern = re.compile(r'^\{(.*)\}(.*)$')
+
+
+def env_constructor(self, loader, node):
+    value = loader.construct_scalar(node)
+    envVar, remainingPath = env_pattern.match(value).groups()
+    return os.environ[envVar] + remainingPath
+
 
 class cfg(object):
     def __init__(self, filename):
         self.__cfgdict = None
         self.load(filename)
+
+        # define a custom tag and associate with the regex pattern
+        yaml.add_implicit_resolver('!env', env_pattern)
+
+
 
     @property
     def base_calib_dir(self):
