@@ -5,8 +5,7 @@
 #        Date: 2015-05-27
 # Description: PRMS calibration configuration class which uses YAML on the backend
 
-from __future__ import (absolute_import, division,
-                        print_function)
+from __future__ import (absolute_import, division, print_function)
 # , unicode_literals)
 from future.utils import iteritems
 
@@ -19,24 +18,33 @@ import pandas as pd
 
 # define the regex pattern that the parser will use to 'implicitely' tag your node
 # {TMPDIR}
-env_pattern = re.compile(r'^\{(.*)\}(.*)$')
+env_pattern = re.compile(r'^\<\'(.*)\'\>(.*)$')
 
 
-def env_constructor(self, loader, node):
+def env_constructor(loader, node):
     value = loader.construct_scalar(node)
-    envVar, remainingPath = env_pattern.match(value).groups()
-    return os.environ[envVar] + remainingPath
+
+    try:
+        env_var, remaining_path = env_pattern.match(value).groups()
+        return os.environ[env_var] + remaining_path
+    except KeyError:
+        print('WARNING: Environment variable %s does not exist; returning empty string' % env_var)
+        return ''
 
 
 class cfg(object):
-    def __init__(self, filename):
+    def __init__(self, filename, expand_vars=True):
+        # Set expand_vars = False to not expand environment variables from config file
         self.__cfgdict = None
+
+        if expand_vars:
+            # define a custom tag and associate with the regex pattern
+            yaml.add_implicit_resolver('!env', env_pattern)
+
+            # Register the constructor with yaml to handle environment variables
+            yaml.add_constructor('!env', env_constructor)
+
         self.load(filename)
-
-        # define a custom tag and associate with the regex pattern
-        yaml.add_implicit_resolver('!env', env_pattern)
-
-
 
     @property
     def base_calib_dir(self):
@@ -52,7 +60,7 @@ class cfg(object):
         try:
             return '%s/%s/%s' % (self.get_value('base_calib_dir'), self.get_value('basin'),
                                  self.get_value('param_range_file'))
-        except:
+        except KeyError:
             return '%s/%s' % (self.get_value('base_calib_dir'), self.get_value('param_range_file'))
 
     def list_config_items(self):
