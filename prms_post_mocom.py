@@ -63,8 +63,21 @@ cfg = prms_cfg.cfg(configfile)
 
 cdir = os.getcwd()  # Save current dir in case we need it later
 
-basin_dir = '%s/%s' % (cfg.get_value('base_calib_dir'), cfg.get_value('basin'))
-run_dir = '%s/%s/%s/%s' % (basin_dir, cfg.get_value('runs_sub'), args.mocomrun, args.modelrun)
+# basin_dir = '%s/%s' % (cfg.get_value('base_calib_dir'), cfg.get_value('basin'))
+# run_dir = '%s/%s/%s/%s' % (basin_dir, cfg.get_value('runs_sub'), args.mocomrun, args.modelrun)
+
+base_calib_dir = cfg.get_value('base_calib_dir')
+basin = cfg.get_value('basin')
+runid = cfg.get_value('runid')
+
+calib_job_dir = '%s/%s/%s' % (base_calib_dir, runid, basin)
+model_src = '%s/%s' % (base_calib_dir, cfg.get_value('basin'))
+
+# control_file = '%s/%s' % (model_src, cfg.get_value('prms_control_file'))
+# paramfile = '%s/%s' % (model_src, cfg.get_value('prms_input_file'))
+param_range_file = '%s/%s' % (calib_job_dir, cfg.get_value('param_range_file'))
+
+run_dir = '%s/%s' % (calib_job_dir, args.modelrun)
 
 # Make the run directory and change into it
 try:
@@ -76,14 +89,18 @@ except OSError:
 finally:
     os.chdir(run_dir)
 
+# Copy the model files from model_src into the calibration directory
+cmd_opts = '%s/* .' % model_src
+subprocess.call(cfg.get_value('cmd_cp') + cmd_opts, shell=True)
+
 # Copy the control and input parameter files into calibration directory
-for dd in cfg.get_value('source_config'):
-    cmd_opts = " %s ." % dd
-    subprocess.call(cfg.get_value('cmd_cp') + cmd_opts, shell=True)
+# for dd in cfg.get_value('source_config'):
+#     cmd_opts = " %s ." % dd
+#     subprocess.call(cfg.get_value('cmd_cp') + cmd_opts, shell=True)
 
 # Link in the data files
-for dd in cfg.get_value('source_data'):
-    link_data(dd, os.getcwd())
+# for dd in cfg.get_value('source_data'):
+#     link_data(dd, os.getcwd())
 
 # Read the param_range_file
 # Check that the number of parameters in the file matches the parameters
