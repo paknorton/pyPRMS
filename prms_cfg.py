@@ -28,8 +28,8 @@ def env_constructor(loader, node):
         env_var, remaining_path = env_pattern.match(value).groups()
         return os.environ[env_var] + remaining_path
     except KeyError:
-        print('WARNING: Environment variable %s does not exist; returning empty string' % env_var)
-        return ''
+        print('WARNING: Environment variable %s does not exist; removing from value' % env_var)
+        return remaining_path
 
 
 class cfg(object):
@@ -150,4 +150,4 @@ class cfg(object):
 
         # ***************************************************************************
         # Write basin configuration file for run
-        yaml.dump(self.__cfgdict, open(filename, 'w'))
+        yaml.safe_dump(self.__cfgdict, open(filename, 'w'), default_flow_style=False)
