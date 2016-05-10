@@ -90,7 +90,7 @@ finally:
     os.chdir(run_dir)
 
 # Copy the model files from model_src into the calibration directory
-cmd_opts = '%s/* .' % model_src
+cmd_opts = ' %s/* .' % model_src
 subprocess.call(cfg.get_value('cmd_cp') + cmd_opts, shell=True)
 
 # Copy the control and input parameter files into calibration directory
