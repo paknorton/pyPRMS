@@ -34,12 +34,13 @@ runid = cfg.get_value('runid')
 model_src = '%s/%s' % (base_calib_dir, basin)
 calib_job_dir = '%s/%s/%s' % (base_calib_dir, runid, basin)
 
+control_file = '%s/%s' % (model_src, cfg.get_value('prms_control_file'))
 paramfile = '%s/%s' % (model_src, cfg.get_value('prms_input_file'))
 param_range_file = '%s/%s' % (calib_job_dir, cfg.get_value('param_range_file'))
 
 # ==================================================================
 # Verify the date ranges for the basin from the streamflow.data file
-ctl = prms.control(cfg.get_value('prms_control_file'))
+ctl = prms.control(control_file)
 
 streamflow_file = '%s/%s' % (model_src, ctl.get_var('data_file')['values'][0])
 first_date, last_date = prms.streamflow(streamflow_file).date_range
