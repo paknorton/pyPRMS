@@ -4,19 +4,25 @@ from __future__ import (absolute_import, division, print_function)
 # from future.utils import itervalues
 
 # import os
+import argparse
 import subprocess
 
 import prms_cfg
 import prms_lib as prms
 from prms_calib_helpers import read_default_params, read_sens_params, adjust_param_ranges
 
+parser = argparse.ArgumentParser(description='Pre-processor for MOCOM optimization')
+parser.add_argument('-C', '--config', help='Name of configuration file', required=True)
+# parser.add_argument('--nocbh', help='Skip CBH file splitting', action='store_true')
+
+args = parser.parse_args()
 
 # ********next line for working with individual values*********
 adj_ind_vals = False
 
 # multiplier to influence number of sets
 nsets_mult = 3
-basin_cfg_file = 'basin.cfg'
+basin_cfg_file = args.config
 
 cfg = prms_cfg.cfg(basin_cfg_file, expand_vars=True)
 
