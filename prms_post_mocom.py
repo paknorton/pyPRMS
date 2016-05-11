@@ -207,7 +207,7 @@ for cf in ['data_file', 'precip_day', 'tmax_day', 'tmin_day']:
 
 for vv in itervalues(cfg.get_value('objfcn')):
     if vv['obs_file']:
-        print('Removing %s/%s' % (run_dir, vv['sd_file']))
+        print('Removing %s/%s' % (run_dir, vv['obs_file']))
         os.remove('%s/%s' % (run_dir, vv['obs_file']))
         # filelist.append(vv['obs_file'])
     if vv['sd_file']:

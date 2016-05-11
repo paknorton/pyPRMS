@@ -112,5 +112,8 @@ cmd_opts = ' %d %d %d %d %s %s %s %s %s' % (cfg.get_value('nstart'), cfg.get_val
                                             cfg.get_value('test_func_margin_file'))
 print("\tRunning MOCOM...")
 print(cfg.get_value('cmd_mocom') + cmd_opts)
-subprocess.call(mocom + cmd_opts, shell=True)
+result = subprocess.call(mocom + cmd_opts, shell=True)
+
+# Return the exit status of MOCOM to the shell
+exit(result)
 
