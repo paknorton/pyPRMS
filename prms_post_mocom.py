@@ -190,6 +190,32 @@ for vv in itervalues(objfcn_link):
 tmpfile.write('\n')
 tmpfile.close()
 
+
+# Open the control file from the run and get the names of the data files used
+ctl = prms.control('%s/%s' % (run_dir, cfg.get_value('prms_control_file')))
+for cf in ['data_file', 'precip_day', 'tmax_day', 'tmin_day']:
+    # Remove unneeded data files from run directory
+    cfile = ctl.get_values(cf)
+    try:
+        print('Removing %s/%s' % (run_dir, cfile))
+        os.remove('%s/%s' % (run_dir, cfile))
+    except Exception as inst:
+        print("ERROR: %s" % inst)
+
+# Get the files used by the objective functions and delete them from the run
+# filelist = []
+
+for vv in itervalues(cfg.get_value('objfcn')):
+    if vv['obs_file']:
+        print('Removing %s/%s' % (run_dir, vv['sd_file']))
+        os.remove('%s/%s' % (run_dir, vv['obs_file']))
+        # filelist.append(vv['obs_file'])
+    if vv['sd_file']:
+        print('Removing %s/%s' % (run_dir, vv['sd_file']))
+        os.remove('%s/%s' % (run_dir, vv['sd_file']))
+        # filelist.append(vv['sd_file'])
+
+
 # Move the stats file to its final place - MOCOM looks for this file
 os.rename('tmpstats', 'stats.txt')
 

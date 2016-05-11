@@ -27,7 +27,8 @@ parser.add_argument('optimfile', help='Optimization log filename')
 args = parser.parse_args()
 
 runid = args.mocomrun
-workdir = '%s/runs/%s' % (args.optimdir, runid)
+# workdir = '%s/runs/%s' % (args.optimdir, runid)
+workdir = args.optimdir
 opt_file = '%s/%s' % (workdir, args.optimfile)
 opt_out = '%s/optim_fixed.log' % workdir
 configfile = args.configfile
