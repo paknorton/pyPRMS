@@ -38,6 +38,9 @@ class cfg(object):
         self.__cfgdict = None
 
         if expand_vars:
+            # See http://stackoverflow.com/questions/26712003/pyyaml-parsing-of-the-environment-variable-in-the-yaml-configuration-file
+            # for more information
+
             # define a custom tag and associate with the regex pattern
             yaml.add_implicit_resolver('!env', env_pattern)
 
