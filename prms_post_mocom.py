@@ -70,14 +70,14 @@ base_calib_dir = cfg.get_value('base_calib_dir')
 basin = cfg.get_value('basin')
 runid = cfg.get_value('runid')
 
-calib_job_dir = '%s/%s/%s' % (base_calib_dir, runid, basin)
-model_src = '%s/%s' % (base_calib_dir, cfg.get_value('basin'))
+calib_job_dir = '{0}/{1}/{2}'.format(base_calib_dir, runid, basin)
+model_src = '{0}/{1}'.format(base_calib_dir, cfg.get_value('basin'))
 
 # control_file = '%s/%s' % (model_src, cfg.get_value('prms_control_file'))
 # paramfile = '%s/%s' % (model_src, cfg.get_value('prms_input_file'))
-param_range_file = '%s/%s' % (calib_job_dir, cfg.get_value('param_range_file'))
+param_range_file = '{0}/{1}'.format(calib_job_dir, cfg.get_value('param_range_file'))
 
-run_dir = '%s/%s' % (calib_job_dir, args.modelrun)
+run_dir = '{0}/{1}'.format(calib_job_dir, args.modelrun)
 
 # Make the run directory and change into it
 try:
@@ -90,7 +90,7 @@ finally:
     os.chdir(run_dir)
 
 # Copy the model files from model_src into the calibration directory
-cmd_opts = ' %s/* .' % model_src
+cmd_opts = ' {0}/* .'.format(model_src)
 subprocess.call(cfg.get_value('cmd_cp') + cmd_opts, shell=True)
 
 # Copy the control and input parameter files into calibration directory
@@ -106,14 +106,15 @@ subprocess.call(cfg.get_value('cmd_cp') + cmd_opts, shell=True)
 # Check that the number of parameters in the file matches the parameters
 # passed in the command line arguments.
 # The param_range_file is located in the root basin directory
-pfile = open('%s/%s' % (cdir, cfg.get_value('param_range_file')), 'r')
+pfile = open('{0}/{1}'.format(cdir, cfg.get_value('param_range_file')), 'r')
+
 params = []
 for rr in pfile:
     params.append(rr.split(' ')[0])
 pfile.close()
 
 if len(params) != len(args.parameters):
-    print("ERROR: mismatch between number of parameters (%d vs. %d)" % (len(params), len(args.parameters)))
+    print("ERROR: mismatch between number of parameters ({0:d} vs. {1:d})".format(len(params), len(args.parameters)))
     exit(1)
 
 # ************************************
@@ -127,8 +128,8 @@ for ii, pp in enumerate(params):
                 if not vv(args.parameters[ii], args.parameters[params.index(kk)]):
                     # Write the stats.txt file with -1 for each objective function and
                     # skip running PRMS, return stats.txt with -1.0 for each objective function
-                    print('%s = %s failed relationship with %s = %s' %
-                          (pp, args.parameters[ii], kk, args.parameters[params.index(kk)]))
+                    print('{0:s} = {1:s} failed relationship with {2:s} = {3:s}'
+                          .format(pp, args.parameters[ii], kk, args.parameters[params.index(kk)]))
                     tmpfile = open('tmpstats', 'w')
                     objfcn_link = cfg.get_value('of_link')
 
@@ -171,10 +172,10 @@ st_date_calib = prms.to_datetime(cfg.get_value('start_date'))
 en_date = prms.to_datetime(cfg.get_value('end_date'))
 
 # Run PRMS
-cmd_opts = " -C%s -set param_file %s -set start_time %s -set end_time %s" % (cfg.get_value('prms_control_file'),
-                                                                             cfg.get_value('prms_input_file'),
-                                                                             prms.to_prms_datetime(st_date_model),
-                                                                             prms.to_prms_datetime(en_date))
+cmd_opts = " -C{0} -set param_file {1} -set start_time {2} -set end_time {3}".format(cfg.get_value('prms_control_file'),
+                                                                                     cfg.get_value('prms_input_file'),
+                                                                                     prms.to_prms_datetime(st_date_model),
+                                                                                     prms.to_prms_datetime(en_date))
 
 subprocess.call(cfg.get_value('cmd_prms') + cmd_opts, shell=True)
 
@@ -186,33 +187,33 @@ tmpfile = open("tmpstats", 'w')
 objfcn_link = cfg.get_value('of_link')
 
 for vv in itervalues(objfcn_link):
-    tmpfile.write('%0.6f ' % get_sim_obs_stat(cfg, vv))
+    tmpfile.write('{0:0.6f} '.format(get_sim_obs_stat(cfg, vv)))
 tmpfile.write('\n')
 tmpfile.close()
 
 
 # Open the control file from the run and get the names of the data files used
-ctl = prms.control('%s/%s' % (run_dir, cfg.get_value('prms_control_file')))
+ctl = prms.control('{0:s}/{1:s}'.format(run_dir, cfg.get_value('prms_control_file')))
 for cf in ['data_file', 'precip_day', 'tmax_day', 'tmin_day']:
     # Remove unneeded data files from run directory
     cfile = ctl.get_values(cf)
     try:
-        print('Removing %s/%s' % (run_dir, cfile))
-        os.remove('%s/%s' % (run_dir, cfile))
+        print('Removing {0}/{1}'.format(run_dir, cfile))
+        os.remove('{0}/{1}'.format(run_dir, cfile))
     except Exception as inst:
-        print("ERROR: %s" % inst)
+        print("ERROR: {}".format(inst))
 
 # Get the files used by the objective functions and delete them from the run
 # filelist = []
 
 for vv in itervalues(cfg.get_value('objfcn')):
     if vv['obs_file']:
-        print('Removing %s/%s' % (run_dir, vv['obs_file']))
-        os.remove('%s/%s' % (run_dir, vv['obs_file']))
+        print('Removing {0}/{1}'.format(run_dir, vv['obs_file']))
+        os.remove('{0:s}/{1:s}'.format(run_dir, vv['obs_file']))
         # filelist.append(vv['obs_file'])
     if vv['sd_file']:
-        print('Removing %s/%s' % (run_dir, vv['sd_file']))
-        os.remove('%s/%s' % (run_dir, vv['sd_file']))
+        print('Removing {0:s}/{1:s}'.format(run_dir, vv['sd_file']))
+        os.remove('{0:s}/{1:s}'.format(run_dir, vv['sd_file']))
         # filelist.append(vv['sd_file'])
 
 

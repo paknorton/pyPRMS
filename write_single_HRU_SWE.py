@@ -136,11 +136,11 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
     column_set.extend(range(region_start, region_end))
 
     print("\tSNODAS SWE..")
-    ds1 = pd.read_csv('%s/SNODAS_SWE_CONUS_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                      index_col='thedate', usecols=column_set)
+    ds1 = pd.read_csv('{0:s}/SNODAS_SWE_CONUS_2003-2010'.format(src_dir), sep=' ', parse_dates=True,
+                      date_parser=parser, index_col='thedate', usecols=column_set)
 
     print("\tMWBM SWE..")
-    ds2 = pd.read_csv('%s/MWBM_SWE_CONUS_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
+    ds2 = pd.read_csv('{0:s}/MWBM_SWE_CONUS_2003-2010'.format(src_dir), sep=' ', parse_dates=True, date_parser=parser,
                       index_col='thedate', usecols=column_set)
 
 
@@ -152,7 +152,7 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
 
     print("Writing out HRUs:")
     for hh in range(hrus_by_region[regions.index(region)]):
-        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.write('\r\t{0:06d} '.format(hh))
         sys.stdout.flush()
 
         modis = pd.DataFrame(ds1.ix[:, hh])
@@ -172,7 +172,7 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
         ds_join.drop(['thedate'], axis=1, inplace=True)
 
         # Wrie out the dataset
-        outfile = '%s/r%s_%06d/SWEerror' % (dst_dir, region, hh)
+        outfile = '{0:s}/r{1:s}_{2:06d}/SWEerror'.format(dst_dir, region, hh)
         ds_join.to_csv(outfile, sep=' ', float_format='%0.5f', columns=['year', 'month', 'min', 'max'],
                        header=False, index=False)
     print('')
@@ -210,16 +210,16 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 
     print("\tSNODAS SWE..")
-    swe_snodas = pd.read_csv('%s/SNODAS_SWE_GCPO_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                             index_col='thedate')
+    swe_snodas = pd.read_csv('{0:s}/SNODAS_SWE_GCPO_2003-2010'.format(src_dir), sep=' ', parse_dates=True,
+                             date_parser=parser, index_col='thedate')
 
     print("\tMWBM SWE..")
-    swe_mwbm = pd.read_csv('%s/MWBM_SWE_GCPO_2003-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                           index_col='thedate')
+    swe_mwbm = pd.read_csv('{0:s}/MWBM_SWE_GCPO_2003-2010'.format(src_dir), sep=' ', parse_dates=True,
+                           date_parser=parser, index_col='thedate')
 
     print("Writing out HRUs:")
     for hh in range(hrus_by_region[regions.index(region)]):
-        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.write('\r\t{0:06d} '.format(hh))
         sys.stdout.flush()
 
         modis = pd.DataFrame(swe_snodas.iloc[:, hh])
@@ -239,7 +239,7 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
         ds_join.drop(['thedate'], axis=1, inplace=True)
 
         # Write out the dataset
-        outfile = '%s/r%s_%06d/SWEerror' % (dst_dir, region, hh)
+        outfile = '{0:s}/r{1:s}_{2:06d}/SWEerror'.format(dst_dir, region, hh)
         ds_join.to_csv(outfile, sep=' ', float_format='%0.5f', columns=['year', 'month', 'min', 'max'],
                        header=False, index=False)
     print('')
@@ -259,7 +259,7 @@ def main():
     selected_region = args.region
     base_dir = args.basedir
     src_dir = args.srcdir
-    dst_dir = '%s/r%s_byHRU' % (base_dir, args.region)
+    dst_dir = '{0:s}/r{1:s}_byHRU'.format(base_dir, args.region)
 
     # selected_region = 'GCPO'
     # src_dir = '/media/scratch/PRMS/datasets/SWE'

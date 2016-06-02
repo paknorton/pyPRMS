@@ -90,16 +90,16 @@ print(df_bestrun.head())
 
 for bb in basins:
     print(bb)
-    workdir = '%s/%s/runs/%s' % (cfg.base_calib_dir, bb, runid)
-    basin_cfg = prms_cfg.cfg('%s/%s/%s' % (cfg.base_calib_dir, bb, basinConfigFile))
-    basin_config_file = '%s/%s' % (workdir, basinConfigFile)
+    workdir = '{0:s}/{1:s}/runs/{2:s}'.format(cfg.base_calib_dir, bb, runid)
+    basin_cfg = prms_cfg.cfg('{0:s}/{1:s}/{2:s}'.format(cfg.base_calib_dir, bb, basinConfigFile))
+    basin_config_file = '{0:s}/{1:s}'.format(workdir, basinConfigFile)
 
     # TODO: Check for .success file before including an HRU
-    if os.path.isfile('%s/.success' % workdir):
+    if os.path.isfile('{0:s}/.success'.format(workdir)):
         topbarcolor = 'green'
-    elif os.path.isfile('%s/.warning' % workdir):
+    elif os.path.isfile('{0:s}/.warning'.format(workdir)):
         topbarcolor = 'orange'
-    elif os.path.isfile('%s/.error' % workdir):
+    elif os.path.isfile('{0:s}/.error'.format(workdir)):
         topbarcolor = 'red'
         continue
     else:
@@ -107,10 +107,10 @@ for bb in basins:
 
     hrunum = int(bb.split('_')[1]) + 1
 
-    csoln = '%05d' % df_bestrun[df_bestrun.index == hrunum]['soln_num']
-    print('(%d) For %s best solution is: %s' % (hrunum, 'OF_comp', csoln))
+    csoln = '{0:05d}'.format(df_bestrun[df_bestrun.index == hrunum]['soln_num'])
+    print('({0:d}) For {1:s} best solution is: {2:s}'.format(hrunum, 'OF_comp', csoln))
 
-    soln_workdir = '%s/%s' % (workdir, csoln)
+    soln_workdir = '{0:s}/{1:s}'.format(workdir, csoln)
     try:
         os.chdir(soln_workdir)
     except:
@@ -152,10 +152,10 @@ for bb in basins:
             else:
                 # Working with observation ranges
                 # maxy = df_final['obs_upper'].max()
-                stuff = ax[cc].plot(df_final.index.to_pydatetime(), df_final['obs_upper'], 
-                                    linewidth=1.0, color='#3399cc', label='%s upper' % curr_of['obs_var'])
+                stuff = ax[cc].plot(df_final.index.to_pydatetime(), df_final['obs_upper'],
+                                    linewidth=1.0, color='#3399cc', label='{0:s} upper'.format(curr_of['obs_var']))
                 stuff = ax[cc].plot(df_final.index.to_pydatetime(), df_final['obs_lower'], 'k--',
-                                    linewidth=1.0, color='#3399cc', label='%s lower' % curr_of['obs_var'])
+                                    linewidth=1.0, color='#3399cc', label='{0:s} lower'.format(curr_of['obs_var']))
                 stuff = ax[cc].plot(df_final.index.to_pydatetime(), df_final['sim_var'], color='red',
                                     label=curr_of['sim_var'])
 
@@ -171,7 +171,8 @@ for bb in basins:
             ax[cc].set_xlim([st_date_calib, en_date])
             ax[cc].legend(loc='upper left', framealpha=0.5)
             
-            plt.suptitle('basin: %s\nHRU: %d\nrunid: %s (%s)' % (bb, hrunum, runid, csoln), fontsize=title_size)
+            plt.suptitle('basin: {0:s}\nHRU: {1:d}\nrunid: {2:s} ({3:s})'.format(bb, hrunum, runid, csoln),
+                         fontsize=title_size)
             cc += 1
             # Create a secondary y-axis
             # ax2 = ax[cc].twinx()

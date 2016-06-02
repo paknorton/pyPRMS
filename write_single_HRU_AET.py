@@ -206,16 +206,16 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
     column_set.extend(range(region_start, region_end))
 
     print("\tMOD16 AET..")
-    aet_mod16 = pd.read_csv('%s/MOD16_AET_CONUS_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                            index_col='thedate', usecols=column_set)
+    aet_mod16 = pd.read_csv('{0:s}/MOD16_AET_CONUS_2000-2010'.format(src_dir), sep=' ', parse_dates=True,
+                            date_parser=parser, index_col='thedate', usecols=column_set)
 
     print("\tSSEBop AET..")
-    aet_SSEBop = pd.read_csv('%s/SSEBop_AET_CONUS_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                             index_col='thedate', usecols=column_set)
+    aet_SSEBop = pd.read_csv('{0:s}/SSEBop_AET_CONUS_2000-2010'.format(src_dir), sep=' ', parse_dates=True,
+                             date_parser=parser, index_col='thedate', usecols=column_set)
 
     print("\tMWBM AET..")
-    aet_mwbm = pd.read_csv('%s/MWBM_AET_CONUS_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                           index_col='thedate', usecols=column_set)
+    aet_mwbm = pd.read_csv('{0:s}/MWBM_AET_CONUS_2000-2010'.format(src_dir), sep=' ', parse_dates=True,
+                           date_parser=parser, index_col='thedate', usecols=column_set)
 
 
     # aet_mod16 = load_mod16_aet('%s/MOD16_AET_CONUS_2000-2010' % src_dir, st_date, en_date)
@@ -235,7 +235,7 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
     print("Writing out HRUs:")
     for hh in range(hrus_by_region[regions.index(region)]):
         # for hh in range(start_idx+1, end_idx+2):
-        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.write('\r\t{0:06d} '.format(hh))
         sys.stdout.flush()
 
         # ---------------------------------------------------------------------------
@@ -270,7 +270,7 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region):
         # Output HRU into the correct HRU directory
         # outfile format: <dst_dir>/r10U_000000/AETerror
         # HRU numbers are relative to the selected region
-        outfile = '%s/r%s_%06d/AETerror' % (dst_dir, region, hh)
+        outfile = '{0:s}/r{1:s}_{2:06d}/AETerror'.format(dst_dir, region, hh)
         ds_join.to_csv(outfile, sep=' ', float_format='%0.5f', columns=['year', 'month', 'min', 'max'], 
                        header=False, index=False)
 
@@ -310,22 +310,22 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 
     print("\tMOD16 AET..")
-    aet_mod16 = pd.read_csv('%s/MOD16_AET_GCPO_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                            index_col='thedate')
+    aet_mod16 = pd.read_csv('{0:s}/MOD16_AET_GCPO_2000-2010'.format(src_dir), sep=' ', parse_dates=True,
+                            date_parser=parser, index_col='thedate')
 
     print("\tSSEBop AET..")
-    aet_SSEBop = pd.read_csv('%s/SSEBop_AET_GCPO_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                             index_col='thedate')
+    aet_SSEBop = pd.read_csv('{0:s}/SSEBop_AET_GCPO_2000-2010'.format(src_dir), sep=' ', parse_dates=True,
+                             date_parser=parser, index_col='thedate')
 
     print("\tMWBM AET..")
-    aet_mwbm = pd.read_csv('%s/MWBM_AET_GCPO_2000-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                           index_col='thedate')
+    aet_mwbm = pd.read_csv('{0:s}/MWBM_AET_GCPO_2000-2010'.format(src_dir), sep=' ', parse_dates=True,
+                           date_parser=parser, index_col='thedate')
 
     print("Writing out HRUs:")
     for hh in range(hrus_by_region[regions.index(region)]):
     # for hh in xrange(start_idx+1, end_idx+2):
     #     sys.stdout.write('\r\t%06d ' % (hh-start_idx-1))
-        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.write('\r\t{0:06d} '.format(hh))
         sys.stdout.flush()
 
         # ---------------------------------------------------------------------------
@@ -359,7 +359,7 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region):
         # Output HRU into the correct HRU directory
         # outfile format: <dst_dir>/r10U_000000/AETerror
         # HRU numbers are relative to the selected region
-        outfile = '%s/r%s_%06d/AETerror' % (dst_dir, region, (hh-start_idx))
+        outfile = '{0:s}/r{1:s}_{2:06d}/AETerror'.format(dst_dir, region, (hh - start_idx))
         ds_join.to_csv(outfile, sep=' ', float_format='%0.5f', columns=['year', 'month', 'min', 'max'],
                        header=False, index=False)
 
@@ -381,7 +381,7 @@ def main():
     selected_region = args.region
     base_dir = args.basedir
     src_dir = args.srcdir
-    dst_dir = '%s/r%s_byHRU' % (base_dir, args.region)
+    dst_dir = '{0:s}/r{1:s}_byHRU'.format(base_dir, args.region)
 
     # The HRUs for a particular region can be processed
     # selected_region = 'GCPO'

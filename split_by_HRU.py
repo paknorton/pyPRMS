@@ -85,7 +85,7 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru, hdf=False):
         df1['second'] = 0
         df1.reset_index(drop=True, inplace=True)
 
-        fheader = '%s 1\n####\n' % varname
+        fheader = '{0:s} 1\n####\n'.format(varname)
     else:
         in_hdl = open(src_file, 'r')
 
@@ -105,16 +105,16 @@ def full_cbh_subset(src_file, dst_dir, region, varname, nhru, hdf=False):
         in_hdl.close()
 
     for hh in range(nhru):
-        sys.stdout.write('\r\t\t%06d ' % (hh+1))
+        sys.stdout.write('\r\t\t{0:06d} '.format(hh + 1))
         sys.stdout.flush()
 
         # Write the HRU subset of data out to a file
-        out_hdl = open('%s/r%s_%06d/%s' % (dst_dir, region, hh, os.path.basename(src_file)), 'w')
+        out_hdl = open('{0:s}/r{1:s}_{2:06d}/{3:s}'.format(dst_dir, region, hh, os.path.basename(src_file)), 'w')
         out_hdl.write(fheader)
         
         # Subset dataframe to current HRU
         if hdf:
-        # if os.path.splitext(src_file)[1] == '.h5':
+            # if os.path.splitext(src_file)[1] == '.h5':
             df1_ss = df1.ix[:, ['year', 'month', 'day', 'hour', 'minute', 'second', (hh+1)]]
         else:
             df1_ss = df1.iloc[:, [0, 1, 2, 3, 4, 5, hh+6]]
@@ -137,10 +137,10 @@ def main():
 
     region = args.region
     base_dir = args.basedir
-    src_dir = '%s/r%s' % (base_dir, region)
-    dst_dir = '%s/r%s_byHRU' % (base_dir, region)
-    dummy_streamflow_file = '%s/%s' % (base_dir, args.dummy)
-    control_file = '%s/r%s/%s' % (base_dir, region, args.control)
+    src_dir = '{0:s}/r{1:s}'.format(base_dir, region)
+    dst_dir = '{0:s}/r{1:s}_byHRU'.format(base_dir, region)
+    dummy_streamflow_file = '{0:s}/{1:s}'.format(base_dir, args.dummy)
+    control_file = '{0:s}/r{1:s}/{2:s}'.format(base_dir, region, args.control)
 
     # Read the control file
     control = prms.control(control_file)
@@ -172,14 +172,14 @@ def main():
         control.replace_values(kk, os.path.basename(vv))
 
     # Read the input parameter file
-    params = prms.parameters('%s/%s' % (src_dir, input_src['param_file']))
+    params = prms.parameters('{0:s}/{1:s}'.format(src_dir, input_src['param_file']))
 
     nhru = params.get_dim('nhru')
     print('Number of HRUs to process:', nhru)
 
     for hh in range(nhru):
         # set and create destination directory
-        cdir = '%s/r%s_%06d' % (dst_dir, region, hh)
+        cdir = '{0:s}/r{1:s}_{2:06d}'.format(dst_dir, region, hh)
         
         # Create the destination directory
         try:
@@ -193,13 +193,13 @@ def main():
             # os.makedirs(cdir)
         
         # Write an input parameter file for the current HRU 
-        params.pull_hru2(hh, '%s/%s' % (cdir, os.path.basename(input_src['param_file'])))
+        params.pull_hru2(hh, '{0:s}/{1:s}'.format(cdir, os.path.basename(input_src['param_file'])))
         
         # Write the control file for the current HRU
-        control.write_control_file('%s/%s' % (cdir, os.path.basename(control_file)))
+        control.write_control_file('{0:s}/{1:s}'.format(cdir, os.path.basename(control_file)))
 
         # Copy dummy streamflow data file
-        cmd_opts = ' %s %s/.' % (dummy_streamflow_file, cdir)
+        cmd_opts = ' {0:s} {1:s}/.'.format(dummy_streamflow_file, cdir)
         subprocess.call('/bin/cp' + cmd_opts, shell=True)
 
     if not args.nocbh:
@@ -207,12 +207,12 @@ def main():
         print('\nCBH subsets')
         for kk, vv in iteritems(cbh_vars):
             if kk in input_src:
-                print('\tWriting %s' % os.path.basename(input_src[kk]))
+                print('\tWriting {0:s}'.format(os.path.basename(input_src[kk])))
 
                 if args.hdf:
-                    full_cbh_subset('%s/%s' % (src_dir, input_src[kk]), dst_dir, region, vv, nhru, hdf=True)
+                    full_cbh_subset('{0:s}/{1:s}'.format(src_dir, input_src[kk]), dst_dir, region, vv, nhru, hdf=True)
                 else:
-                    full_cbh_subset('%s/%s' % (src_dir, input_src[kk]), dst_dir, region, vv, nhru)
+                    full_cbh_subset('{0:s}/{1:s}'.format(src_dir, input_src[kk]), dst_dir, region, vv, nhru)
 
 
 if __name__ == '__main__':

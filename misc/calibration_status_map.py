@@ -56,7 +56,7 @@ if not extent or len(extent) != 4:
     extent = inLayer.GetExtent()
 
 east, west, south, north = extent
-print('\tExtent: (%f, %f, %f, %f)' % (north, south, east, west))
+print('\tExtent: ({0:f}, {1:f}, {2:f}, {3:f})'.format(north, south, east, west))
 
 # Name of shapefile
 # shpfile='/media/scratch/PRMS/notebooks/nhru_10U/nhru_10U_simpl'
@@ -80,18 +80,18 @@ missing_color = '#00BFFF'  # for missing values
 # basins = bfile.read().splitlines()
 # bfile.close()
 basins = cfg.get_basin_list()
-print('Total basins:', len(basins))
+print('Total basins: {0:d}'.format(len(basins)))
 
 # Check if the runid exists for the first basin
-if not os.path.exists('%s/%s/runs/%s' % (base_calib_dir, basins[0], runid)):
-    print("ERROR: runid = %s does not exist." % runid)
+if not os.path.exists('{0:s}/{1:s}/runs/{2:s}'.format(base_calib_dir, basins[0], runid)):
+    print(u"ERROR: runid = {0:s} does not exist.".format(runid))
     exit(1)
 
 # success list
-s_list = [el for el in glob.glob('%s/*/runs/%s/.success' % (base_calib_dir, runid))]
-s_list += [el for el in glob.glob('%s/*/runs/%s/.warning' % (base_calib_dir, runid))]
-s_list += [el for el in glob.glob('%s/*/runs/%s/.error' % (base_calib_dir, runid))]
-s_list += [el for el in glob.glob('%s/*/runs/%s/.retry' % (base_calib_dir, runid))]
+s_list = [el for el in glob.glob('{0:s}/*/runs/{1:s}/.success'.format(base_calib_dir, runid))]
+s_list += [el for el in glob.glob('{0:s}/*/runs/{1:s}/.warning'.format(base_calib_dir, runid))]
+s_list += [el for el in glob.glob('{0:s}/*/runs/{1:s}/.error'.format(base_calib_dir, runid))]
+s_list += [el for el in glob.glob('{0:s}/*/runs/{1:s}/.retry'.format(base_calib_dir, runid))]
 
 b_list = []
 stat = {'.success': 1, '.warning': 2, '.error': 3, '.retry': 4}
@@ -110,7 +110,7 @@ df.set_index(['HRU'], inplace=True)
 Series_data = df.iloc[:]
 
 fig, ax = plt.subplots(1, figsize=(20, 30))
-ax.set_title('Calibration status\n%s\nRUNID = %s' % (base_calib_dir, runid))
+ax.set_title('Calibration status\n{0:s}\nRUNID = {1:s}'.format(base_calib_dir, runid))
 
 print("Loading basemap...")
 # Load the basemap
@@ -178,7 +178,8 @@ cb1.ax.get_yaxis().set_ticks([])
 thelabels = ['Pending/Running', 'Success', 'Warning', 'Error', 'Cancelled']
 
 for j, lab in enumerate(thelabels):
-    cb1.ax.text(.5, (2 * j + 1) / float(len(thelabels)*2), lab, ha='center', va='center', weight='bold', color='white', rotation=90)
+    cb1.ax.text(.5, (2 * j + 1) / float(len(thelabels)*2), lab, ha='center', va='center', weight='bold',
+                color='white', rotation=90)
 
 # Adjust the placement of the colorbar text
 # cb1.ax.get_yaxis().labelpad = -20

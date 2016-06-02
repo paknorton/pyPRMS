@@ -59,7 +59,7 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
         en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
 
     # Read in the hru_area from the input parameter file
-    print("Reading HRU areas from %s" % param_file)
+    print("Reading HRU areas from {0:s}".format(param_file))
     param = prms.parameters(param_file)
 
     # hru_area is in units of acres
@@ -67,15 +67,15 @@ def pull_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
     print('Number of HRU area values:', len(hru_area))
 
     print("Loading MWBM streamflow:")
-    print("\tMinimum bounds from %s/roHRUminERR_r%s" % (src_dir, region))
-    ds1 = load_MWBM_streamflow('%s/roHRUminERR_r%s' % (src_dir, region), st_date, en_date)
+    print("\tMinimum bounds from {0:s}/roHRUminERR_r{1:s}".format(src_dir, region))
+    ds1 = load_MWBM_streamflow('{0:s}/roHRUminERR_r{1:s}'.format(src_dir, region), st_date, en_date)
 
-    print("\tMaximum bounds from %s/roHRUmaxERR_r%s" % (src_dir, region))
-    ds2 = load_MWBM_streamflow('%s/roHRUmaxERR_r%s' % (src_dir, region), st_date, en_date)
+    print("\tMaximum bounds from {0:s}/roHRUmaxERR_r{1:s}".format(src_dir, region))
+    ds2 = load_MWBM_streamflow('{0:s}/roHRUmaxERR_r{1:s}'.format(src_dir, region), st_date, en_date)
 
     print("Writing out HRUs:")
     for hh in range(hrus_by_region[regions.index(region)]):
-        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.write('\r\t{0:06d} '.format(hh))
         sys.stdout.flush()
 
         # Create and convert minimum values for HRU
@@ -130,7 +130,7 @@ def pull_RO_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
     #     en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
 
     # Read in the hru_area from the input parameter file
-    print("Reading HRU areas from %s" % param_file)
+    print("Reading HRU areas from {0:s}".format(param_file))
     param = prms.parameters(param_file)
 
     # hru_area is in units of acres
@@ -149,14 +149,14 @@ def pull_RO_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
     column_set = [0]
     column_set.extend(range(region_start, region_end))
 
-    print("\tRunoff from %s/MWBM_RO_HRU_CONUS_1980-2010" % src_dir)
-    ro_mwbm = pd.read_csv('%s/MWBM_RO_HRU_CONUS_1980-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
+    print("\tRunoff from {0:s}/MWBM_RO_HRU_CONUS_1980-2010".format(src_dir))
+    ro_mwbm = pd.read_csv('{0:s}/MWBM_RO_HRU_CONUS_1980-2010'.format(src_dir), sep=' ', parse_dates=True, date_parser=parser,
                           index_col='thedate', usecols=column_set)
     # ds2 = load_MWBM_streamflow('%s/roHRUmaxERR_r%s' % (src_dir, region), st_date, en_date)
 
     print("Writing out HRUs:")
     for hh in range(hrus_by_region[regions.index(region)]):
-        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.write('\r\t{0:06d} '.format(hh))
         sys.stdout.flush()
 
         # Create and convert actual runoff values for HRU
@@ -180,7 +180,7 @@ def pull_RO_by_hru(src_dir, dst_dir, st_date, en_date, region, param_file):
         ro_hru.drop(['thedate'], axis=1, inplace=True)
 
         # Write out the dataset
-        outfile = '%s/r%s_%06d/MWBM' % (dst_dir, region, hh)
+        outfile = '{0:s}/r{1:s}_{2:06d}/MWBM'.format(dst_dir, region, hh)
         ro_hru.to_csv(outfile, sep=' ', float_format='%.3f', columns=['Year', 'Month', 'runoff'], header=False,
                       index=False)
     print('')
@@ -210,7 +210,7 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
     #     en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
 
     # Read in the hru_area from the input parameter file
-    print("Reading HRU areas from %s" % param_file)
+    print("Reading HRU areas from {0:s}".format(param_file))
     param = prms.parameters(param_file)
 
     # hru_area is in units of acres
@@ -221,17 +221,19 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 
     print("Loading MWBM streamflow:")
-    print("\tMedian runoff error from %s/MWBM_RO_HRU50ERR_GCPO_1980-2010" % src_dir)
-    ro_err_mwbm = pd.read_csv('%s/MWBM_RO_HRU50ERR_GCPO_1980-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    print("\tMedian runoff error from {0:s}/MWBM_RO_HRU50ERR_GCPO_1980-2010".format(src_dir))
+    ro_err_mwbm = pd.read_csv('{0:s}/MWBM_RO_HRU50ERR_GCPO_1980-2010'.format(src_dir), sep=' ',
+                              parse_dates=True, date_parser=parser, index_col='thedate')
     # ds1 = load_MWBM_streamflow('%s/roHRUminERR_r%s' % (src_dir, region), st_date, en_date)
 
-    print("\tRunoff from %s/MWBM_RO_HRU_GCPO_1980-2010" % src_dir)
-    ro_mwbm = pd.read_csv('%s/MWBM_RO_HRU_GCPO_1980-2010' % src_dir , sep=' ', parse_dates=True, date_parser=parser, index_col='thedate')
+    print("\tRunoff from {0:s}/MWBM_RO_HRU_GCPO_1980-2010".format(src_dir))
+    ro_mwbm = pd.read_csv('{0:s}/MWBM_RO_HRU_GCPO_1980-2010'.format(src_dir), sep=' ', parse_dates=True,
+                          date_parser=parser, index_col='thedate')
     # ds2 = load_MWBM_streamflow('%s/roHRUmaxERR_r%s' % (src_dir, region), st_date, en_date)
 
     print("Writing out HRUs:")
     for hh in range(hrus_by_region[regions.index(region)]):
-        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.write('\r\t{0:06d} '.format(hh))
         sys.stdout.flush()
 
         # Create and convert actual runoff values for HRU
@@ -265,7 +267,7 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
         ro_err_hru.drop(['thedate', 'error'], axis=1, inplace=True)
 
         # Write out the dataset
-        outfile = '%s/r%s_%06d/MWBMerror' % (dst_dir, region, hh)
+        outfile = '{0:s}/r{1:s}_{2:06d}/MWBMerror'.format(dst_dir, region, hh)
         ro_err_hru.to_csv(outfile, sep=' ', float_format='%.3f', columns=['Year', 'Month', 'min', 'max'],
                           header=False, index=False)
     print('')
@@ -295,7 +297,7 @@ def pull_RO_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
     #     en_date = datetime.datetime(date_split[0], date_split[1], date_split[2])
 
     # Read in the hru_area from the input parameter file
-    print("Reading HRU areas from %s" % param_file)
+    print("Reading HRU areas from {0:s}".format(param_file))
     param = prms.parameters(param_file)
 
     # hru_area is in units of acres
@@ -305,14 +307,14 @@ def pull_RO_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
     # Parser for the date information
     parser = lambda x: pd.to_datetime(x, format='%Y-%m-%d')
 
-    print("\tRunoff from %s/MWBM_RO_HRU_GCPO_1980-2010" % src_dir)
-    ro_mwbm = pd.read_csv('%s/MWBM_RO_HRU_GCPO_1980-2010' % src_dir, sep=' ', parse_dates=True, date_parser=parser,
-                          index_col='thedate')
+    print("\tRunoff from {0:s}/MWBM_RO_HRU_GCPO_1980-2010".format(src_dir))
+    ro_mwbm = pd.read_csv('{0:s}/MWBM_RO_HRU_GCPO_1980-2010'.format(src_dir), sep=' ', parse_dates=True,
+                          date_parser=parser, index_col='thedate')
     # ds2 = load_MWBM_streamflow('%s/roHRUmaxERR_r%s' % (src_dir, region), st_date, en_date)
 
     print("Writing out HRUs:")
     for hh in range(hrus_by_region[regions.index(region)]):
-        sys.stdout.write('\r\t%06d ' % hh)
+        sys.stdout.write('\r\t{0:06d} '.format(hh))
         sys.stdout.flush()
 
         # Create and convert actual runoff values for HRU
@@ -336,7 +338,7 @@ def pull_RO_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
         ro_hru.drop(['thedate'], axis=1, inplace=True)
 
         # Write out the dataset
-        outfile = '%s/r%s_%06d/MWBM' % (dst_dir, region, hh)
+        outfile = '{0:s}/r{1:s}_{2:06d}/MWBM'.format(dst_dir, region, hh)
         ro_hru.to_csv(outfile, sep=' ', float_format='%.3f', columns=['Year', 'Month', 'runoff'], header=False,
                       index=False)
     print('')
@@ -357,8 +359,8 @@ def main():
     selected_region = args.region
     base_dir = args.basedir
     src_dir = args.srcdir
-    dst_dir = '%s/r%s_byHRU' % (base_dir, args.region)
-    param_file = '%s/r%s/%s' % (base_dir, args.region, args.paramfile)
+    dst_dir = '{0:s}/r{1:s}_byHRU'.format(base_dir, args.region)
+    param_file = '{0:s}/r{1:s}/{2:s}'.format(base_dir, args.region, args.paramfile)
 
     # selected_region = 'GCPO'
     # src_dir = '/media/scratch/PRMS/datasets/MWBMerr'

@@ -48,13 +48,13 @@ try:
     have_limits = True
     # print(limits)
 except IOError:
-    print("WARNING: %s does not exist.\nLimits will not be plotted." % cfg.param_range_file)
+    print("WARNING: {0:s} does not exist.\nLimits will not be plotted.".format(cfg.param_range_file))
     have_limits = False
 
 # Read input parameter file to get the default parameter values
 # Read the initial input parameters values and compute the mean for each one
-initial_param_values = prms.parameters('%s/%s/%s' % (cfg.get_value('template_dir'), basinid,
-                                                     cfg.get_value('prms_input_file')))
+initial_param_values = prms.parameters('{0:s}/{1:s}/{2:s}'.format(cfg.get_value('template_dir'), basinid,
+                                                                  cfg.get_value('prms_input_file')))
 
 # Build list of initial/default values for the calibration parameters
 initvals = []
@@ -62,14 +62,14 @@ for vv in params:
     initvals.append(np.mean(initial_param_values.get_var(vv)['values']))
 
 # ### Plot objective-function(s) versus parameters
-workdir = '%s/%s/runs/%s' % (base_calib_dir, basinid, runid)
+workdir = '{0:s}/{1:s}/runs/{2:s}'.format(base_calib_dir, basinid, runid)
 optfile = cfg.get_log_file(runid)
 
 # Plot all the generation results
 if top_qtr:
-    pdf_filename = '%s/%s/pdf/%s_%s_OF_v_params_lastQTR.pdf' % (base_calib_dir, basinid, basinid, runid)
+    pdf_filename = '{0:s}/{1:s}/pdf/{1:s}_{2:s}_OF_v_params_lastQTR.pdf'.format(base_calib_dir, basinid, runid)
 else:
-    pdf_filename = '%s/%s/pdf/%s_%s_OF_v_params.pdf' % (base_calib_dir, basinid, basinid, runid)
+    pdf_filename = '{0:s}/{1:s}/pdf/{1:s}_{2:s}_OF_v_params.pdf'.format(base_calib_dir, basinid, runid)
 
 mocom_log = mocom.opt_log(optfile, configfile)
 objfcns = mocom_log.objfcnNames
@@ -138,11 +138,11 @@ for oo in objfcns:
                        log_data[oo].loc[log_data['gennum'] == mocom_log.lastgen], color='black', marker='x')
         ax[ii].set_title(pp, fontsize=12)
 
-    plt.suptitle('Basin: %s (%s)\nObjective Function vs. Parameters\n%s' % (basinid, runid, oo), fontsize=14)
+    plt.suptitle('Basin: {0:s} ({1:s})\nObjective Function vs. Parameters\n{2:s}'.format(basinid, runid, oo), fontsize=14)
     # plt.subplots_adjust(top=0.75)
     # plt.subplots_adjust(hspace=0.3)
     outpdf.savefig()
 
 outpdf.close()
-print('Output written to %s' % pdf_filename)
+print('Output written to {0:s}'.format(pdf_filename))
 # plt.show()

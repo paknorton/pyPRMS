@@ -52,7 +52,7 @@ east += pad
 west -= pad
 south -= pad
 north += pad
-print('\tExtent: (%f, %f, %f, %f)' % (west, east, south, north))
+print('\tExtent: ({0:f}, {1:f}, {2:f}, {3:f})'.format(west, east, south, north))
 
 best_ofs = ['OF_AET', 'OF_SWE', 'OF_runoff', 'OF_comp']
 ofs_to_plot = ['OF_AET', 'OF_SWE', 'OF_runoff']
@@ -94,11 +94,11 @@ missing_color = '#00BFFF'  # for missing values
 # fig, ax = plt.subplots(1,figsize=(20,30))
 # ax = plt.gca()
 fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(30, 20))
-fig.suptitle('Percent bias\nRUNID = %s' % runid)
+fig.suptitle('Percent bias\nRUNID = {0:s}'.format(runid))
 ax = axes.flatten()
 
 for jj, curr_best in enumerate(best_ofs):
-    print('Working on best %s:' % curr_best)
+    print('Working on best {0:s}:'.format(curr_best))
     sys.stdout.flush()
     
     df2 = df[df['best'] == curr_best].copy()
@@ -108,7 +108,7 @@ for jj, curr_best in enumerate(best_ofs):
     for ii, curr_of in enumerate(ofs_to_plot):
         print('\tcurr_of:', curr_of)
         sys.stdout.flush()
-        axes[jj, ii].set_title('%s Percent Bias for %s' % (curr_of, curr_best))
+        axes[jj, ii].set_title('{0:s} Percent Bias for {1:s}'.format(curr_of, curr_best))
 
         df3 = df2[curr_of]
         # print("Loading basemap...")

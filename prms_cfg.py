@@ -28,7 +28,7 @@ def env_constructor(loader, node):
         env_var, remaining_path = env_pattern.match(value).groups()
         return os.environ[env_var] + remaining_path
     except KeyError:
-        print('WARNING: Environment variable %s does not exist; removing from value' % env_var)
+        print('WARNING: Environment variable {0:s} does not exist; removing from value'.format(env_var))
         return remaining_path
 
 
@@ -61,14 +61,14 @@ class cfg(object):
     def param_range_file(self):
         # Return full path to param_range_file
         try:
-            return '%s/%s/%s' % (self.get_value('base_calib_dir'), self.get_value('basin'),
-                                 self.get_value('param_range_file'))
+            return '{0:s}/{1:s}/{2:s}'.format(self.get_value('base_calib_dir'), self.get_value('basin'),
+                                              self.get_value('param_range_file'))
         except KeyError:
-            return '%s/%s' % (self.get_value('base_calib_dir'), self.get_value('param_range_file'))
+            return '{0:s}/{1:s}'.format(self.get_value('base_calib_dir'), self.get_value('param_range_file'))
 
     def list_config_items(self):
         for (kk, vv) in iteritems(self.__cfgdict):
-            print('%s:' % kk),
+            print('{0:s}:'.format(kk)),
 
             if isinstance(vv, list):
                 for ll in vv:
@@ -89,13 +89,13 @@ class cfg(object):
         if of_name in self.__cfgdict['objfcn']:
             self.__cfgdict['objfcn'][of_name]['of_stat'] = newval
         else:
-            print('ERROR: %s does not exist' % of_name)
+            print('ERROR: {0:s} does not exist'.format(of_name))
 
     def change_objfcn_interval(self, of_name, newinterval):
         if of_name in self.__cfgdict['objfcn']:
             self.__cfgdict['objfcn'][of_name]['of_intv'] = newinterval
         else:
-            print('ERROR: %s does not exist' % of_name)
+            print('ERROR: {0:s} does not exist'.format(of_name))
 
     def get_basin_list(self):
         # Returns a list of basin ids
@@ -105,21 +105,21 @@ class cfg(object):
             basinfile.close()
             return basins
         except:
-            print("ERROR: unable to open/read %s" % self.get_value('basins_file'))
+            print("ERROR: unable to open/read {0:s}".format(self.get_value('basins_file')))
             return None
 
     def get_log_file(self, runid=None):
         if runid is None:
             try:
-                return '%s/%s/%s' % (self.get_value('base_calib_dir'), self.get_value('basin'),
-                                     self.get_value('log_file'))
+                return '{0:s}/{1:s}/{2:s}'.format(self.get_value('base_calib_dir'), self.get_value('basin'),
+                                                  self.get_value('log_file'))
             except:
                 # TODO: assert an error
                 return None
         else:
             try:
-                return '%s/%s/runs/%s/%s' % (self.get_value('base_calib_dir'), self.get_value('basin'),
-                                             runid, self.get_value('log_file'))
+                return '{0:s}/{1:s}/runs/{2:s}/{3:s}'.format(self.get_value('base_calib_dir'), self.get_value('basin'),
+                                                             runid, self.get_value('log_file'))
             except:
                 # TODO: assert an error
                 return None
@@ -130,7 +130,7 @@ class cfg(object):
             return pd.read_csv(self.param_range_file, header=None, names=['parameter', 'maxval', 'minval'],
                                sep=r'\s*', engine='python')
         except:
-            print("ERROR: unable to read %s" % self.param_range_file)
+            print("ERROR: unable to read {0:s}".format(self.param_range_file))
             return None
 
     def get_value(self, varname):

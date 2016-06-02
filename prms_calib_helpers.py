@@ -123,7 +123,7 @@ def read_sens_params(filename, include_params=(), exclude_params=()):
         sensparams_file = open(filename, 'r')
     except IOError:
         # print "\tERROR: Missing hruSens.csv file for %s... skipping" % bb
-        print('\tERROR: Missing %s file... skipping' % filename)
+        print(u'\tERROR: Missing {0:s} file... skipping'.format(filename))
         return {}
         
     rawdata = sensparams_file.read().splitlines()
@@ -181,19 +181,19 @@ def adjust_param_ranges(paramfile, calib_params, default_ranges, outfilename, ma
         adjmax = ((user_max + thresh_adj) * (src_mean + thresh_adj) / (src_max + thresh_adj)) - thresh_adj
                 
         if round(adjmin, 5) != round(default_ranges[kk]['min'], 5):
-            print('\t%s: lower bound adjusted (%f to %f)' % (kk, default_ranges[kk]['min'], adjmin))
+            print('\t{0:s}: lower bound adjusted ({1:f} to {2:f})'.format(kk, default_ranges[kk]['min'], adjmin))
         if round(adjmax, 5) != round(default_ranges[kk]['max'], 5):
-            print('\t%s: upper bound adjusted (%f to %f)' % (kk, default_ranges[kk]['max'], adjmax))
+            print('\t{0:s}: upper bound adjusted ({1:f} to {2:f})'.format(kk, default_ranges[kk]['max'], adjmax))
         
         if make_dups:
             # Duplicate each parameter by the number of times it occurred
             # This is for a special use case when calibrating individual values of
             # a parameter.
             for dd in range(vv):
-                outfile.write('%s %f %f\n' % (kk, adjmax, adjmin))
+                outfile.write('{0:s} {1:f} {2:f}\n'.format(kk, adjmax, adjmin))
         else:
             # Output each parameter once
-            outfile.write('%s %f %f\n' % (kk, adjmax, adjmin))
+            outfile.write('{0:s} {1:f} {2:f}\n'.format(kk, adjmax, adjmin))
     outfile.close()
 
 

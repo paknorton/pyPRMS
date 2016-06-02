@@ -23,7 +23,6 @@ import pandas as pd
 import datetime
 import os
 import sys
-from sets import Set
 
 # Author: Parker Norton (pnorton@usgs.gov)
 # Create date: 2015-02-09
@@ -235,6 +234,9 @@ valtypes = ['', 'integer', 'float', 'double', 'string']
 
 
 class control(object):
+    """
+    Class which handles the processing of PRMS control files.
+    """
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2015-02-05
     # Description: Class object to handle reading and writing the PRMS
@@ -265,9 +267,10 @@ class control(object):
             try:
                 pp = self.__controldict[xx]
                 if len(pp['values']) == 1:
-                    outstr += '%s: %s, %s\n' % (xx, self.__valtypes[pp['valuetype']], str(pp['values'][0]))
+                    outstr += '{0:s}: {1:s}, {2:s}\n'.format(xx, self.__valtypes[pp['valuetype']], str(pp['values'][0]))
                 else:
-                    outstr += '%s: %s, %d values\n' % (xx, self.__valtypes[pp['valuetype']], len(pp['values']))
+                    outstr += '{0:s}: {1:s}, {2:d} values\n'.format(xx, self.__valtypes[pp['valuetype']],
+                                                                    len(pp['values']))
             except:
                 continue
         return outstr
@@ -310,7 +313,13 @@ class control(object):
         return self.__controldict
 
     def add(self, varname, vartype, val):
-        """Add a variable to the control file"""
+        """Add a variable to the control file.
+
+        Args:
+            varname: The variable name to use.
+            vartype: The datatype of the variable (one of 'integer', 'string', 'double', 'float').
+            val: The value to assign to the variable
+        """
         # Add a variable to the control file
         if not self.__isloaded:
             self.load_file(self.__filename)
@@ -331,6 +340,13 @@ class control(object):
         pass
 
     def load_file(self, filename):
+        """Load a control file.
+
+        Reads the contents of a control file into the class.
+
+        Args:
+            filename: The name of the control file to read.
+        """
         # Read the control file into memory and parse it
         self.__isloaded = False
         self.__modules = {}  # Initialize dictionary of selected module names
@@ -439,8 +455,15 @@ class control(object):
     # END **** load_file()
 
     def clear_parameter_group(self, group_name):
-        """Given a single parameter group name will clear out values for that parameter
-           and all related parameters. Group name is one of: statVar, aniOut, mapOut, dispVar, nhruOut"""
+        """Clear a parameter group.
+
+        Given a single parameter group name will clear out values for that parameter
+           and all related parameters.
+
+        Args:
+            group_name: The name of a group of related parameters.
+                One of 'statVar', 'aniOut', 'mapOut', 'dispVar', 'nhruOut'.
+        """
 
         groups = {'aniOut': {'naniOutVars': 0, 'aniOutON_OFF': 0, 'aniOutVar_names': []},
                   'dispVar': {'ndispGraphs': 0, 'dispVar_element': [], 'dispVar_names': [], 'dispVar_plot': []},
@@ -453,6 +476,14 @@ class control(object):
                 self.replace_values(kk, vv)
 
     def get_var(self, varname):
+        """Get a control file variable.
+
+        Args:
+            varname: The name of the variable to retrieve.
+
+        Returns:
+            Returns a controldict entry.
+        """
         # Return the given variable
         if not self.__isloaded:
             self.load_file(self.__filename)
@@ -462,7 +493,14 @@ class control(object):
         return None
 
     def get_values(self, varname):
-        """Return value(s) for given variable name"""
+        """Get values for a control file variable.
+
+        Args:
+            varname: The name of the control file variable.
+
+        Returns:
+            Returns the value(s) associated with the control file variable
+        """
         if not self.__isloaded:
             self.load_file(self.__filename)
 
@@ -519,8 +557,8 @@ class control(object):
         # Control file parameters may change. We'll use ctl_order to insure
         # certain parameters are always ordered, but will be followed by any
         # remaining non-ordered parameters.
-        curr_ctl = Set(self.__controldict.keys())
-        curr_order = Set(ctl_order)
+        curr_ctl = set(self.__controldict.keys())
+        curr_order = set(ctl_order)
         unordered_set = curr_ctl.difference(curr_order)
 
         # Add parameters that are missing in the ordered set at the end of the list
@@ -1521,11 +1559,11 @@ class parameters(object):
             self.load_file()
 
         # Iterator through parameters
-        cparams = Set(self.vars)
-        vparams = Set(valid_params.keys())
+        cparams = set(self.vars)
+        vparams = set(valid_params.keys())
 
         # Parameters common to the deprecated params (depr_params) and the current input parameters (cparams)
-        conv_params = Set(depr_params.keys()).intersection(cparams)
+        conv_params = set(depr_params.keys()).intersection(cparams)
 
         # =====================================================================
         # Deprecated parameters conversion
@@ -1598,7 +1636,7 @@ class parameters(object):
         # Add missing parameters using default values
         # Check for any valid params (vparams) that are missing from cparams.
         # These will be created with default values
-        cparams = Set(self.vars)
+        cparams = set(self.vars)
         def_params = vparams.difference(cparams)
         # print 'New parameters to create with default value:', def_params
 
@@ -1672,7 +1710,7 @@ class parameters(object):
                 cdimnames = cvar['dimnames']
                 vdimnames = valid_params[cname]['Dimensions']
 
-                if Set(vdimnames).issubset(Set(cdimnames)):
+                if set(vdimnames).issubset(set(cdimnames)):
                     # NOTE: This doesn't properly handle the case when number of
                     #       dimensions has shrunk.
                     # print "%s: No dimensionality change" % cname

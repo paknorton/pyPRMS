@@ -190,18 +190,18 @@ class opt_log(object):
         try:
             cfg = prms_cfg.cfg(self.configfile)
 
-            modelrun_dir = '%s/%s/runs/%s' % (cfg.base_calib_dir, cfg.get_value('basin'), modelrunid)
+            modelrun_dir = '{0:s}/{1:s}/runs/{2:s}'.format(cfg.base_calib_dir, cfg.get_value('basin'), modelrunid)
         except:
-            print("ERROR: runs/%s doesn't exist!" % modelrunid)
+            print("ERROR: runs/{0:s} doesn't exist!".format(modelrunid))
             return
 
         winners = []
         for rr in self.get_modelrunids('last'):
-            winners.append('%05d' % rr)
+            winners.append('{0:05d}'.format(rr))
 
         if keep_seed:
             for rr in self.get_modelrunids('seed'):
-                winners.append('%05d' % rr)
+                winners.append('{0:05d}'.format(rr))
 
         # Get the directory listing of runids from the calibration run
         stdir = os.getcwd()

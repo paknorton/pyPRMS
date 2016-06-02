@@ -29,8 +29,8 @@ args = parser.parse_args()
 runid = args.mocomrun
 # workdir = '%s/runs/%s' % (args.optimdir, runid)
 workdir = args.optimdir
-opt_file = '%s/%s' % (workdir, args.optimfile)
-opt_out = '%s/optim_fixed.log' % workdir
+opt_file = '{0:s}/{1:s}'.format(workdir, args.optimfile)
+opt_out = u'{0:s}/optim_fixed.log'.format(workdir)
 configfile = args.configfile
 
 # Read the optimization log file
@@ -97,7 +97,7 @@ for line in it:
 
                 hdr_flag = False
             
-            outfile.write('%s\n' % ','.join(x))
+            outfile.write(u'{0:s}\n'.format(','.join(x)))
             
     if line[0:34] == 'Current generation for generation ':
         gennum = int(line.split(' ')[-1].rstrip(':'))+1
@@ -128,7 +128,7 @@ for line in it:
             # Strip out the junk characters ():=
             x = rgx.sub('', x) + ' ' + str(gennum)
             
-            outfile.write('%s\n' % ','.join(x.split()))
+            outfile.write('{0:s}\n'.format(','.join(x.split())))
 
 outfile.close()
-print('\tTotal generations:', gennum - 1)
+print('\tTotal generations: {0:d}'.format(gennum - 1))

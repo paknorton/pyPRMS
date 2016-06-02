@@ -31,18 +31,18 @@ basin = cfg.get_value('basin')
 runid = cfg.get_value('runid')
 
 # Location of the model data for this basin
-model_src = '%s/%s' % (base_calib_dir, basin)
-calib_job_dir = '%s/%s/%s' % (base_calib_dir, runid, basin)
+model_src = '{0:s}/{1:s}'.format(base_calib_dir, basin)
+calib_job_dir = '{0:s}/{1:s}/{2:s}'.format(base_calib_dir, runid, basin)
 
-control_file = '%s/%s' % (model_src, cfg.get_value('prms_control_file'))
-paramfile = '%s/%s' % (model_src, cfg.get_value('prms_input_file'))
-param_range_file = '%s/%s' % (calib_job_dir, cfg.get_value('param_range_file'))
+control_file = '{0:s}/{1:s}'.format(model_src, cfg.get_value('prms_control_file'))
+paramfile = '{0:s}/{1:s}'.format(model_src, cfg.get_value('prms_input_file'))
+param_range_file = '{0:s}/{1:s}'.format(calib_job_dir, cfg.get_value('param_range_file'))
 
 # ==================================================================
 # Verify the date ranges for the basin from the streamflow.data file
 ctl = prms.control(control_file)
 
-streamflow_file = '%s/%s' % (model_src, ctl.get_var('data_file')['values'][0])
+streamflow_file = '{0:s}/{1:s}'.format(model_src, ctl.get_var('data_file')['values'][0])
 first_date, last_date = prms.streamflow(streamflow_file).date_range
 
 if first_date > prms.to_datetime(cfg.get_value('start_date_model')):
@@ -53,7 +53,7 @@ if first_date > prms.to_datetime(cfg.get_value('start_date_model')):
     dy = int(first_date.strftime('%d'))
 
     # Set calibration start date to 2 years after model start date
-    cfg.update_value('start_date', '%d-%d-%d' % (yr+2, mo, dy))
+    cfg.update_value('start_date', '{0:d}-{1:d}-{2:d}'.format(yr + 2, mo, dy))
 
 if last_date < prms.to_datetime(cfg.get_value('end_date')):
     print("\t* Adjusting end_date to reflect available streamflow data")
@@ -74,11 +74,11 @@ exclude_params = ['dday_slope', 'dday_intcp', 'jh_coef_hru', 'jh_coef']
 include_params = []
 
 # Read the default parameter ranges from file
-default_rng_filename = '%s/%s' % (calib_job_dir, cfg.get_value('default_param_list_file'))
+default_rng_filename = '{0:s}/{1:s}'.format(calib_job_dir, cfg.get_value('default_param_list_file'))
 def_ranges = read_default_params(default_rng_filename)
 
 # Read the sensitive parameters in
-sens_params = read_sens_params('%s/hruSens.csv' % calib_job_dir, include_params, exclude_params)
+sens_params = read_sens_params('{0:s}/hruSens.csv'.format(calib_job_dir), include_params, exclude_params)
 
 # ==================================================================
 # Adjust the min/max values for each parameter based on the

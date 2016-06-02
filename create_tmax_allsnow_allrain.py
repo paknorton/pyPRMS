@@ -150,17 +150,17 @@ def main():
         print 'Region: %s' % rr
 
         # Set various files
-        rainmaskfile = '%s/%s/liquid_only_SNODASPRCP_Daily_%s_byHRU_2004-01-01_2014-12-31.csv' % \
-                       (base_snodas_dir, rr, rr)
-        snowmaskfile = '%s/%s/snow_only_SNODASPRCP_Daily_%s_byHRU_2004-01-01_2014-12-31.csv' % \
-                       (base_snodas_dir, rr, rr)
+        rainmaskfile = '{0:s}/{1:s}/liquid_only_SNODASPRCP_Daily_{1:s}_byHRU_2004-01-01_2014-12-31.csv' \
+            .format(base_snodas_dir, rr)
+        snowmaskfile = '{0:s}/{1:s}/snow_only_SNODASPRCP_Daily_{1:s}_byHRU_2004-01-01_2014-12-31.csv' \
+            .format(base_snodas_dir, rr)
 
-        tmaxfile = '%s/%s/%s' % (base_cbh_dir, rr, args.tmaxfile)
-        prcpfile = '%s/%s/%s' % (base_cbh_dir, rr, args.prcpfile)
+        tmaxfile = '{0:s}/{1:s}/{2:s}'.format(base_cbh_dir, rr, args.tmaxfile)
+        prcpfile = '{0:s}/{1:s}/{2:s}'.format(base_cbh_dir, rr, args.prcpfile)
 
         if args.makeparam:
-            prms_region_file = '%s/%s/%s' % (prms_region_dir, rr, args.paramfile)
-            prms_region_outfile = '%s/%s/%s' % (prms_region_dir, rr, args.outputfile)
+            prms_region_file = '{0:s}/{1:s}/{2:s}'.format(prms_region_dir, rr, args.paramfile)
+            prms_region_outfile = '{0:s}/{1:s}/{2:s}'.format(prms_region_dir, rr, args.outputfile)
 
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Open input parameter file for current region
@@ -236,8 +236,9 @@ def main():
 
     # If requested, write out the merge files
     if args.makemerge:
-        tmax_allsnow.to_csv('%s/tmax_allsnow_merged.csv' % base_snodas_dir, index=True, float_format='%7.4f')
-        tmax_allrain_offset.to_csv('%s/tmax_allrain_offset_merged.csv' % base_snodas_dir, index=True, float_format='%7.4f')
+        tmax_allsnow.to_csv('{0:s}/tmax_allsnow_merged.csv'.format(base_snodas_dir), index=True, float_format='%7.4f')
+        tmax_allrain_offset.to_csv(u'{0:s}/tmax_allrain_offset_merged.csv'.format(base_snodas_dir),
+                                   index=True, float_format='%7.4f')
 
 if __name__ == '__main__':
     main()

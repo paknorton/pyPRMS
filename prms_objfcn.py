@@ -9,8 +9,6 @@ import numpy as np
 import pandas as pd
 
 
-
-
 def pbias(data):
     # Compute the percent bias between simulated and observed
     # pbias = 100 * sum(sim - obs) / sum(obs)

@@ -46,12 +46,12 @@ cdir = os.getcwd()
 print('Starting directory: %s' % cdir)
 
 for bb in basins:
-    workdir = '%s/%s/runs/%s' % (cfg.base_calib_dir, bb, runid)
-    basin_cfg = prms_cfg.cfg('%s/%s/%s' % (cfg.base_calib_dir, bb, basinConfigFile))
-    basin_config_file = '%s/%s' % (workdir, basinConfigFile)
+    workdir = '{0:s}/{1:s}/runs/{2:s}'.format(cfg.base_calib_dir, bb, runid)
+    basin_cfg = prms_cfg.cfg('{0:s}/{1:s}/{2:s}'.format(cfg.base_calib_dir, bb, basinConfigFile))
+    basin_config_file = '{0:s}/{1:s}'.format(workdir, basinConfigFile)
 
     # TODO: Check for .success file before including an HRU
-    if not (os.path.isfile('%s/.success' % workdir) or os.path.isfile('%s/.warning' % workdir)):
+    if not (os.path.isfile('{0:s}/.success'.format(workdir)) or os.path.isfile('{0:s}/.warning'.format(workdir))):
         continue
 
     hrunum = int(bb.split('_')[1]) + 1
@@ -71,7 +71,7 @@ for bb in basins:
     for tt in test_group:
         # Get the set with the best NRMSE for the current test_group OF
         try:
-            csoln = '%05d' % lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num']
+            csoln = '{0:05d}'.format(lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num'])
         except: 
             # We probably got multiply matches to the minimum value so 
             # use AET (for SWE), SWE (for AET), or SWE (for runoff)
@@ -80,15 +80,15 @@ for bb in basins:
             print('tie-breaker!', hrunum, tt)
             tmp1 = lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]
             if tt == 'OF_SWE':
-                csoln = '%05d' % tmp1[tmp1['OF_AET'] == tmp1['OF_AET'].min()]['soln_num']
+                csoln = '{0:05d}'.format(tmp1[tmp1['OF_AET'] == tmp1['OF_AET'].min()]['soln_num'])
             elif tt == 'OF_AET':
-                csoln = '%05d' % tmp1[tmp1['OF_SWE'] == tmp1['OF_SWE'].min()]['soln_num']
+                csoln = '{0:05d}'.format(tmp1[tmp1['OF_SWE'] == tmp1['OF_SWE'].min()]['soln_num'])
             elif tt == 'OF_runoff':
-                csoln = '%05d' % tmp1[tmp1['OF_SWE'] == tmp1['OF_SWE'].min()]['soln_num']
+                csoln = '{0:05d}'.format(tmp1[tmp1['OF_SWE'] == tmp1['OF_SWE'].min()]['soln_num'])
 
-        print('(%d) For %s best solution is: %s' % (hrunum, tt, csoln))
+        print('({0:d}) For {1:s} best solution is: {2:s}'.format(hrunum, tt, csoln))
 
-        soln_workdir = '%s/%s' % (workdir, csoln)
+        soln_workdir = '{0:s}/{1:s}'.format(workdir, csoln)
         try:
             os.chdir(soln_workdir)
         except:
@@ -126,17 +126,17 @@ df_results.head()
 
 # In[ ]:
 bb = df_results[df_results.best == 'OF_AET']
-print('Best AET (min/max/median/mean): %0.1f/%0.1f/%0.1f/%0.1f' %
-      (bb.OF_AET.min(), bb.OF_AET.max(), bb.OF_AET.median(), bb.OF_AET.mean()))
+print('Best AET (min/max/median/mean): {0:0.1f}/{1:0.1f}/{2:0.1f}/{3:0.1f}'
+      .format(bb.OF_AET.min(), bb.OF_AET.max(), bb.OF_AET.median(), bb.OF_AET.mean()))
 
 bb = df_results[df_results.best == 'OF_SWE']
-print('Best SWE (min/max/median/mean): %0.1f/%0.1f/%0.1f/%0.1f' %
-      (bb.OF_SWE.min(), bb.OF_SWE.max(), bb.OF_SWE.median(), bb.OF_SWE.mean()))
+print('Best SWE (min/max/median/mean): {0:0.1f}/{1:0.1f}/{2:0.1f}/{3:0.1f}'
+      .format(bb.OF_SWE.min(), bb.OF_SWE.max(), bb.OF_SWE.median(), bb.OF_SWE.mean()))
 
 bb = df_results[df_results.best == 'OF_comp']
-print('Best Composite: SWE (min/max/median/mean): %0.1f/%0.1f/%0.1f/%0.1f' %
-      (bb.OF_SWE.min(), bb.OF_SWE.max(), bb.OF_SWE.median(), bb.OF_SWE.mean()))
+print('Best Composite: SWE (min/max/median/mean): {0:0.1f}/{1:0.1f}/{2:0.1f}/{3:0.1f}'
+      .format(bb.OF_SWE.min(), bb.OF_SWE.max(), bb.OF_SWE.median(), bb.OF_SWE.mean()))
 
 bb = df_results[df_results.best == 'OF_comp']
-print('Best Composite: AET (min/max/median/mean): %0.1f/%0.1f/%0.1f/%0.1f' %
-      (bb.OF_AET.min(), bb.OF_AET.max(), bb.OF_AET.median(), bb.OF_AET.mean()))
+print('Best Composite: AET (min/max/median/mean): {0:0.1f}/{1:0.1f}/{2:0.1f}/{3:0.1f}'
+      .format(bb.OF_AET.min(), bb.OF_AET.max(), bb.OF_AET.median(), bb.OF_AET.mean()))
