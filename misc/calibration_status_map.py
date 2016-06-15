@@ -70,7 +70,7 @@ print('\tExtent: ({0:f}, {1:f}, {2:f}, {3:f})'.format(north, south, east, west))
 # No edits needed below here
 
 cfg = prms_cfg.cfg(configfile)
-base_calib_dir = cfg.base_calib_dir
+base_dir = cfg.base_dir
 
 cblabel = 'Calibration Status'
 missing_color = '#00BFFF'  # for missing values
@@ -83,15 +83,15 @@ basins = cfg.get_basin_list()
 print('Total basins: {0:d}'.format(len(basins)))
 
 # Check if the runid exists for the first basin
-if not os.path.exists('{0:s}/{1:s}/runs/{2:s}'.format(base_calib_dir, basins[0], runid)):
+if not os.path.exists('{0:s}/{1:s}/{2:s}'.format(base_dir, runid, basins[0])):
     print(u"ERROR: runid = {0:s} does not exist.".format(runid))
     exit(1)
 
 # success list
-s_list = [el for el in glob.glob('{0:s}/*/runs/{1:s}/.success'.format(base_calib_dir, runid))]
-s_list += [el for el in glob.glob('{0:s}/*/runs/{1:s}/.warning'.format(base_calib_dir, runid))]
-s_list += [el for el in glob.glob('{0:s}/*/runs/{1:s}/.error'.format(base_calib_dir, runid))]
-s_list += [el for el in glob.glob('{0:s}/*/runs/{1:s}/.retry'.format(base_calib_dir, runid))]
+s_list = [el for el in glob.glob('{0:s}/{1:s}/*/.success'.format(base_dir, runid))]
+s_list += [el for el in glob.glob('{0:s}/{1:s}/*/.warning'.format(base_dir, runid))]
+s_list += [el for el in glob.glob('{0:s}/{1:s}/*/.error'.format(base_dir, runid))]
+s_list += [el for el in glob.glob('{0:s}/{1:s}/*/.retry'.format(base_dir, runid))]
 
 b_list = []
 stat = {'.success': 1, '.warning': 2, '.error': 3, '.retry': 4}
@@ -110,7 +110,7 @@ df.set_index(['HRU'], inplace=True)
 Series_data = df.iloc[:]
 
 fig, ax = plt.subplots(1, figsize=(20, 30))
-ax.set_title('Calibration status\n{0:s}\nRUNID = {1:s}'.format(base_calib_dir, runid))
+ax.set_title('Calibration status\n{0:s}\nRUNID = {1:s}'.format(base_dir, runid))
 
 print("Loading basemap...")
 # Load the basemap
