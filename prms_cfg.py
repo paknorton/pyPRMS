@@ -115,15 +115,15 @@ class cfg(object):
     def get_log_file(self, runid=None):
         if runid is None:
             try:
-                return '{0:s}/{1:s}/{2:s}'.format(self.get_value('base_calib_dir'), self.get_value('basin'),
+                return '{0:s}/{1:s}/{2:s}'.format(self.get_value('base_dir'), self.get_value('basin'),
                                                   self.get_value('log_file'))
             except:
                 # TODO: assert an error
                 return None
         else:
             try:
-                return '{0:s}/{1:s}/runs/{2:s}/{3:s}'.format(self.get_value('base_calib_dir'), self.get_value('basin'),
-                                                             runid, self.get_value('log_file'))
+                return '{0:s}/{1:s}/{2:s}/{3:s}'.format(self.get_value('base_dir'), runid, self.get_value('basin'),
+                                                        self.get_value('log_file'))
             except:
                 # TODO: assert an error
                 return None

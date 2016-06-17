@@ -47,8 +47,8 @@ print('Starting directory: %s' % cdir)
 
 for bb in basins:
     workdir = '{0:s}/{1:s}/{2:s}'.format(base_dir, runid, bb)
-    basin_cfg = prms_cfg.cfg('{0:s}/{1:s}'.format(base_dir, basinConfigFile))
     basin_config_file = '{0:s}/{1:s}'.format(workdir, basinConfigFile)
+    basin_cfg = prms_cfg.cfg(basin_config_file)
 
     # TODO: Check for .success file before including an HRU
     if not (os.path.isfile('{0:s}/.success'.format(workdir)) or os.path.isfile('{0:s}/.warning'.format(workdir))):
