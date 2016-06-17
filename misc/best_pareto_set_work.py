@@ -61,6 +61,7 @@ for bb in basins:
     objfcns = mocom_log.objfcnNames
     lastgen_data = mocom_log.data[mocom_log.data['gennum'] == mocom_log.lastgen]
 
+    print(lastgen_data.info())
     # The minimum composite OF result is used to select the pareto set member
     # for each HRU that will be merge back into the parent region
     lastgen_data.loc[:, 'OF_comp'] = 0.45 * lastgen_data['OF_AET'] + 0.45 * lastgen_data['OF_SWE'] + \
@@ -79,7 +80,7 @@ for bb in basins:
             csoln = 0
             print('tie-breaker!', hrunum, tt)
             tmp1 = lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]
-            print(tmp1)
+
             if tt == 'OF_SWE':
                 csoln = '{0:05d}'.format(tmp1[tmp1['OF_AET'] == tmp1['OF_AET'].min()]['soln_num'])
             elif tt == 'OF_AET':
