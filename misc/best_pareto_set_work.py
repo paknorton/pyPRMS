@@ -15,6 +15,7 @@ import mocom_lib as mocom
 def select_files(members, file_list):
     for tarinfo in members:
         if os.path.basename(tarinfo.name) in file_list:
+            tarinfo.name = os.path.basename(tarinfo.name)
             yield tarinfo
 
 
