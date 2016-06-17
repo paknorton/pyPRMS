@@ -72,6 +72,7 @@ for bb in basins:
     for tt in test_group:
         # Get the set with the best NRMSE for the current test_group OF
         try:
+            print(lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num'])
             csoln = '{0:05d}'.format(lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num'])
         except: 
             # We probably got multiply matches to the minimum value so 
