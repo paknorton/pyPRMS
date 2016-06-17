@@ -6,9 +6,16 @@ from future.utils import iteritems, itervalues
 import argparse
 import os
 import pandas as pd
+import tarfile
 import prms_cfg
 from prms_calib_helpers import get_sim_obs_stat
 import mocom_lib as mocom
+
+
+def select_files(members, file_list):
+    for tarinfo in members:
+        if os.path.basename(tarinfo.name) in file_list:
+            yield tarinfo
 
 
 parser = argparse.ArgumentParser(description='Find the best pareto sets from a calibration run')
@@ -61,7 +68,6 @@ for bb in basins:
     objfcns = mocom_log.objfcnNames
     lastgen_data = mocom_log.data[mocom_log.data['gennum'] == mocom_log.lastgen]
 
-    print(lastgen_data.info())
     # The minimum composite OF result is used to select the pareto set member
     # for each HRU that will be merge back into the parent region
     lastgen_data.loc[:, 'OF_comp'] = 0.45 * lastgen_data['OF_AET'] + 0.45 * lastgen_data['OF_SWE'] + \
@@ -71,13 +77,12 @@ for bb in basins:
     print(hrunum,)
     for tt in test_group:
         # Get the set with the best NRMSE for the current test_group OF
-        print(lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num'].values)
         best = lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num'].values
 
         if len(best) == 1:
             csoln = '{0:05d}'.format(best[0])
         else:
-            # We probably got multiply matches to the minimum value so 
+            # We probably got multiply matches to the minimum value so
             # use AET (for SWE), SWE (for AET), or SWE (for runoff)
             # as a tie breaker
             csoln = 0
@@ -100,6 +105,14 @@ for bb in basins:
             # Always want to end up back where we started
             print('Awww... crap!')
             os.chdir(cdir)
+
+        # Get a list of the objective function observation files we will need
+        obs_list = [vv['obs_file'] for vv in itervalues(cfg.get_value('objfcn'))]
+
+        # Extract the observation files from the region archive into the current solution directory
+        tar = tarfile.open('{}/{}.tar.gz'.format(cfg.get_value('template_dir'), bb))
+        tar.extractall(members=select_files(tar, obs_list), path='.')
+        tar.close()
 
         outputstats = []
         objfcn_link = cfg.get_value('of_link')
