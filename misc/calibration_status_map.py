@@ -106,6 +106,7 @@ for ee in s_list:
     # ri = tmp.index('runs')
     # hru = int(tmp[ri-1].split('_')[1]) + 1
     hru = tmp[-2]
+    print(tmp, hru, stat[tmp[-1]])
 
     b_list.append([hru, stat[tmp[-1]]])
     
