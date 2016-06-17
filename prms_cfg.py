@@ -50,6 +50,10 @@ class cfg(object):
         self.load(filename)
 
     @property
+    def base_dir(self):
+        return self.get_value('base_dir')
+    
+    @property
     def base_calib_dir(self):
         return self.get_value('base_calib_dir')
 
