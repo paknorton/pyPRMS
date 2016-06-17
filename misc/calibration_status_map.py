@@ -100,14 +100,11 @@ stat = {'.success': 1, '.warning': 2, '.error': 3, '.retry': 4}
 # /media/scratch/PRMS/calib_runs/pipestem_1/rPipestem_002280/runs/2016-04-06_1609/.something
 # newer style:
 # /cxfs/projects/usgs/water/mows/NHM/calib_byHRU/calib_runs/pipestem_2/2016-06-14_1351/rPipestem_002280/.something
+
 # From each path get the HRU number
 for ee in s_list:
     tmp = ee.split('/')
-    # ri = tmp.index('runs')
-    # hru = int(tmp[ri-1].split('_')[1]) + 1
     hru = int(tmp[-2].split('_')[1]) + 1
-    print(hru, stat[tmp[-1]])
-
     b_list.append([hru, stat[tmp[-1]]])
     
 df = pd.DataFrame(b_list, columns=['HRU', 'status'])

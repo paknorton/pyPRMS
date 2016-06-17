@@ -35,7 +35,7 @@ print('runid:', runid)
 basins = cfg.get_basin_list()
 print('Total basins: {0:d}'.format(len(basins)))
 
-base_calib_dir = cfg.get_value('base_calib_dir')
+base_dir = cfg.base_dir
 
 merged_df = None
 test_group = ['OF_AET', 'OF_SWE', 'OF_runoff', 'OF_comp']
@@ -46,8 +46,8 @@ cdir = os.getcwd()
 print('Starting directory: %s' % cdir)
 
 for bb in basins:
-    workdir = '{0:s}/{1:s}/runs/{2:s}'.format(cfg.base_calib_dir, bb, runid)
-    basin_cfg = prms_cfg.cfg('{0:s}/{1:s}/{2:s}'.format(cfg.base_calib_dir, bb, basinConfigFile))
+    workdir = '{0:s}/{1:s}/{2:s}'.format(base_dir, runid, bb)
+    basin_cfg = prms_cfg.cfg('{0:s}/{1:s}'.format(base_dir, basinConfigFile))
     basin_config_file = '{0:s}/{1:s}'.format(workdir, basinConfigFile)
 
     # TODO: Check for .success file before including an HRU
