@@ -95,10 +95,17 @@ s_list += [el for el in glob.glob('{0:s}/{1:s}/*/.retry'.format(base_dir, runid)
 
 b_list = []
 stat = {'.success': 1, '.warning': 2, '.error': 3, '.retry': 4}
+
+# older style:
+# /media/scratch/PRMS/calib_runs/pipestem_1/rPipestem_002280/runs/2016-04-06_1609/.something
+# newer style:
+# /cxfs/projects/usgs/water/mows/NHM/calib_byHRU/calib_runs/pipestem_2/2016-06-14_1351/rPipestem_002280/.something
+# From each path get the HRU number
 for ee in s_list:
     tmp = ee.split('/')
-    ri = tmp.index('runs')
-    hru = int(tmp[ri-1].split('_')[1]) + 1
+    # ri = tmp.index('runs')
+    # hru = int(tmp[ri-1].split('_')[1]) + 1
+    hru = tmp[-2]
 
     b_list.append([hru, stat[tmp[-1]]])
     
