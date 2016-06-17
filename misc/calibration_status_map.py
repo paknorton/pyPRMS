@@ -105,10 +105,10 @@ for ee in s_list:
     tmp = ee.split('/')
     # ri = tmp.index('runs')
     # hru = int(tmp[ri-1].split('_')[1]) + 1
-    hru = tmp[-2]
-    print(tmp, hru, stat[-1])
+    hru = int(tmp[-2].split('_')[1]) + 1
+    print(hru, stat[tmp[-1]])
 
-    b_list.append([hru, stat[-1]])
+    b_list.append([hru, stat[tmp[-1]]])
     
 df = pd.DataFrame(b_list, columns=['HRU', 'status'])
 df.sort_values(by=['HRU'], inplace=True)
