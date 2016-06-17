@@ -71,10 +71,12 @@ for bb in basins:
     print(hrunum,)
     for tt in test_group:
         # Get the set with the best NRMSE for the current test_group OF
-        try:
-            print(lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num'].values)
-            csoln = '{0:05d}'.format(lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num'])
-        except: 
+        print(lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num'].values)
+        best = lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]['soln_num'].values
+
+        if len(best) == 1:
+            csoln = '{0:05d}'.format(best[0])
+        else:
             # We probably got multiply matches to the minimum value so 
             # use AET (for SWE), SWE (for AET), or SWE (for runoff)
             # as a tie breaker
@@ -83,11 +85,11 @@ for bb in basins:
             tmp1 = lastgen_data[lastgen_data[tt] == lastgen_data[tt].min()]
 
             if tt == 'OF_SWE':
-                csoln = '{0:05d}'.format(tmp1[tmp1['OF_AET'] == tmp1['OF_AET'].min()]['soln_num'])
+                csoln = '{0:05d}'.format(tmp1[tmp1['OF_AET'] == tmp1['OF_AET'].min()]['soln_num'].values[0])
             elif tt == 'OF_AET':
-                csoln = '{0:05d}'.format(tmp1[tmp1['OF_SWE'] == tmp1['OF_SWE'].min()]['soln_num'])
+                csoln = '{0:05d}'.format(tmp1[tmp1['OF_SWE'] == tmp1['OF_SWE'].min()]['soln_num'].values[0])
             elif tt == 'OF_runoff':
-                csoln = '{0:05d}'.format(tmp1[tmp1['OF_SWE'] == tmp1['OF_SWE'].min()]['soln_num'])
+                csoln = '{0:05d}'.format(tmp1[tmp1['OF_SWE'] == tmp1['OF_SWE'].min()]['soln_num'].values[0])
 
         print('({0:d}) For {1:s} best solution is: {2:s}'.format(hrunum, tt, csoln))
 
