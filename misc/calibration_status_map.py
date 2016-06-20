@@ -55,8 +55,8 @@ if not extent or len(extent) != 4:
     inLayer = inDataSource.GetLayer()
     extent = inLayer.GetExtent()
 
-east, west, south, north = extent
-print('\tExtent: ({0:f}, {1:f}, {2:f}, {3:f})'.format(north, south, west, east))
+west, east, south, north = extent
+print('\tExtent: ({0:f}, {1:f}, {2:f}, {3:f})'.format(north, south, east, west))
 
 # Name of shapefile
 # shpfile='/media/scratch/PRMS/notebooks/nhru_10U/nhru_10U_simpl'
