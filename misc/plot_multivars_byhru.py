@@ -88,11 +88,17 @@ df_bestrun.drop(['index'], axis=1, inplace=True)
 df_bestrun.set_index('HRU', inplace=True)
 print(df_bestrun.head())
 
+base_dir = cfg.base_dir
+
 for bb in basins:
     print(bb)
-    workdir = '{0:s}/{1:s}/runs/{2:s}'.format(cfg.base_calib_dir, bb, runid)
-    basin_cfg = prms_cfg.cfg('{0:s}/{1:s}/{2:s}'.format(cfg.base_calib_dir, bb, basinConfigFile))
+    workdir = '{0:s}/{1:s}/{2:s}'.format(base_dir, runid, bb)
     basin_config_file = '{0:s}/{1:s}'.format(workdir, basinConfigFile)
+    basin_cfg = prms_cfg.cfg(basin_config_file)
+
+    # workdir = '{0:s}/{1:s}/runs/{2:s}'.format(cfg.base_calib_dir, bb, runid)
+    # basin_cfg = prms_cfg.cfg('{0:s}/{1:s}/{2:s}'.format(cfg.base_calib_dir, bb, basinConfigFile))
+    # basin_config_file = '{0:s}/{1:s}'.format(workdir, basinConfigFile)
 
     # TODO: Check for .success file before including an HRU
     if os.path.isfile('{0:s}/.success'.format(workdir)):
