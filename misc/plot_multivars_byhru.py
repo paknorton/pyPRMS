@@ -113,7 +113,7 @@ for bb in basins:
 
     hrunum = int(bb.split('_')[1]) + 1
 
-    csoln = '{0:05d}'.format(df_bestrun[df_bestrun.index == hrunum]['soln_num'])
+    csoln = '{0:05d}'.format(df_bestrun[df_bestrun.index == hrunum]['soln_num'].values)
     print('({0:d}) For {1:s} best solution is: {2:s}'.format(hrunum, 'OF_comp', csoln))
 
     soln_workdir = '{0:s}/{1:s}'.format(workdir, csoln)
