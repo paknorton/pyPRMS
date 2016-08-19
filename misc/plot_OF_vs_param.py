@@ -20,6 +20,7 @@ import numpy as np
 # print(os.getcwd())
 
 parser = argparse.ArgumentParser(description='Display map showing PRMS calibration status')
+parser = argparse.ArgumentParser('-b', '--basin', help='The basin to plot', required=True)
 parser.add_argument('-c', '--config', help='Primary basin configuration file', required=True)
 # parser.add_argument('-p', '--pdf', help='PDF output filename', required=True)
 parser.add_argument('-r', '--runid', help='Runid of the calibration to display', required=True)
@@ -32,9 +33,12 @@ runid = args.runid
 
 cfg = prms_cfg.cfg(configfile)
 
-basinid = cfg.get_value('basin')
-base_calib_dir = cfg.base_calib_dir
+basinid = args.basin
+# basinid = cfg.get_value('basin')
 
+# TODO: Need to update this to work with new paths. Remove this comment when done.
+
+base_calib_dir = cfg.base_calib_dir
 print('base_calib_dir:', base_calib_dir)
 
 # Plot last 25% of the generations? If false return all

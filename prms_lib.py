@@ -1939,9 +1939,9 @@ class parameters(object):
                 outfile.write('%d\n' % 1)
             elif kk in dim_adj:
                 outfile.write('%d\n' % dim_adj[kk])
-            elif kk == 'ndepl' and ndepl == nhru:
+            elif kk == 'ndepl':
                 outfile.write('%d\n' % 1)
-            elif kk == 'ndeplval' and ndepl == nhru:
+            elif kk == 'ndeplval':
                 outfile.write('%d\n' % 11)
             else:
                 outfile.write('%d\n' % vv)
