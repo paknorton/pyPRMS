@@ -28,8 +28,8 @@ input_files = ['param_file', 'tmax_day', 'tmin_day', 'precip_day', 'data_file']
 output_files = ['ani_output_file', 'var_init_file', 'stat_var_file', 'var_save_file', 'stats_output_file',
                 'csv_output_file', 'model_output_file']
 
-control_updates = {'statVar_names': ['hru_streamflow_out', 'pkwater_equiv', 'hru_actet'],
-                   'statVar_element': [1, 1, 1],
+control_updates = {'statVar_names': ['hru_streamflow_out', 'pkwater_equiv', 'hru_actet', 'hru_ppt'],
+                   'statVar_element': [1, 1, 1, 1],
                    'statsON_OFF': [1]}
 
 
