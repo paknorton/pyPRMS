@@ -1756,6 +1756,8 @@ class parameters(object):
         for ee in parent:
             if ee['name'] == varname:
                 return ee
+        raise ValueError('Parameter does not exist.')
+
         return None
 
     def load_file(self):
