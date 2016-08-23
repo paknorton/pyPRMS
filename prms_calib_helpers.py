@@ -133,12 +133,19 @@ def read_sens_params(filename, include_params=(), exclude_params=()):
     counts = {}
     for line in it:
         flds = line.split(',')
+        first_fld = True
+
         for ff in flds:
             ff = ff.strip()
 
-            try:
-                int(ff)
-            except:
+            if first_fld:
+                try:
+                    int(ff)
+                    first_fld = False
+                except ValueError:
+                    print('ERROR: Sensitive parameter file, {}, missing HRU number in first field'.format(filename))
+                    exit(2)
+            else:
                 if ff not in exclude_params:
                     if ff not in counts:
                         counts[ff] = 0
