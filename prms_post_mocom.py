@@ -221,13 +221,13 @@ for vv in itervalues(cfg.get_value('objfcn')):
             print('Removing {0}/{1}'.format(run_dir, vv['obs_file']))
             os.remove('{0:s}/{1:s}'.format(run_dir, vv['obs_file']))
         except OSError as err:
-            print('WARNING: Removing file: {}\n{}'.format(vv['obs_file'], err))
+            print('WARNING: Removing file: {}\n\t{}'.format(vv['obs_file'], err))
     if vv['sd_file']:
         try:
             print('Removing {0:s}/{1:s}'.format(run_dir, vv['sd_file']))
             os.remove('{0:s}/{1:s}'.format(run_dir, vv['sd_file']))
         except OSError as err:
-            print('WARNING: Removing file: {}\n{}'.format(vv['sd_file'], err))
+            print('WARNING: Removing file: {}\n\t{}'.format(vv['sd_file'], err))
 
 
 # Move the stats file to its final place - MOCOM looks for this file
