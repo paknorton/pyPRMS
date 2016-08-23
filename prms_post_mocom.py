@@ -177,7 +177,16 @@ cmd_opts = " -C{0} -set param_file {1} -set start_time {2} -set end_time {3}".fo
                                                                                      prms.to_prms_datetime(st_date_model),
                                                                                      prms.to_prms_datetime(en_date))
 
-subprocess.call(cfg.get_value('cmd_prms') + cmd_opts, shell=True)
+try:
+    retcode = subprocess.call(cfg.get_value('cmd_prms') + cmd_opts, shell=True)
+except OSError:
+    print('ERROR: PRMS executable is missing.')
+    exit(2)
+else:
+    if retcode != 0:
+        raise RuntimeError('Error from PRMS execution.')
+        print('\nCMD {}'.format(cmd))
+        exit(2)
 
 
 # ***************************************************************************
