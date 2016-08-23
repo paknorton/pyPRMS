@@ -217,13 +217,17 @@ for cf in ['data_file', 'precip_day', 'tmax_day', 'tmin_day']:
 
 for vv in itervalues(cfg.get_value('objfcn')):
     if vv['obs_file']:
-        print('Removing {0}/{1}'.format(run_dir, vv['obs_file']))
-        os.remove('{0:s}/{1:s}'.format(run_dir, vv['obs_file']))
-        # filelist.append(vv['obs_file'])
+        try:
+            print('Removing {0}/{1}'.format(run_dir, vv['obs_file']))
+            os.remove('{0:s}/{1:s}'.format(run_dir, vv['obs_file']))
+        except OSError as err:
+            print('WARNING: Removing file: {}\n{}'.format(vv['obs_file'], err))
     if vv['sd_file']:
-        print('Removing {0:s}/{1:s}'.format(run_dir, vv['sd_file']))
-        os.remove('{0:s}/{1:s}'.format(run_dir, vv['sd_file']))
-        # filelist.append(vv['sd_file'])
+        try:
+            print('Removing {0:s}/{1:s}'.format(run_dir, vv['sd_file']))
+            os.remove('{0:s}/{1:s}'.format(run_dir, vv['sd_file']))
+        except OSError as err:
+            print('WARNING: Removing file: {}\n{}'.format(vv['sd_file'], err))
 
 
 # Move the stats file to its final place - MOCOM looks for this file
