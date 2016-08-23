@@ -168,39 +168,44 @@ def adjust_param_ranges(paramfile, calib_params, default_ranges, outfilename, ma
         # Grab the current param (kk) from the .params file and verify the
         # upper and lower bounds. Modify them if necessary.
 
-        src_vals = src_params.get_var(kk)['values']
-        src_mean = np.mean(src_vals)
-        src_min = np.min(src_vals)
-        src_max = np.max(src_vals)
-        
-        # Set upper and lower bounds
-        user_min = default_ranges[kk]['min']
-        user_max = default_ranges[kk]['max']
-        if user_min > src_min:
-            user_min = src_min
-        if user_max < src_max:
-            user_max = src_max
-
-        # Adjustment value to prevent zeroes in calculations
-        thresh_adj = abs(user_min) + 10.
-        
-        adjmin = ((user_min + thresh_adj) * (src_mean + thresh_adj) / (src_min + thresh_adj)) - thresh_adj
-        adjmax = ((user_max + thresh_adj) * (src_mean + thresh_adj) / (src_max + thresh_adj)) - thresh_adj
-                
-        if round(adjmin, 5) != round(default_ranges[kk]['min'], 5):
-            print('\t{0:s}: lower bound adjusted ({1:f} to {2:f})'.format(kk, default_ranges[kk]['min'], adjmin))
-        if round(adjmax, 5) != round(default_ranges[kk]['max'], 5):
-            print('\t{0:s}: upper bound adjusted ({1:f} to {2:f})'.format(kk, default_ranges[kk]['max'], adjmax))
-        
-        if make_dups:
-            # Duplicate each parameter by the number of times it occurred
-            # This is for a special use case when calibrating individual values of
-            # a parameter.
-            for dd in range(vv):
-                outfile.write('{0:s} {1:f} {2:f}\n'.format(kk, adjmax, adjmin))
+        try:
+            src_vals = src_params.get_var(kk)['values']
+        except ValueError as err:
+            print('{} {}'.format(err, kk))
+            exit(2)
         else:
-            # Output each parameter once
-            outfile.write('{0:s} {1:f} {2:f}\n'.format(kk, adjmax, adjmin))
+            src_mean = np.mean(src_vals)
+            src_min = np.min(src_vals)
+            src_max = np.max(src_vals)
+
+            # Set upper and lower bounds
+            user_min = default_ranges[kk]['min']
+            user_max = default_ranges[kk]['max']
+            if user_min > src_min:
+                user_min = src_min
+            if user_max < src_max:
+                user_max = src_max
+
+            # Adjustment value to prevent zeroes in calculations
+            thresh_adj = abs(user_min) + 10.
+
+            adjmin = ((user_min + thresh_adj) * (src_mean + thresh_adj) / (src_min + thresh_adj)) - thresh_adj
+            adjmax = ((user_max + thresh_adj) * (src_mean + thresh_adj) / (src_max + thresh_adj)) - thresh_adj
+
+            if round(adjmin, 5) != round(default_ranges[kk]['min'], 5):
+                print('\t{0:s}: lower bound adjusted ({1:f} to {2:f})'.format(kk, default_ranges[kk]['min'], adjmin))
+            if round(adjmax, 5) != round(default_ranges[kk]['max'], 5):
+                print('\t{0:s}: upper bound adjusted ({1:f} to {2:f})'.format(kk, default_ranges[kk]['max'], adjmax))
+
+            if make_dups:
+                # Duplicate each parameter by the number of times it occurred
+                # This is for a special use case when calibrating individual values of
+                # a parameter.
+                for dd in range(vv):
+                    outfile.write('{0:s} {1:f} {2:f}\n'.format(kk, adjmax, adjmin))
+            else:
+                # Output each parameter once
+                outfile.write('{0:s} {1:f} {2:f}\n'.format(kk, adjmax, adjmin))
     outfile.close()
 
 
