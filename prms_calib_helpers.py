@@ -171,7 +171,7 @@ def adjust_param_ranges(paramfile, calib_params, default_ranges, outfilename, ma
         try:
             src_vals = src_params.get_var(kk)['values']
         except ValueError as err:
-            print('{} {}'.format(err, kk))
+            print('ERROR: {} {}'.format(err, kk))
             exit(2)
         else:
             src_mean = np.mean(src_vals)
