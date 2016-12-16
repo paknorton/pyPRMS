@@ -237,11 +237,11 @@ def pull_by_hru_GCPO(src_dir, dst_dir, st_date, en_date, region, param_file):
         sys.stdout.flush()
 
         # Create and convert actual runoff values for HRU
-        ro_hru = pd.DataFrame(ro_mwbm.iloc[:,hh])
+        ro_hru = pd.DataFrame(ro_mwbm.iloc[:, hh])
         ro_hru.rename(columns={ro_hru.columns[0]: 'runoff'}, inplace=True)
 
         # Create and convert median runoff error for HRU
-        ro_err_hru = pd.DataFrame(ro_err_mwbm.iloc[:,hh])
+        ro_err_hru = pd.DataFrame(ro_err_mwbm.iloc[:, hh])
         ro_err_hru.rename(columns={ro_err_hru.columns[0]: 'error'}, inplace=True)
 
         # Minimum error value

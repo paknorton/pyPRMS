@@ -105,7 +105,7 @@ def load_ssebop_aet(filename, st_date, en_date, missing_val=[-9999.0]):
     ds3b = ds3.unstack().unstack()
 
     ds3b.reset_index(inplace=True)
-    ds3b['thedate'] = pd.to_datetime(ds3b.ix[:,0], format='%Y.%m')
+    ds3b['thedate'] = pd.to_datetime(ds3b.ix[:, 0], format='%Y.%m')
     ds3b.set_index(['thedate'], inplace=True)
     ds3b.drop(['index'], axis=1, inplace=True)
 
