@@ -1,5 +1,9 @@
 #!/usr/bin/env python2.7
 
+from __future__ import (absolute_import, division, print_function)
+# , unicode_literals)
+from future.utils import iteritems
+
 import datetime
 import pandas as pd
 import numpy as np
@@ -22,18 +26,30 @@ snow_min = 28.2   # based on 95%
 # st = datetime.datetime(2004,1,1)
 # en = datetime.datetime(2010,12,31)
 
+
 def create_rain_tmax(rainmask, tmax, prcp):
     """Compute tmax_allrain from a rain mask and observed tmax and prcp from cbh files"""
+    # Three steps are used to make sure there are no missing values in the
+    # final set of temperature values
+    # 1) SNODAS,
+    # 2) any missing values are filled where possible with DAYMET values
+    # 3) any remaining missing values are given a default value
+
     # Fill in any missing days with NAN
+    # Missing days can sometimes occur as an artifact from:
+    #   1) the source data, 2) GDP processing of the source data
     rainmask = rainmask.resample('D', how='max')
     rainmask[rainmask > 0.0] = 1
 
     # Use numpy (np) to multiply df_tmax and df_mask.
     # For some reason pandas multiply is horribly broken
-    rain_tmax_m1 = pd.np.multiply(tmax,rainmask)
+    # This mask is derived using SNODAS precip information
+    rain_tmax_m1 = pd.np.multiply(tmax, rainmask)
+    # Where rainmask is zero the tmax value will be zero and should be masked out
     rain_tmax_m1[rain_tmax_m1 == 0.0] = np.nan
 
     # Create secondary mask
+    # This mask is derived using CBH precip information
     rain_tmax_m2 = pd.np.multiply(tmax, prcp)
 
     # Mask out temperatures values outside the range we need
@@ -66,13 +82,21 @@ def create_rain_tmax(rainmask, tmax, prcp):
 
 def create_snow_tmax(snowmask, tmax, prcp):
     """Compute tmax_allsnow from a snow mask and observed tmax and prcp from cbh files"""
+    # Three steps are used to make sure there are no missing values in the
+    # final set of temperature values
+    # 1) SNODAS,
+    # 2) any missing values are filled where possible with DAYMET values
+    # 3) any remaining missing values are given a default value
+
+    # prcp is actually a mask of precip events (0 - no precip; 1 - precip) derived from the prcp CBH file
+
     # Fill in any missing days with NAN
     snowmask = snowmask.resample('D', how='max')
     snowmask[snowmask > 0.0] = 1
 
     # Use numpy (np) to multiply df_tmax and df_mask.
     # For some reason pandas multiply is horribly broken
-    snow_tmax_m1 = pd.np.multiply(tmax,snowmask)
+    snow_tmax_m1 = pd.np.multiply(tmax, snowmask)
     snow_tmax_m1[snow_tmax_m1 == 0.0] = np.nan
 
     # Create secondary mask
@@ -129,15 +153,15 @@ def main():
 
     # Verify and set the date range
     if len(args.daterange) < 2:
-        print 'ERROR: A start date or start and ending date must be specified'
+        print('ERROR: A start date or start and ending date must be specified')
         exit()
     else:
         st = prms.to_datetime(args.daterange[0])
         en = prms.to_datetime(args.daterange[1])
-        print 'Date Range: %s to %s' % (args.daterange[0], args.daterange[1])
+        print('Date Range: %s to %s' % (args.daterange[0], args.daterange[1]))
 
     if len(args.regions) == 0:
-        print 'ERROR: Must supply at least one region to process'
+        print('ERROR: Must supply at least one region to process')
         exit()
     else:
         regions = args.regions
@@ -147,7 +171,7 @@ def main():
     base_snodas_dir = args.snodasdir
 
     for ridx, rr in enumerate(regions):
-        print 'Region: %s' % rr
+        print('Region: %s' % rr)
 
         # Set various files
         rainmaskfile = '{0:s}/{1:s}/liquid_only_SNODASPRCP_Daily_{1:s}_byHRU_2004-01-01_2014-12-31.csv' \
@@ -169,12 +193,12 @@ def main():
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Read the daymet tmax and prcp cbh file
         # Read the tmax CBH file and restrict to the given date range
-        print '\tReading tmax CBH file'
+        print('\tReading tmax CBH file')
         df_tmax = prms.read_cbh(tmaxfile)
         df_tmax = df_tmax[st:en]
 
         # Read the prcp CBH file and restrict to the given date range
-        print '\tReading prcp CBH file'
+        print('\tReading prcp CBH file')
         df_prcp = prms.read_cbh(prcpfile)
         df_prcp = df_prcp[st:en]
 
@@ -187,14 +211,14 @@ def main():
         # Load the SNODAS precip masks
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Load the rain (or liquid) precip mask
-        print '\tCreate rain mask'
+        print('\tCreate rain mask')
         rain_mask = prms.read_gdp(rainmaskfile, missing_val=255.)
         rain_mask = rain_mask[st:en]
         rain_tmax_final = create_rain_tmax(rain_mask, df_tmax, df_prcp)
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Load the snow precip mask
-        print '\tCreate snow mask'
+        print('\tCreate snow mask')
         snow_mask = prms.read_gdp(snowmaskfile, missing_val=255.)
         snow_mask = snow_mask[st:en]
         snow_tmax_final = create_snow_tmax(snow_mask, df_tmax, df_prcp)
@@ -205,7 +229,7 @@ def main():
 
         if args.makeparam:
             if not (params.var_exists('tmax_allsnow') or params.var_exists('tmax_allrain_offset')):
-                print "ERROR: tmax_allsnow and tmax_allrain_offset must exist in the parameter file"
+                print("ERROR: tmax_allsnow and tmax_allrain_offset must exist in the parameter file")
                 exit(1)
 
             # Update tmax_allsnow and tmax_allrain_offset in the input parameter object
@@ -213,7 +237,7 @@ def main():
             #               a flattened copy of the array. The parameters must be stored
             #               column-major order for PRMS; this is handled in prms_lib. These
             #               two statements may be able to be simplified.
-            print '\tUpdate parameters and write out difference file'
+            print('\tUpdate parameters and write out difference file')
             params.replace_values('tmax_allsnow', snow_tmax_final.values.flatten())
             params.replace_values('tmax_allrain_offset', rain_tmax_offset.values.flatten())
 

@@ -1175,7 +1175,7 @@ class param_db(object):
                 subset[param] = self.__paramdb[param]
 
         return subset
-
+    
     def module_params(self, mod):
         # mod is a dictionary containing a single entry with format:
         #         key = a valid module name for any of vals
