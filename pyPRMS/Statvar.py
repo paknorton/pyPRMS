@@ -5,7 +5,7 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 import pandas as pd
 
-from prms_helpers import dparse
+from pyPRMS.prms_helpers import dparse
 
 
 class Statvar(object):

@@ -1,5 +1,9 @@
 
 
+import calendar
+from datetime import datetime
+import xml.etree.ElementTree as xmlET
+
 
 def dparse(*dstr):
     dint = [int(x) for x in dstr]
@@ -12,7 +16,9 @@ def dparse(*dstr):
         dint.append(12)
         dint.append(calendar.monthrange(*dint)[1])
 
-    return datetime.datetime(*dint)
+    return datetime(*dint)
+
+
 
 # def dparse(yr, mo, dy, hr, minute, sec):
 #     # Date parser for working with the date format from PRMS files
@@ -22,3 +28,9 @@ def dparse(*dstr):
 #
 #     dt = datetime.datetime(yr, mo, dy, hr, minute, sec)
 #     return dt
+
+
+def read_xml(filename):
+    # Open and parse an xml file and return the root of the tree
+    xml_tree = xmlET.parse(filename)
+    return xml_tree.getroot()

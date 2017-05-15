@@ -7,7 +7,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from prms_helpers import dparse
+from pyPRMS.prms_helpers import dparse
 
 
 class Streamflow(object):

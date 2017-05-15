@@ -3,7 +3,7 @@
 from __future__ import (absolute_import, division, print_function)
 from future.utils import iteritems
 
-from constants import ctl_order, ctl_module_params
+from pyPRMS.constants import ctl_order, ctl_module_params
 
 
 class Control(object):

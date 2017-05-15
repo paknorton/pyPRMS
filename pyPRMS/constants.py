@@ -33,4 +33,19 @@ ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'm
 ctl_module_params = ['et_module', 'precip_module', 'soilzone_module', 'solrad_module',
                      'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module']
 
-valtypes = ['', 'integer', 'float', 'double', 'string']
+# valtypes = ['', 'integer', 'float', 'double', 'string']
+
+# Constants related to parameter files
+DIMENSIONS_HDR = 'Dimensions'
+PARAMETERS_HDR = 'Parameters'
+CATEGORY_DELIM = '**'  # Delimiter for categories of variables
+VAR_DELIM = '####'  # Used to delimit dimensions and parameters
+# DATA_TYPES = ['', 'integer', 'float', 'double', 'string']
+DATA_TYPES = {1: 'integer', 2: 'float', 3: 'double', 4: 'string'}
+
+# Valid dimensions names for PRMS
+DIMENSION_NAMES = ['ncascade', 'ncascdgw', 'nconsumed', 'ndays', 'ndepl', 'ndeplval',
+                   'nevap', 'nexternal', 'ngw', 'ngwcell', 'nhru', 'nhrucell', 'nhumid',
+                   'nlake', 'nlakeelev', 'nmonths', 'nobs', 'npoigages', 'nrain',
+                   'nratetbl', 'nsegment', 'nsnow', 'nsol', 'nssr', 'nsub', 'ntemp',
+                   'numlakes', 'nwateruse', 'nwind', 'one']
