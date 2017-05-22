@@ -23,7 +23,7 @@ class Parameter(object):
         self.__datatype = datatype  # ??
         self.__units = units    # string (optional)
 
-        self.__dimensions = None
+        self.__dimensions = Dimensions()
         self.__data = None  # array
 
     def __str__(self):
@@ -33,7 +33,11 @@ class Parameter(object):
         if self.ndims:
             outstr += 'Dimensions:\n' + self.__dimensions.__str__()
 
-        outstr += 'Size of data: {}\n'.format(self.data.size)
+        outstr += 'Size of data: '
+        if self.data is not None:
+            outstr += '{}\n'.format(self.data.size)
+        else:
+            outstr += '<empty>\n'
         return outstr
 
     @property
@@ -118,16 +122,16 @@ class Parameter(object):
         # Resize dimensions to reflect new size
         # self.__resize_dims()
 
-    def add_dimension(self, name, size):
-        """Add dimension name to parameter"""
-        # No size information is stored, only the dimension name
-        # Dimension position is indicated by position in the list
-        if not self.__dimensions:
-            # Instance Dimensions object if it hasn't been done yet
-            self.__dimensions = Dimensions()
-
-        self.__dimensions.add_dimension(name, size)
-        # self.__dimensions.append(name)
+    # def add_dimension(self, name, size):
+    #     """Add dimension name to parameter"""
+    #     # No size information is stored, only the dimension name
+    #     # Dimension position is indicated by position in the list
+    #     if not self.__dimensions:
+    #         # Instance Dimensions object if it hasn't been done yet
+    #         self.__dimensions = Dimensions()
+    #
+    #     self.__dimensions.add(name, size)
+    #     # self.__dimensions.append(name)
 
     # def add_dimensions_from_xml(self, filename, first_set_size=False):
     #     # Add dimensions and grow dimension sizes from xml information for a parameter
@@ -181,6 +185,22 @@ class Parameter(object):
     #
     #     # Resize dimensions to reflect new size
     #     self.__resize_dims()
+
+    def check(self):
+        # Check a variable to see if the number of values it has is
+        # consistent with the given dimensions
+
+        # Get the defined size for each dimension used by the variable
+        total_size = 1
+        for dd in self.dimensions.keys():
+            total_size *= self.dimensions.get(dd).size
+
+        # This assumes a numpy array
+        if self.data.size == total_size:
+            # The number of values for the defined dimensions match
+            print('%s: OK' % self.name)
+        else:
+            print('%s: BAD' % self.name)
 
     def get_dimsize_by_index(self, index):
         """Return size of dimension at the given index"""
@@ -240,55 +260,43 @@ class Parameters(object):
         self.__parameters = OrderedDict()
     # END __init__
 
-    def __getattr__(self, item):
+    def __getattr__(self, name):
         # Undefined attributes will look up the given parameter
-        return self.get_param(item)
+        # return self.get(item)
+        return getattr(self.__parameters, name)
+
+    def __getitem__(self, item):
+        return self.get(item)
 
     @property
     def parameters(self):
-        """Return a list of the parameter names"""
+        """Return OrderedDict of parameter names"""
         return self.__parameters
 
-    def add_param(self, param_name):
+    def add(self, name):
         # Add a new parameter
-        if self.exists(param_name):
+        if self.exists(name):
             raise ParameterError("Parameter already exists")
-        self.__parameters[param_name] = Parameter(name=param_name)
+        self.__parameters[name] = Parameter(name=name)
 
-    def check_param(self, param_name):
-        # Check a variable to see if the number of values it has is
-        # consistent with the given dimensions
-        thevar = self.get_param(param_name)
-
-        # Get the defined size for each dimension used by the variable
-        total_size = 1
-        for dd in thevar.dimensions.dimensions.keys():
-            total_size *= self.get_dimsize(dd)
-
-        if thevar.data.size == total_size:
-            # The number of values for the defined dimensions match
-            print('%s: OK' % param_name)
-        else:
-            print('%s: BAD' % param_name)
-
-    def check_all_params(self):
+    def check(self):
         """Check all parameter variables for proper array size"""
-        for pp in self.parameters.keys():
-            self.check_param(pp)
+        for pp in self.__parameters.values():
+            pp.check()
 
-    def del_param(self, param_name):
+    def remove(self, name):
         """Delete a parameter if it exists"""
-        if self.exists(param_name):
-            del self.__parameters[param_name]
+        if self.exists(name):
+            del self.__parameters[name]
 
-    def exists(self, param_name):
-        return param_name in self.parameters.keys()
+    def exists(self, name):
+        return name in self.parameters.keys()
 
-    def get_param(self, param_name):
+    def get(self, name):
         # Return the given parameter
-        if self.exists(param_name):
-            return self.__parameters[param_name]
-        raise ValueError('Parameter, {}, does not exist.'.format(param_name))
+        if self.exists(name):
+            return self.__parameters[name]
+        raise ValueError('Parameter, {}, does not exist.'.format(name))
 
     # def replace_values(self, varname, newvals, newdims=None):
     #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""

@@ -83,10 +83,15 @@ class Dimensions(object):
                 outstr += '{}: {}\n'.format(kk, vv)
         return outstr
 
-    def __getattr__(self, attrname):
-        if attrname not in self.__dimensions:
-            raise AttributeError('Dimension {} does not exist'.format(attrname))
-        return self.__dimensions[attrname]
+    def __getattr__(self, name):
+        return getattr(self.__dimensions, name)
+        # if attrname not in self.__dimensions:
+        #     raise AttributeError('Dimension {} does not exist'.format(attrname))
+        # return self.__dimensions[attrname]
+
+    def __getitem__(self, item):
+        """Get named dimension"""
+        return self.__dimensions[item]
 
     @property
     def dimensions(self):
@@ -99,7 +104,7 @@ class Dimensions(object):
         # Number of dimensions
         return len(self.__dimensions)
 
-    def add_dimension(self, name, size=0):
+    def add(self, name, size=0):
         # This method adds a dimension if it doesn't exist
         # TODO: check for valid dimension size for ndays, nmonths, and one
         if name not in self.__dimensions:
@@ -111,9 +116,18 @@ class Dimensions(object):
             # TODO: Should this raise an error?
             print('Dimension {} already exists...skipping add name'.format(name))
 
-    def exists(self, dimname):
+    def exists(self, name):
         """Verifies if a dimension exists"""
-        return dimname in self.dimensions.keys()
+        return name in self.dimensions.keys()
+
+    def get(self, name):
+        if self.exists(name):
+            return self.__dimensions[name]
+        raise ValueError('Dimension, {}, does not exist.'.format(name))
+
+    def remove(self, name):
+        if self.exists(name):
+            del self.__dimensions[name]
 
     def tostructure(self):
         """Returns a data structure of Dimensions data for serialization"""
