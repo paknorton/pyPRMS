@@ -1,9 +1,5 @@
 
 from __future__ import (absolute_import, division, print_function)
-# from future.utils import iteritems
-
-# import numpy as np
-# from collections import OrderedDict
 
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions

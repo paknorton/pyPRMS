@@ -1,13 +1,8 @@
 
 from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems
-
-# from collections import OrderedDict
 
 from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.ParameterSet import ParameterSet
-# from pyPRMS.Parameters import Parameters
-# from pyPRMS.Dimensions import Dimensions
 from pyPRMS.constants import CATEGORY_DELIM, DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
 
 

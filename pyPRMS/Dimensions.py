@@ -85,9 +85,6 @@ class Dimensions(object):
 
     def __getattr__(self, name):
         return getattr(self.__dimensions, name)
-        # if attrname not in self.__dimensions:
-        #     raise AttributeError('Dimension {} does not exist'.format(attrname))
-        # return self.__dimensions[attrname]
 
     def __getitem__(self, item):
         """Get named dimension"""
