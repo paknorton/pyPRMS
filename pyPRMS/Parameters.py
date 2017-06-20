@@ -3,6 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 # from future.utils import iteritems
 
 import numpy as np
+import pandas as pd
 from collections import OrderedDict
 
 from pyPRMS.Exceptions_custom import ParameterError
@@ -34,11 +35,26 @@ class Parameter(object):
             outstr += 'Dimensions:\n' + self.__dimensions.__str__()
 
         outstr += 'Size of data: '
-        if self.data is not None:
+        if self.__data is not None:
             outstr += '{}\n'.format(self.data.size)
         else:
             outstr += '<empty>\n'
         return outstr
+
+    @property
+    def as_dataframe(self):
+        """Returns the data for the parameter as a pandas dataframe"""
+        # df = pd.DataFrame(self.data, columns=[self.name])
+
+        if len(self.data.shape) == 2:
+            df = pd.DataFrame(self.data)
+            df.rename(columns=lambda xx: '{}_{}'.format(self.name, df.columns.get_loc(xx) + 1), inplace=True)
+        else:
+            # Assuming 1D array
+            df = pd.DataFrame(self.data, columns=[self.name])
+            # df.rename(columns={0: name}, inplace=True)
+
+        return df
 
     @property
     def name(self):
@@ -82,7 +98,9 @@ class Parameter(object):
     @property
     def data(self):
         """Return the data associated with the parameter"""
-        return self.__data
+        if self.__data is not None:
+            return self.__data
+        raise ValueError('Parameter, {}, has no data'.format(self.__name))
 
     @data.setter
     def data(self, data_in):
@@ -274,10 +292,35 @@ class Parameters(object):
         return name in self.parameters.keys()
 
     def get(self, name):
+        """Returns the given parameter object"""
         # Return the given parameter
         if self.exists(name):
             return self.__parameters[name]
         raise ValueError('Parameter, {}, does not exist.'.format(name))
+
+    def get_DataFrame(self, name):
+        """Returns a pandas DataFrame for a parameter. If the parameter dimensions includes
+           either nhrus or nsegment then the respective national ids are included as the
+           index in the return dataframe"""
+        if self.exists(name):
+            cparam = self.__parameters[name]
+            param_data = cparam.as_dataframe
+
+            if set(cparam.dimensions.keys()).intersection(set(['nhru', 'ngw', 'nssr'])):
+                param_id = self.__parameters['nhm_id'].as_dataframe
+
+                # Create a DataFrame of the parameter
+                param_data = param_data.merge(param_id, left_index=True, right_index=True)
+                param_data.set_index('nhm_id', inplace=True)
+            elif set(cparam.dimensions.keys()).intersection(set(['nsegment'])):
+                param_id = self.__parameters['nhm_seg'].as_dataframe
+
+                # Create a DataFrame of the parameter
+                param_data = param_data.merge(param_id, left_index=True, right_index=True)
+                param_data.set_index(['nhm_seg'], inplace=True)
+
+            return param_data
+        raise ValueError('Parameter, {}, has no associated data'.format(name))
 
     # def replace_values(self, varname, newvals, newdims=None):
     #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""

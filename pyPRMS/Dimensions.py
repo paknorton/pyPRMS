@@ -5,6 +5,7 @@ from future.utils import iteritems
 from collections import OrderedDict
 
 from pyPRMS.constants import DIMENSION_NAMES
+from pyPRMS.prms_helpers import read_xml
 
 
 def _valid_dimension_name(name):
@@ -113,11 +114,40 @@ class Dimensions(object):
             # TODO: Should this raise an error?
             print('Dimension {} already exists...skipping add name'.format(name))
 
+    def add_from_xml(self, filename):
+        # Add dimensions and grow dimension sizes from xml information for a parameter
+        # This information is found in xml files for each region for each parameter
+        # No attempt is made to verify whether each region for a given parameter
+        # has the same or same number of dimensions.
+        xml_root = read_xml(filename)
+
+        for cdim in xml_root.findall('./dimensions/dimension'):
+            name = cdim.get('name')
+            size = int(cdim.get('size'))
+            pos = int(cdim.get('position')) - 1
+
+            if name not in self.__dimensions:
+                try:
+                    self.__dimensions[name] = Dimension(name=name, size=size)
+                except ValueError as err:
+                    print(err)
+            else:
+                if self.__dimensions.keys().index(name) != pos:
+                    # This indicates a problem in one of the paramdb files
+                    raise ValueError('{}: Attempted position change from {} to {}'.format(name,
+                                                                                          self.__dimensions[name].position,
+                                                                                          pos))
+                else:
+                    if name not in ['nmonths', 'ndays', 'one']:
+                        # NOTE: This will always try to grow a dimension if it already exists!
+                        self.__dimensions[name].size += size
+
     def exists(self, name):
         """Verifies if a dimension exists"""
         return name in self.dimensions.keys()
 
     def get(self, name):
+        """Returns the given dimensions if it exists"""
         if self.exists(name):
             return self.__dimensions[name]
         raise ValueError('Dimension, {}, does not exist.'.format(name))

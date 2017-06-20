@@ -18,8 +18,6 @@ def dparse(*dstr):
 
     return datetime(*dint)
 
-
-
 # def dparse(yr, mo, dy, hr, minute, sec):
 #     # Date parser for working with the date format from PRMS files
 #
