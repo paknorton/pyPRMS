@@ -6,6 +6,13 @@ import xml.etree.ElementTree as xmlET
 
 
 def dparse(*dstr):
+    """Convert date string into datetime.
+
+    If only a year is provided the returned datetime will be for the last day of the year (e.g. 12-31)
+    If only a year and a month is provided the returned datetime will be for the last day of the given month
+
+    :returns: datetime object"""
+
     dint = [int(x) for x in dstr]
 
     if len(dint) == 2:
@@ -29,6 +36,12 @@ def dparse(*dstr):
 
 
 def read_xml(filename):
+    """Returns the root of the xml tree for a given file
+
+    :param filename: Name of the xml file to read
+    :returns: Root of the xml tree
+    """
+
     # Open and parse an xml file and return the root of the tree
     xml_tree = xmlET.parse(filename)
     return xml_tree.getroot()
