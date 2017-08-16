@@ -238,7 +238,7 @@ class Streamflow(object):
     def units(self):
         return self.__units
 
-    def getDataByType(self, thetype):
+    def get_data_by_type(self, thetype):
         """Returns data selected type (e.g. runoff)"""
 
         if thetype in self.__types:
@@ -252,7 +252,7 @@ class Streamflow(object):
         else:
             print("not found")
 
-    def getStationsByType(self, thetype):
+    def get_stations_by_type(self, thetype):
         """Returns station IDs for a given type (e.g. runoff)"""
 
         if thetype in self.__types:
@@ -266,7 +266,7 @@ class Streamflow(object):
         else:
             print("not found")
 
-    def selectByStation(self, streamgages):
+    def select_by_station(self, streamgages):
         """Selects one or more streamgages from the dataset"""
         # The routine writeSelected() will write selected streamgages and data
         # to a new PRMS streamflow file.
@@ -276,11 +276,11 @@ class Streamflow(object):
         else:
             self.__selectedStations = [streamgages]
 
-    def clearSelectedStations(self):
+    def clear_selected_stations(self):
         """Clears any selected streamgages"""
         self.__selectedStations = None
 
-    def writeSelectedStations(self, filename):
+    def write_selected_stations(self, filename):
         """Writes station observations to a new file"""
         # Either writes out all station observations or, if stations are selected,
         # then a subset of station observations.

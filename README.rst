@@ -41,5 +41,7 @@ To update from the development branch type::
 
     pip install https://github.com/paknorton/pyPRMS/zipball/development --upgrade
 
+To uninstall pyPRMS type::
+    pip uninstall pyPRMS
 
 

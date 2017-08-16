@@ -13,16 +13,16 @@ from future.utils import iteritems
 
 # import past
 # import six
-
-from functools import reduce
-import calendar
-import glob
+#
+# from functools import reduce
+# import calendar
+# import glob
 import re
-import numpy as np
+# import numpy as np
 import pandas as pd
 import datetime
-import os
-import sys
+# import os
+# import sys
 
 # Author: Parker Norton (pnorton@usgs.gov)
 # Create date: 2015-02-09

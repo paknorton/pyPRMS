@@ -5,10 +5,11 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
+import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Exceptions_custom import ParameterError
-from pyPRMS.constants import CATEGORY_DELIM, VAR_DELIM, DATA_TYPES, DIMENSIONS_HDR, PARAMETERS_HDR
-from pyPRMS.Dimensions import Dimensions
+from pyPRMS.constants import DATA_TYPES
+from pyPRMS.Dimensions import ParamDimensions
 
 
 class Parameter(object):
@@ -20,7 +21,7 @@ class Parameter(object):
     """
 
     # Container for a single parameter
-    def __init__(self, name=None, datatype=None, units=None):
+    def __init__(self, name=None, datatype=None, units=None, model=None, description=None, help=None):
         """Initialize the Parameter object
 
         :param name: A valid PRMS parameter name
@@ -30,8 +31,11 @@ class Parameter(object):
         self.__name = name  # string
         self.__datatype = datatype  # ??
         self.__units = units    # string (optional)
+        self.__model = model    # string (optional)
+        self.__description = description    # string (optional)
+        self.__help = help      # string (optional)
 
-        self.__dimensions = Dimensions()
+        self.__dimensions = ParamDimensions()
         self.__data = None  # array
 
     def __str__(self):
@@ -100,6 +104,45 @@ class Parameter(object):
         self.__units = unitstr
 
     @property
+    def model(self):
+        """Returns the model the parameter is used in"""
+        return self.__model
+
+    @model.setter
+    def model(self, modelstr):
+        """Set the model description for the parameter
+
+        :param modelstr: String denoting the model (e.g. PRMS)
+        """
+        self.__model = modelstr
+
+    @property
+    def description(self):
+        """Returns the parameter description"""
+        return self.__description
+
+    @description.setter
+    def description(self, descstr):
+        """Set the model description for the parameter
+
+        :param descstr: Description string
+        """
+        self.__description = descstr
+
+    @property
+    def help(self):
+        """Returns the help information for the parameter"""
+        return self.__help
+
+    @help.setter
+    def help(self, helpstr):
+        """Set the help string for the parameter
+
+        :param helpstr: Help string
+        """
+        self.__help = helpstr
+
+    @property
     def dimensions(self):
         """Returns the Dimensions object associated with the parameter"""
         return self.__dimensions
@@ -147,70 +190,69 @@ class Parameter(object):
             raise ValueError('Number of dimensions, {}, is not supported'.format(self.ndims))
 
         # Replace data
-        self.__data = data_np
+        # self.__data = data_np
 
-        # # Create/append to internal data structure
-        # if self.__data is None:
-        #     self.__data = data_np
-        # else:
-        #     # Data structure has already been created; try concatenating the incoming data
-        #     self.__data = np.concatenate((self.__data, data_np))
+        if 'one' in self.__dimensions.dimensions.keys():
+            # A parameter with the dimension 'one' should never have more
+            # than 1 value. Output warning if the incoming value is different
+            # from a pre-existing value
+            if data_np.size > 1:
+                print('WARNING: {} with dimension "one" has {} values. Using first value only.'.format(self.__name,
+                                                                                                       data_np.size))
+            # self.__data = np.array(data_np[0])
+            self.__data = data_np
+        else:
+            self.__data = data_np
 
-        # Resize dimensions to reflect new size
-        # self.__resize_dims()
+    @property
+    def xml(self):
+        """Return the xml metadata for the parameter as xml Element"""
+        param_root = xmlET.Element('parameter')
+        param_root.set('name', self.name)
+        param_root.set('version', 'ver')
+        param_root.append(self.dimensions.xml)
+        return param_root
 
-    # def add_dimensions_from_xml(self, filename, first_set_size=False):
-    #     # Add dimensions and grow dimension sizes from xml information for a parameter
-    #     # This information is found in xml files for each region for each parameter
-    #     # No attempt is made to verify whether each region for a given parameter
-    #     # has the same or same number of dimensions.
-    #     xml_root = read_xml(filename)
-    #
-    #     for cdim in xml_root.findall('./dimensions/dimension'):
-    #         dim_name = cdim.get('name')
-    #         dim_size = int(cdim.get('size'))
-    #
-    #         self.__dimensions.add_dimension(dim_name, position=int(cdim.get('position')), size=dim_size,
-    #                                         first_set_size=first_set_size)
+    def concat(self, data_in):
+        """Takes a list and concatenates to the end of the parameter data.
+        This is most useful when reading 2D parameter data by region where
+        the ordering of the data must be correctly maintained in the final
+        dataset"""
+        if not self.ndims:
+            raise ValueError('No dimensions have been defined for {}. Unable to concatenate data'.format(self.name))
 
-    # def append_paramdb_data(self, data):
-    #     # Appends parameter data read from an official parameter database file.
-    #     # This is primarily used when creating a CONUS-level parameter from a set of
-    #     # parameter database regions. Use with caution as no region information is
-    #     # considered, the data is just appended and dimensions are verified.
-    #     # Assume input data is a list of strings
-    #
-    #     # Raise and error if no dimensions are defined for parameter
-    #     if not self.ndims:
-    #         raise ValueError('No dimensions have been defined for {}. Unable to append data'.format(self.name))
-    #
-    #     # Convert datatype first
-    #     datatype_conv = {'I': self.__str_to_int, 'F': self.__str_to_float,
-    #                      'D': self.__str_to_float, 'S': self.__str_to_str}
-    #
-    #     if self.__datatype in self.__VALID_DATATYPES.keys():
-    #         data = datatype_conv[self.__datatype](data)
-    #     else:
-    #         raise TypeError('Defined datatype {} for parameter {} is not valid'.format(self.__datatype,
-    #                                                                                    self.__name))
-    #
-    #     # Convert list to np.array
-    #     if self.ndims == 2:
-    #         data_np = np.array(data).reshape((-1, self.__dimensions.get_dim_by_position(2),), order='F')
-    #     elif self.ndims == 1:
-    #         data_np = np.array(data)
-    #     else:
-    #         raise ValueError('Number of dimensions, {}, is not supported'.format(self.ndims))
-    #
-    #     # Create/append to internal data structure
-    #     if self.__data is None:
-    #         self.__data = data_np
-    #     else:
-    #         # Data structure has already been created; try concatenating the incoming data
-    #         self.__data = np.concatenate((self.__data, data_np))
-    #
-    #     # Resize dimensions to reflect new size
-    #     self.__resize_dims()
+        if self.__data is None:
+            # Don't bother with the concatenation if there is no pre-existing data
+            self.data = data_in
+            return
+
+        # Convert datatype first
+        datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
+                         3: self.__str_to_float, 4: self.__str_to_str}
+
+        if self.__datatype in DATA_TYPES.keys():
+            data_in = datatype_conv[self.__datatype](data_in)
+        else:
+            raise TypeError('Defined datatype {} for parameter {} is not valid'.format(self.__datatype,
+                                                                                       self.__name))
+
+        # Convert list to np.array
+        if self.ndims == 2:
+            data_np = np.array(data_in).reshape((-1, self.get_dimsize_by_index(1),), order='F')
+        elif self.ndims == 1:
+            data_np = np.array(data_in)
+        else:
+            raise ValueError('Number of dimensions, {}, is not supported'.format(self.ndims))
+
+        if 'one' in self.__dimensions.dimensions.keys():
+            # A parameter with the dimension 'one' should never have more
+            # than 1 value. Output warning if the incoming value is different
+            # from a pre-existing value
+            if data_np[0] != self.__data[0]:
+                print('WARNING: {} with dimension "one" has different value ({}) from current ({}). Keeping current value.'.format(self.__name, data_np[0], self.__data[0]))
+        else:
+            self.__data = np.concatenate((self.__data, data_np))
+            # self.__data = data_np
 
     def check(self):
         """Verifies the total size of the data for the parameter matches the total declared dimension sizes"""
@@ -247,6 +289,13 @@ class Parameter(object):
         :returns: Parameter data as a list"""
         # Return a list of the data
         return self.__data.ravel(order='F').tolist()
+
+    def toparamdb(self):
+        """Outputs parameter data in the paramDb csv format"""
+        outstr = '$id,{}\n'.format(self.name)
+        for ii, dd in enumerate(self.tolist()):
+            outstr += '{},{}\n'.format(ii+1, dd)
+        return outstr
 
     def tostructure(self):
         """Returns a dictionary structure of the parameter. This is typically used for serializing parameters.
@@ -359,7 +408,7 @@ class Parameters(object):
         """Returns the given parameter object
 
         :param name: The name of the parameter
-        :returns: Paramer object
+        :returns: Parameter object
         """
 
         # Return the given parameter
@@ -367,7 +416,7 @@ class Parameters(object):
             return self.__parameters[name]
         raise ValueError('Parameter, {}, does not exist.'.format(name))
 
-    def get_DataFrame(self, name):
+    def get_dataframe(self, name):
         """Returns a pandas DataFrame for a parameter. If the parameter dimensions includes
            either nhrus or nsegment then the respective national ids are included as the
            index in the return dataframe.

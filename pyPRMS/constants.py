@@ -50,6 +50,8 @@ DIMENSION_NAMES = ['ncascade', 'ncascdgw', 'nconsumed', 'ndays', 'ndepl', 'ndepl
                    'nratetbl', 'nsegment', 'nsnow', 'nsol', 'nssr', 'nsub', 'ntemp',
                    'numlakes', 'nwateruse', 'nwind', 'one']
 
+HRU_DIMS = ['nhru', 'ngw', 'nssr']  # These dimensions are related and should have same size
+
 # Constants for NhmParamDb
 REGIONS = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
            'r10L', 'r10U', 'r11', 'r12', 'r13', 'r14', 'r15', 'r16', 'r17', 'r18']

@@ -1,15 +1,21 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import os
+import xml.dom.minidom as minidom
+import xml.etree.ElementTree as xmlET
+
 from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.ParameterSet import ParameterSet
 from pyPRMS.constants import CATEGORY_DELIM, DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
+# from pyPRMS.constants import PARAMETERS_XML, DIMENSIONS_XML
 
 
-class ParameterFile(object):
+class ParameterFile(ParameterSet):
     def __init__(self, filename):
+        super(ParameterFile, self).__init__()
+
         self.__filename = None
-        self.__parameterSet = ParameterSet()
         self.__header = None
 
         self.__isloaded = False
@@ -26,10 +32,6 @@ class ParameterFile(object):
         self.__header = []  # Initialize the list of file headers
 
         self._read()
-
-    @property
-    def parameterset(self):
-        return self.__parameterSet
 
     @property
     def headers(self):
@@ -60,7 +62,7 @@ class ParameterFile(object):
                 continue
 
             # Add dimension - all dimensions are scalars
-            self.__parameterSet.dimensions.add(line, int(next(it)))
+            self.dimensions.add(line, int(next(it)))
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Lastly process the parameters
@@ -70,7 +72,7 @@ class ParameterFile(object):
             varname = line.split(' ')[0]
 
             try:
-                self.__parameterSet.parameters.add(varname)
+                self.parameters.add(varname)
             except ParameterError:
                 print('%s: Duplicate parameter name.. skipping' % varname)
 
@@ -88,19 +90,19 @@ class ParameterFile(object):
             dim_tmp = [next(it) for _ in range(ndims)]
 
             # Lookup dimension size for each dimension name
-            arr_shp = [self.__parameterSet.dimensions.get(dd).size for dd in dim_tmp]
+            arr_shp = [self.dimensions.get(dd).size for dd in dim_tmp]
 
             # Compute the total size of the parameter
             dim_size = reduce(lambda x, y: x * y, arr_shp)
 
-            # Total dimensin size declared for parameter in file; it should be total size of declared dimensions.
+            # Total dimension size declared for parameter in file; it should be total size of declared dimensions.
             numval = int(next(it))
 
-            self.__parameterSet.parameters.get(varname).datatype = int(next(it))
+            self.parameters.get(varname).datatype = int(next(it))
 
             # Add the dimensions to the parameter, dimension size is looked up from the global Dimensions object
             for dd in dim_tmp:
-                self.__parameterSet.parameters.get(varname).dimensions.add(dd, self.__parameterSet.dimensions.get(dd).size)
+                self.parameters.get(varname).dimensions.add(dd, self.dimensions.get(dd).size)
 
             if numval != dim_size:
                 # The declared total size doesn't match the total size of the declared dimensions
@@ -116,7 +118,7 @@ class ParameterFile(object):
                 except StopIteration:
                     # Hit the end of the file
                     pass
-                self.__parameterSet.parameters.del_param(varname)
+                self.parameters.del_param(varname)
             else:
                 # Check if number of values written match the number of values declared
                 try:
@@ -138,10 +140,10 @@ class ParameterFile(object):
                           (varname, len(vals), numval))
 
                     # Remove the parameter from the dictionary
-                    self.__parameterSet.parameters.del_param(varname)
+                    self.parameters.del_param(varname)
                 else:
                     # Convert the values to the correct datatype
-                    self.__parameterSet.parameters.get(varname).data = vals
+                    self.parameters.get(varname).data = vals
 
         self.__isloaded = True
 
@@ -158,7 +160,7 @@ class ParameterFile(object):
         # Dimension section must be written first
         outfile.write('{} Dimensions {}\n'.format(CATEGORY_DELIM, CATEGORY_DELIM))
 
-        for (kk, vv) in self.__parameterSet.dimensions.items():
+        for (kk, vv) in self.dimensions.items():
             # Write each dimension name and size separated by VAR_DELIM
             outfile.write('{}\n'.format(VAR_DELIM))
             outfile.write('{}\n'.format(kk))
@@ -169,7 +171,7 @@ class ParameterFile(object):
 
         outfile.write('{} Parameters {}\n'.format(CATEGORY_DELIM, CATEGORY_DELIM))
 
-        for vv in self.__parameterSet.parameters.values():
+        for vv in self.parameters.values():
             datatype = vv.datatype
 
             for item in order:
@@ -205,3 +207,36 @@ class ParameterFile(object):
                     outfile.write('{}\n'.format(vv.name))
 
         outfile.close()
+
+    def write_paramdb(self, output_dir):
+        """Write all parameters using the paramDb output format"""
+
+        # check for / create output directory
+        try:
+            print('Creating output directory: {}'.format(output_dir))
+            os.makedirs(output_dir)
+        except OSError:
+            print("\tUsing existing directory")
+
+        # Write the global dimensions xml file
+        self.write_dimensions_xml(output_dir)
+        # xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_dimensions)).toprettyxml(indent='    ')
+        # with open('{}/{}'.format(output_dir, DIMENSIONS_XML), 'w') as ff:
+        #     ff.write(xmlstr)
+
+        # Write the global parameters xml file
+        self.write_parameters_xml(output_dir)
+        # xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_parameters)).toprettyxml(indent='    ')
+        # with open('{}/{}'.format(output_dir, PARAMETERS_XML), 'w') as ff:
+        #     ff.write(xmlstr)
+
+        for xx in self.parameters.values():
+            # Write out each parameter in the paramDb csv format
+            with open('{}/{}.csv'.format(output_dir, xx.name), 'w') as ff:
+                ff.write(xx.toparamdb())
+
+            # Write xml file for the parameter
+            xmlstr = minidom.parseString(xmlET.tostring(xx.xml)).toprettyxml(indent='    ')
+            with open('{}/{}.xml'.format(output_dir, xx.name), 'w') as ff:
+                ff.write(xmlstr.encode('utf-8'))
+
