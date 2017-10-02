@@ -197,8 +197,8 @@ class Parameter(object):
             # than 1 value. Output warning if the incoming value is different
             # from a pre-existing value
             if data_np.size > 1:
-                print('WARNING: {} with dimension "one" has {} values. Using first value only.'.format(self.__name,
-                                                                                                       data_np.size))
+                print('WARNING: {} with dimension "one" has {} values. Using first ' +
+                      'value only.'.format(self.__name, data_np.size))
             # self.__data = np.array(data_np[0])
             self.__data = data_np
         else:
@@ -249,7 +249,8 @@ class Parameter(object):
             # than 1 value. Output warning if the incoming value is different
             # from a pre-existing value
             if data_np[0] != self.__data[0]:
-                print('WARNING: {} with dimension "one" has different value ({}) from current ({}). Keeping current value.'.format(self.__name, data_np[0], self.__data[0]))
+                print('WARNING: {} with dimension "one" has different value ({}) from current ({}). ' +
+                      'Keeping current value.'.format(self.__name, data_np[0], self.__data[0]))
         else:
             self.__data = np.concatenate((self.__data, data_np))
             # self.__data = data_np
@@ -304,11 +305,10 @@ class Parameter(object):
         """
 
         # Return all information about this parameter in the following form
-        param = {}
-        param['name'] = self.name
-        param['datatype'] = self.datatype
-        param['dimensions'] = self.dimensions.tostructure()
-        param['data'] = self.tolist()
+        param = {'name': self.name,
+                 'datatype': self.datatype,
+                 'dimensions': self.dimensions.tostructure(),
+                 'data': self.tolist()}
         return param
 
     def __str_to_float(self, data):
@@ -429,13 +429,13 @@ class Parameters(object):
             cparam = self.__parameters[name]
             param_data = cparam.as_dataframe
 
-            if set(cparam.dimensions.keys()).intersection(set(['nhru', 'ngw', 'nssr'])):
+            if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
                 param_id = self.__parameters['nhm_id'].as_dataframe
 
                 # Create a DataFrame of the parameter
                 param_data = param_data.merge(param_id, left_index=True, right_index=True)
                 param_data.set_index('nhm_id', inplace=True)
-            elif set(cparam.dimensions.keys()).intersection(set(['nsegment'])):
+            elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
                 param_id = self.__parameters['nhm_seg'].as_dataframe
 
                 # Create a DataFrame of the parameter

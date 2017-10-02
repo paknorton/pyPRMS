@@ -10,6 +10,8 @@ from pyPRMS.ParameterSet import ParameterSet
 from pyPRMS.constants import CATEGORY_DELIM, DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
 # from pyPRMS.constants import PARAMETERS_XML, DIMENSIONS_XML
 
+import functools
+
 
 class ParameterFile(ParameterSet):
     def __init__(self, filename):
@@ -93,7 +95,7 @@ class ParameterFile(ParameterSet):
             arr_shp = [self.dimensions.get(dd).size for dd in dim_tmp]
 
             # Compute the total size of the parameter
-            dim_size = reduce(lambda x, y: x * y, arr_shp)
+            dim_size = functools.reduce(lambda x, y: x * y, arr_shp)
 
             # Total dimension size declared for parameter in file; it should be total size of declared dimensions.
             numval = int(next(it))
@@ -106,7 +108,8 @@ class ParameterFile(ParameterSet):
 
             if numval != dim_size:
                 # The declared total size doesn't match the total size of the declared dimensions
-                print('%s: Declared total size for parameter does not match the total size of the declared dimension(s) (%d != %d).. skipping' % (varname, numval, dim_size))
+                print('{}: Declared total size for parameter does not match the total size of the ' +
+                      'declared dimension(s) ({} != {}).. skipping'.format(varname, numval, dim_size))
 
                 # Still have to read all the values to skip this properly
                 try:
@@ -136,8 +139,8 @@ class ParameterFile(ParameterSet):
                     pass
 
                 if len(vals) != numval:
-                    print('%s: number of values does not match dimension size (%d != %d).. skipping' %
-                          (varname, len(vals), numval))
+                    print('{}: number of values does not match dimension size ' +
+                          '({} != {}).. skipping'.format(varname, len(vals), numval))
 
                     # Remove the parameter from the dictionary
                     self.parameters.del_param(varname)
@@ -239,4 +242,3 @@ class ParameterFile(ParameterSet):
             xmlstr = minidom.parseString(xmlET.tostring(xx.xml)).toprettyxml(indent='    ')
             with open('{}/{}.xml'.format(output_dir, xx.name), 'w') as ff:
                 ff.write(xmlstr.encode('utf-8'))
-
