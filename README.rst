@@ -17,14 +17,13 @@ A virtual environment for using pyPRMS can be setup by putting the following in 
     dependencies:
     - python=2.7.*
     - anaconda
-    - console_shortcut
     - future
     - jupyter
     - numpy>=1.13
     - pandas>=0.20
     - pip
     - pip:
-        - https://github.com/paknorton/pyPRMS/zipball/development
+        - https://github.com/paknorton/pyPRMS
 
 and executing::
 
@@ -32,7 +31,10 @@ and executing::
 
 pip install
 -----------
-The library can be installed using pip. At this time the development branch is the most up-to-date code.
+The library can be installed using pip. To install from the master branch::
+
+    pip install https://github.com/paknorton/pyPRMS
+
 To install from development branch use the following command::
 
     pip install https://github.com/paknorton/pyPRMS/zipball/development
