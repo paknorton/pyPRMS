@@ -249,8 +249,8 @@ class Parameter(object):
             # than 1 value. Output warning if the incoming value is different
             # from a pre-existing value
             if data_np[0] != self.__data[0]:
-                print('WARNING: {} with dimension "one" has different value ({}) from current ({}). ' +
-                      'Keeping current value.'.format(self.__name, data_np[0], self.__data[0]))
+                print('WARNING: {} with dimension "one" has different '.format(self.__name) +
+                      'value ({}) from current ({}). Keeping current value.'.format(data_np[0], self.__data[0]))
         else:
             self.__data = np.concatenate((self.__data, data_np))
             # self.__data = data_np
