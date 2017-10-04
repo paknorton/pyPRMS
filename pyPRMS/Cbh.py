@@ -60,6 +60,9 @@ class Cbh(object):
         return self.__data
 
     def read_cbh(self):
+        # Reads a full cbh file
+
+        
         # incl_cols = list(self.__indices.values())
         # for xx in CBH_INDEX_COLS[:-1]:
         #     incl_cols.insert(0, xx)
@@ -87,6 +90,29 @@ class Cbh(object):
 
         # NOTE: The rename is an expensive operation
         self.__data.rename(columns=ren_dict, inplace=True)
+
+    def read_cbh_full(self):
+        # incl_cols = list(self.__indices.values())
+        # for xx in CBH_INDEX_COLS[:-1]:
+        #     incl_cols.insert(0, xx)
+
+        # Columns 0-5 always represent date/time information
+        self.__data = pd.read_csv(self.__filename, sep=' ', skipinitialspace=True,
+                                  skiprows=3, engine='c', memory_map=True,
+                                  date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                                  index_col='time', header=None, na_values=[-99.0, -999.0])
+
+        if self.__stdate is not None and self.__endate is not None:
+            self.__data = self.__data[self.__stdate:self.__endate]
+
+        # self.__data.reset_index(drop=True, inplace=True)
+
+        # Rename columns with NHM HRU ids
+        # ren_dict = {v + 5: k for k, v in iteritems(self.__indices)}
+        # ren_dict = {v + 5: '{}'.format(k) for k, v in self.__indices.iteritems()}
+
+        # NOTE: The rename is an expensive operation
+        # self.__data.rename(columns=ren_dict, inplace=True)
 
     def read_cbh_multifile(self, src_dir):
         """Read cbh data from multiple csv files"""
