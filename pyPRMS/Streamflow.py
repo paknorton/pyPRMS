@@ -99,7 +99,7 @@ class Streamflow(object):
                     print("\t", words)
                     # exit()
 
-            if self.__metaheader.index('Type'):
+            try:
                 if words[self.__metaheader.index('Type')] not in self.__types:
                     # Add unique station types (e.g. precip, runoff) if a 'Type' field exists in the metaheader
                     st = cnt  # last cnt becomes the starting column of the next type
@@ -110,10 +110,12 @@ class Streamflow(object):
                 # 2) Starting index for data section
                 # 3) Ending index for data section
                 self.__types[words[self.__metaheader.index('Type')]] = [order, st, cnt]
-
-                self.__stations.append(words)
-                self.__stationIndex[words[0]] = cnt
-                cnt += 1
+            except ValueError as verr:
+                print('No "Type" metadata; skipping.')
+                
+            self.__stations.append(words)
+            self.__stationIndex[words[0]] = cnt
+            cnt += 1
 
         # print self.__types
 
