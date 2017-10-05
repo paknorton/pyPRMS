@@ -115,7 +115,7 @@ class Streamflow(object):
     def size(self):
         """Returns the number of stations included in the file"""
         return len(self.stations)
-    
+
     @property
     def timedata(self):
         """Returns an array of time information"""
@@ -197,8 +197,9 @@ class Streamflow(object):
                 # 2) Starting index for data section
                 # 3) Ending index for data section
                 self.__types[words[self.__metaheader.index('Type')]] = [order, st, cnt]
-            except ValueError as verr:
-                print('No "Type" metadata; skipping.')
+            except ValueError:
+                if self.__verbose:
+                    print('No "Type" metadata; skipping.')
 
             self.__stations.append(words)
             self.__stationIndex[words[0]] = cnt
