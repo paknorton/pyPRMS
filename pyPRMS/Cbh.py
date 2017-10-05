@@ -62,7 +62,7 @@ class Cbh(object):
     def read_cbh(self):
         # Reads a full cbh file
 
-        
+
         # incl_cols = list(self.__indices.values())
         # for xx in CBH_INDEX_COLS[:-1]:
         #     incl_cols.insert(0, xx)
