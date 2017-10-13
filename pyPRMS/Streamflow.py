@@ -204,7 +204,7 @@ class Streamflow(object):
             self.__stations.append(words)
             self.__stationIndex[words[0]] = cnt
             cnt += 1
-
+        
         # print self.__types
 
         # Now read in units and add to each type
