@@ -430,11 +430,14 @@ class Parameters(object):
             param_data = cparam.as_dataframe
 
             if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
-                param_id = self.__parameters['nhm_id'].as_dataframe
+                if name != 'nhm_id':
+                    param_id = self.__parameters['nhm_id'].as_dataframe
 
-                # Create a DataFrame of the parameter
-                param_data = param_data.merge(param_id, left_index=True, right_index=True)
-                param_data.set_index('nhm_id', inplace=True)
+                    # Create a DataFrame of the parameter
+                    param_data = param_data.merge(param_id, left_index=True, right_index=True)
+                    param_data.set_index('nhm_id', inplace=True)
+                else:
+                    param_data = self.__parameters['nhm_id'].as_dataframe
             elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
                 param_id = self.__parameters['nhm_seg'].as_dataframe
 
