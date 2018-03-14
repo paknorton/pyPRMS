@@ -166,7 +166,7 @@ class Parameter(object):
 
         :param data_in: A list containing the data for the parameter
         """
-        # Raise and error if no dimensions are defined for parameter
+        # Raise an error if no dimensions are defined for parameter
         if not self.ndims:
             raise ValueError('No dimensions have been defined for {}. Unable to append data'.format(self.name))
 
