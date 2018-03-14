@@ -6,6 +6,7 @@ import glob
 import os
 from pyPRMS.ParameterSet import ParameterSet
 from pyPRMS.Exceptions_custom import ParameterError
+from pyPRMS.constants import PARNAME_DATATYPES
 
 
 class ValidParams_v2(ParameterSet):
@@ -75,7 +76,7 @@ class ValidParams_v2(ParameterSet):
                     self.parameters.add(pname)
 
                     self.parameters.get(pname).units = vv['units']
-                    self.parameters.get(pname).datatype = vv['datatype']
+                    self.parameters.get(pname).datatype = PARNAME_DATATYPES[vv['datatype']]
                     self.parameters.get(pname).desc = vv['desc']
                     self.parameters.get(pname).help = vv['help']
 

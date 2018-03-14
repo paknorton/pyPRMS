@@ -58,3 +58,4 @@ REGIONS = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
 PARAMETERS_XML = 'parameters.xml'
 DIMENSIONS_XML = 'dimensions.xml'
 NHM_DATATYPES = {'I': 1, 'F': 2, 'D': 3, 'S': 4}
+PARNAME_DATATYPES = {'long': 1, 'float': 2, 'double': 3, 'string': 4}
