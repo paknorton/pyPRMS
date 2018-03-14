@@ -81,7 +81,11 @@ class ValidParams_v2(ParameterSet):
                     self.parameters.get(pname).help = vv['help']
 
                     for dd in vv['dimensions']:
+                        # Add dimensions to the parameter
                         self.parameters.get(pname).dimensions.add(dd)
+
+                        # Add dimensions to the global dimensions object
+                        self.dimensions.add(dd)
 
                     # TODO: add other parameter attributes
                 except ParameterError:
