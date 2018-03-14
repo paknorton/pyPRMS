@@ -46,7 +46,7 @@ DATA_TYPES = {1: 'integer', 2: 'float', 3: 'double', 4: 'string'}
 # Valid dimensions names for PRMS
 DIMENSION_NAMES = ['ncascade', 'ncascdgw', 'nconsumed', 'ndays', 'ndepl', 'ndeplval',
                    'nevap', 'nexternal', 'ngw', 'ngwcell', 'nhru', 'nhrucell', 'nhumid',
-                   'nlake', 'nlakeelev', 'nmonths', 'nobs', 'npoigages', 'nrain',
+                   'nlake', 'nlakeelev', 'nlapse', 'nmonths', 'nobs', 'npoigages', 'nrain',
                    'nratetbl', 'nsegment', 'nsnow', 'nsol', 'nssr', 'nsub', 'ntemp',
                    'numlakes', 'nwateruse', 'nwind', 'one']
 
