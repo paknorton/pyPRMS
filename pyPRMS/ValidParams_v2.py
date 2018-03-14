@@ -213,7 +213,7 @@ class ValidParams_v2(ParameterSet):
                     pass
                 elif key == 'type':
                     cparam_type = val  # needed to convert max, min, and default values
-                    validparams[cparam][key] = val
+                    validparams[cparam]['datatype'] = val
                 elif key == 'units':
                     if cparam_type == 'string':
                         # Units for strings are 'none'; no reason to store
