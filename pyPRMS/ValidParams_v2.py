@@ -239,13 +239,14 @@ class ValidParams_v2(ParameterSet):
                     # Width currently isn't populated
                     pass
                 elif key in ['max', 'min', 'default']:
-                    if cparam_type == 'float':
-                        validparams[cparam][key] = float(val)
-                    elif cparam_type == 'long':
-                        validparams[cparam][key] = int(val)
-                    else:
-                        # String types should store as integers
-                        validparams[cparam][key] = int(val)
+                    validparams[cparam][key] = val
+                    # if cparam_type == 'float':
+                    #     validparams[cparam][key] = float(val)
+                    # elif cparam_type == 'long':
+                    #     validparams[cparam][key] = int(val)
+                    # else:
+                    #     # String types should store as integers
+                    #     validparams[cparam][key] = int(val)
                 else:
                     validparams[cparam][key] = val
         return validparams
