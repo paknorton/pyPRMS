@@ -78,11 +78,6 @@ class ParameterSet(object):
 
                 for mm in vv.modules:
                     xmlET.SubElement(modules_sub, 'module').text = mm
-
-            # if vv.modules:
-            #     param_sub.set('modules', vv.modules)
-
-
         return params_xml
 
     def _read(self):

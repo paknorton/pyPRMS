@@ -195,9 +195,14 @@ class ValidParams_v2(ParameterSet):
                     cparam = val  # Save parameter name for the remaining information
                     validparams[cparam] = {}
                 elif key == 'module':
-                    if val == 'setup':
-                        # Don't want to include parameters from the setup module
-                        toss_param = True
+                    # TODO: module='setup' should be included for generating an official
+                    # set of parameters but should not be included when generating
+                    # the set of parameters for verifying a parameter file. Not
+                    # sure how to handle this yet. Can uncomment the following
+                    # 3 lines to strip 'setup' related parameters.
+                    # if val == 'setup':
+                    #     # Don't want to include parameters from the setup module
+                    #     toss_param = True
 
                     # Override module(s) for select parameters
                     if cparam in self.__mod_map:
