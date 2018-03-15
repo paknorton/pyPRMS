@@ -176,15 +176,16 @@ class Dimensions(object):
         """
 
         # This method adds a dimension if it doesn't exist
+        # Duplicate dimension names are silently ignored
         # TODO: check for valid dimension size for ndays, nmonths, and one
         if name not in self.__dimensions:
             try:
                 self.__dimensions[name] = Dimension(name=name, size=size)
             except ValueError as err:
                 print(err)
-        else:
-            # TODO: Should this raise an error?
-            print('Dimension {} already exists...skipping add name'.format(name))
+        # else:
+        #     # TODO: Should this raise an error?
+        #     print('Dimension {} already exists...skipping add name'.format(name))
 
     def add_from_xml(self, filename):
         """Add one or more dimensions from an xml file
