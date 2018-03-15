@@ -54,7 +54,10 @@ class ParameterSet(object):
             # print(vv.name, inv_map[vv.datatype])
             param_sub = xmlET.SubElement(params_xml, 'parameter')
             param_sub.set('name', vv.name)
-            param_sub.set('type', inv_map[vv.datatype])
+
+            xmlET.SubElement(param_sub, 'type').text = inv_map[vv.datatype]
+
+            # param_sub.set('type', inv_map[vv.datatype])
 
             if vv.model:
                 param_sub.set('model', vv.model)
@@ -66,12 +69,12 @@ class ParameterSet(object):
                 param_sub.set('units', vv.units)
             if vv.modules:
                 param_sub.set('modules', vv.modules)
-            if vv.minimum:
-                param_sub.set('minimum', vv.minimum)
-            if vv.maximum:
-                param_sub.set('maximum', vv.maximum)
-            if vv.default:
-                param_sub.set('default', vv.default)
+            # if vv.minimum:
+            #     param_sub.set('minimum', vv.minimum)
+            # if vv.maximum:
+            #     param_sub.set('maximum', vv.maximum)
+            # if vv.default:
+            #     param_sub.set('default', vv.default)
 
         return params_xml
 
