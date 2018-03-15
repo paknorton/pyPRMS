@@ -150,6 +150,26 @@ class Parameter(object):
         self.__help = helpstr
 
     @property
+    def minimum(self):
+        """Returns the minimum valid value for the parameter"""
+        return self.__minimum
+
+    @minimum.setter
+    def minimum(self, value):
+        """Set the minimum valid value for the parameter
+
+        :param value: The value to use
+        """
+        if self.__datatype is None:
+            self.__minimum = value
+        elif DATA_TYPES[self.__datatype] == 'float':
+            self.__minimum = float(value)
+        elif DATA_TYPES[self.__datatype] == 'integer':
+            self.__minimum = int(value)
+        else:
+            self.__minimum = value
+
+    @property
     def modules(self):
         """Returns the names of the modules that use the parameter"""
         return self.__modules
