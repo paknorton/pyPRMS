@@ -67,8 +67,8 @@ class ParameterSet(object):
                 param_sub.set('help', vv.help)
             if vv.units:
                 param_sub.set('units', vv.units)
-            if vv.modules:
-                param_sub.set('modules', vv.modules)
+            # if vv.modules:
+            #     param_sub.set('modules', vv.modules)
             # if vv.minimum:
             #     param_sub.set('minimum', vv.minimum)
             # if vv.maximum:
