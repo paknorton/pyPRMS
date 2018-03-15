@@ -164,7 +164,7 @@ class ValidParams_v2(ParameterSet):
             for line in it:
                 flds = line.split(':')
 
-                if line == '--------------- DIMENSIONS ---------------':
+                if line == '--------------- PARAMETERS ---------------':
                     break
 
                 if len(flds) < 2:
