@@ -53,6 +53,8 @@ def float_to_str(f):
     Convert the given float to a string,
     without resorting to scientific notation
     """
+    # From: https://stackoverflow.com/questions/38847690/convert-float-to-string-without-scientific-notation-and-false-precision
+
     # create a new context for this task
     ctx = decimal.Context()
 
