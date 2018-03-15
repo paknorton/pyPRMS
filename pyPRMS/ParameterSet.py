@@ -8,6 +8,7 @@ import xml.etree.ElementTree as xmlET
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
 from pyPRMS.constants import NHM_DATATYPES, PARAMETERS_XML, DIMENSIONS_XML
+from pyPRMS.prms_helpers import float_to_str
 
 
 class ParameterSet(object):
@@ -65,12 +66,12 @@ class ParameterSet(object):
                 xmlET.SubElement(param_sub, 'desc').text = vv.description
             if vv.help:
                 xmlET.SubElement(param_sub, 'help').text = vv.help
-            if vv.minimum:
-                xmlET.SubElement(param_sub, 'minimum').text = str(vv.minimum)
-            # if vv.maximum:
-            #     param_sub.set('maximum', vv.maximum)
-            # if vv.default:
-            #     param_sub.set('default', vv.default)
+            if vv.minimum is not None:
+                xmlET.SubElement(param_sub, 'minimum').text = float_to_str(vv.minimum)
+            if vv.maximum is not None:
+                xmlET.SubElement(param_sub, 'maximum').text = str(vv.maximum)
+            if vv.default is not None:
+                xmlET.SubElement(param_sub, 'default').text = str(vv.default)
 
 
             # if vv.modules:

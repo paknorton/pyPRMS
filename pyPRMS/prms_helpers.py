@@ -2,6 +2,7 @@
 
 import calendar
 from datetime import datetime
+import decimal
 import xml.etree.ElementTree as xmlET
 
 
@@ -45,3 +46,18 @@ def read_xml(filename):
     # Open and parse an xml file and return the root of the tree
     xml_tree = xmlET.parse(filename)
     return xml_tree.getroot()
+
+
+def float_to_str(f):
+    """
+    Convert the given float to a string,
+    without resorting to scientific notation
+    """
+    # create a new context for this task
+    ctx = decimal.Context()
+
+    # 20 digits should be enough for everyone :D
+    ctx.prec = 20
+
+    d1 = ctx.create_decimal(repr(f))
+    return format(d1, 'f')
