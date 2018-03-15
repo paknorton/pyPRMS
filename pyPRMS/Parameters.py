@@ -160,7 +160,8 @@ class Parameter(object):
 
         :param modulestr: Single module name of list of module names
         """
-        if isinstance(modulestr, list):
+
+        if modulestr and isinstance(modulestr, list):
             self.__modules.update(modulestr)
         else:
             self.__modules.add(modulestr)
