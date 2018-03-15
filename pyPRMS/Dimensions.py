@@ -23,7 +23,7 @@ class Dimension(object):
     """Defines a single dimension"""
 
     # Container for a single dimension
-    def __init__(self, name=None, size=0):
+    def __init__(self, name=None, size=0, description=None):
         """Create a new dimension object.
 
         A dimension has a name and a size associated with it.
@@ -34,8 +34,10 @@ class Dimension(object):
 
         self.__name = None
         self.__size = None
+        self.__description = None
         self.name = name  # Name of the dimension
         self.size = size  # integer
+        self.description = description
 
     @property
     def name(self):
@@ -68,6 +70,19 @@ class Dimension(object):
         if not isinstance(value, int) or value < 0:
             raise ValueError('Dimension size must be a positive integer')
         self.__size = value
+
+    @property
+    def description(self):
+        """"Returns the description for the dimension"""
+        return self.__description
+
+    @description.setter
+    def description(self, descstr):
+        """Set the description of the dimension
+
+        :param descstr: Description string
+        """
+        self.__description = descstr
 
     def __repr__(self):
         return 'Dimension(name={}, size={!r})'.format(self.name, self.size)

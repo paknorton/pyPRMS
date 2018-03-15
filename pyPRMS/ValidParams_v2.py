@@ -94,7 +94,7 @@ class ValidParams_v2(ParameterSet):
                         self.parameters.get(pname).dimensions.add(dd)
 
                         # Add dimensions to the global dimensions object
-                        self.dimensions.add(dd)
+                        # self.dimensions.add(dd)
 
                     # TODO: add other parameter attributes
                 except ParameterError:
@@ -156,9 +156,36 @@ class ValidParams_v2(ParameterSet):
 
             it = iter(rawdata)
 
+            # Process dimensions first
             for line in it:
-                if line == '--------------- PARAMETERS ---------------':
+                if line == '--------------- DIMENSIONS ---------------':
                     break
+
+            for line in it:
+                flds = line.split(':')
+
+                if line == '--------------- DIMENSIONS ---------------':
+                    break
+
+                if len(flds) < 2:
+                    continue
+
+                key = flds[0].strip().lower()
+                val = flds[1].strip()
+
+                if key == 'name':
+                    cdim = val
+
+                    # Add dimensions to the global dimensions object
+                    self.dimensions.add(val)
+                elif key == 'desc':
+                    self.dimensions.get(cdim).description = val
+                else:
+                    pass
+
+            # for line in it:
+            #     if line == '--------------- PARAMETERS ---------------':
+            #         break
 
             toss_param = False  # Trigger for removing unwanted parameters
 
@@ -240,13 +267,6 @@ class ValidParams_v2(ParameterSet):
                     pass
                 elif key in ['max', 'min', 'default']:
                     validparams[cparam][key] = val
-                    # if cparam_type == 'float':
-                    #     validparams[cparam][key] = float(val)
-                    # elif cparam_type == 'long':
-                    #     validparams[cparam][key] = int(val)
-                    # else:
-                    #     # String types should store as integers
-                    #     validparams[cparam][key] = int(val)
                 else:
                     validparams[cparam][key] = val
         return validparams
