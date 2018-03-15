@@ -67,11 +67,20 @@ class ParameterSet(object):
             if vv.help:
                 xmlET.SubElement(param_sub, 'help').text = vv.help
             if vv.minimum is not None:
-                xmlET.SubElement(param_sub, 'minimum').text = float_to_str(vv.minimum)
+                if isinstance(vv.minimum, basestring):
+                    xmlET.SubElement(param_sub, 'minimum').text = vv.minimum
+                else:
+                    xmlET.SubElement(param_sub, 'minimum').text = float_to_str(vv.minimum)
             if vv.maximum is not None:
-                xmlET.SubElement(param_sub, 'maximum').text = float_to_str(vv.maximum)
+                if isinstance(vv.maximum, basestring):
+                    xmlET.SubElement(param_sub, 'maximum').text = vv.maximum
+                else:
+                    xmlET.SubElement(param_sub, 'maximum').text = float_to_str(vv.maximum)
             if vv.default is not None:
-                xmlET.SubElement(param_sub, 'default').text = float_to_str(vv.default)
+                if isinstance(vv.maximum, basestring):
+                    xmlET.SubElement(param_sub, 'default').text = vv.default
+                else:
+                    xmlET.SubElement(param_sub, 'default').text = float_to_str(vv.default)
 
             if bool(vv.modules):
                 modules_sub = xmlET.SubElement(param_sub, 'modules')
