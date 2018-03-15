@@ -77,7 +77,7 @@ class ValidParams_v2(ParameterSet):
 
                     self.parameters.get(pname).units = vv['units']
                     self.parameters.get(pname).datatype = PARNAME_DATATYPES[vv['datatype']]
-                    self.parameters.get(pname).desc = vv['desc']
+                    self.parameters.get(pname).description = vv['desc']
                     self.parameters.get(pname).help = vv['help']
 
                     self.parameters.get(pname).modules = vv['module']

@@ -158,9 +158,8 @@ class Parameter(object):
     def modules(self, modulestr):
         """Set the names of the modules that use the parameter
 
-        :param modulestr: Single module name of list of module names
+        :param modulestr: Single module name or list of module names to add
         """
-
         if modulestr is not None:
             if isinstance(modulestr, list):
                 self.__modules.update(modulestr)
