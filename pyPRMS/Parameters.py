@@ -161,10 +161,14 @@ class Parameter(object):
         :param modulestr: Single module name of list of module names
         """
 
-        if modulestr and isinstance(modulestr, list):
-            self.__modules.update(modulestr)
+        if modulestr is not None:
+            if isinstance(modulestr, list):
+                self.__modules.update(modulestr)
+            else:
+                self.__modules.add(modulestr)
         else:
-            self.__modules.add(modulestr)
+            # Don't add a None type to the set of modules
+            pass
 
     @property
     def dimensions(self):
