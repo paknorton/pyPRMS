@@ -48,7 +48,7 @@ class Parameter(object):
     def __str__(self):
         """Return a pretty print string representation of the parameter information"""
 
-        outstr = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndesc: {}\nhelp: {}\n'.format(self.name, self.datatype,
+        outstr = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndescription: {}\nhelp: {}\n'.format(self.name, self.datatype,
                                                                          self.units, self.ndims, self.description, self.help)
         if self.ndims:
             outstr += 'Dimensions:\n' + self.__dimensions.__str__()
