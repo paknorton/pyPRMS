@@ -21,12 +21,15 @@ class Parameter(object):
     """
 
     # Container for a single parameter
-    def __init__(self, name=None, datatype=None, units=None, model=None, description=None, help=None):
+    def __init__(self, name=None, datatype=None, units=None, model=None, description=None,
+                 help=None, modules=None, minimum=None, maximum=None, default=None):
         """Initialize the Parameter object
 
         :param name: A valid PRMS parameter name
         :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
         :param units: Option units string for the parameter"""
+
+        self.__modules = set()
 
         self.__name = name  # string
         self.__datatype = datatype  # ??
@@ -34,6 +37,10 @@ class Parameter(object):
         self.__model = model    # string (optional)
         self.__description = description    # string (optional)
         self.__help = help      # string (optional)
+        self.modules = modules      # PRMS modules that use the parameter (optional)
+        self.__minimum = minimum    # Minimum value allowed (optional)
+        self.__maximum = maximum    # Maximum value allowed (optional)
+        self.__default = default    # Default value for parameter (optional)
 
         self.__dimensions = ParamDimensions()
         self.__data = None  # array
@@ -41,8 +48,8 @@ class Parameter(object):
     def __str__(self):
         """Return a pretty print string representation of the parameter information"""
 
-        outstr = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\n'.format(self.name, self.datatype,
-                                                                         self.units, self.ndims)
+        outstr = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndesc: {}\nhelp: {}\n'.format(self.name, self.datatype,
+                                                                         self.units, self.ndims, self.description, self.help)
         if self.ndims:
             outstr += 'Dimensions:\n' + self.__dimensions.__str__()
 
@@ -141,6 +148,22 @@ class Parameter(object):
         :param helpstr: Help string
         """
         self.__help = helpstr
+
+    @property
+    def modules(self):
+        """Returns the names of the modules that use the parameter"""
+        return self.__modules
+
+    @modules.setter
+    def modules(self, modulestr):
+        """Set the names of the modules that use the parameter
+
+        :param modulestr: Single module name of list of module names
+        """
+        if isinstance(modulestr, list):
+            self.__modules.update(modulestr)
+        else:
+            self.__modules.add(modulestr)
 
     @property
     def dimensions(self):
