@@ -79,7 +79,7 @@ class ValidParams_v2(ParameterSet):
                         self.parameters.get(pname).units = vv['units']
                     except KeyError:
                         print('KeyError: {} has no units'.format(pname))
-                        
+
                     self.parameters.get(pname).datatype = PARNAME_DATATYPES[vv['datatype']]
                     self.parameters.get(pname).description = vv['desc']
                     self.parameters.get(pname).help = vv['help']
@@ -244,7 +244,8 @@ class ValidParams_v2(ParameterSet):
                     elif cparam_type == 'long':
                         validparams[cparam][key] = int(val)
                     else:
-                        validparams[cparam][key] = val
+                        # String types should store as integers
+                        validparams[cparam][key] = int(val)
                 else:
                     validparams[cparam][key] = val
         return validparams
