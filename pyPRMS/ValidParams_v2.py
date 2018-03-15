@@ -75,7 +75,11 @@ class ValidParams_v2(ParameterSet):
                 try:
                     self.parameters.add(pname)
 
-                    self.parameters.get(pname).units = vv['units']
+                    try:
+                        self.parameters.get(pname).units = vv['units']
+                    except KeyError:
+                        print('KeyError: {} has no units'.format(pname))
+                        
                     self.parameters.get(pname).datatype = PARNAME_DATATYPES[vv['datatype']]
                     self.parameters.get(pname).description = vv['desc']
                     self.parameters.get(pname).help = vv['help']
