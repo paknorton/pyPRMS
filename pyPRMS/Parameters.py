@@ -170,6 +170,46 @@ class Parameter(object):
             self.__minimum = value
 
     @property
+    def maximum(self):
+        """Returns the maximum valid value for the parameter"""
+        return self.__maximum
+
+    @maximum.setter
+    def maximum(self, value):
+        """Set the maximum valid value for the parameter
+
+        :param value: The value to use
+        """
+        if self.__datatype is None:
+            self.__maximum = value
+        elif DATA_TYPES[self.__datatype] == 'float':
+            self.__maximum = float(value)
+        elif DATA_TYPES[self.__datatype] == 'integer':
+            self.__maximum = int(value)
+        else:
+            self.__maximum = value
+
+    @property
+    def default(self):
+        """Returns the minimum valid value for the parameter"""
+        return self.__default
+
+    @default.setter
+    def default(self, value):
+        """Set the default value for the parameter
+
+        :param value: The value to use
+        """
+        if self.__datatype is None:
+            self.__default = value
+        elif DATA_TYPES[self.__datatype] == 'float':
+            self.__default = float(value)
+        elif DATA_TYPES[self.__datatype] == 'integer':
+            self.__default = int(value)
+        else:
+            self.__default = value
+
+    @property
     def modules(self):
         """Returns the names of the modules that use the parameter"""
         return self.__modules
