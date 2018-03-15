@@ -66,7 +66,7 @@ class ParameterSet(object):
             if vv.help:
                 xmlET.SubElement(param_sub, 'help').text = vv.help
             if vv.minimum:
-                xmlET.SubElement(param_sub, 'minimum').text = vv.minimum
+                xmlET.SubElement(param_sub, 'minimum').text = str(vv.minimum)
             # if vv.maximum:
             #     param_sub.set('maximum', vv.maximum)
             # if vv.default:
