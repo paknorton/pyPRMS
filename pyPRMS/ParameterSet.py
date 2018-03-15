@@ -38,9 +38,13 @@ class ParameterSet(object):
 
         dims_xml = xmlET.Element('dimensions')
 
-        for kk in self.dimensions.keys():
+        for kk, vv in iteritems(self.dimensions):
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
+
+            if vv.description:
+                xmlET.SubElement(dim_sub, 'desc').text = vv.description
+
         return dims_xml
 
     @property
