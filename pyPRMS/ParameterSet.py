@@ -44,8 +44,8 @@ class ParameterSet(object):
 
             if vv.description:
                 xmlET.SubElement(dim_sub, 'desc').text = vv.description
-            if vv.size:
-                xmlET.SubElement(dim_sub, 'size').text = float_to_str(vv.size)
+            
+            xmlET.SubElement(dim_sub, 'size').text = float_to_str(vv.size)
 
         return dims_xml
 
