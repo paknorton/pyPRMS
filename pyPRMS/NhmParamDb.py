@@ -159,6 +159,15 @@ class NhmParamDb(ParameterSet):
                 it = self._data_it('{}/{}.csv'.format(cdir, xml_param_name))
                 next(it)    # Skip the header row
 
+                # -------------------------------
+                # Get a total dimension size to verify the param data read in below
+                xml_root = read_xml('{}/{}.xml'.format(cdir, xml_param_name))
+                size = 1
+
+                for cdim in xml_root.findall('./dimensions/dimension'):
+                    size *= int(cdim.get('size'))
+                # -------------------------------
+
                 # Read the parameter values
                 for rec in it:
                     idx, val = rec.split(',')
@@ -173,6 +182,8 @@ class NhmParamDb(ParameterSet):
                         tmp_data.append(int(val) + crv_offset)
                     else:
                         tmp_data.append(val)
+                if len(tmp_data) != size:
+                    print('ERROR: {} ({}) mismatch between dimensions and data ({} != {})'.format(xml_param_name, rr, size, len(tmp_data)))
 
                 self.parameters.get(xml_param_name).concat(tmp_data)
                 crv_offset = self.parameters.get(xml_param_name).data.size
