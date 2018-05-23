@@ -70,7 +70,7 @@ class Cbh(object):
 
         for xx in self.__indices.values():
             incl_cols.append(xx+5)  # include an offset for the having datetime info
-        print(incl_cols)
+        # print(incl_cols)
 
         # Columns 0-5 always represent date/time information
         self.__data = pd.read_csv(self.__filename, sep=' ', skipinitialspace=True, usecols=incl_cols,
