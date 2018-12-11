@@ -83,7 +83,7 @@ class ParameterSet(object):
                 else:
                     xmlET.SubElement(param_sub, 'maximum').text = float_to_str(vv.maximum)
             if vv.default is not None:
-                if isinstance(vv.default, basestring):
+                if isinstance(vv.maximum, basestring):
                     xmlET.SubElement(param_sub, 'default').text = vv.default
                 else:
                     xmlET.SubElement(param_sub, 'default').text = float_to_str(vv.default)
@@ -93,9 +93,6 @@ class ParameterSet(object):
 
                 for mm in vv.modules:
                     xmlET.SubElement(modules_sub, 'module').text = mm
-
-            param_sub.append(vv.dimensions.xml)
-
         return params_xml
 
     def _read(self):
