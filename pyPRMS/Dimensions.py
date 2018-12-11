@@ -165,7 +165,8 @@ class Dimensions(object):
         for kk, vv in iteritems(self.dimensions):
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
-            dim_sub.set('size', str(vv.size))
+            xmlET.SubElement(dim_sub, 'size').text = str(vv.size)
+            # dim_sub.set('size', str(vv.size))
         return dims_xml
 
     def add(self, name, size=0):
@@ -265,8 +266,11 @@ class ParamDimensions(Dimensions):
         for kk, vv in iteritems(self.dimensions):
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
-            dim_sub.set('position', str(self.get_position(kk)+1))
-            dim_sub.set('size', str(vv.size))
+            xmlET.SubElement(dim_sub, 'position').text = str(self.get_position(kk)+1)
+            xmlET.SubElement(dim_sub, 'size').text = str(vv.size)
+
+            # dim_sub.set('position', str(self.get_position(kk)+1))
+            # dim_sub.set('size', str(vv.size))
         return dims_xml
 
     def add_from_xml(self, filename):
