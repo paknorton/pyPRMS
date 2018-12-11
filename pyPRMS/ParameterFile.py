@@ -242,3 +242,64 @@ class ParameterFile(ParameterSet):
             xmlstr = minidom.parseString(xmlET.tostring(xx.xml)).toprettyxml(indent='    ')
             with open('{}/{}.xml'.format(output_dir, xx.name), 'w') as ff:
                 ff.write(xmlstr.encode('utf-8'))
+
+    def write_subset(self, filename, ):
+        """Write a parameter file using defined dimensions and parameters"""
+
+        # Write the parameters out to a file
+        outfile = open(filename, 'w')
+
+        for hh in self.__header:
+            # Write out any header stuff
+            outfile.write('{}\n'.format(hh))
+
+        # Dimension section must be written first
+        outfile.write('{} Dimensions {}\n'.format(CATEGORY_DELIM, CATEGORY_DELIM))
+
+        for (kk, vv) in self.dimensions.items():
+            # Write each dimension name and size separated by VAR_DELIM
+            outfile.write('{}\n'.format(VAR_DELIM))
+            outfile.write('{}\n'.format(kk))
+            outfile.write('{:d}\n'.format(vv.size))
+
+        # Now write out the Parameter category
+        order = ['name', 'dimensions', 'datatype', 'data']
+
+        outfile.write('{} Parameters {}\n'.format(CATEGORY_DELIM, CATEGORY_DELIM))
+
+        for vv in self.parameters.values():
+            datatype = vv.datatype
+
+            for item in order:
+                # Write each variable out separated by self.__rowdelim
+                if item == 'dimensions':
+                    # Write number of dimensions first
+                    outfile.write('{}\n'.format(vv.dimensions.ndims))
+
+                    for dd in vv.dimensions.values():
+                        # Write dimension names
+                        outfile.write('{}\n'.format(dd.name))
+                elif item == 'datatype':
+                    # dimsize (which is computed) must be written before datatype
+                    outfile.write('{}\n'.format(vv.data.size))
+                    outfile.write('{}\n'.format(datatype))
+                elif item == 'data':
+                    # Write one value per line
+                    for xx in vv.data.flatten(order='A'):
+                        if datatype in [2, 3]:
+                            # Float and double types have to be formatted specially so
+                            # they aren't written in exponential notation or with
+                            # extraneous zeroes
+                            tmp = '{:<20f}'.format(xx).rstrip('0 ')
+                            if tmp[-1] == '.':
+                                tmp += '0'
+
+                            outfile.write('{}\n'.format(tmp))
+                        else:
+                            outfile.write('{}\n'.format(xx))
+                elif item == 'name':
+                    # Write the self.__rowdelim before the variable name
+                    outfile.write('{}\n'.format(VAR_DELIM))
+                    outfile.write('{}\n'.format(vv.name))
+
+        outfile.close()

@@ -29,7 +29,7 @@ class Parameter(object):
         :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
         :param units: Option units string for the parameter"""
 
-        self.__modules = set()
+        self.__modules = []
 
         self.__name = name  # string
         self.__datatype = datatype  # ??
@@ -50,14 +50,31 @@ class Parameter(object):
 
         outstr = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndescription: {}\nhelp: {}\n'.format(self.name, self.datatype,
                                                                          self.units, self.ndims, self.description, self.help)
-        if self.ndims:
-            outstr += 'Dimensions:\n' + self.__dimensions.__str__()
+
+        if self.__minimum is not None:
+            outstr += 'Minimum value: {}\n'.format(self.__minimum)
+
+        if self.__maximum is not None:
+            outstr += 'Maximum value: {}\n'.format(self.__maximum)
+
+        if self.__default is not None:
+            outstr += 'Default value: {}\n'.format(self.__default)
 
         outstr += 'Size of data: '
         if self.__data is not None:
             outstr += '{}\n'.format(self.data.size)
         else:
             outstr += '<empty>\n'
+
+        if self.__modules is not None:
+            outstr += 'Modules: '
+
+            for xx in self.__modules:
+                outstr += '{} '.format(xx)
+            outstr += '\n'
+
+        if self.ndims:
+            outstr += 'Dimensions:\n' + self.__dimensions.__str__()
         return outstr
 
     @property
@@ -165,7 +182,11 @@ class Parameter(object):
         elif DATA_TYPES[self.__datatype] == 'float':
             self.__minimum = float(value)
         elif DATA_TYPES[self.__datatype] == 'integer':
-            self.__minimum = int(value)
+            try:
+                self.__minimum = int(value)
+            except ValueError:
+                # This happens with 'bounded' parameters
+                self.__minimum = value
         else:
             self.__minimum = value
 
@@ -185,7 +206,11 @@ class Parameter(object):
         elif DATA_TYPES[self.__datatype] == 'float':
             self.__maximum = float(value)
         elif DATA_TYPES[self.__datatype] == 'integer':
-            self.__maximum = int(value)
+            try:
+                self.__maximum = int(value)
+            except ValueError:
+                # This happens with bounded parameters
+                self.__maximum = value
         else:
             self.__maximum = value
 
@@ -222,9 +247,9 @@ class Parameter(object):
         """
         if modulestr is not None:
             if isinstance(modulestr, list):
-                self.__modules.update(modulestr)
+                self.__modules.extend(modulestr)
             else:
-                self.__modules.add(modulestr)
+                self.__modules.append(modulestr)
         else:
             # Don't add a None type to the set of modules
             pass
@@ -305,6 +330,7 @@ class Parameter(object):
         This is most useful when reading 2D parameter data by region where
         the ordering of the data must be correctly maintained in the final
         dataset"""
+
         if not self.ndims:
             raise ValueError('No dimensions have been defined for {}. Unable to concatenate data'.format(self.name))
 
@@ -343,18 +369,13 @@ class Parameter(object):
             # self.__data = data_np
 
     def check(self):
-        """Verifies the total size of the data for the parameter matches the total declared dimension sizes"""
+        """Verifies the total size of the data for the parameter matches the total declared dimension sizes
+        and returns a message """
 
         # Check a variable to see if the number of values it has is
         # consistent with the given dimensions
 
-        # Get the defined size for each dimension used by the variable
-        total_size = 1
-        for dd in self.dimensions.keys():
-            total_size *= self.dimensions.get(dd).size
-
-        # This assumes a numpy array
-        if self.data.size == total_size:
+        if self.has_correct_size():
             # The number of values for the defined dimensions match
             print('%s: OK' % self.name)
         else:
@@ -370,6 +391,23 @@ class Parameter(object):
         if index < len(self.__dimensions.dimensions.items()):
             return self.__dimensions.dimensions.items()[index][1].size
         raise ValueError('Parameter has no dimension at index {}'.format(index))
+
+    def has_correct_size(self):
+        """Verifies the total size of the data for the parameter matches the total declared dimension sizes"""
+
+        # Check a variable to see if the number of values it has is
+        # consistent with the given dimensions
+
+        # Get the defined size for each dimension used by the variable
+        total_size = 1
+        for dd in self.dimensions.keys():
+            total_size *= self.dimensions.get(dd).size
+
+        # This assumes a numpy array
+        if self.data.size == total_size:
+            # The number of values for the defined dimensions match
+            return True
+        return False
 
     def tolist(self):
         """Returns the parameter data as a list
