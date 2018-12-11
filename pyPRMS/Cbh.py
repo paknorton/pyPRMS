@@ -20,7 +20,7 @@ class Cbh(object):
     # Description: Class for working with individual cbh files
     #
     # This class assumes it is dealing with regional cbh files (not a CONUS-level NHM file)
-    # TODO: As written type of data (e.g. tmax, tmin, prcp) is ignored.
+    # TODO: As currently written type of data (e.g. tmax, tmin, prcp) is ignored.
     # TODO: Verify that given data type size matches number of columns
 
     # 2016-12-20 PAN:
@@ -95,6 +95,7 @@ class Cbh(object):
         # for xx in CBH_INDEX_COLS[:-1]:
         #     incl_cols.insert(0, xx)
 
+        print('READING')
         # Columns 0-5 always represent date/time information
         self.__data = pd.read_csv(self.__filename, sep=' ', skipinitialspace=True,
                                   skiprows=3, engine='c', memory_map=True,
@@ -112,6 +113,12 @@ class Cbh(object):
 
         # NOTE: The rename is an expensive operation
         # self.__data.rename(columns=ren_dict, inplace=True)
+        self.__data['year'] = self.__data.index.year
+        self.__data['month'] = self.__data.index.month
+        self.__data['day'] = self.__data.index.day
+        self.__data['hour'] = 0
+        self.__data['minute'] = 0
+        self.__data['second'] = 0
 
     def read_cbh_multifile(self, src_dir):
         """Read cbh data from multiple csv files"""
@@ -145,8 +152,8 @@ class Cbh(object):
 
                 # Build the list of columns to load
                 # The given local ids must be adjusted by 5 to reflect:
-                # 1) the presence of 6 columns of time information
-                # 2) 0-based column names
+                #     1) the presence of 6 columns of time information
+                #     2) 0-based column names
                 load_cols = list(CBH_INDEX_COLS)
                 load_cols.extend([xx+5 for xx in idx_retrieve.keys()])
 
