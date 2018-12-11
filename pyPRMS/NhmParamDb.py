@@ -9,7 +9,7 @@ from pyPRMS.prms_helpers import read_xml
 # from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.ParameterSet import ParameterSet
 from pyPRMS.constants import REGIONS, NHM_DATATYPES
-from pyPRMS.constants import PARAMETERS_XML
+from pyPRMS.constants import PARAMETERS_XML, DIMENSIONS_XML
 
 
 class NhmParamDb(ParameterSet):
@@ -18,19 +18,19 @@ class NhmParamDb(ParameterSet):
         self.__paramdb_dir = paramdb_dir
 
         # Build mappings between national and regional ids
-        self.__reg_to_nhm_seg = {}
-        self.__nhm_to_reg_seg = {}
-        self._create_seg_maps()
+        # self.__reg_to_nhm_seg = {}
+        # self.__nhm_to_reg_seg = {}
+        # self._create_seg_maps()
 
         self.__nhm_to_reg_hru = {}
         self.__nhm_reg_range_hru = {}
-        self._create_hru_maps()
+        # self._create_hru_maps()
 
         # Read the parameters from the parameter database
         self._read()
 
         # Populate the global dimensions information
-        self._build_global_dimensions()
+        # self._build_global_dimensions()
 
     @property
     def available_parameters(self):
@@ -119,71 +119,65 @@ class NhmParamDb(ParameterSet):
         # Get the parameters available from the parameter database
         # Returns a dictionary of parameters and associated units and types
         global_params_file = '{}/{}'.format(self.__paramdb_dir, PARAMETERS_XML)
+        global_dimens_file = '{}/{}'.format(self.__paramdb_dir, DIMENSIONS_XML)
 
-        # Read in the parameters.xml file
+        # Read in the parameters.xml and dimensions.xml file
         params_root = read_xml(global_params_file)
+        dimens_root = read_xml(global_dimens_file)
+
+        # Populate the global dimensions from the xml file
+        for xml_dim in dimens_root.findall('dimension'):
+            self.dimensions.add(name=xml_dim.attrib.get('name'), size=int(xml_dim.find('size').text))
 
         # Populate parameterSet with all available parameter names
         for param in params_root.findall('parameter'):
-            xml_param_name = param.get('name')
+            xml_param_name = param.attrib.get('name')
 
             if self.parameters.exists(xml_param_name):
                 # Sometimes the global parameter file has duplicates of parameters
                 print('WARNING: {} is duplicated in {}'.format(xml_param_name, PARAMETERS_XML))
                 continue
-            else:
-                self.parameters.add(xml_param_name)
-                self.parameters.get(xml_param_name).datatype = NHM_DATATYPES[param.get('type')]
-                self.parameters.get(xml_param_name).units = param.get('units')
-                self.parameters.get(xml_param_name).model = param.get('model')
-                self.parameters.get(xml_param_name).description = param.get('desc')
-                self.parameters.get(xml_param_name).help = param.get('help')
 
-            # Get dimensions information for each of the parameters
-            for rr in REGIONS:
-                # Read parameter information
-                cdir = '{}/{}/{}'.format(self.__paramdb_dir, xml_param_name, rr)
+            # Read the parameter data
+            tmp_data = []
 
-                # Add/grow dimensions for current parameter
-                self.parameters.get(xml_param_name).dimensions.add_from_xml('{}/{}.xml'.format(cdir, xml_param_name))
+            # Read parameter information
+            try:
+                it = self._data_it('{}/{}.csv'.format(self.__paramdb_dir, xml_param_name))
+                next(it)  # Skip the header row
+            except IOError:
+                # print('Skipping parameter: {}. File does not exist.'.format(xml_param_name))
+                continue
 
-            crv_offset = 0  # Only used for hru_deplcrv
+            # Add the parameter information
+            self.parameters.add(xml_param_name)
+            self.parameters.get(xml_param_name).datatype = NHM_DATATYPES[param.find('type').text]
+            self.parameters.get(xml_param_name).units = param.find('units').text
+            self.parameters.get(xml_param_name).description = param.find('desc').text
+            self.parameters.get(xml_param_name).help = param.find('help').text
 
-            for rr in REGIONS:
-                # Read the parameter data
-                tmp_data = []
+            try:
+                self.parameters.get(xml_param_name).default = param.find('default').text
+            except AttributeError:
+                # print('\tNo default set')
+                pass
 
-                # Read parameter information
-                cdir = '{}/{}/{}'.format(self.__paramdb_dir, xml_param_name, rr)
+            self.parameters.get(xml_param_name).minimum = param.find('minimum').text
+            self.parameters.get(xml_param_name).maximum = param.find('maximum').text
+            self.parameters.get(xml_param_name).modules = [cmod.text for cmod in param.findall('./modules/module')]
 
-                it = self._data_it('{}/{}.csv'.format(cdir, xml_param_name))
-                next(it)    # Skip the header row
+            # Add dimensions for current parameter
+            for cdim in param.findall('./dimensions/dimension'):
+                dim_name = cdim.attrib.get('name')
+                self.parameters.get(xml_param_name).dimensions.add(name=dim_name, size=self.dimensions.get(dim_name).size)
 
-                # -------------------------------
-                # Get a total dimension size to verify the param data read in below
-                xml_root = read_xml('{}/{}.xml'.format(cdir, xml_param_name))
-                size = 1
+            # Read the parameter values
+            for rec in it:
+                idx, val = rec.split(',')
+                tmp_data.append(val)
 
-                for cdim in xml_root.findall('./dimensions/dimension'):
-                    size *= int(cdim.get('size'))
-                # -------------------------------
+            self.parameters.get(xml_param_name).data = tmp_data
 
-                # Read the parameter values
-                for rec in it:
-                    idx, val = rec.split(',')
-
-                    if xml_param_name == 'poi_gage_segment':
-                        try:
-                            tmp_data.append(self.__reg_to_nhm_seg[rr][int(val)])
-                        except KeyError:
-                            print('WARNING: poi_gage_segment for local segment {} in {}  is zero'.format(idx, rr))
-                            tmp_data.append(0)
-                    elif xml_param_name == 'hru_deplcrv':
-                        tmp_data.append(int(val) + crv_offset)
-                    else:
-                        tmp_data.append(val)
-                if len(tmp_data) != size:
-                    print('ERROR: {} ({}) mismatch between dimensions and data ({} != {})'.format(xml_param_name, rr, size, len(tmp_data)))
-
-                self.parameters.get(xml_param_name).concat(tmp_data)
-                crv_offset = self.parameters.get(xml_param_name).data.size
+            if not self.parameters.get(xml_param_name).has_correct_size():
+                print('ERROR: {} mismatch between dimensions and size of data. Removed from parameter set.'.format(xml_param_name))
+                self.parameters.remove(xml_param_name)
