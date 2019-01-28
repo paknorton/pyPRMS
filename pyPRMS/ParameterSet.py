@@ -2,12 +2,13 @@
 from __future__ import (absolute_import, division, print_function)
 from future.utils import iteritems
 
+import netCDF4 as nc
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
-from pyPRMS.constants import NHM_DATATYPES, PARAMETERS_XML, DIMENSIONS_XML
+from pyPRMS.constants import NETCDF_DATATYPES, NETCDF_FILLVAL, NHM_DATATYPES, PARAMETERS_XML, DIMENSIONS_XML
 from pyPRMS.prms_helpers import float_to_str
 
 
@@ -114,3 +115,60 @@ class ParameterSet(object):
         xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_dimensions)).toprettyxml(indent='    ')
         with open('{}/{}'.format(output_dir, DIMENSIONS_XML), 'w') as ff:
             ff.write(xmlstr)
+
+    def write_netcdf(self, filename):
+        """Write parameters to a netcdf file"""
+
+        # Create the netcdf file
+        nc_hdl = nc.Dataset(filename, 'w', clobber=True)
+
+        # Create dimensions
+        for (kk, vv) in self.dimensions.items():
+            if kk != 'one':
+                # Dimension 'one' is only used for scalars in PRMS
+                nc_hdl.createDimension(kk, vv.size)
+
+        # Create the variables
+        # hruo = nco.createVariable('hru', 'i4', ('hru'))
+        for vv in self.parameters.values():
+            curr_datatype = NETCDF_DATATYPES[vv.datatype]
+            print(vv.name)
+
+            if curr_datatype != 'c':
+                # fill_val = NETCDF_FILLVAL[vv.datatype]
+                if vv.dimensions.keys()[0] == 'one':
+                    # Scalar values
+                    curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
+                                                       fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                else:
+                    curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()),
+                                                       fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+
+                # Add the attributes
+                if vv.help:
+                    curr_param.description = vv.help
+                elif vv.description:
+                    # Try to fallback to the description if no help text
+                    curr_param.description = vv.description
+
+                if vv.units:
+                    curr_param.units = vv.units
+
+                if vv.minimum is not None:
+                    # TODO: figure out how to handle bounded parameters
+                    if not isinstance(vv.minimum, basestring):
+                        curr_param.valid_min = vv.minimum
+
+                if vv.maximum is not None:
+                    if not isinstance(vv.maximum, basestring):
+                        curr_param.valid_max = vv.maximum
+
+                # Write the data
+                if len(vv.dimensions.keys()) == 1:
+                    curr_param[:] = vv.data
+                elif len(vv.dimensions.keys()) == 2:
+                    curr_param[:, :] = vv.data
+            else:
+                print('Skipping string parameter: {}'.format(vv.name))
+        # Close the netcdf file
+        nc_hdl.close()
