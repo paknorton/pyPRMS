@@ -8,7 +8,7 @@ import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
-from pyPRMS.constants import NETCDF_DATATYPES, NETCDF_FILLVAL, NHM_DATATYPES, PARAMETERS_XML, DIMENSIONS_XML
+from pyPRMS.constants import NETCDF_DATATYPES, NHM_DATATYPES, PARAMETERS_XML, DIMENSIONS_XML
 from pyPRMS.prms_helpers import float_to_str
 
 
@@ -53,6 +53,7 @@ class ParameterSet(object):
     @property
     def xml_global_parameters(self):
         """Return an xml ElementTree of the parameters"""
+
         inv_map = {vv: kk for kk, vv in iteritems(NHM_DATATYPES)}
         # print(inv_map)
 
@@ -132,10 +133,9 @@ class ParameterSet(object):
         # hruo = nco.createVariable('hru', 'i4', ('hru'))
         for vv in self.parameters.values():
             curr_datatype = NETCDF_DATATYPES[vv.datatype]
-            print(vv.name)
+            print(vv.name, curr_datatype)
 
-            if curr_datatype != 'c':
-                # fill_val = NETCDF_FILLVAL[vv.datatype]
+            if curr_datatype != 'S1':
                 if vv.dimensions.keys()[0] == 'one':
                     # Scalar values
                     curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
@@ -154,6 +154,10 @@ class ParameterSet(object):
                 if vv.units:
                     curr_param.units = vv.units
 
+                # NOTE: Sometimes a warning is output from the netcdf4 library
+                #       warning that valid_min and/or valid_max
+                #       cannot be safely cast to variable dtype.
+                #       Not sure yet what is causing this.
                 if vv.minimum is not None:
                     # TODO: figure out how to handle bounded parameters
                     if not isinstance(vv.minimum, basestring):
@@ -169,6 +173,34 @@ class ParameterSet(object):
                 elif len(vv.dimensions.keys()) == 2:
                     curr_param[:, :] = vv.data
             else:
-                print('Skipping string parameter: {}'.format(vv.name))
+                # String parameter
+                # Get the maximum string length in the array of data
+                str_size = len(max(vv.data, key=len))
+
+                # Create a dimension for the string length
+                nc_hdl.createDimension(vv.name + '_nchars', str_size)
+
+                # Temporary to add extra dimension for number of characters
+                tmp_dims = vv.dimensions.keys()
+                tmp_dims.extend([vv.name + '_nchars'])
+                curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(tmp_dims),
+                                                   fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+
+                # Add the attributes
+                if vv.help:
+                    curr_param.description = vv.help
+                elif vv.description:
+                    # Try to fallback to the description if no help text
+                    curr_param.description = vv.description
+
+                if vv.units:
+                    curr_param.units = vv.units
+
+                # Write the data
+                if len(tmp_dims) == 1:
+                    curr_param[:] = nc.stringtochar(vv.data)
+                elif len(tmp_dims) == 2:
+                    curr_param[:, :] = nc.stringtochar(vv.data)
+
         # Close the netcdf file
         nc_hdl.close()
