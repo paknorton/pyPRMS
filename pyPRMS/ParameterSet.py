@@ -3,6 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 from future.utils import iteritems
 
 import netCDF4 as nc
+import sys
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
@@ -134,6 +135,7 @@ class ParameterSet(object):
         for vv in self.parameters.values():
             curr_datatype = NETCDF_DATATYPES[vv.datatype]
             print(vv.name, curr_datatype)
+            sys.stdout.flush()
 
             if curr_datatype != 'S1':
                 if vv.dimensions.keys()[0] == 'one':
@@ -141,8 +143,16 @@ class ParameterSet(object):
                     curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
                                                        fill_value=nc.default_fillvals[curr_datatype], zlib=True)
                 else:
-                    curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()),
+                    # The variable dimensions are stored with C-ordering (slowest -> fastest)
+                    # The variables in this library are based on Fortran-ordering (fastest -> slowest)
+                    # so we reverse the order of the dimensions and the arrays for
+                    # writing out to the netcdf file.
+                    # dtmp = vv.dimensions.keys()
+                    # dtmp.reverse()
+                    curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()[::-1]),
                                                        fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                    # curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()),
+                    #                                    fill_value=nc.default_fillvals[curr_datatype], zlib=True)
 
                 # Add the attributes
                 if vv.help:
@@ -171,7 +181,7 @@ class ParameterSet(object):
                 if len(vv.dimensions.keys()) == 1:
                     curr_param[:] = vv.data
                 elif len(vv.dimensions.keys()) == 2:
-                    curr_param[:, :] = vv.data
+                    curr_param[:, :] = vv.data.transpose()
             else:
                 # String parameter
                 # Get the maximum string length in the array of data
@@ -201,6 +211,6 @@ class ParameterSet(object):
                     curr_param[:] = nc.stringtochar(vv.data)
                 elif len(tmp_dims) == 2:
                     curr_param[:, :] = nc.stringtochar(vv.data)
-
+            sys.stdout.flush()
         # Close the netcdf file
         nc_hdl.close()

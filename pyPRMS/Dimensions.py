@@ -160,6 +160,8 @@ class Dimensions(object):
         # <dimensions>
         #     <dimension name = "nsegment" position = "1" size = "1434" />
         # </ dimensions>
+
+        # TODO: why not just return self.dimensions.xml ?
         dims_xml = xmlET.Element('dimensions')
 
         for kk, vv in iteritems(self.dimensions):

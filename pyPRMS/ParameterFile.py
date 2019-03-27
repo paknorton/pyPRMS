@@ -239,9 +239,9 @@ class ParameterFile(ParameterSet):
                 ff.write(xx.toparamdb())
 
             # Write xml file for the parameter
-            xmlstr = minidom.parseString(xmlET.tostring(xx.xml)).toprettyxml(indent='    ')
-            with open('{}/{}.xml'.format(output_dir, xx.name), 'w') as ff:
-                ff.write(xmlstr.encode('utf-8'))
+            # xmlstr = minidom.parseString(xmlET.tostring(xx.xml)).toprettyxml(indent='    ')
+            # with open('{}/{}.xml'.format(output_dir, xx.name), 'w') as ff:
+            #     ff.write(xmlstr.encode('utf-8'))
 
     def write_subset(self, filename, ):
         """Write a parameter file using defined dimensions and parameters"""
