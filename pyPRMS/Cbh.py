@@ -26,7 +26,7 @@ class Cbh(object):
     # 2016-12-20 PAN:
     # As written this works with CBH files that were created with
     # java class gov.usgs.mows.GCMtoPRMS.GDPtoCBH
-    # This program creates the CBH files in the format needed by PRMS
+    # This program (gov.usgs.mows.GCMtoPRMS.GDPtoCBH) creates the CBH files in the format needed by PRMS
     # and also verifies the correctness of the data including:
     #    tmax is never less than tmin
     #    prcp is never negative
@@ -34,7 +34,7 @@ class Cbh(object):
     #
     # I think it would be better if this code worked with the original GDP files and
     # took care of those corrections itself. This would provide a more seamless workflow
-    # from GDP to PRMS. At this point I'm not taking this on though -- for a future revision.
+    # from GDP to PRMS. At this point I'm not taking this on -- for a future revision.
 
     def __init__(self, filename=None, st_date=None, en_date=None, indices=None, nhm_hrus=None, mapping=None,
                  var=None, regions=REGIONS):
@@ -162,7 +162,8 @@ class Cbh(object):
                                  usecols=load_cols,
                                  skiprows=3, engine='c', memory_map=True,
                                  date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
-                                 index_col='time', header=None, na_values=[-99.0, -999.0])
+                                 index_col='time', header=None,
+                                 na_values=[-99.0, -999.0, 'NaN', 'inf'])
 
                 if self.__stdate is not None and self.__endate is not None:
                     # Restrict the date range
