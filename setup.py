@@ -108,9 +108,24 @@ setup(
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
+    entry_points={
+        'console_scripts': [
+            'convert_params=pyPRMS.utilities.convert_params:main',
+        ],
+    },
+
+    # To provide executable scripts, use entry points in preference to the
+    # "scripts" keyword. Entry points provide cross-platform support and allow
+    # pip to create the appropriate form of executable for the target platform.
     # entry_points={
     #     'console_scripts': [
-    #         'sample=sample:main',
+    #         'bandit=Bandit.bandit:main',
+    #         'bandit_by_streamgage=Bandit.bandit_by_streamgage:main',
+    #         'create_merged_db=Bandit.create_merged_db:main',
+    #         'git_version=Bandit.git_version:main',
+    #         'create_bandit_job=Bandit.utilities.create_bandit_job:main',
+    #         'check_nhmparamdb=Bandit.utilities.check_nhmparamdb:main',
+    #         'bandit_multi_locations=Bandit.bandit_multi_locations:main'
     #     ],
     # },
 )
