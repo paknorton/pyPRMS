@@ -1,0 +1,153 @@
+<?xml version="1.0" ?>
+<dimensions>
+    <dimension name="ncascade">
+        <desc>Number of HRU links for cascading flow</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="ncascdgw">
+        <desc>Number of GWR links for cascading flow</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nconsumed">
+        <desc>Number of consumptive water-use destinations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="ndays">
+        <desc>Maximum number of days in a year</desc>
+        <size>366</size>
+        <default>366</default>
+    </dimension>
+    <dimension name="ndepl">
+        <desc>Number of snow-depletion curves</desc>
+        <size>0</size>
+        <default>1</default>
+    </dimension>
+    <dimension name="ndeplval">
+        <desc>Number of values in all snow-depletion curves (set to ndepl*11)</desc>
+        <size>0</size>
+        <default>11</default>
+    </dimension>
+    <dimension name="nevap">
+        <desc>Number of pan-evaporation data sets</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nexternal">
+        <desc>Number of external water-use sources or destinations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="ngw">
+        <desc>Number of GWRs</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="ngwcell">
+        <desc>Number of spatial units in the target map for mapped results</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nhru">
+        <desc>Number of HRUs</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nhrucell">
+        <desc>Number of unique intersections between HRUs and spatial units of a target map for mapped results</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nhumid">
+        <desc>Number of relative humidity measurement stations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nlake">
+        <desc>Number of lakes</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nlakeelev">
+        <desc>Maximum number of lake elevations for any rating table data set</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nmonths">
+        <desc>Number of months in a year</desc>
+        <size>12</size>
+        <default>12</default>
+    </dimension>
+    <dimension name="nobs">
+        <desc>Number of streamflow-measurement stations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="npoigages">
+        <desc>Number of POI gages</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nrain">
+        <desc>Number of precipitation-measurement stations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nratetbl">
+        <desc>Number of rating-table data sets for lake elevations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nsegment">
+        <desc>Number of stream-channel segments</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nsnow">
+        <desc>Number of snow-depth-measurement stations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nsol">
+        <desc>Number of solar-radiation measurement stations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nssr">
+        <desc>Number of subsurface reservoirs</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nsub">
+        <desc>Number of internal subbasins</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="ntemp">
+        <desc>Number of air-temperature-measurement stations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nwateruse">
+        <desc>Number of water-use data sets</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nwind">
+        <desc>Number of wind-speed measurement stations</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="one">
+        <desc>Dimension of scalar parameters and variables</desc>
+        <size>1</size>
+        <default>1</default>
+    </dimension>
+    <dimension name="nlapse">
+        <desc>Number of lapse rates in X, Y, and Z directions</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+</dimensions>

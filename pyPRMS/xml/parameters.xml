@@ -1,0 +1,4858 @@
+<?xml version="1.0" ?>
+<parameters>
+    <parameter name="cov_type">
+        <type>I</type>
+        <units>none</units>
+        <desc>Cover type designation for HRU</desc>
+        <help>Vegetation cover type for each HRU (0=bare soil; 1=grasses; 2=shrubs; 3=trees; 4=coniferous)</help>
+        <minimum>0</minimum>
+        <maximum>4</maximum>
+        <default>3</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="covden_sum">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Summer vegetation cover density for major vegetation type</desc>
+        <help>Summer vegetation cover density for the major vegetation type in each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.5</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="covden_win">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Winter vegetation cover density for major vegetation type</desc>
+        <help>Winter vegetation cover density for the major vegetation type in each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.5</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dprst_frac">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of each HRU area that has surface depressions</desc>
+        <help>Fraction of each HRU area that has surface depressions</help>
+        <minimum>0.0</minimum>
+        <maximum>0.999</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dprst_frac_open">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of open surface-depression storage area within an HRU that can generate surface runoff as a function of storage volume</desc>
+        <help>Fraction of open surface-depression storage area within an HRU that can generate surface runoff as a function of storage volume</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="elev_units">
+        <type>I</type>
+        <units>none</units>
+        <desc>Elevation units flag</desc>
+        <help>Flag to indicate the units of the elevation values (0=feet; 1=meters)</help>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <default>0</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_elev">
+        <type>F</type>
+        <units>elev_units</units>
+        <desc>HRU mean elevation</desc>
+        <help>Mean elevation for each HRU</help>
+        <minimum>-1000.0</minimum>
+        <maximum>30000.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_lat">
+        <type>F</type>
+        <units>degrees North</units>
+        <desc>HRU latitude</desc>
+        <help>Latitude of each HRU</help>
+        <minimum>-90.0</minimum>
+        <maximum>90.0</maximum>
+        <default>40.0</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_percent_imperv">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>HRU percent impervious</desc>
+        <help>Fraction of each HRU area that is impervious</help>
+        <minimum>0.0</minimum>
+        <maximum>0.999</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_type">
+        <type>I</type>
+        <units>none</units>
+        <desc>HRU type</desc>
+        <help>Type of each HRU (0=inactive; 1=land; 2=lake; 3=swale)</help>
+        <minimum>0</minimum>
+        <maximum>3</maximum>
+        <default>1</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_hru_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>Identification number of the lake associated with an HRU</desc>
+        <help>Identification number of the lake associated with an HRU; more than one HRU can be associated with each lake</help>
+        <minimum>bounded</minimum>
+        <maximum>nlake</maximum>
+        <default>0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_type">
+        <type>I</type>
+        <units>none</units>
+        <desc>Type of lake routing method</desc>
+        <help>Type of lake routing method (1=Puls routing; 2=linear routing; 3=flow through; 4=broad crested weir; 5=gate opening; 6=measured flow)</help>
+        <minimum>1</minimum>
+        <maximum>6</maximum>
+        <default>1</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_area">
+        <type>F</type>
+        <units>acres</units>
+        <desc>HRU area</desc>
+        <help>Area of each HRU</help>
+        <minimum>0.0001</minimum>
+        <maximum>1.0E9</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>basin</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="outlet_sta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of measurement station to use for basin outlet</desc>
+        <help>Index of measured streamflow station corresponding to the basin outlet</help>
+        <minimum>bounded</minimum>
+        <maximum>nobs</maximum>
+        <default>0</default>
+        <modules>
+            <module>basin_sum</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="print_freq">
+        <type>I</type>
+        <units>none</units>
+        <desc>Frequency for the output frequency</desc>
+        <help>Flag to select the output frequency; for combinations, add index numbers, e.g., daily plus yearly = 10; yearly plus total = 3 (0=none; 1=run totals; 2=yearly; 4=monthly; 8=daily; or additive combinations)</help>
+        <minimum>0</minimum>
+        <maximum>15</maximum>
+        <default>3</default>
+        <modules>
+            <module>basin_sum</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="print_type">
+        <type>I</type>
+        <units>none</units>
+        <desc>Type of output written to output file</desc>
+        <help>Flag to select the type of results written to the output file (0=measured and simulated flow only; 1=water balance table; 2=detailed output)</help>
+        <minimum>0</minimum>
+        <maximum>2</maximum>
+        <default>1</default>
+        <modules>
+            <module>basin_sum</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="cascade_flg">
+        <type>I</type>
+        <units>none</units>
+        <desc>Flag to indicate cascade type (0=allow many to many; 1=force one to one)</desc>
+        <help>Flag to indicate cascade type (0=allow many to many; 1=force one to one)</help>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <default>0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="cascade_tol">
+        <type>F</type>
+        <units>acres</units>
+        <desc>Cascade area below which a cascade link is ignored</desc>
+        <help>Cascade area below which a cascade link is ignored</help>
+        <minimum>0.0</minimum>
+        <maximum>99.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="circle_switch">
+        <type>I</type>
+        <units>none</units>
+        <desc>Switch to check for circles</desc>
+        <help>Switch to check for circles (0=no check; 1=check)</help>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <default>1</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gw_down_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>GWR index of downslope GWR</desc>
+        <help>Index number of the downslope GWR to which the upslope GWR contributes flow</help>
+        <minimum>bounded</minimum>
+        <maximum>nhru</maximum>
+        <default>0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="ncascdgw">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gw_pct_up">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of GWR area associated with cascade area</desc>
+        <help>Fraction of GWR area used to compute flow contributed to a downslope GWR or stream segment for cascade area</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="ncascdgw">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gw_strmseg_down_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>Stream segment index that cascade area contributes flow</desc>
+        <help>Index number of the stream segment that cascade area contributes flow</help>
+        <minimum>bounded</minimum>
+        <maximum>nsegment</maximum>
+        <default>0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="ncascdgw">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gw_up_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of GWR containing cascade area</desc>
+        <help>Index of GWR containing cascade area</help>
+        <minimum>bounded</minimum>
+        <maximum>nhru</maximum>
+        <default>0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="ncascdgw">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_down_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>HRU index of downslope HRU</desc>
+        <help>Index number of the downslope HRU to which the upslope HRU contributes flow</help>
+        <minimum>bounded</minimum>
+        <maximum>nhru</maximum>
+        <default>0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="ncascade">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_pct_up">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of HRU area associated with cascade area</desc>
+        <help>Fraction of HRU area used to compute flow contributed to a downslope HRU or stream segment for cascade area</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="ncascade">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_strmseg_down_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>Stream segment index that cascade area contributes flow</desc>
+        <help>Index number of the stream segment that cascade area contributes flow</help>
+        <minimum>bounded</minimum>
+        <maximum>nsegment</maximum>
+        <default>0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="ncascade">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_up_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of HRU containing cascade area</desc>
+        <help>Index of HRU containing cascade area</help>
+        <minimum>bounded</minimum>
+        <maximum>nhru</maximum>
+        <default>0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="ncascade">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="crad_coef">
+        <type>F</type>
+        <units>none</units>
+        <desc>Coefficient in cloud cover-solar radiation relationship</desc>
+        <help>Coefficient(B) in Thompson(1976) equation; varies by region, contour map of values in reference</help>
+        <minimum>0.1</minimum>
+        <maximum>0.7</maximum>
+        <default>0.4</default>
+        <modules>
+            <module>ccsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="crad_exp">
+        <type>F</type>
+        <units>none</units>
+        <desc>Exponent in cloud cover-solar radiation relationship</desc>
+        <help>Exponent(P) in Thompson(1976) equation</help>
+        <minimum>0.2</minimum>
+        <maximum>0.8</maximum>
+        <default>0.61</default>
+        <modules>
+            <module>ccsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="basin_solsta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of main solar radiation station</desc>
+        <help>Index of solar radiation station used to compute basin radiation values, used when dimension nsol&gt;0</help>
+        <minimum>bounded</minimum>
+        <maximum>nsol</maximum>
+        <default>0</default>
+        <modules>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+            <module>solar_radiation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_solsta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of solar radiation station associated with each HRU</desc>
+        <help>Index of solar radiation station associated with each HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>nsol</maximum>
+        <default>0</default>
+        <modules>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+            <module>solar_radiation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ppt_rad_adj">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Radiation reduced if HRU precipitation above this value</desc>
+        <help>Monthly minimum precipitation, if HRU precipitation exceeds this value, radiation is multiplied by radj_sppt or radj_wppt adjustment factor</help>
+        <minimum>0.0</minimum>
+        <maximum>0.5</maximum>
+        <default>0.02</default>
+        <modules>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+            <module>solar_radiation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rad_conv">
+        <type>F</type>
+        <units>Langleys/radiation units</units>
+        <desc>Conversion factor to Langleys for measured radiation</desc>
+        <help>Conversion factor to Langleys for measured solar radiation</help>
+        <minimum>0.1</minimum>
+        <maximum>100.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+            <module>solar_radiation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="radj_sppt">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Adjustment to solar radiation on precipitation day - summer</desc>
+        <help>Adjustment factor for computed solar radiation for summer day with greater than ppt_rad_adj inches of precipitation for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.44</default>
+        <modules>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+            <module>solar_radiation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="radj_wppt">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Adjustment to solar radiation on precipitation day - winter</desc>
+        <help>Adjustment factor for computed solar radiation for winter day with greater than ppt_rad_adj inches of precipitation for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.5</default>
+        <modules>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+            <module>solar_radiation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="radmax">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Maximum fraction of potential solar radiation</desc>
+        <help>Monthly (January to December) maximum fraction of the potential solar radiation that may reach the ground due to haze, dust, smog, and so forth, for each HRU</help>
+        <minimum>0.1</minimum>
+        <maximum>1.0</maximum>
+        <default>0.8</default>
+        <modules>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+            <module>solar_radiation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ccov_intcp">
+        <type>F</type>
+        <units>none</units>
+        <desc>Intercept in temperature cloud cover relationship</desc>
+        <help>Monthly (January to December) intercept in cloud-cover relationship</help>
+        <minimum>0.0</minimum>
+        <maximum>5.0</maximum>
+        <default>1.83</default>
+        <modules>
+            <module>ccsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ccov_slope">
+        <type>F</type>
+        <units>none</units>
+        <desc>Slope in temperature cloud cover relationship</desc>
+        <help>Monthly (January to December) coefficient in cloud-cover relationship</help>
+        <minimum>-0.5</minimum>
+        <maximum>-0.01</maximum>
+        <default>-0.13</default>
+        <modules>
+            <module>ccsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="potet_cbh_adj">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Potential ET adjustment factor, by month for each HRU</desc>
+        <help>Monthly (January to December) adjustment factor to potential evapotranspiration specified in CBH Files for each HRU</help>
+        <minimum>0.5</minimum>
+        <maximum>1.5</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>potet_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rain_cbh_adj">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Rain adjustment factor, by month for each HRU</desc>
+        <help>Monthly (January to December) adjustment factor to measured precipitation determined to be rain on each HRU to account for differences in elevation, and so forth</help>
+        <minimum>0.5</minimum>
+        <maximum>2.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precipitation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="snow_cbh_adj">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Snow adjustment factor, by month for each HRU</desc>
+        <help>Monthly (January to December) adjustment factor to measured precipitation determined to be snow on each HRU to account for differences in elevation, and so forth</help>
+        <minimum>0.5</minimum>
+        <maximum>2.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precipitation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tmax_cbh_adj">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Monthly maximum temperature adjustment factor for each HRU</desc>
+        <help>Monthly (January to December) adjustment factor to maximum air temperature for each HRU, estimated on the basis of slope and aspect</help>
+        <minimum>-10.0</minimum>
+        <maximum>10.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>temperature_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tmin_cbh_adj">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Monthly minimum temperature adjustment factor for each HRU</desc>
+        <help>Monthly (January to December) adjustment factor to minimum air temperature for each HRU, estimated on the basis of slope and aspect</help>
+        <minimum>-10.0</minimum>
+        <maximum>10.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>temperature_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="humidity_percent">
+        <type>F</type>
+        <units>percentage</units>
+        <desc>Monthy humidity for each HRU</desc>
+        <help>Monthy humidity for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>100.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>potet_hru</module>
+            <module>potet_hamon</module>
+            <module>potet_hs</module>
+            <module>potet_jh</module>
+            <module>potet_pan</module>
+            <module>potet_pm</module>
+            <module>potet_pm_sta</module>
+            <module>potet_pt</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dday_intcp">
+        <type>F</type>
+        <units>dday</units>
+        <desc>Intercept in temperature degree-day relationship</desc>
+        <help>Monthly (January to December) intercept in degree-day equation for each HRU</help>
+        <minimum>-60.0</minimum>
+        <maximum>10.0</maximum>
+        <default>-40.0</default>
+        <modules>
+            <module>ddsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dday_slope">
+        <type>F</type>
+        <units>dday/temp_units</units>
+        <desc>Slope in temperature degree-day relationship</desc>
+        <help>Monthly (January to December) slope in degree-day equation for each HRU</help>
+        <minimum>0.2</minimum>
+        <maximum>0.9</maximum>
+        <default>0.4</default>
+        <modules>
+            <module>ddsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="radadj_intcp">
+        <type>F</type>
+        <units>dday</units>
+        <desc>Intercept in air temperature range adjustment to degree-day equation</desc>
+        <help>Monthly (January to December) intercept in air temperature range adjustment to degree-day equation for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>ddsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="radadj_slope">
+        <type>F</type>
+        <units>dday/temp_units</units>
+        <desc>Slope in air temperature range adjustment to degree-day equation</desc>
+        <help>Monthly (January to December) slope in air temperature range adjustment to degree-day equation for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>ddsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tmax_index">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Monthly index temperature</desc>
+        <help>Monthly (January to December) index temperature used to determine precipitation adjustments to solar radiation for each HRU</help>
+        <minimum>-10.0</minimum>
+        <maximum>110.0</maximum>
+        <default>50.0</default>
+        <modules>
+            <module>ddsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="frost_temp">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Temperature of killing frost</desc>
+        <help>Temperature of killing frost</help>
+        <minimum>-10.0</minimum>
+        <maximum>32.0</maximum>
+        <default>28.0</default>
+        <modules>
+            <module>frost_date</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="elevlake_init">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Initial lake surface elevation</desc>
+        <help>Initial lake surface elevation for each lake using broad-crested weir or gate opening routing</help>
+        <minimum>-300.0</minimum>
+        <maximum>10000.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gw_seep_coef">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Linear coefficient to compute seepage and groundwater discharge to and from associated lake HRUs</desc>
+        <help>Linear coefficient in equation to compute lakebed seepage to the GWR and groundwater discharge to each lake using broad-crested weir routing or gate opening routing</help>
+        <minimum>0.001</minimum>
+        <maximum>0.05</maximum>
+        <default>0.015</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gwflow_coef">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Groundwater routing coefficient</desc>
+        <help>Linear coefficient in the equation to compute groundwater discharge for each GWR</help>
+        <minimum>0.0</minimum>
+        <maximum>0.5</maximum>
+        <default>0.015</default>
+        <modules>
+            <module>gwflow</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gwsink_coef">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Groundwater sink coefficient</desc>
+        <help>Linear coefficient in the equation to compute outflow to the groundwater sink for each GWR</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>gwflow</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gwstor_init">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Initial storage in each GWR</desc>
+        <help>Storage in each GWR at the beginning of a simulation</help>
+        <minimum>0.0</minimum>
+        <maximum>10.0</maximum>
+        <default>2.0</default>
+        <modules>
+            <module>gwflow</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gwstor_min">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Minimum storage in each GWR</desc>
+        <help>Minimum storage in each GWR to ensure storage is greater than specified value to account for inflow from deep aquifers or injection wells with the water source outside the basin</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>gwflow</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_seep_elev">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Elevation over which lakebed seepage to the GWR occurs</desc>
+        <help>Elevation over which lakebed seepage to the GWR occurs for lake HRUs using broad-crested weir routing or gate opening routing</help>
+        <minimum>-300.0</minimum>
+        <maximum>10000.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="psta_elev">
+        <type>F</type>
+        <units>elev_units</units>
+        <desc>Precipitation station elevation</desc>
+        <help>Elevation of each precipitation measurement station</help>
+        <minimum>-300.0</minimum>
+        <maximum>30000.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>ide_dist</module>
+            <module>xyz_dist</module>
+            <module>precip_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="epan_coef">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Evaporation pan coefficient</desc>
+        <help>Monthly (January to December) evaporation pan coefficient for each HRU</help>
+        <minimum>0.01</minimum>
+        <maximum>3.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>intcp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="irr_type">
+        <type>I</type>
+        <units>none</units>
+        <desc>Method of application of water for each application</desc>
+        <help>Method of application of water for each application time-series (0=sprinkler (interception applies); 1=furrow/drip (no intercept); 2=ignore)</help>
+        <minimum>0</minimum>
+        <maximum>2</maximum>
+        <default>0</default>
+        <modules>
+            <module>intcp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="snow_intcp">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Snow interception storage capacity</desc>
+        <help>Snow interception storage capacity for the major vegetation type in each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>intcp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="srain_intcp">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Summer rain interception storage capacity</desc>
+        <help>Summer rain interception storage capacity for the major vegetation type in each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>intcp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="wrain_intcp">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Winter rain interception storage capacity</desc>
+        <help>Winter rain interception storage capacity for the major vegetation type in each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>intcp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gvr_cell_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>Corresponding grid cell id associated with each GVR</desc>
+        <help>Index of the grid cell associated with each gravity reservoir</help>
+        <minimum>bounded</minimum>
+        <maximum>nhrucell</maximum>
+        <default>0</default>
+        <modules>
+            <module>map_results</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhrucell">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gvr_cell_pct">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Proportion of the grid cell associated with each GVR</desc>
+        <help>Proportion of the grid cell area associated with each gravity reservoir</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>map_results</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhrucell">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="mapvars_freq">
+        <type>I</type>
+        <units>none</units>
+        <desc>Mapped results frequency</desc>
+        <help>Flag to specify the output frequency (0=none; 1=monthly; 2=yearly; 3=total; 4=monthly and yearly; 5=monthly, yearly, and total; 6=weekly; 7=daily)</help>
+        <minimum>0</minimum>
+        <maximum>7</maximum>
+        <default>0</default>
+        <modules>
+            <module>map_results</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="mapvars_units">
+        <type>I</type>
+        <units>none</units>
+        <desc>Flag to specify the output units of mapped results</desc>
+        <help>Flag to specify the output units of mapped results (0=units of the variable; 1=inches to feet; 2=inches to centimeters; 3=inches to meters; as states or fluxes)</help>
+        <minimum>0</minimum>
+        <maximum>3</maximum>
+        <default>0</default>
+        <modules>
+            <module>map_results</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ncol">
+        <type>I</type>
+        <units>none</units>
+        <desc>Number of columns for each row of the mapped results</desc>
+        <help>Number of columns for each row of the mapped results</help>
+        <minimum>1</minimum>
+        <maximum>50000</maximum>
+        <default>1</default>
+        <modules>
+            <module>map_results</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="segment_flow_init">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Initial flow in each stream segment</desc>
+        <help>Initial flow in each stream segment</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E7</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum</module>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="elev_outflow">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Elevation of the main outflow point</desc>
+        <help>Elevation of the main outflow point for each lake using broad-crested weir routing</help>
+        <minimum>-300.0</minimum>
+        <maximum>10000.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_coef">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Linear lake routing coefficient</desc>
+        <help>Coefficient in equation to route storage to streamflow for each lake using linear routing</help>
+        <minimum>0.0001</minimum>
+        <maximum>1.0</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_din1">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Initial inflow to each lake</desc>
+        <help>Initial inflow to each lake using Puls or linear storage routing</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E7</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_init">
+        <type>F</type>
+        <units>cfs-days</units>
+        <desc>Initial storage in each lake</desc>
+        <help>Initial storage in each lake using Puls or linear storage routing</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E7</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_out2">
+        <type>I</type>
+        <units>none</units>
+        <desc>Switch to specify a second outlet from a lake</desc>
+        <help>Switch to specify a second outlet from each lake using gate opening routing (0=no; 1=yes)</help>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <default>0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_out2_a">
+        <type>F</type>
+        <units>cfs/ft</units>
+        <desc>Outflow coefficient A for each lake with second outlet</desc>
+        <help>Coefficient A in outflow equation for each lake with a second outlet using gate opening routing</help>
+        <minimum>0.0</minimum>
+        <maximum>10000.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_out2_b">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Outflow coefficient A for each lake with second outlet</desc>
+        <help>Coefficient B in outflow equation for each lake with a second outlet using gate opening routing</help>
+        <minimum>0.0</minimum>
+        <maximum>10000.0</maximum>
+        <default>100.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_qro">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Initial daily mean outflow from each lake</desc>
+        <help>Initial daily mean outflow from each lake</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E7</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_segment_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of lake associated with a segment</desc>
+        <help>Index of lake associated with a segment</help>
+        <minimum>bounded</minimum>
+        <maximum>nlake</maximum>
+        <default>0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_vol_init">
+        <type>F</type>
+        <units>acre-feet</units>
+        <desc>Initial lake volume</desc>
+        <help>Initial lake volume for each lake using broad-crested weir or gate opening routing</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E7</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="nsos">
+        <type>I</type>
+        <units>none</units>
+        <desc>Number of storage/outflow values in table for Puls routing</desc>
+        <help>Number of storage/outflow values in table for each lake using Puls routing</help>
+        <minimum>bounded</minimum>
+        <maximum>mxnsos</maximum>
+        <default>0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="o2">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Outflow values in outflow/storage tables for Puls routing</desc>
+        <help>Outflow values in outflow/storage tables for each lake using Puls routing</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E7</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="mxnsos">
+                <position>1</position>
+            </dimension>
+            <dimension name="nlake">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="obsout_lake">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of streamflow measurement station that specifies outflow from a lake</desc>
+        <help>Index of streamflow measurement station that specifies outflow from each lake using measured flow replacement</help>
+        <minimum>bounded</minimum>
+        <maximum>nobs</maximum>
+        <default>0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rate_table">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Rating table 1 with stage (rows) and gate opening (cols)</desc>
+        <help>Rating table with stage (rows) and gate opening (cols) for rating table 1 for lakes using gate opening routing and nratetbl&gt;0</help>
+        <minimum>-100.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nstage">
+                <position>1</position>
+            </dimension>
+            <dimension name="ngate">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rate_table2">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Rating table 2 with stage (rows) and gate opening (cols)</desc>
+        <help>Rating table with stage (rows) and gate opening (cols) for rating table 2 for lakes using gate opening routing and nratetbl&gt;1</help>
+        <minimum>-100.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nstage2">
+                <position>1</position>
+            </dimension>
+            <dimension name="ngate2">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rate_table3">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Rating table 3 with stage (rows) and gate opening (cols)</desc>
+        <help>Rating table with stage (rows) and gate opening (cols) for rating table 3 for lakes using gate opening routing and nratetbl&gt;2</help>
+        <minimum>-100.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nstage3">
+                <position>1</position>
+            </dimension>
+            <dimension name="ngate3">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rate_table4">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Rating table 4 with stage (rows) and gate opening (cols)</desc>
+        <help>Rating table with stage (rows) and gate opening (cols) for rating table 4 for lakes using gate opening routing and nratetbl&gt;3</help>
+        <minimum>-100.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nstage4">
+                <position>1</position>
+            </dimension>
+            <dimension name="ngate4">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ratetbl_lake">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of lake associated with each rating table</desc>
+        <help>Index of lake associated with each rating table for each lake using gate opening routing</help>
+        <minimum>bounded</minimum>
+        <maximum>nlake</maximum>
+        <default>0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nratetbl">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="s2">
+        <type>F</type>
+        <units>cfs-days</units>
+        <desc>Storage values in outflow/storage tables for Puls routing</desc>
+        <help>Storage values in outflow/storage table for each lake using Puls routing</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E7</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="mxnsos">
+                <position>1</position>
+            </dimension>
+            <dimension name="nlake">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tbl_gate">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Gate openings for each column of rating table 1</desc>
+        <help>Gate openings for each column for rating table 1 for lakes using gate opening routing and nratetbl&gt;0</help>
+        <minimum>0.0</minimum>
+        <maximum>20.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="ngate">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tbl_gate2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Gate openings for each column of rating table 2</desc>
+        <help>Gate openings for each column for rating table 2 for lakes using gate opening routing and nratetbl&gt;1</help>
+        <minimum>0.0</minimum>
+        <maximum>20.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="ngate2">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tbl_gate3">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Gate openings for each column of rating table 3</desc>
+        <help>Gate openings for each column for rating table 3 for lakes using gate opening routing and nratetbl&gt;2</help>
+        <minimum>0.0</minimum>
+        <maximum>20.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="ngate3">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tbl_gate4">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Gate openings for each column of rating table 4</desc>
+        <help>Gate openings for each column for rating table 4 for lakes using gate opening routing and nratetbl&gt;3</help>
+        <minimum>0.0</minimum>
+        <maximum>20.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="ngate4">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tbl_stage">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Stage values for each row of rating table 1</desc>
+        <help>Stage values for each row for rating table 1 for lakes using gate opening routing and nratetbl&gt;0</help>
+        <minimum>-100.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nstage">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tbl_stage2">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Stage values for each row of rating table 2</desc>
+        <help>Stage values for each row for rating table 2 for lakes using gate opening routing and nratetbl&gt;1</help>
+        <minimum>-100.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nstage2">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tbl_stage3">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Stage values for each row of rating table 3</desc>
+        <help>Stage values for each row for rating table 3 for lakes using gate opening routing and nratetbl&gt;2</help>
+        <minimum>-100.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nstage3">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tbl_stage4">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Stage values for each row of rating table 4</desc>
+        <help>Stage values for each row for rating table 4 for lakes using gate opening routing and nratetbl&gt;3</help>
+        <minimum>-100.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nstage4">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="weir_coef">
+        <type>F</type>
+        <units>none</units>
+        <desc>Broad-crested weir coefficent</desc>
+        <help>Coefficient for lakes using broad-crested weir routing</help>
+        <minimum>2.0</minimum>
+        <maximum>3.0</maximum>
+        <default>2.7</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="weir_len">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Broad-crested weir length</desc>
+        <help>Weir length for lakes using broad-crested weir routing</help>
+        <minimum>1.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rain_code">
+        <type>I</type>
+        <units>none</units>
+        <desc>Flag indicating rule for precipitation station use</desc>
+        <help>Monthly (January to December) flag indicating rule for precipitation measurement station use (1=only precipitation if the regression stations have precipitation; 2=only precipitation if any station in the basin has precipitation; 3=precipitation if xyz says so; 4=only precipitation if rain_day variable is set to 1; 5=only precipitation if psta_freq_nuse stations have precipitation)</help>
+        <minimum>1</minimum>
+        <maximum>5</maximum>
+        <default>2</default>
+        <modules>
+            <module>obs</module>
+        </modules>
+        <dimensions>
+            <dimension name="nmonths">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="runoff_units">
+        <type>I</type>
+        <units>none</units>
+        <desc>Measured streamflow units</desc>
+        <help>Measured streamflow units (0=cfs; 1=cms)</help>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <default>0</default>
+        <modules>
+            <module>obs</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hamon_coef">
+        <type>F</type>
+        <units>none</units>
+        <desc>Monthly air temperature coefficient - Hamon</desc>
+        <help>Monthly (January to December) air temperature coefficient used in Hamon potential ET computations for each HRU</help>
+        <minimum>0.004</minimum>
+        <maximum>0.008</maximum>
+        <default>0.0055</default>
+        <modules>
+            <module>potet_hamon</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hs_krs">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Potential ET adjustment factor - Hargreaves-Samani</desc>
+        <help>Monthly (January to December) adjustment factor used in Hargreaves-Samani potential ET computations for each HRU</help>
+        <minimum>0.01</minimum>
+        <maximum>0.24</maximum>
+        <default>0.0135</default>
+        <modules>
+            <module>potet_hs</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="jh_coef">
+        <type>F</type>
+        <units>per degrees Fahrenheit</units>
+        <desc>Monthly air temperature coefficient for each HRU - Jensen-Haise</desc>
+        <help>Monthly (January to December) air temperature coefficient used in Jensen-Haise potential ET computations for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>0.1</maximum>
+        <default>0.013999999999999999</default>
+        <modules>
+            <module>potet_jh</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="jh_coef_hru">
+        <type>F</type>
+        <units>degrees Fahrenheit</units>
+        <desc>HRU air temperature coefficient - Jensen-Haise</desc>
+        <help>Air temperature coefficient used in Jensen-Haise potential ET computations for each HRU</help>
+        <minimum>-99.0</minimum>
+        <maximum>150.0</maximum>
+        <default>13.0</default>
+        <modules>
+            <module>potet_jh</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_pansta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of pan evaporation station for each HRU</desc>
+        <help>Index of pan evaporation station used to compute HRU potential ET</help>
+        <minimum>bounded</minimum>
+        <maximum>nevap</maximum>
+        <default>0</default>
+        <modules>
+            <module>potet_pan</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="crop_coef">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Crop coefficient for each HRU</desc>
+        <help>Monthly (January to December) crop coefficient for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>2.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>potet_pm</module>
+            <module>potet_pm_sta</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="pm_d_coef">
+        <type>F</type>
+        <units>seconds/meters</units>
+        <desc>Penman-Monteith coefficient</desc>
+        <help>Monthly (January to December) Penman-Monteith potential ET D wind-speed coefficient for each HRU</help>
+        <minimum>0.25</minimum>
+        <maximum>0.45</maximum>
+        <default>0.34</default>
+        <modules>
+            <module>potet_pm</module>
+            <module>potet_pm_sta</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="pm_n_coef">
+        <type>F</type>
+        <units>degrees Celsius per day</units>
+        <desc>Penman-Monteith coefficient</desc>
+        <help>Monthly (January to December) Penman-Monteith potential ET N temperauture coefficient for each HRU</help>
+        <minimum>850.0</minimum>
+        <maximum>950.0</maximum>
+        <default>900.0</default>
+        <modules>
+            <module>potet_pm</module>
+            <module>potet_pm_sta</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_humidity_sta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of humidity measurement station for each HRU</desc>
+        <help>Index of humidity measurement station for each HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>nhumid</maximum>
+        <default>0</default>
+        <modules>
+            <module>potet_pm_sta</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_windspeed_sta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of wind speed measurement station for each HRU</desc>
+        <help>Index of wind speed measurement station for each HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>nwind</maximum>
+        <default>0</default>
+        <modules>
+            <module>potet_pm_sta</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="pt_alpha">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Potential ET adjustment factor - Priestly-Taylor</desc>
+        <help>Monthly (January to December) adjustment factor used in Priestly-Taylor potential ET computations for each HRU</help>
+        <minimum>1.0</minimum>
+        <maximum>2.0</maximum>
+        <default>1.26</default>
+        <modules>
+            <module>potet_pt</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="adjmix_rain">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Adjustment factor for rain in a rain/snow mix</desc>
+        <help>Monthly (January to December) factor to adjust rain proportion in a mixed rain/snow event</help>
+        <minimum>0.0</minimum>
+        <maximum>3.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_1sta</module>
+            <module>precip_laps</module>
+            <module>precip_dist2</module>
+            <module>precipitation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="precip_units">
+        <type>I</type>
+        <units>none</units>
+        <desc>Units for measured precipitation</desc>
+        <help>Units for measured precipitation (0=inches; 1=mm)</help>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <default>0</default>
+        <modules>
+            <module>precip_1sta</module>
+            <module>precip_laps</module>
+            <module>precip_dist2</module>
+            <module>precipitation_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tmax_allrain_offset">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Precipitation is rain if HRU max temperature &gt;= tmax_allsnow + this value</desc>
+        <help>Monthly (January to December) maximum air temperature when precipitation is assumed to be rain; if HRU air temperature is greater than or equal to tmax_allsnow plus this value, precipitation is rain</help>
+        <minimum>0.0</minimum>
+        <maximum>50.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_1sta</module>
+            <module>precip_laps</module>
+            <module>precip_dist2</module>
+            <module>precipitation_hru</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tmax_allsnow">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Maximum temperature when precipitation is all snow</desc>
+        <help>Maximum air temperature when precipitation is assumed to be snow; if HRU air temperature is less than or equal to this value, precipitation is snow</help>
+        <minimum>-10.0</minimum>
+        <maximum>40.0</maximum>
+        <default>32.0</default>
+        <modules>
+            <module>precip_1sta</module>
+            <module>precip_laps</module>
+            <module>precip_dist2</module>
+            <module>precipitation_hru</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_plaps">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of precipitation station to lapse against hru_psta</desc>
+        <help>Index of the lapse precipitation measurement station used for lapse rate calculations for each HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>nrain</maximum>
+        <default>0</default>
+        <modules>
+            <module>precip_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_psta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of base precipitation station for HRU</desc>
+        <help>Index of the base precipitation station used for lapse rate calculations for each HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>nrain</maximum>
+        <default>0</default>
+        <modules>
+            <module>precip_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="padj_rn">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Rain adjustment factor, by month for each precipitation station</desc>
+        <help>Monthly (January to December) factor to adjust precipitation lapse rate computed between station hru_psta and station hru_plaps; positive factors are mutiplied times the lapse rate and negative factors are made positive and substituted for the computed lapse rate</help>
+        <minimum>-2.0</minimum>
+        <maximum>10.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="padj_sn">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Snow adjustment factor, by month for each precipitation station</desc>
+        <help>Monthly (January to December) factor to adjust precipitation lapse rate computed between station hru_psta and station hru_plaps; positive factors are mutiplied times the lapse rate and negative factors are made positive and substituted for the computed lapse rate</help>
+        <minimum>-2.0</minimum>
+        <maximum>10.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="pmn_mo">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Mean monthly precipitation for each lapse precipitation station</desc>
+        <help>Mean monthly (January to December) precipitation for each lapse precipitation measurement station</help>
+        <minimum>0.00001</minimum>
+        <maximum>100.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rain_adj">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Monthly rain adjustment factor for each HRU</desc>
+        <help>Monthly (January to December) factor to adjust measured precipitation on each HRU to account for differences in elevation, and so forth</help>
+        <minimum>0.5</minimum>
+        <maximum>2.5</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="snow_adj">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Monthly snow adjustment factor for each HRU</desc>
+        <help>Monthly (January to December) factor to adjust measured precipitation on each HRU to account for differences in elevation, and so forth</help>
+        <minimum>0.5</minimum>
+        <maximum>2.5</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="max_psta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Maximum number of precipitation stations to distribute to an HRU</desc>
+        <help>Maximum number of precipitation measurement stations to distribute to an HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>nrain</maximum>
+        <default>0</default>
+        <modules>
+            <module>precip_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="maxday_prec">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Maximum daily precipitation for any weather site</desc>
+        <help>Maximum measured precipitation value above which precipitation is assumed to be in error</help>
+        <minimum>0.0</minimum>
+        <maximum>20.0</maximum>
+        <default>15.0</default>
+        <modules>
+            <module>precip_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="psta_mon">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Monthly precipitation for each of the nrain precipitation measurement stations</desc>
+        <help>Monthly (January to December) factor to precipitation at each measured station to adjust precipitation distributed to each HRU to account for differences in elevation, and so forth</help>
+        <minimum>0.0000001</minimum>
+        <maximum>50.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="psta_xlong">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Precipitation station longitude, State Plane</desc>
+        <help>Longitude of each precipitation measurement station, State Plane Coordinate System</help>
+        <minimum>-1.0E9</minimum>
+        <maximum>1.0E9</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>precip_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="psta_ylat">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Precipitation station latitude, State Plane</desc>
+        <help>Latitude of each precipitation measurement station, State Plane Coordinate System</help>
+        <minimum>-1.0E9</minimum>
+        <maximum>1.0E9</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>precip_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rain_mon">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Rain adjustment factor, by month for each HRU</desc>
+        <help>Monthly (January to December) factor to rain on each HRU to adjust precipitation distributed to each HRU to account for differences in elevation, and so forth</help>
+        <minimum>0.0</minimum>
+        <maximum>50.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="snow_mon">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Rain adjustment factor, by month for each HRU</desc>
+        <help>Monthly (January to December) factor to snow on each HRU to adjust precipitation distributed to each HRU to account for differences in elevation, and so forth</help>
+        <minimum>0.0</minimum>
+        <maximum>50.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>precip_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dist_max">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Maximum distance from HRU to include a climate station</desc>
+        <help>Maximum distance from an HRU to a measurement station for use in calcuations</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E9</maximum>
+        <default>1000000000.0</default>
+        <modules>
+            <module>precip_dist2</module>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_xlong">
+        <type>F</type>
+        <units>feet</units>
+        <desc>HRU longitude of centroid, State Plane</desc>
+        <help>Longitude of each HRU for the centroid, State Plane Coordinate System</help>
+        <minimum>-1.0E9</minimum>
+        <maximum>1.0E9</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>precip_dist2</module>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_ylat">
+        <type>F</type>
+        <units>feet</units>
+        <desc>HRU latitude of centroid, State Plane</desc>
+        <help>Latitude of each HRU for the centroid, State Plane Coordinate System</help>
+        <minimum>-1.0E9</minimum>
+        <maximum>1.0E9</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>precip_dist2</module>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="K_coef">
+        <type>F</type>
+        <units>hours</units>
+        <desc>Muskingum storage coefficient</desc>
+        <help>Travel time of flood wave from one segment to the next downstream segment, called the Muskingum storage coefficient; enter 1.0 for reservoirs, diversions, and segment(s) flowing out of the basin</help>
+        <minimum>0.01</minimum>
+        <maximum>24.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>routing</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_segment">
+        <type>I</type>
+        <units>none</units>
+        <desc>Segment index for HRU lateral inflows</desc>
+        <help>Segment index to which an HRU contributes lateral flows (surface runoff, interflow, and groundwater discharge)</help>
+        <minimum>bounded</minimum>
+        <maximum>nsegment</maximum>
+        <default>0</default>
+        <modules>
+            <module>routing</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_segment_nhm">
+        <type>I</type>
+        <units>none</units>
+        <desc>NHM segment index for HRU lateral inflows</desc>
+        <help>NHM segment index to which an HRU contributes lateral flows (surface runoff, interflow, and groundwater discharge)</help>
+        <minimum>bounded</minimum>
+        <maximum>nsegment</maximum>
+        <default>0</default>
+        <modules>
+            <module>routing</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="obsin_segment">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of measured streamflow station that replaces inflow to a segment</desc>
+        <help>Index of measured streamflow station that replaces inflow to a segment</help>
+        <minimum>bounded</minimum>
+        <maximum>nobs</maximum>
+        <default>0</default>
+        <modules>
+            <module>routing</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="obsout_segment">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of measured streamflow station that replaces outflow from a segment</desc>
+        <help>Index of measured streamflow station that replaces outflow from a segment</help>
+        <minimum>bounded</minimum>
+        <maximum>nobs</maximum>
+        <default>0</default>
+        <modules>
+            <module>routing</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="segment_type">
+        <type>I</type>
+        <units>none</units>
+        <desc>Segment type</desc>
+        <help>Segment type (0=segment; 1=headwater; 2=lake; 3=replace inflow; 4=inbound to NHM; 5=outbound from NHM; 6=inbound to region; 7=outbound from region; 8=drains to ocean; 9=sink; 10=inbound from Great Lakes; 11=outbound to Great Lakes)</help>
+        <minimum>0</minimum>
+        <maximum>111</maximum>
+        <default>0</default>
+        <modules>
+            <module>routing</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tosegment">
+        <type>I</type>
+        <units>none</units>
+        <desc>The index of the downstream segment</desc>
+        <help>Index of downstream segment to which the segment streamflow flows, for segments that do not flow to another segment enter 0</help>
+        <minimum>-11</minimum>
+        <maximum>1000000</maximum>
+        <default>0</default>
+        <modules>
+            <module>routing</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tosegment_nhm">
+        <type>I</type>
+        <units>none</units>
+        <desc>The NHM index of the downstream segment</desc>
+        <help>NHM index of downstream segment to which the segment streamflow flows, for segments that do not flow to another segment enter 0</help>
+        <minimum>-11</minimum>
+        <maximum>1000000</maximum>
+        <default>0</default>
+        <modules>
+            <module>routing</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="x_coef">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Routing weighting factor</desc>
+        <help>The amount of attenuation of the flow wave, called the Muskingum routing weighting factor; enter 0.0 for reservoirs, diversions, and segment(s) flowing out of the basin</help>
+        <minimum>0.0</minimum>
+        <maximum>0.5</maximum>
+        <default>0.2</default>
+        <modules>
+            <module>routing</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_lon">
+        <type>F</type>
+        <units>degrees East</units>
+        <desc>HRU longitude</desc>
+        <help>Longitude of each HRU</help>
+        <minimum>-360.0</minimum>
+        <maximum>360.0</maximum>
+        <default>-105.0</default>
+        <modules>
+            <module>setup_param</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_x">
+        <type>F</type>
+        <units>meters</units>
+        <desc>X for each HRU (albers)</desc>
+        <help>Longitude (X) for each HRU in albers projection</help>
+        <minimum>-1.0E7</minimum>
+        <maximum>1.0E7</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>setup_param</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_y">
+        <type>F</type>
+        <units>meters</units>
+        <desc>Y for each HRU (albers)</desc>
+        <help>Latitude (Y) for each HRU in albers projection</help>
+        <minimum>-1.0E7</minimum>
+        <maximum>1.0E7</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>setup_param</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="nhm_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>National Hydrologic Model HRU ID</desc>
+        <help>National Hydrologic Model HRU ID</help>
+        <minimum>1</minimum>
+        <maximum>9999999</maximum>
+        <default>1</default>
+        <modules>
+            <module>setup_param</module>
+            <module>nhru_summary</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="parent_gw">
+        <type>I</type>
+        <units>none</units>
+        <desc>Lumen index in parent model for each GWR</desc>
+        <help>Lumen index in parent model for each GWR</help>
+        <minimum>1</minimum>
+        <maximum>9999999</maximum>
+        <default>1</default>
+        <modules>
+            <module>setup_param</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="parent_hru">
+        <type>I</type>
+        <units>none</units>
+        <desc>Lumen index in parent model for each HRU</desc>
+        <help>Lumen index in parent model for each HRU</help>
+        <minimum>1</minimum>
+        <maximum>9999999</maximum>
+        <default>1</default>
+        <modules>
+            <module>setup_param</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="parent_segment">
+        <type>I</type>
+        <units>none</units>
+        <desc>Lumen index in parent model for each segment</desc>
+        <help>Lumen index in parent model for each segment</help>
+        <minimum>0</minimum>
+        <maximum>9999999</maximum>
+        <default>0</default>
+        <modules>
+            <module>setup_param</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="parent_ssr">
+        <type>I</type>
+        <units>none</units>
+        <desc>Lumen index in parent model for each SSR</desc>
+        <help>Lumen index in parent model  for each SSR</help>
+        <minimum>1</minimum>
+        <maximum>99999999</maximum>
+        <default>1</default>
+        <modules>
+            <module>setup_param</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="poi_type">
+        <type>I</type>
+        <units>none</units>
+        <desc>Type code for each POI gage</desc>
+        <help>Type code for each POI gage</help>
+        <minimum>1</minimum>
+        <maximum>1</maximum>
+        <default>1</default>
+        <modules>
+            <module>setup_param</module>
+        </modules>
+        <dimensions>
+            <dimension name="npoigages">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tosegment_nhm">
+        <type>I</type>
+        <units>none</units>
+        <desc>National Hydrologic Model downstream segment ID</desc>
+        <help>National Model Hydrologic downstream segment ID</help>
+        <minimum>0</minimum>
+        <maximum>9999999</maximum>
+        <default>0</default>
+        <modules>
+            <module>setup_param</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="nhm_seg">
+        <type>I</type>
+        <units>none</units>
+        <desc>National Hydrologic Model segment ID</desc>
+        <help>National Hydrologic Model segment ID</help>
+        <minimum>0</minimum>
+        <maximum>9999999</maximum>
+        <default>0</default>
+        <modules>
+            <module>setup_param</module>
+            <module>nsegment_summary</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="parent_poigages">
+        <type>I</type>
+        <units>none</units>
+        <desc>Lumen index in parent model for each POI gage</desc>
+        <help>Lumen index in parent model for each POI gage</help>
+        <minimum>0</minimum>
+        <maximum>9999999</maximum>
+        <default>0</default>
+        <modules>
+            <module>setup_param</module>
+            <module>prms_summary</module>
+        </modules>
+        <dimensions>
+            <dimension name="npoigages">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="poi_gage_id">
+        <type>S</type>
+        <units>none</units>
+        <desc>POI Gage ID</desc>
+        <help>USGS stream gage for each POI gage</help>
+        <minimum>0</minimum>
+        <maximum>9999999</maximum>
+        <modules>
+            <module>setup_param</module>
+            <module>prms_summary</module>
+        </modules>
+        <dimensions>
+            <dimension name="npoigages">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="poi_gage_segment">
+        <type>I</type>
+        <units>none</units>
+        <desc>Segment index for each POI gage</desc>
+        <help>Segment index for each POI gage</help>
+        <minimum>bounded</minimum>
+        <maximum>nsegment</maximum>
+        <default>0</default>
+        <modules>
+            <module>setup_param</module>
+            <module>prms_summary</module>
+        </modules>
+        <dimensions>
+            <dimension name="npoigages">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="albset_rna">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Albedo reset - rain, accumulation stage</desc>
+        <help>Fraction of rain in a mixed precipitation event above which the snow albedo is not reset; applied during the snowpack accumulation stage</help>
+        <minimum>0.5</minimum>
+        <maximum>1.0</maximum>
+        <default>0.8</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="albset_rnm">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Albedo reset - rain,  melt stage</desc>
+        <help>Fraction of rain in a mixed precipitation event above which the snow albedo is not reset; applied during the snowpack melt stage</help>
+        <minimum>0.4</minimum>
+        <maximum>1.0</maximum>
+        <default>0.6</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="albset_sna">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Albedo reset - snow, accumulation stage</desc>
+        <help>Minimum snowfall, in water equivalent, needed to reset snow albedo during the snowpack accumulation stage</help>
+        <minimum>0.01</minimum>
+        <maximum>1.0</maximum>
+        <default>0.05</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="albset_snm">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Albedo reset - snow, melt stage</desc>
+        <help>Minimum snowfall, in water equivalent, needed to reset snow albedo during the snowpack melt stage</help>
+        <minimum>0.1</minimum>
+        <maximum>1.0</maximum>
+        <default>0.2</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="cecn_coef">
+        <type>F</type>
+        <units>calories per degree Celsius above 0</units>
+        <desc>Monthly convection condensation energy coefficient for each HRU</desc>
+        <help>Monthly (January to December) convection condensation energy coefficient for each HRU</help>
+        <minimum>0.02</minimum>
+        <maximum>20.0</maximum>
+        <default>5.0</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="den_init">
+        <type>F</type>
+        <units>gm/cm3</units>
+        <desc>Initial density of new-fallen snow</desc>
+        <help>Initial density of new-fallen snow</help>
+        <minimum>0.01</minimum>
+        <maximum>0.5</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="den_max">
+        <type>F</type>
+        <units>gm/cm3</units>
+        <desc>Average maximum snowpack density</desc>
+        <help>Average maximum snowpack density</help>
+        <minimum>0.1</minimum>
+        <maximum>0.8</maximum>
+        <default>0.6</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="emis_noppt">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Emissivity of air on days without precipitation for each HRU</desc>
+        <help>Average emissivity of air on days without precipitation for each HRU</help>
+        <minimum>0.757</minimum>
+        <maximum>1.0</maximum>
+        <default>0.757</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="freeh2o_cap">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Free-water holding capacity of snowpack for each HRU</desc>
+        <help>Free-water holding capacity of snowpack for each HRU, expressed as a decimal fraction of the frozen water content of the snowpack (pk_ice)</help>
+        <minimum>0.01</minimum>
+        <maximum>0.2</maximum>
+        <default>0.05</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_deplcrv">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index number for snowpack areal depletion curve</desc>
+        <help>Index number for the snowpack areal depletion curve associated with each HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>ndepl</maximum>
+        <default>1</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="nhm_deplcrv">
+        <type>I</type>
+        <units>none</units>
+        <desc>NHM index number for snowpack areal depletion curve</desc>
+        <help>NHM index number for the snowpack areal depletion curve associated with each HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>ndepl</maximum>
+        <default>1</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="melt_force">
+        <type>I</type>
+        <units>Julian day</units>
+        <desc>Julian date to force snowpack to spring snowmelt stage for each HRU</desc>
+        <help>Julian date to force snowpack to spring snowmelt stage for each HRU; varies with region depending on length of time that permanent snowpack exists</help>
+        <minimum>1</minimum>
+        <maximum>366</maximum>
+        <default>140</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="melt_look">
+        <type>I</type>
+        <units>Julian day</units>
+        <desc>Julian date to start looking for spring snowmelt for each HRU</desc>
+        <help>Julian date to start looking for spring snowmelt stage for each HRU; varies with region depending on length of time that permanent snowpack exists</help>
+        <minimum>1</minimum>
+        <maximum>366</maximum>
+        <default>90</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="potet_sublim">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of potential ET that is sublimated from snow for each HRU</desc>
+        <help>Fraction of potential ET that is sublimated from snow in the canopy and snowpack for each HRU</help>
+        <minimum>0.1</minimum>
+        <maximum>0.75</maximum>
+        <default>0.5</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="rad_trncf">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Solar radiation transmission coefficient</desc>
+        <help>Transmission coefficient for short-wave radiation through the winter vegetation canopy</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.5</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="settle_const">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Snowpack settlement time constant</desc>
+        <help>Snowpack settlement time constant</help>
+        <minimum>0.01</minimum>
+        <maximum>0.5</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="snarea_curve">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Snow area depletion curve values</desc>
+        <help>Snow area depletion curve values, 11 values for each curve (0.0 to 1.0 in 0.1 increments)</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="ndeplval">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="snarea_thresh">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Maximum threshold water equivalent for snow depletion</desc>
+        <help>Maximum threshold snowpack water equivalent below which the snow-covered-area curve is applied</help>
+        <minimum>0.0</minimum>
+        <maximum>200.0</maximum>
+        <default>50.0</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="snowpack_init">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Initial snowpack water equivalent in each HRU</desc>
+        <help>Storage of snowpack in each HRU at the beginning of a simulation</help>
+        <minimum>0.0</minimum>
+        <maximum>5000.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tstorm_mo">
+        <type>I</type>
+        <units>none</units>
+        <desc>Set to 1 if thunderstorms prevalent during month for each HRU</desc>
+        <help>Monthly flag (January to December) for prevalent storm type for each HRU (0=frontal storms; 1=convective storms)</help>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <default>0</default>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="fastcoef_lin">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Linear preferential-flow routing coefficient</desc>
+        <help>Linear coefficient in equation to route preferential-flow storage downslope for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="fastcoef_sq">
+        <type>F</type>
+        <units>none</units>
+        <desc>Non-linear preferential-flow routing coefficient</desc>
+        <help>Non-linear coefficient in equation used to route preferential-flow storage downslope for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.8</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lake_evap_adj">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Monthly potet factor to adjust potet on lakes</desc>
+        <help>Monthly (January to December) adjustment factor for potential ET for each lake</help>
+        <minimum>0.5</minimum>
+        <maximum>1.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nmonths">
+                <position>1</position>
+            </dimension>
+            <dimension name="nlake">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="pref_flow_den">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of the soil zone in which preferential flow occurs for each HRU</desc>
+        <help>Fraction of the soil zone in which preferential flow occurs for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>0.5</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="slowcoef_lin">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Linear gravity-flow reservoir routing coefficient</desc>
+        <help>Linear coefficient in equation to route gravity-reservoir storage downslope for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.015</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="slowcoef_sq">
+        <type>F</type>
+        <units>none</units>
+        <desc>Non-linear gravity-flow reservoir routing coefficient</desc>
+        <help>Non-linear coefficient in equation to route gravity-reservoir storage downslope for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="soil2gw_max">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Maximum value for capillary reservoir excess to GWR</desc>
+        <help>Maximum amount of the capillary reservoir excess that is routed directly to the GWR for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>5.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="soil_type">
+        <type>I</type>
+        <units>none</units>
+        <desc>HRU soil type</desc>
+        <help>Soil type of each HRU (1=sand; 2=loam; 3=clay)</help>
+        <minimum>1</minimum>
+        <maximum>3</maximum>
+        <default>2</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ssr2gw_exp">
+        <type>F</type>
+        <units>none</units>
+        <desc>Coefficient to route water from subsurface to groundwater</desc>
+        <help>Non-linear coefficient in equation used to route water from the gravity reservoir to the GWR for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>3.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ssr2gw_rate">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Coefficient to route water from gravity reservoir to GWR</desc>
+        <help>Linear coefficient in equation used to route water from the gravity reservoir to the GWR for each HRU</help>
+        <minimum>0.0001</minimum>
+        <maximum>1.0</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="sat_threshold">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Soil saturation threshold, above field-capacity threshold</desc>
+        <help>Water holding capacity of the gravity and preferential-flow reservoirs; difference between field capacity and total soil saturation for each HRU</help>
+        <minimum>0.00001</minimum>
+        <maximum>999.0</maximum>
+        <default>999.0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="soil_moist_init_frac">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Initial fraction available water in the capillary reservoir</desc>
+        <help>Initial fraction of available water in the capillary reservoir (fraction of soil_moist_max for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="soil_moist_max">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Maximum value of water for soil zone</desc>
+        <help>Maximum available water holding capacity of capillary reservoir from land surface to rooting depth of the major vegetation type of each HRU</help>
+        <minimum>0.00001</minimum>
+        <maximum>20.0</maximum>
+        <default>2.0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="soil_rechr_init_frac">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Initial fraction of available water in the soil recharge zone within the capillary reservoir</desc>
+        <help>Initial fraction of available water in the capillary reservoir where losses occur as both evaporation and transpiration (upper zone of capillary reservoir) for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="soil_rechr_max_frac">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of capillary reservoir where losses occur as both evaporation and transpiration (soil recharge zone)</desc>
+        <help>Fraction of the capillary reservoir water-holding capacity (soil_moist_max) where losses occur as both evaporation and transpiration (upper zone of capillary reservoir) for each HRU</help>
+        <minimum>0.00001</minimum>
+        <maximum>1.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ssstor_init_frac">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Initial fraction of available water in the gravity plus preferential-flow reservoirs</desc>
+        <help>Initial fraction of available water in the gravity plus preferential-flow reservoirs (fraction of sat_threshold) for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gvr_hru_id">
+        <type>I</type>
+        <units>none</units>
+        <desc>Corresponding HRU id of each GVR</desc>
+        <help>Index of the HRU associated with each gravity reservoir</help>
+        <minimum>bounded</minimum>
+        <maximum>nhru</maximum>
+        <default>0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>map_results</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhrucell">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_aspect">
+        <type>F</type>
+        <units>angular degrees</units>
+        <desc>HRU aspect</desc>
+        <help>Aspect of each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>360.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>solar_radiation</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_slope">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>HRU slope</desc>
+        <help>Slope of each HRU, specified as change in vertical length divided by change in horizontal length</help>
+        <minimum>0.0</minimum>
+        <maximum>10.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>solar_radiation</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="carea_max">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Maximum contributing area</desc>
+        <help>Maximum possible area contributing to surface runoff expressed as a portion of the HRU area</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.6</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="carea_min">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Minimum contributing area</desc>
+        <help>Minimum possible area contributing to surface runoff expressed as a portion of the area for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.2</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dprst_depth_avg">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Average depth of surface depressions at maximum storage capacity</desc>
+        <help>Average depth of surface depressions at maximum storage capacity</help>
+        <minimum>0.0</minimum>
+        <maximum>500.0</maximum>
+        <default>132.0</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dprst_et_coef">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of unsatisfied potential evapotranspiration to apply to surface-depression storage</desc>
+        <help>Fraction of unsatisfied potential evapotranspiration to apply to surface-depression storage</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dprst_flow_coef">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Coefficient in linear flow routing equation for open surface depressions</desc>
+        <help>Coefficient in linear flow routing equation for open surface depressions for each HRU</help>
+        <minimum>0.00001</minimum>
+        <maximum>0.5</maximum>
+        <default>0.05</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dprst_frac_init">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of maximum storage that contains water at the start of a simulation</desc>
+        <help>Fraction of maximum surface-depression storage that contains water at the start of a simulation</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.5</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dprst_seep_rate_clos">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Coefficient used in linear seepage flow equation for closed surface depressions</desc>
+        <help>Coefficient used in linear seepage flow equation for closed surface depressions for each HRU</help>
+        <minimum>0.0001</minimum>
+        <maximum>0.1</maximum>
+        <default>0.02</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="dprst_seep_rate_open">
+        <type>F</type>
+        <units>fraction/day</units>
+        <desc>Coefficient used in linear seepage flow equation for open surface depressions</desc>
+        <help>Coefficient used in linear seepage flow equation for open surface depressions for each HRU</help>
+        <minimum>0.0001</minimum>
+        <maximum>0.1</maximum>
+        <default>0.02</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="op_flow_thres">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of open depression storage above which surface runoff occurs for each timestep</desc>
+        <help>Fraction of open depression storage above which surface runoff occurs; any water above maximum open storage capacity spills as surface runoff</help>
+        <minimum>0.01</minimum>
+        <maximum>1.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="smidx_coef">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Coefficient in contributing area computations</desc>
+        <help>Coefficient in non-linear contributing area algorithm for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.005</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="smidx_exp">
+        <type>F</type>
+        <units>1.0/inch</units>
+        <desc>Exponent in contributing area computations</desc>
+        <help>Exponent in non-linear contributing area algorithm for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.3</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="sro_to_dprst_imperv">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of impervious surface runoff that flows into surface-depression storage</desc>
+        <help>Fraction of impervious surface runoff that flows into surface-depression storage; the remainder flows to a stream network for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.2</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="sro_to_dprst_perv">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of pervious surface runoff that flows into surface-depression storage</desc>
+        <help>Fraction of pervious surface runoff that flows into surface-depression storage; the remainder flows to a stream network for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.2</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="va_clos_exp">
+        <type>F</type>
+        <units>none</units>
+        <desc>Coefficient in the exponential equation to compute current surface area of closed surface-depression storage</desc>
+        <help>Coefficient in the exponential equation relating maximum surface area to the fraction that closed depressions are full to compute current surface area for each HRU; 0.001 is an approximate rectangle; 1.0 is a triangle</help>
+        <minimum>0.0001</minimum>
+        <maximum>10.0</maximum>
+        <default>0.001</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="va_open_exp">
+        <type>F</type>
+        <units>none</units>
+        <desc>Coefficient in the exponential equation to compute current surface area of open surface-depression storage</desc>
+        <help>Coefficient in the exponential equation relating maximum surface area to the fraction that open depressions are full to compute current surface area for each HRU; 0.001 is an approximate rectangle; 1.0 is a triangle</help>
+        <minimum>0.0001</minimum>
+        <maximum>10.0</maximum>
+        <default>0.001</default>
+        <modules>
+            <module>srunoff</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="imperv_stor_max">
+        <type>F</type>
+        <units>inches</units>
+        <desc>HRU maximum impervious area retention storage</desc>
+        <help>Maximum impervious area retention storage for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>0.5</maximum>
+        <default>0.05</default>
+        <modules>
+            <module>srunoff_area</module>
+            <module>srunoff_smidx</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="snowinfil_max">
+        <type>F</type>
+        <units>inches/day</units>
+        <desc>Maximum snow infiltration per day</desc>
+        <help>Maximum snow infiltration per day for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>20.0</maximum>
+        <default>2.0</default>
+        <modules>
+            <module>srunoff_area</module>
+            <module>srunoff_smidx</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="albedo">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Short-wave solar radiation reflected by streams</desc>
+        <help>Short-wave solar radiation reflected by streams</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.1</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="alte">
+        <type>F</type>
+        <units>radians</units>
+        <desc>East bank topographic altitude</desc>
+        <help>East bank topographic altitude of each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>1.57079633</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="altw">
+        <type>F</type>
+        <units>radians</units>
+        <desc>West bank topographic altitude</desc>
+        <help>West bank topographic altitude of each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>1.57079633</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="azrh">
+        <type>F</type>
+        <units>radians</units>
+        <desc>Azimuth angle of each segment</desc>
+        <help>Azimuth angle of each segment</help>
+        <minimum>-1.5708</minimum>
+        <maximum>1.5708</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gw_init">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Initial groundwater temperature</desc>
+        <help>Initial temperature of groundwater entering each segment; recommended value equal to long-term average air temperature</help>
+        <minimum>0.0</minimum>
+        <maximum>45.</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="gw_tau">
+        <type>I</type>
+        <units>days</units>
+        <desc>Average residence time in groundwater flow</desc>
+        <help>Average residence time in subsurface flow</help>
+        <minimum>1</minimum>
+        <maximum>365</maximum>
+        <default>365</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lat_temp_adj">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Correction factor to adjust the bias of the temperature of the lateral inflow</desc>
+        <help>Correction factor to adjust the bias of the temperature of the lateral inflow</help>
+        <minimum>-5.0</minimum>
+        <maximum>5.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="maxiter_sntemp">
+        <type>I</type>
+        <units>none</units>
+        <desc>Maximum number of Newton-Raphson iterations to compute stream temperature</desc>
+        <help>Maximum number of Newton-Raphson iterations to compute stream temperature</help>
+        <minimum>10</minimum>
+        <maximum>2000</maximum>
+        <default>1000</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="melt_temp">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Temperature at which snowmelt enters a stream</desc>
+        <help>Temperature at which snowmelt enters a stream</help>
+        <minimum>0.0</minimum>
+        <maximum>10.0</maximum>
+        <default>1.5</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_elev">
+        <type>F</type>
+        <units>meters</units>
+        <desc>Segment elevation at midpoint</desc>
+        <help>Segment elevation at midpoint</help>
+        <minimum>-1000.0</minimum>
+        <maximum>30000</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_lat">
+        <type>F</type>
+        <units>degrees north</units>
+        <desc>Segment latitude</desc>
+        <help>Latitude of each segment</help>
+        <minimum>-90.0</minimum>
+        <maximum>90.0</maximum>
+        <default>40.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_humidity">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Mean monthly humidity for each segment</desc>
+        <help>Mean monthly humidity for each segment, used when values not input in CBH file</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.7</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_humidity_sta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of humidity measurement station for each stream segment</desc>
+        <help>Index of humidity measurement station for each stream segment</help>
+        <minimum>bounded</minimum>
+        <maximum>nhumid</maximum>
+        <default>0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_length">
+        <type>F</type>
+        <units>meters</units>
+        <desc>Length of each segment</desc>
+        <help>Length of each segment</help>
+        <minimum>1.0</minimum>
+        <maximum>100000.0</maximum>
+        <default>1000.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_slope">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Bed slope of each segment</desc>
+        <help>Bed slope of each segment</help>
+        <minimum>0.0001</minimum>
+        <maximum>2.0</maximum>
+        <default>0.015</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_summer_humidity">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Summer humidity for each segment</desc>
+        <help>Summer humidity for each segment, used when values not input in CBH File</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.7</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_winter_humidity">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Winter humidity for each segment</desc>
+        <help>Winter humidity for each segment, used when values not input in CBH File</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.5</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="segshade_sum">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Total shade fraction for summer vegetation</desc>
+        <help>Total shade fraction for summer vegetation; required when stream_temp_flag=1</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="segshade_win">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Total shade fraction for winter vegetation</desc>
+        <help>Total shade fraction for winter vegetation; required when stream_temp_flag=1</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ss_init">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Initial interflow temperature</desc>
+        <help>Initial temperature of interflow entering each segment; recommended value equal to long-term average air temperature</help>
+        <minimum>0.0</minimum>
+        <maximum>45.0</maximum>
+        <default>15.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="ss_tau">
+        <type>I</type>
+        <units>days</units>
+        <desc>Average residence time of subsurface interflow</desc>
+        <help>Average residence time of subsurface interflow</help>
+        <minimum>1</minimum>
+        <maximum>365</maximum>
+        <default>30</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="vce">
+        <type>F</type>
+        <units>meters</units>
+        <desc>East bank average vegetation crown width</desc>
+        <help>East bank average vegetation crown width for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>15.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="vcw">
+        <type>F</type>
+        <units>meters</units>
+        <desc>West bank vegetation crown width</desc>
+        <help>West bank average vegetation crown width for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>15.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="vdemn">
+        <type>F</type>
+        <units> decimal fraction</units>
+        <desc>Minimum east bank vegetation density</desc>
+        <help>Minimum east bank vegetation density for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="vdemx">
+        <type>F</type>
+        <units> decimal fraction</units>
+        <desc>Maximum east bank vegetation density</desc>
+        <help>Maximum east bank vegetation density for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="vdwan">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Minimum west bank vegetation density</desc>
+        <help>Minimum west bank vegetation density for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="vdwmx">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Maximum west bank vegetation density</desc>
+        <help>Maximum west bank vegetation density for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="vhe">
+        <type>F</type>
+        <units>meters</units>
+        <desc>East bank vegetation height</desc>
+        <help>East bank average vegetation height for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>30.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="vhw">
+        <type>F</type>
+        <units>meters</units>
+        <desc>West bank vegetation height</desc>
+        <help>West bank average vegetation height for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>30.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="voe">
+        <type>F</type>
+        <units>meters</units>
+        <desc>East bank vegetation offset</desc>
+        <help>East bank vegetation offset for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>100.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="vow">
+        <type>F</type>
+        <units>meters</units>
+        <desc>West bank vegetation offset</desc>
+        <help>West bank vegetation offset for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>100.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="width_alpha">
+        <type>F</type>
+        <units>unknown</units>
+        <desc>Alpha coefficient in power function for width calculation</desc>
+        <help>Alpha coefficient in power function for width calculation</help>
+        <minimum>0.0001</minimum>
+        <maximum>2.0</maximum>
+        <default>0.015</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="width_flow">
+        <type>F</type>
+        <units>cms</units>
+        <desc>Minimum flow, maximum flow and flow interval for width values array</desc>
+        <help>Minimum flow, maximum flow and flow interval for width values array</help>
+        <minimum>0.0</minimum>
+        <maximum>220000.0</maximum>
+        <default>50.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="three">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="width_m">
+        <type>F</type>
+        <units>unknown</units>
+        <desc>M value in power function for width calculation</desc>
+        <help>M value in power function for width calculation</help>
+        <minimum>0.0001</minimum>
+        <maximum>2.0</maximum>
+        <default>0.015</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="width_values">
+        <type>F</type>
+        <units>meters</units>
+        <desc>Width at each specified outflow interval</desc>
+        <help>Width at each specified outflow interval for each segment</help>
+        <minimum>0.0</minimum>
+        <maximum>200.0</maximum>
+        <default>10.0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+            <dimension name="width_dim">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="subbasin_down">
+        <type>I</type>
+        <units>none</units>
+        <desc>Downstream subbasin for each subbasin</desc>
+        <help>Index number for the downstream subbasin whose inflow is outflow from this subbasin</help>
+        <minimum>bounded</minimum>
+        <maximum>nsub</maximum>
+        <default>0</default>
+        <modules>
+            <module>subbasin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsub">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_subbasin">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of subbasin assigned to each HRU</desc>
+        <help>Index of subbasin assigned to each HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>nsub</maximum>
+        <default>0</default>
+        <modules>
+            <module>subbasin</module>
+            <module>nsub_summary</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_tsta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of base temperature station for HRU</desc>
+        <help>Index of the base temperature station used for lapse rate calculations</help>
+        <minimum>bounded</minimum>
+        <maximum>ntemp</maximum>
+        <default>0</default>
+        <modules>
+            <module>temp_1sta</module>
+            <module>temp_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="basin_tsta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of main temperature station</desc>
+        <help>Index of temperature station used to compute basin temperature values</help>
+        <minimum>bounded</minimum>
+        <maximum>ntemp</maximum>
+        <default>0</default>
+        <modules>
+            <module>temp_1sta</module>
+            <module>temp_laps</module>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tsta_elev">
+        <type>F</type>
+        <units>elev_units</units>
+        <desc>Temperature station elevation</desc>
+        <help>Elevation of each air-temperature-measurement station</help>
+        <minimum>-300.0</minimum>
+        <maximum>30000.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>temp_1sta</module>
+            <module>temp_laps</module>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="ntemp">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="temp_units">
+        <type>I</type>
+        <units>none</units>
+        <desc>Units flag for measured temperature</desc>
+        <help>Flag to indicate the units of measured air-temperature values (0=Fahrenheit; 1=Celsius)</help>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <default>0</default>
+        <modules>
+            <module>temp_1sta</module>
+            <module>temp_laps</module>
+            <module>temp_dist2</module>
+            <module>temperature_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tmax_adj">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>HRU maximum temperature adjustment</desc>
+        <help>Adjustment to maximum temperature for each HRU, estimated on the basis of slope and aspect</help>
+        <minimum>-10.0</minimum>
+        <maximum>10.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>temp_1sta</module>
+            <module>temp_laps</module>
+            <module>temp_dist2</module>
+            <module>ide_dist</module>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tmin_adj">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>HRU minimum temperature adjustment</desc>
+        <help>Adjustment to minimum temperature for each HRU, estimated on the basis of slope and aspect</help>
+        <minimum>-10.0</minimum>
+        <maximum>10.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>temp_1sta</module>
+            <module>temp_laps</module>
+            <module>temp_dist2</module>
+            <module>ide_dist</module>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="hru_tlaps">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of lapse temperature station for HRU</desc>
+        <help>Index of the lapse temperature station used for lapse rate calculations</help>
+        <minimum>bounded</minimum>
+        <maximum>ntemp</maximum>
+        <default>0</default>
+        <modules>
+            <module>temp_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="max_missing">
+        <type>I</type>
+        <units>none</units>
+        <desc>Maximum number of consecutive missing values allowed for any air-temperature-measurement station; 0=unlimited</desc>
+        <help>Maximum number of consecutive missing values allowed for any air-temperature-measurement station; missing value set to last valid value; 0=unlimited</help>
+        <minimum>0</minimum>
+        <maximum>10</maximum>
+        <default>3</default>
+        <modules>
+            <module>temp_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tmax_lapse">
+        <type>F</type>
+        <units>temp_units/elev_units</units>
+        <desc>Monthly maximum temperature lapse rate for each HRU</desc>
+        <help>Monthly (January to December) values representing the change in maximum air temperature per 1000 elev_units of elevation change for each HRU</help>
+        <minimum>-20.0</minimum>
+        <maximum>20.0</maximum>
+        <default>3.0</default>
+        <modules>
+            <module>temp_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tmin_lapse">
+        <type>F</type>
+        <units>temp_units/elev_units</units>
+        <desc>Monthly minimum temperature lapse rate for each HRU</desc>
+        <help>Monthly (January to December) values representing the change in minimum air temperture per 1000 elev_units of elevation change for each HRU</help>
+        <minimum>-20.0</minimum>
+        <maximum>20.0</maximum>
+        <default>3.0</default>
+        <modules>
+            <module>temp_1sta_laps</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lapsemax_max">
+        <type>F</type>
+        <units>temp_units/feet</units>
+        <desc>Monthly maximum lapse rate for maximum temperature</desc>
+        <help>Monthly (January to December) maximum lapse rate to constrain lowest maximum lapse rate on the basis of historical daily air temperatures for all air-temperature measurement stations</help>
+        <minimum>-3.0</minimum>
+        <maximum>3.0</maximum>
+        <default>2.0</default>
+        <modules>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nmonths">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lapsemax_min">
+        <type>F</type>
+        <units>temp_units/feet</units>
+        <desc>Monthly minimum lapse rate for maximum temperature</desc>
+        <help>Monthly (January to December) maximum lapse rate to constrain lowest minimum lapse rate on the basis of historical daily air temperatures for all air-temperature measurement stations</help>
+        <minimum>-7.0</minimum>
+        <maximum>-3.0</maximum>
+        <default>-6.5</default>
+        <modules>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nmonths">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lapsemin_max">
+        <type>F</type>
+        <units>temp_units/feet</units>
+        <desc>Monthly maximum lapse rate for minimum temperature</desc>
+        <help>Monthly (January to December) minimum lapse rate to constrain lowest maximum lapse rate on the basis of historical daily air temperatures for all air-temperature measurement stations</help>
+        <minimum>-2.0</minimum>
+        <maximum>4.0</maximum>
+        <default>3.0</default>
+        <modules>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nmonths">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="lapsemin_min">
+        <type>F</type>
+        <units>temp_units/feet</units>
+        <desc>Monthly minimum lapse rate for minimum temperature</desc>
+        <help>Monthly (January to December) minimum lapse rate to constrain lowest minimum lapse rate on the basis of historical daily air temperatures for all air-temperature measurement stations</help>
+        <minimum>-7.0</minimum>
+        <maximum>-3.0</maximum>
+        <default>-4.0</default>
+        <modules>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nmonths">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="max_tsta">
+        <type>I</type>
+        <units>none</units>
+        <desc>Maximum number of temperature stations to use for distributing temperature to any HRU</desc>
+        <help>Maximum number of air-temperature measurement stations to use for distributing temperature to any HRU</help>
+        <minimum>bounded</minimum>
+        <maximum>ntemp</maximum>
+        <default>0</default>
+        <modules>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="monmax">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Daily maximum temperature</desc>
+        <help>Monthly maximum air temperature to constrain lowest minimum measured air temperatures for bad values based on historical temperature for all measurement stations</help>
+        <minimum>0.0</minimum>
+        <maximum>115.0</maximum>
+        <default>100.0</default>
+        <modules>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nmonths">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="monmin">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Daily minimum temperature</desc>
+        <help>Monthly minimum air temperature to constrain lowest minimum measured air temperatures for bad values based on historical temperature for all measurement stations</help>
+        <minimum>-60.0</minimum>
+        <maximum>65.0</maximum>
+        <default>-60.0</default>
+        <modules>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="nmonths">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tsta_xlong">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Temperature station longitude, State Plane</desc>
+        <help>Longitude of each air-temperature-measurement station, State Plane Coordinate System</help>
+        <minimum>-1.0E9</minimum>
+        <maximum>1.0E9</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="ntemp">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="tsta_ylat">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Temperature station latitude, State Plane</desc>
+        <help>Latitude of each air-temperature-measurement station, State Plane Coordinate System</help>
+        <minimum>-1.0E9</minimum>
+        <maximum>1.0E9</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>temp_dist2</module>
+        </modules>
+        <dimensions>
+            <dimension name="ntemp">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="fall_frost">
+        <type>I</type>
+        <units>Solar date</units>
+        <desc>The solar date (number of days after winter solstice) of the first killing frost of the fall</desc>
+        <help>The solar date (number of days after winter solstice) of the first killing frost of the fall</help>
+        <minimum>1</minimum>
+        <maximum>366</maximum>
+        <default>264</default>
+        <modules>
+            <module>transp_frost</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="spring_frost">
+        <type>I</type>
+        <units>Solar date</units>
+        <desc>The solar date (number of days after winter solstice) of the last killing frost of the spring</desc>
+        <help>The solar date (number of days after winter solstice) of the last killing frost of the spring</help>
+        <minimum>1</minimum>
+        <maximum>366</maximum>
+        <default>111</default>
+        <modules>
+            <module>transp_frost</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="transp_beg">
+        <type>I</type>
+        <units>month</units>
+        <desc>Month to begin testing for transpiration</desc>
+        <help>Month to begin summing the maximum air temperature for each HRU; when sum is greater than or equal to transp_tmax, transpiration begins</help>
+        <minimum>1</minimum>
+        <maximum>12</maximum>
+        <default>1</default>
+        <modules>
+            <module>transp_tindex</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="transp_end">
+        <type>I</type>
+        <units>month</units>
+        <desc>Month to stop transpiration period</desc>
+        <help>Month to stop transpiration computations; transpiration is computed thru end of previous month</help>
+        <minimum>1</minimum>
+        <maximum>13</maximum>
+        <default>13</default>
+        <modules>
+            <module>transp_tindex</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="transp_tmax">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Tmax index to determine start of transpiration</desc>
+        <help>Temperature index to determine the specific date of the start of the transpiration period; the maximum air temperature for each HRU is summed starting with the first day of month transp_beg; when the sum exceeds this index, transpiration begins</help>
+        <minimum>0.0</minimum>
+        <maximum>1000.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>transp_tindex</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+</parameters>
