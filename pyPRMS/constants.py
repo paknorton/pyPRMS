@@ -44,11 +44,13 @@ VAR_DELIM = '####'  # Used to delimit dimensions and parameters
 DATA_TYPES = {1: 'integer', 2: 'float', 3: 'double', 4: 'string'}
 
 # Valid dimensions names for PRMS
-DIMENSION_NAMES = ['ncascade', 'ncascdgw', 'nconsumed', 'ndays', 'ndepl', 'ndeplval',
+DIMENSION_NAMES = ['mxnsos', 'ncascade', 'ncascdgw', 'nconsumed', 'ndays', 'ndepl',
+                   'ndeplval', 'ngate', 'ngate2', 'ngate3', 'ngate4',
                    'nevap', 'nexternal', 'ngw', 'ngwcell', 'nhru', 'nhrucell', 'nhumid',
                    'nlake', 'nlakeelev', 'nlapse', 'nmonths', 'nobs', 'npoigages', 'nrain',
                    'nratetbl', 'nsegment', 'nsnow', 'nsol', 'nssr', 'nsub', 'ntemp',
-                   'numlakes', 'nwateruse', 'nwind', 'one']
+                   'numlakes', 'nwateruse', 'nwind', 'one',
+                   'nstage', 'nstage2', 'nstage3', 'nstage4']
 
 HRU_DIMS = ['nhru', 'ngw', 'nssr']  # These dimensions are related and should have same size
 
