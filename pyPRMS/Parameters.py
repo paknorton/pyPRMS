@@ -524,7 +524,7 @@ class Parameters(object):
         """Checks if a given parameter name exists
 
         :param name: The name of the parameter
-        :returns: Boolean (True if parameter exists otherwise False
+        :returns: Boolean (True if parameter exists otherwise False)
         """
 
         return name in self.parameters.keys()
