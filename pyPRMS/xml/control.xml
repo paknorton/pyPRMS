@@ -367,13 +367,13 @@
         <desc>Flag to indicate if internal subbasin are computed (0=no; 1=yes)</desc>
     </control_param>
     <control_param name="end_time">
-        <default>none</default>
+        <default>1980-1-1</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Simulation end date and time specified in order in the control item as: year, month, day, hour, minute, second</desc>
     </control_param>
     <control_param name="start_time">
-        <default>none</default>
+        <default>1980-1-1</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Simulation start date and time specified in order in the control item as: year, month, day, hour, minute, second</desc>

@@ -3,372 +3,292 @@
 from __future__ import (absolute_import, division, print_function)
 from future.utils import iteritems
 
-from pyPRMS.constants import ctl_order, ctl_module_params
+import numpy as np
+from collections import OrderedDict
+
+from pyPRMS.Exceptions_custom import ControlError
+from pyPRMS.constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, \
+                             DATA_TYPES, VAR_DELIM
+
+
+class ControlVariable(object):
+    """
+    Class object for a control variable.
+    """
+    # Author: Parker Norton (pnorton@usgs.gov)
+    # Create date: 2019-04-18
+    # Description: Class object for a control variable.
+
+    def __init__(self, name=None, datatype=None, default=None, description=None,
+                 valid_values=None, value_repr=None):
+
+        self.__name = name
+        self.__datatype = datatype
+        self.__default = default
+        self.__description = description
+        self.__valid_values = valid_values
+        self.__value_repr = value_repr
+        self.__values = None
+
+    def __str__(self):
+        outstr = 'name: {}\ndatatype: {}\n'.format(self.name, self.datatype)
+
+        if self.default is not None:
+            outstr += 'default: {}\n'.format(self.default)
+
+        outstr += 'Size of data: '
+        if self.values is not None:
+            outstr += '{}\n'.format(self.values.size)
+        else:
+            outstr += '<empty>\n'
+
+        return outstr
+
+    @property
+    def datatype(self):
+        """Returns the datatype of the control variable"""
+        return self.__datatype
+
+    @datatype.setter
+    def datatype(self, dtype):
+        """Sets the datatype for the control variable
+
+        :param dtype: The datatype for the control variable (1-Integer, 2-Float, 3-Double, 4-String)
+        """
+        if dtype in DATA_TYPES:
+            self.__datatype = dtype
+        else:
+            print('WARNING: Datatype, {}, is not valid.'.format(dtype))
+
+    @property
+    def default(self):
+        if self.__default is not None:
+            if self.__default.size > 1:
+                return self.__default
+            else:
+                print(type(self.__default))
+                return self.__default[0]
+        else:
+            return None
+
+    @default.setter
+    def default(self, value):
+        """Set the default value for the control variable
+
+        :param value: The value to use
+        """
+        # Convert datatype first
+        datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
+                         3: self.__str_to_float, 4: self.__str_to_str}
+
+        if self.__datatype in DATA_TYPES.keys():
+            value = datatype_conv[self.__datatype](value)
+        else:
+            raise TypeError('Defined datatype {} for control variable {} is not valid'.format(self.__datatype,
+                                                                                              self.__name))
+
+        print('\tvalue: {}'.format(value))
+        self.__default = np.array(value)
+
+    @property
+    def name(self):
+        """Returns the name of the control variable"""
+        return self.__name
+
+    @property
+    def size(self):
+        """Returns the number of values for the control variable"""
+        if self.__values is not None:
+            return self.__values.size
+        elif self.__default is not None:
+            return self.__default.size
+        else:
+            return 0
+
+    @property
+    def values(self):
+        if self.__values is not None:
+            if self.__values.size > 1:
+                return self.__values
+            else:
+                return self.__values[0]
+        else:
+            return self.default
+
+    @values.setter
+    def values(self, data):
+        # Convert datatype first
+        datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
+                         3: self.__str_to_float, 4: self.__str_to_str}
+
+        if self.__datatype in DATA_TYPES.keys():
+            data = datatype_conv[self.__datatype](data)
+        else:
+            raise TypeError('Defined datatype {} for parameter {} is not valid'.format(self.__datatype,
+                                                                                       self.__name))
+
+        # Convert to ndarray
+        self.__values = np.array(data)
+
+    def __str_to_float(self, data):
+        """Convert strings to a floats
+
+        :returns: array of floats
+        """
+
+        # Convert provide list of data to float
+        if isinstance(data, basestring):
+            return [float(data)]
+        else:
+            try:
+                return [float(vv) for vv in data]
+            except ValueError as ve:
+                print(ve)
+
+    def __str_to_int(self, data):
+        """Converts strings to integers
+
+        :returns: array of integers
+        """
+
+        if isinstance(data, basestring):
+            print('\tbasestring')
+            return [int(data)]
+        else:
+            # Convert list of data to integer
+            try:
+                return [int(vv) for vv in data]
+            except ValueError as ve:
+                print(ve)
+
+    def __str_to_str(self, data):
+        """Null op for string to string conversion
+
+        :returns: data unchanged"""
+        # nop for list of strings
+        if isinstance(data, basestring):
+            return [data]
+        else:
+            return data
 
 
 class Control(object):
     """
-    Class which handles the processing of PRMS control files.
+    Class object for a collection of control variables.
     """
     # Author: Parker Norton (pnorton@usgs.gov)
-    # Create date: 2015-02-05
-    # Description: Class object to handle reading and writing the PRMS
-    #              control files.
+    # Create date: 2019-04-18
 
-    def __init__(self, filename):
-        # 1) open file
-        # 2) read file contents
-
-        self.__isloaded = False
-        self.__filename = filename
-        self.__controldict = {}
-        self.__modules = {}  # Initialize dictionary of selected module names
-        self.__header = []
-        self.__rowdelim = '####'  # Used to delimit variables
-        self.__valtypes = ['', 'integer', 'float', 'double', 'string']
-
-        self.filename = filename
-
-    # END __init__
-
-    def __getattr__(self, item):
-        return self.get_var(item)
-
-    def __str__(self):
-        outstr = ''
-        for xx in ctl_order:
-            try:
-                pp = self.__controldict[xx]
-                if len(pp['values']) == 1:
-                    outstr += '{0:s}: {1:s}, {2:s}\n'.format(xx, self.__valtypes[pp['valuetype']], str(pp['values'][0]))
-                else:
-                    outstr += '{0:s}: {1:s}, {2:d} values\n'.format(xx, self.__valtypes[pp['valuetype']],
-                                                                    len(pp['values']))
-            except:
-                continue
-        return outstr
+    def __init__(self):
+        # Container to hold dicionary of ControlVariables
+        self.__control_vars = OrderedDict()
+        self.__header = None
 
     @property
-    def filename(self):
-        if not self.__isloaded:
-            self.load_file(self.__filename)
-        return self.__filename
+    def control_variables(self):
+        return self.__control_vars
 
-    @filename.setter
-    def filename(self, fname):
-        self.__isloaded = False
+    @property
+    def header(self):
+        """Returns any header information defined for a control object"""
+        return self.__header
 
-        self.__controldict = {}
-        self.__header = []
-
-        self.__filename = fname
-
-        self.load_file(self.__filename)
+    @header.setter
+    def header(self, info):
+        if isinstance(info, list):
+            self.__header = info
+        else:
+            self.__header = [info]
 
     @property
     def modules(self):
-        return self.__modules
+        """Returns a dictionary of modules defined in the control file"""
+        mod_dict = {}
 
-    @property
-    def vars(self):
-        # Return a list of variables
-        if not self.__isloaded:
-            self.load_file(self.__filename)
+        for xx in ctl_variable_modules:
+            if self.exists(xx):
+                mod_dict[xx] = self.get(xx).values
 
-        varlist = []
+        # Add the modules that are implicitly included
+        for xx in ctl_implicit_modules:
+            if xx not in mod_dict:
+                mod_dict[xx] = ctl_implicit_modules[xx]
 
-        for cc in self.__controldict:
-            varlist.append(cc)
-        return varlist
+        return mod_dict
 
-    @property
-    def rawvars(self):
-        return self.__controldict
+    def add(self, name):
+        """Add a control variable by name"""
+        if self.exists(name):
+            raise ControlError("Control variable already exists")
+        self.__control_vars[name] = ControlVariable(name=name)
 
-    def add(self, varname, vartype, val):
-        """Add a variable to the control file.
+    def exists(self, name):
+        """Checks if a given control variable exists
 
-        Args:
-            varname: The variable name to use.
-            vartype: The datatype of the variable (one of 'integer', 'string', 'double', 'float').
-            val: The value to assign to the variable
+        :param name: The name of the control variable
+        :returns: Boolean (True if control variable exists otherwise False)
         """
-        # Add a variable to the control file
-        if not self.__isloaded:
-            self.load_file(self.__filename)
+        return name in self.__control_vars.keys()
 
-        cvars = self.vars
+    def get(self, name):
+        """Returns the given control variable object
 
-        if varname in cvars:
-            print("ERROR: %s already exists, use replace_values() instead")
-            return
-
-        if not isinstance(val, list):
-            val = [val]
-
-        self.__controldict[varname] = {'valuetype': vartype, 'values': val}
-
-    def add_missing(self):
-        # Add missing control file variables
-        pass
-
-    def load_file(self, filename):
-        """Load a control file.
-
-        Reads the contents of a control file into the class.
-
-        Args:
-            filename: The name of the control file to read.
+        :param name: The name of the control variable
+        :returns: control variable object
         """
-        # Read the control file into memory and parse it
-        self.__isloaded = False
-        self.__modules = {}  # Initialize dictionary of selected module names
-        self.__controldict = {}  # Initialize the control dictionary
+        if self.exists(name):
+            return self.__control_vars[name]
+        raise ValueError('Control variable, {}, does not exist.'.format(name))
 
-        infile = open(filename, 'r')
-        rawdata = infile.read().splitlines()
-        infile.close()
+    def remove(self, name):
+        """Delete a control variable if it exists
 
-        it = iter(rawdata)
-
-        for fidx, line in enumerate(it):
-            if fidx == 0:
-                self.__header.append(line)
-                continue
-            elif line == self.__rowdelim:
-                continue
-            else:
-                # We're dealing with a control parameter/variable
-                # We're in a parameter section
-                vardict = {}  # temporary to build variable info
-                varname = line.split(' ')[0]
-
-                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                # Check for duplicate variable name
-                if varname in self.__controldict:
-                    # Check for duplicate variables (that couldn't happen! :))
-                    # If it does skip to the next variable in the parameter file
-                    print('Duplicate variable name, %s, in Parameters section.. skipping' % varname)
-
-                    try:
-                        while next(it) != self.__rowdelim:
-                            pass
-                    except StopIteration:
-                        # We hit the end of the file
-                        continue
-                    continue
-                    # END check for duplicate varnames
-                else:
-                    # Add variable to dictionary
-                    self.__controldict[varname] = {}
-                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-                numval = int(next(it))  # number of values for this variable
-                valuetype = int(next(it))  # Variable type (1 - integer, 2 - float, 4 - character)
-                # print '\tnumval:', numval
-                # print '\tvaluetype:', valuetype
-
-                vardict['valuetype'] = int(valuetype)
-                vals = []
-
-                for vv in range(0, numval):
-                    try:
-                        if valuetype == 1:  # integer
-                            vals.append(int(next(it)))
-                        elif valuetype == 2:  # float
-                            vals.append(float(next(it)))
-                        else:  # character
-                            vals.append(next(it))
-                    except ValueError:
-                        print("varname: %s value type and defined type (%s) don't match" %
-                              (varname, self.__valtypes[valuetype]))
-                vardict['values'] = vals
-
-                if len(vals) != numval:
-                    print('ERROR: Not enough values provided for %s' % varname)
-                    print('       Expect %d, got %d' % (numval, len(vals)))
-
-                # Check if there are too many values specified
-                try:
-                    cnt = numval
-                    while next(it) != self.__rowdelim:
-                        cnt += 1
-
-                    if cnt > numval:
-                        print('WARNING: Too many values specified for %s' % varname)
-                        print('       %d expected, %d given' % (numval, cnt))
-                        print('       Keeping first %d values' % numval)
-                except StopIteration:
-                    # Hit the end of the file
-                    pass
-                    # continue
-                # self.__controldict[varname].append(vardict)
-                self.__controldict[varname] = vardict
-
-                # If this is a module-related parameter then add to __modules
-                if varname in ctl_module_params:
-                    if len(vardict['values']) != 1:
-                        print("ERROR: %s should only have a single entry" % varname)
-                    else:
-                        if vardict['values'][0] not in self.__modules:
-                            self.__modules[vardict['values'][0]] = []
-                        self.__modules[vardict['values'][0]].append(varname)
-        # ***** END for line in it
-
-        # Add modules that should always included
-        def_mods = {'basin': ['basin_def'], 'soltab': ['potet_def'],
-                    'intcp': ['intcp_def'], 'snowcomp': ['snow_def'],
-                    'gwflow': ['gw_def'], 'soilzone': ['soil_def'],
-                    'basin_sum': ['summary_def']}
-        for (kk, vv) in iteritems(def_mods):
-            self.__modules[kk] = vv
-
-        self.__isloaded = True
-
-    # END **** load_file()
-
-    def clear_parameter_group(self, group_name):
-        """Clear a parameter group.
-
-        Given a single parameter group name will clear out values for that parameter
-           and all related parameters.
-
-        Args:
-            group_name: The name of a group of related parameters.
-                One of 'statVar', 'aniOut', 'mapOut', 'dispVar', 'nhruOut'.
+        :param name: The name of the control variable to remove
         """
+        if self.exists(name):
+            del self.__control_vars[name]
 
-        groups = {'aniOut': {'naniOutVars': 0, 'aniOutON_OFF': 0, 'aniOutVar_names': []},
-                  'dispVar': {'ndispGraphs': 0, 'dispVar_element': [], 'dispVar_names': [], 'dispVar_plot': []},
-                  'mapOut': {'nmapOutVars': 0, 'mapOutON_OFF': 0, 'mapOutVar_names': []},
-                  'nhruOut': {'nhruOutVars': 0, 'nhruOutON_OFF': 0, 'nhruOutVar_names': []},
-                  'statVar': {'nstatVars': 0, 'statsON_OFF': 0, 'statVar_element': [], 'statVar_names': []}}
-
-        for (kk, vv) in iteritems(groups[group_name]):
-            if kk in self.__controldict:
-                self.replace_values(kk, vv)
-
-    def get_var(self, varname):
-        """Get a control file variable.
-
-        Args:
-            varname: The name of the variable to retrieve.
-
-        Returns:
-            Returns a controldict entry.
-        """
-        # Return the given variable
-        if not self.__isloaded:
-            self.load_file(self.__filename)
-
-        if varname in self.__controldict:
-            return self.__controldict[varname]
-        return None
-
-    def get_values(self, varname):
-        """Get values for a control file variable.
-
-        Args:
-            varname: The name of the control file variable.
-
-        Returns:
-            Returns the value(s) associated with the control file variable
-        """
-        if not self.__isloaded:
-            self.load_file(self.__filename)
-
-        thevar = self.get_var(varname)['values']
-
-        if thevar is not None:
-            if len(thevar) == 1:
-                return thevar[0]
-            else:
-                return thevar
-        else:
-            return None
-
-    def replace_values(self, varname, newvals):
-        if not self.__isloaded:
-            self.load_file(self.__filename)
-
-        thevar = self.get_var(varname)
-
-        if isinstance(newvals, list):
-            pass
-        else:
-            # Convert newvals to a list
-            newvals = [newvals]
-
-        thevar['values'] = newvals
-
-        if varname in ['statVar_names', 'statVar_element'] and len(thevar['values']) != self.get_values('nstatVars'):
-            # update nstatvars
-            self.replace_values('nstatVars', len(newvals))
-
-            # Check if size of newvals array matches the oldvals array
-            # if len(newvals) == len(thevar['values']):
-            #     # Size of arrays match so replace the oldvals with the newvals
-            #     thevar['values'] = newvals
-            # else:
-            #     print "ERROR: Size of oldval array and size of newval array don't match"
-
-    def write_control_file(self, filename):
-        # Write the parameters out to a file
-        if not self.__isloaded:
-            self.load_file(self.__filename)
+    def write(self, filename):
+        """Write a control file"""
 
         outfile = open(filename, 'w')
 
         for hh in self.__header:
-            # Write out any header stuff
-            outfile.write('%s\n' % hh)
+            outfile.write('{}\n'.format(hh))
 
-        # Now write out the Parameter category
-        # order = ['name', 'dimnames', 'valuetype', 'values']
-        order = ['valuetype', 'values']
+        order = ['datatype', 'values']
 
-        # Control file parameters may change. We'll use ctl_order to insure
-        # certain parameters are always ordered, but will be followed by any
-        # remaining non-ordered parameters.
-        curr_ctl = set(self.__controldict.keys())
-        curr_order = set(ctl_order)
-        unordered_set = curr_ctl.difference(curr_order)
+        # Get set of variables in ctl_order that are missing from control_vars
+        setdiff = set(self.__control_vars.keys()).difference(set(ctl_order))
 
-        # Add parameters that are missing in the ordered set at the end of the list
-        ctl_order.extend(list(unordered_set))
+        # Add missing control variables (setdiff) in ctl_order to the end of the list
+        ctl_order.extend(list(setdiff))
 
         for kk in ctl_order:
-            if kk in self.__controldict:
-                vv = self.__controldict[kk]
+            if self.exists(kk):
+                cvar = self.get(kk)
             else:
                 continue
 
-            valnum = len(vv['values'])
-            valtype = vv['valuetype']
-
-            # Set a format string based on the valtype
-            if valtype == 1:
-                fmt = '%d\n'
-            elif valtype == 2:
-                fmt = '%f\n'
-            else:
-                fmt = '%s\n'
-
-            # Write the self.__rowdelim before the variable name
-            outfile.write('%s\n' % self.__rowdelim)
-            outfile.write('%s\n' % kk)
+            print(kk)
+            outfile.write('{}\n'.format(VAR_DELIM))
+            outfile.write('{}\n'.format(kk))
 
             for item in order:
-                # Write each variable out separated by self.__rowdelim
-                val = vv[item]
+                if item == 'datatype':
+                    outfile.write('{}\n'.format(cvar.size))
+                    outfile.write('{}\n'.format(cvar.datatype))
+                if item == 'values':
+                    if cvar.size == 1:
+                        outfile.write('{}\n'.format(cvar.values))
+                    else:
+                        for cval in cvar.values:
+                            outfile.write('{}\n'.format(cval))
 
-                if item == 'valuetype':
-                    # valnum (which is computed) must be written before valuetype
-                    outfile.write('%d\n' % valnum)
-                    outfile.write('%d\n' % val)
-                elif item == 'values':
-                    # Write one value per line
-                    for xx in val:
-                        outfile.write(fmt % xx)
         outfile.close()
+
+    def _read(self):
+        assert False, 'Control._read() must be defined by child class'
+
+
 # ***** END class control()

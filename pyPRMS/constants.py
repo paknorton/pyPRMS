@@ -30,8 +30,13 @@ ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'm
              'external_transfer_file', 'gwr_transferON_OFF', 'gwr_transfer_file', 'lake_transferON_OFF',
              'lake_transfer_file', 'segment_transferON_OFF', 'segment_transfer_file', 'segmentOutON_OFF']
 
-ctl_module_params = ['et_module', 'precip_module', 'soilzone_module', 'solrad_module',
-                     'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module']
+ctl_variable_modules = ['et_module', 'precip_module', 'soilzone_module', 'solrad_module',
+                        'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module']
+ctl_implicit_modules = {'basin_module': 'basin',
+                        'intcp_module': 'intcp',
+                        'snow_module': 'snowcomp',
+                        'gw_module': 'gwflow',
+                        'soilzone_module': 'soilzone'}
 
 # valtypes = ['', 'integer', 'float', 'double', 'string']
 
