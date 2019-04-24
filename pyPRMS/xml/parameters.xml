@@ -1772,7 +1772,7 @@
         <maximum>5</maximum>
         <default>2</default>
         <modules>
-            <module>obs</module>
+            <module>xyz_dist</module>
         </modules>
         <dimensions>
             <dimension name="nmonths">
@@ -2425,6 +2425,8 @@
         <default>1.0</default>
         <modules>
             <module>routing</module>
+            <module>streamflow</module>
+            <module>muskingum</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2442,6 +2444,8 @@
         <default>0</default>
         <modules>
             <module>routing</module>
+            <module>streamflow</module>
+            <module>muskingum</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2459,6 +2463,8 @@
         <default>0</default>
         <modules>
             <module>routing</module>
+            <module>streamflow</module>
+            <module>muskingum</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2476,6 +2482,8 @@
         <default>0</default>
         <modules>
             <module>routing</module>
+            <module>streamflow</module>
+            <module>muskingum</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2493,6 +2501,8 @@
         <default>0</default>
         <modules>
             <module>routing</module>
+            <module>streamflow</module>
+            <module>muskingum</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2510,6 +2520,8 @@
         <default>0</default>
         <modules>
             <module>routing</module>
+            <module>streamflow</module>
+            <module>muskingum</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2527,6 +2539,8 @@
         <default>0</default>
         <modules>
             <module>routing</module>
+            <module>streamflow</module>
+            <module>muskingum</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2544,6 +2558,8 @@
         <default>0</default>
         <modules>
             <module>routing</module>
+            <module>streamflow</module>
+            <module>muskingum</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2561,6 +2577,8 @@
         <default>0.2</default>
         <modules>
             <module>routing</module>
+            <module>streamflow</module>
+            <module>muskingum</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2577,7 +2595,7 @@
         <maximum>360.0</maximum>
         <default>-105.0</default>
         <modules>
-            <module>setup_param</module>
+            <module>basin</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2628,6 +2646,7 @@
         <maximum>9999999</maximum>
         <default>1</default>
         <modules>
+            <module>basin</module>
             <module>setup_param</module>
             <module>nhru_summary</module>
         </modules>
@@ -2748,6 +2767,7 @@
         <maximum>9999999</maximum>
         <default>0</default>
         <modules>
+            <module>basin</module>
             <module>setup_param</module>
             <module>nsegment_summary</module>
         </modules>
@@ -3464,7 +3484,7 @@
         <maximum>360.0</maximum>
         <default>0.0</default>
         <modules>
-            <module>solar_radiation</module>
+            <module>basin</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3481,7 +3501,7 @@
         <maximum>10.0</maximum>
         <default>0.0</default>
         <modules>
-            <module>solar_radiation</module>
+            <module>basin</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3499,6 +3519,8 @@
         <default>0.6</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3515,7 +3537,7 @@
         <maximum>1.0</maximum>
         <default>0.2</default>
         <modules>
-            <module>srunoff</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3533,6 +3555,8 @@
         <default>132.0</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3550,6 +3574,8 @@
         <default>1.0</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3567,6 +3593,8 @@
         <default>0.05</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3584,6 +3612,8 @@
         <default>0.5</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3601,6 +3631,8 @@
         <default>0.02</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3618,6 +3650,8 @@
         <default>0.02</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3635,6 +3669,8 @@
         <default>1.0</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3652,6 +3688,7 @@
         <default>0.005</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3669,6 +3706,7 @@
         <default>0.3</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3686,6 +3724,8 @@
         <default>0.2</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3703,6 +3743,8 @@
         <default>0.2</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3720,6 +3762,8 @@
         <default>0.001</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3737,6 +3781,8 @@
         <default>0.001</default>
         <modules>
             <module>srunoff</module>
+            <module>srunoff_smidx</module>
+            <module>srunoff_carea</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -3753,6 +3799,7 @@
         <maximum>0.5</maximum>
         <default>0.05</default>
         <modules>
+            <module>srunoff</module>
             <module>srunoff_area</module>
             <module>srunoff_smidx</module>
         </modules>
@@ -3771,6 +3818,7 @@
         <maximum>20.0</maximum>
         <default>2.0</default>
         <modules>
+            <module>srunoff</module>
             <module>srunoff_area</module>
             <module>srunoff_smidx</module>
         </modules>

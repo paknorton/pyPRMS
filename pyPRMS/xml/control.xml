@@ -5,54 +5,103 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Switch to specify whether or not Animation File(s) are generated (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="basinOutON_OFF">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Switch to specify whether or not basin summary output files are generated (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
+        <related_variables>
+            <variable name="basinOutVars"/>
+            <variable name="basinOut_freq"/>
+        </related_variables>
     </control_param>
     <control_param name="basinOutVars">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Number of variables to include in basin summary output file(s)</desc>
+        <values type="count"/>
+        <related_variables>
+            <variable name="basinOutON_OFF"/>
+            <variable name="basinOut_freq"/>
+        </related_variables>
     </control_param>
     <control_param name="basinOut_freq">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Output frequency and type (1=daily; 2=monthly; 3=both; 4=mean monthly; 5=mean yearly; 6=yearly)</desc>
+        <values type="interval">
+            <value name="1">daily</value>
+            <value name="2">monthly</value>
+            <value name="3">daily,monthly</value>
+            <value name="4">mean monthly</value>
+            <value name="5">mean yearly</value>
+            <value name="6">yearly</value>
+        </values>
+        <related_variables>
+            <variable name="basinOutVars"/>
+            <variable name="basinOutON_OFF"/>
+        </related_variables>
     </control_param>
     <control_param name="cascade_flag">
-        <default>1</default>
+        <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if HRU cascades are computed (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="cascadegw_flag">
-        <default>1</default>
+        <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if GWR cascades are computed (0=no; 1=yes; 2 = GWR cascades are set equal to the HRU cascades and parameters gw_up_id, gw_strmseg_down_in, gw_down_id, and gw_pct_up are not required)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="cbh_binary_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to specify whether to input CBH files in a binary format using the samer order of values as the text file version (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="cbh_check_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if CBH values are validated each time step (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="csvON_OFF">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Switch to specify whether or not common-separated values (CSV) summary output files are generated (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="dispGraphsBuffSize">
         <default>50</default>
@@ -65,48 +114,92 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if depression-storage simulation is computed (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="dprst_transferON_OFF">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate to use time series of surface-depression transfer flow rates from the dprst_transfer_file (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">no</value>
+            <value name="1">yes</value>
+        </values>
     </control_param>
     <control_param name="dyn_covden_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of plant-canopy density values are input in a Dynamic Parameter File(s) (0=no; 1=file covden_sum_dynamic; 2=file covden_win_dynamic; 3=both)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">covden_sum</value>
+            <value name="2">covden_win</value>
+            <value name="3">covden_sum,covden_win</value>
+        </values>
     </control_param>
     <control_param name="dyn_covtype_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of plant-canopy type values are input in Dynamic Parameter File covtype_dynamic (0=no; 1=yes)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">cov_type</value>
+        </values>
     </control_param>
     <control_param name="dyn_dprst_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of surface-depression values are input in a Dynamic Parameter File(s) (0=no; 1=file dprst_frac_dynamic; 2=file dprst_depth_dynamic; 3=both)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">dprst_frac</value>
+            <value name="2">dprst_depth</value>
+            <value name="3">dprst_frac,dprst_depth</value>
+        </values>
     </control_param>
     <control_param name="dyn_fallfrost_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of transpiration start Julian day values are input in a Dynamic Parameter File(s) (0=no; 1 =file fallfrost_dynamic)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">fall_frost</value>
+        </values>
     </control_param>
     <control_param name="dyn_imperv_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of impervious values are input in a Dynamic Parameter File(s) (0=no; 1=file imperv_frac_dynamic; 2=file imperv_stor_dynamic; 3=both)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">hru_percent_imperv</value>
+            <value name="2">imperv_stor_max</value>
+            <value name="3">hru_percent_imperv,imperv_stor_max</value>
+        </values>
     </control_param>
     <control_param name="dyn_intcp_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of plant canopy interception values are input in a Dynamic Parameter File(s) (0=no; 1=file wrain_intcp_dynamic; 2=file srain_intcp_dynamic; 4=file snow_intcp_dynamic; additive combinations)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">wrain_intcp</value>
+            <value name="2">srain_intcp</value>
+            <value name="3">wrain_intcp,srain_intcp</value>
+            <value name="4">snow_intcp</value>
+            <value name="5">wrain_intcp,snow_intcp</value>
+            <value name="6">srain_intcp,snow_intcp</value>
+            <value name="7">wrain_intcp,srain_intcp,snow_intcp</value>
+        </values>
     </control_param>
     <control_param name="dyn_potet_flag">
         <default>0</default>
@@ -119,54 +212,94 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of solar radiation values are input in  Dynamic Parameter File radtrncf_dynamic (0=no; 1=yes)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">rad_trncf</value>
+        </values>
     </control_param>
     <control_param name="dyn_snareathresh_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">snarea_thresh</value>
+        </values>
     </control_param>
     <control_param name="dyn_soil_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of soil-water capacity values are input in a Dynamic Parameter File(s) (0=no; 1=file soilmoist_dynamic only, 2=file soilrechr_dynamic only; 3=both)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">soil_moist</value>
+            <value name="2">soil_rechr</value>
+            <value name="3">soil_moist,soil_rechr</value>
+        </values>
     </control_param>
     <control_param name="dyn_springfrost_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of transpiration start Julian day values are input in a Dynamic Parameter File(s) (0=no; 1=file springfrost_dynamic)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">spring_frost</value>
+        </values>
     </control_param>
     <control_param name="dyn_sro2dprst_imperv_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of fraction of surface runoff from the impervious portion of an HRU are input in Dynamic Parameter File sro2dprst_imperv_dynamic (0=no; 1=yes)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">sro_to_dprst_imperv</value>
+        </values>
     </control_param>
     <control_param name="dyn_sro2dprst_perv_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of fraction of surface runoff from the pervious portion of an HRU are input in Dynamic Parameter File sro2dprst_perv_dyn (0=no; 1=yes)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">sro_to_dprst_perv</value>
+        </values>
     </control_param>
     <control_param name="dyn_transp_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if a time series of transpiration month values are input in a Dynamic Parameter File(s) (0=no; 1=file transpbeg_dynamic; 2=file transpend_dynamic only, 3=both)</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">transp_beg</value>
+            <value name="2">transp_end</value>
+            <value name="3">transp_beg,transp_end</value>
+        </values>
     </control_param>
     <control_param name="dyn_transp_on_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">transp_on</value>
+        </values>
     </control_param>
     <control_param name="external_transferON_OFF">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate to use external transfer flow rates from the external_transfer_file (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="gwr_swale_flag">
         <default>0</default>
@@ -179,6 +312,10 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate to use groundwater transfer flow rates from the gwr_transfer_file (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="init_vars_from_file">
         <default>0</default>
@@ -191,12 +328,20 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate to use lake HRU transfer flow rates from the lake_transfer_file (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="mapOutON_OFF">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Switch to specify whether or not mapped output file(s) by a specified number of columns (parameter ncol) of daily, monthly, yearly, or total simulation results is generated (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="naniOutVars">
         <default>0</default>
@@ -215,6 +360,10 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Switch to specify whether or not nhru summary output files are generated (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="nhruOutVars">
         <default>0</default>
@@ -233,6 +382,18 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Output frequency and type (1=daily; 2=monthly; 3=both; 4=mean monthly; 5=mean yearly; 6=yearly)</desc>
+        <values type="interval">
+            <value name="1">daily</value>
+            <value name="2">monthly</value>
+            <value name="3">daily,monthly</value>
+            <value name="4">mean monthly</value>
+            <value name="5">mean yearly</value>
+            <value name="6">yearly</value>
+        </values>
+        <related_variables>
+            <variable name="nhruOutVars"/>
+            <variable name="nhruOutON_OFF"/>
+        </related_variables>
     </control_param>
     <control_param name="nmapOutVars">
         <default>0</default>
@@ -245,6 +406,10 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="nsegmentOutVars">
         <default>0</default>
@@ -263,6 +428,18 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="interval">
+            <value name="1">daily</value>
+            <value name="2">monthly</value>
+            <value name="3">daily,monthly</value>
+            <value name="4">mean monthly</value>
+            <value name="5">mean yearly</value>
+            <value name="6">yearly</value>
+        </values>
+        <related_variables>
+            <variable name="nsegmentOutVars"/>
+            <variable name="nsegmentOutON_OFF"/>
+        </related_variables>
     </control_param>
     <control_param name="nstatVars">
         <default>0</default>
@@ -275,6 +452,10 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Switch to specify whether or not nsub summary output files are generated (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="nsubOutVars">
         <default>0</default>
@@ -293,18 +474,38 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Output frequency and type (1=daily; 2=monthly; 3=both; 4=mean monthly; 5=mean yearly; 6=yearly)</desc>
+        <values type="interval">
+            <value name="1">daily</value>
+            <value name="2">monthly</value>
+            <value name="3">daily,monthly</value>
+            <value name="4">mean monthly</value>
+            <value name="5">mean yearly</value>
+            <value name="6">yearly</value>
+        </values>
+        <related_variables>
+            <variable name="nsubOutVars"/>
+            <variable name="nsubOutON_OFF"/>
+        </related_variables>
     </control_param>
     <control_param name="orad_flag">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to specify whether or not the variable orad is specified as the last column of the swrad_day CBH file (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="outVarON_OFF">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Switch to specify whether or not combined basin, nhru, nsegment summary output files are generated (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="parameter_check_flag">
         <default>0</default>
@@ -329,12 +530,20 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to determine if an Initial Conditions File will be generated at the end of simulation (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="segment_transferON_OFF">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate to use stream segment transfer flow rates from the segment_transfer_file (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="statsON_OFF">
         <default>0</default>
@@ -347,27 +556,43 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="stream_temp_shade_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="strmtemp_humidity_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="subbasin_flag">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if internal subbasin are computed (0=no; 1=yes)</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
     <control_param name="end_time">
-        <default>1980-1-1</default>
+        <default>1980-12-31</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Simulation end date and time specified in order in the control item as: year, month, day, hour, minute, second</desc>
@@ -397,19 +622,19 @@
         <desc>String to define the prefix for each basin summary output file.</desc>
     </control_param>
     <control_param name="covden_sum_dynamic">
-        <default>dyncovsum</default>
+        <default>dyn_covden_sum</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for summer plant-cover density used to set values of covden_sum for each HRU</desc>
     </control_param>
     <control_param name="covden_win_dynamic">
-        <default>dyncovwin</default>
+        <default>dyn_covden_win</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for winter plant-cover density used to set values of covden_win for each HRU</desc>
     </control_param>
     <control_param name="covtype_dynamic">
-        <default>dyncovtype</default>
+        <default>dyn_cov_type</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values used to set values of cov_type for each HRU</desc>
@@ -421,13 +646,13 @@
         <desc>Pathname of CSV output file</desc>
     </control_param>
     <control_param name="dprst_depth_dynamic">
-        <default>dyndprst_depth</default>
+        <default>dyn_dprst_depth</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values used to set values of dprst_depth_avg</desc>
     </control_param>
     <control_param name="dprst_frac_dynamic">
-        <default>dyndprst_frac</default>
+        <default>dyn_dprst_frac</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values used to set values of dprst_frac</desc>
@@ -463,7 +688,7 @@
         <desc>Pathname of the time series of pre-processed flow rates for transfers from external sources</desc>
     </control_param>
     <control_param name="fallfrost_dynamic">
-        <default>dynfallfrost</default>
+        <default>dyn_fall_frost</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter fall_frost</desc>
@@ -481,13 +706,13 @@
         <desc>Pathname of the CBH file of pre-processed humidity input data for each HRU to specify variable humidity_hru-percentage</desc>
     </control_param>
     <control_param name="imperv_frac_dynamic">
-        <default>dynimperv</default>
+        <default>dyn_hru_percent_imperv</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter hru_percent_imperv</desc>
     </control_param>
     <control_param name="imperv_stor_dynamic">
-        <default>dynimperv</default>
+        <default>dyn_imperv_stor_max</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter imperv_stor_max</desc>
@@ -499,7 +724,7 @@
         <desc>Pathname of the time series of pre-processed flow rates for transfers from lake HRUs </desc>
     </control_param>
     <control_param name="model_mode">
-        <default>PRMS</default>
+        <default>PRMS5</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Flag to indicate the simulation mode (PRMS=PRMS; FROST=growing season for each HRU; WRITE_CLIMATE=write CBH files of minimum and maximum air temperature (variables tminf and tmaxf-Fahrenheit); precipitation (variable hru_ppt-inches); solar radiation (variable swrad-Langleys); potential ET (variable potet-inches); and/or transpiration flag (variable transp_on-none); POTET=simulate to potential ET; TRANSPIRE=simulate to transpiration period; DOCUMENTATION=write files of all declared parameters and variables in the executable)</desc>
@@ -511,25 +736,25 @@
         <desc>Pathname for Water-Budget File for results module basin_sum</desc>
     </control_param>
     <control_param name="nhruOutBaseFileName">
-        <default>none</default>
+        <default>nhru_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>String to define the prefix for each nhru summary output file.</desc>
     </control_param>
     <control_param name="nsegmentOutBaseFileName">
-        <default>none</default>
+        <default>nsegment_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>none</desc>
     </control_param>
     <control_param name="nsubOutBaseFileName">
-        <default>none</default>
+        <default>nsub_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>String to define the prefix for each nsub summary output file.</desc>
     </control_param>
     <control_param name="outVar_base_filename">
-        <default>none</default>
+        <default>summary</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>String to define the prefix for each combined summary output file.</desc>
@@ -553,7 +778,7 @@
         <desc>Pathname of the CBH file of pre-processed potential-ET input data for each HRU to specify variable potet-inches </desc>
     </control_param>
     <control_param name="potetcoef_dynamic">
-        <default>dynpotetcoef</default>
+        <default>dyn_potet_coef</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed potential evapotranspiration coefficient values where the parameter is dependent on the value of et_module </desc>
@@ -571,7 +796,7 @@
         <desc>Module name for precipitation-distribution method (climate_hru, ide_dist, precip_1sta, precip_dist2, precip_laps, or xyz_dist)</desc>
     </control_param>
     <control_param name="radtrncf_dynamic">
-        <default>dynradtrncf</default>
+        <default>dyn_rad_trncf</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter rad_trncf</desc>
@@ -583,25 +808,25 @@
         <desc>Pathname of the time series of pre-processed flow rates for transfers from stream segments </desc>
     </control_param>
     <control_param name="snareathresh_dynamic">
-        <default/>
+        <default>dyn_snarea_thresh</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>none</desc>
     </control_param>
     <control_param name="snow_intcp_dynamic">
-        <default>dynsnowintcp</default>
+        <default>dyn_snow_intcp</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter snow_intcp</desc>
     </control_param>
     <control_param name="soilmoist_dynamic">
-        <default>dynsoilmost</default>
+        <default>dyn_soil_moist</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter soil_moist_max</desc>
     </control_param>
     <control_param name="soilrechr_dynamic">
-        <default>dynsoilrechr</default>
+        <default>dyn_soil_rechr</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter soil_rechr_max_frac</desc>
@@ -619,25 +844,25 @@
         <desc>Module name for solar-radiation-distribution method (ccsolrad or ddsolrad)</desc>
     </control_param>
     <control_param name="springfrost_dynamic">
-        <default>dynspringfrost</default>
+        <default>dyn_spring_frost</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter spring_frost</desc>
     </control_param>
     <control_param name="srain_intcp_dynamic">
-        <default>dynsrainintcp</default>
+        <default>dyn_srain_intcp</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter srain_intcp</desc>
     </control_param>
     <control_param name="sro2dprst_imperv_dyn">
-        <default>dynsrotodprst_imperv</default>
+        <default>dyn_sro_to_dprst_imperv</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter sro_to_dprst_imperv</desc>
     </control_param>
     <control_param name="sro2dprst_perv_dyn">
-        <default>dynsrotodprst_perv</default>
+        <default>dyn_sro_to_dprst_perv</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter sro_to_dprst_perv</desc>
@@ -703,19 +928,19 @@
         <desc>Module name for transpiration simulation method (climate_hru, transp_frost, or transp_tindex)</desc>
     </control_param>
     <control_param name="transp_on_dynamic">
-        <default>0</default>
+        <default>dyn_transp_on</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>none</desc>
     </control_param>
     <control_param name="transpbeg_dynamic">
-        <default>dyntranspbeg</default>
+        <default>dyn_transp_beg</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter transp_beg</desc>
     </control_param>
     <control_param name="transpend_dynamic">
-        <default>dyntranspend</default>
+        <default>dyn_transp_end</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter transp_end</desc>
@@ -739,7 +964,7 @@
         <desc>Pathname of the CBH file of pre-processed wind speed input data for each HRU to specify variable windspeed_hru-meters/second</desc>
     </control_param>
     <control_param name="wrain_intcp_dynamic">
-        <default>dynwrainintcp</default>
+        <default>dyn_wrain_intcp</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter wrain_intcp </desc>
@@ -751,13 +976,13 @@
         <desc>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</desc>
     </control_param>
     <control_param name="basinOutVar_names">
-        <default>none</default>
+        <default>basin_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which output is written to basin summary Comma Separated Values (CSV) output file(s). Each variable is written to files in the order specified in basinOutVars with the prefix of each file equal to the value of basinOutBaseFileName. The suffix of the files is based on the value of basinOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
     </control_param>
     <control_param name="data_file">
-        <default>none</default>
+        <default>sf_data</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname(s) for measured input Data File(s), typically a single Data File is specified</desc>
