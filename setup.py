@@ -114,4 +114,9 @@ setup(
     #         'sample=sample:main',
     #     ],
     # },
+    entry_points={
+        'console_scripts': [
+            'convert_params=pyPRMS.utilities.convert_params:main',
+        ],
+    },
 )
