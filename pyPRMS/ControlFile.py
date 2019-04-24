@@ -82,26 +82,21 @@ class ControlFile(Control):
                     dt.extend([0 for __ in range(6 - len(dt))])
                 self.get(name).default = dt
             else:
-                print('{}: {} {}'.format(name, type(elem.find('default').text), elem.find('default').text))
+                # print('{}: {} {}'.format(name, type(elem.find('default').text), elem.find('default').text))
                 self.get(name).default = elem.find('default').text
 
             self.get(name).description = elem.find('desc').text
 
-            # for cvals in elem.findall('./values'):
-            #     #         print(cval.attrib.get('name'))
-            #     val_type = cvals.attrib.get('type')
-            #     print(name)
-            #
-            #     print('type: {}'.format(val_type))
-            #
-            #     for cv in cvals.findall('./value'):
-            #         outvals = []
-            #         for xx in cv.text.split(','):
-            #             outvals.append(xx)
-            #
-            #         print('{}: {}'.format(cv.attrib.get('name'), outvals))
+            outvals = {}
+            for cvals in elem.findall('./values'):
+                self.get(name).value_repr = cvals.attrib.get('type')
 
+                for cv in cvals.findall('./value'):
+                    outvals[cv.attrib.get('name')] = []
 
+                    for xx in cv.text.split(','):
+                        outvals[cv.attrib.get('name')].append(xx)
+            self.get(name).valid_values = outvals
 
         header_tmp = []
         infile = open(filename, 'r')
