@@ -152,21 +152,31 @@ class ParameterSet(object):
             sys.stdout.flush()
 
             if curr_datatype != 'S1':
-                if vv.dimensions.keys()[0] == 'one':
-                    # Scalar values
-                    curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
-                                                       fill_value=nc.default_fillvals[curr_datatype], zlib=True)
-                else:
-                    # The variable dimensions are stored with C-ordering (slowest -> fastest)
-                    # The variables in this library are based on Fortran-ordering (fastest -> slowest)
-                    # so we reverse the order of the dimensions and the arrays for
-                    # writing out to the netcdf file.
-                    # dtmp = vv.dimensions.keys()
-                    # dtmp.reverse()
-                    curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()[::-1]),
-                                                       fill_value=nc.default_fillvals[curr_datatype], zlib=True)
-                    # curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()),
-                    #                                    fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                try:
+                    if vv.dimensions.keys()[0] == 'one':
+                        # Scalar values
+                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
+                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                    else:
+                        # The variable dimensions are stored with C-ordering (slowest -> fastest)
+                        # The variables in this library are based on Fortran-ordering (fastest -> slowest)
+                        # so we reverse the order of the dimensions and the arrays for
+                        # writing out to the netcdf file.
+                        # dtmp = vv.dimensions.keys()
+                        # dtmp.reverse()
+                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()[::-1]),
+                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                        # curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()),
+                        #                                    fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                except TypeError:
+                    # python 3.x
+                    if list(vv.dimensions.keys())[0] == 'one':
+                        # Scalar values
+                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
+                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                    else:
+                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(list(vv.dimensions.keys())[::-1]),
+                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
 
                 # Add the attributes
                 if vv.help:
@@ -184,11 +194,11 @@ class ParameterSet(object):
                 #       Not sure yet what is causing this.
                 if vv.minimum is not None:
                     # TODO: figure out how to handle bounded parameters
-                    if not isinstance(vv.minimum, basestring):
+                    if not isinstance(vv.minimum, str):
                         curr_param.valid_min = vv.minimum
 
                 if vv.maximum is not None:
-                    if not isinstance(vv.maximum, basestring):
+                    if not isinstance(vv.maximum, str):
                         curr_param.valid_max = vv.maximum
 
                 # Write the data
