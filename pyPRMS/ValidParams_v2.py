@@ -43,7 +43,7 @@ class ValidParams_v2(ParameterSet):
         if filename:
             self.__xml_tree = xmlET.parse(self.__filename)
         else:
-            # Use the package parameters.xml by default
+            # Use the package file, parameters.xml, by default
             xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', 'xml/parameters.xml').decode('utf-8'))
             self.__xml_tree = xmlET.parse(xml_fh)
 
@@ -70,6 +70,17 @@ class ValidParams_v2(ParameterSet):
         self.__isloaded = False
         self._read()
         self.__isloaded = True
+
+    def get_params_for_modules(self, modules):
+        """Returns a list of unique parameters required for a given list of modules"""
+
+        params_by_module = []
+
+        for xx in self.parameters.values():
+            for mm in xx.modules:
+                if mm in modules:
+                    params_by_module.append(xx.name)
+        return set(params_by_module)
 
     def _read(self):
         """Read a parametetr.xml file to create a parameter set with no data"""
