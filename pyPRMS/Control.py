@@ -26,8 +26,9 @@ class ControlVariable(object):
         self.__datatype = datatype
         self.__default = default
         self.__description = description
-        self.__valid_values = valid_values
-        self.__value_repr = value_repr
+        self.__valid_values = valid_values  # Possible valid values
+        self.__value_repr = value_repr  # What do the valid_values represent (e.g. flag, parameter, etc)?
+        self.__associated_value = None  # Based on a value what's the associated valid_value?
         self.__values = None
 
     def __str__(self):
@@ -43,6 +44,19 @@ class ControlVariable(object):
             outstr += '<empty>\n'
 
         return outstr
+
+    @property
+    def associated_values(self):
+        assoc_vals = []
+        if self.size > 1:
+            for xx in self.values:
+                for vv in self.__valid_values[xx]:
+                    assoc_vals.append(vv)
+        else:
+            for vv in self.__valid_values[str(self.values)]:
+                assoc_vals.append(vv)
+
+        return assoc_vals
 
     @property
     def datatype(self):
@@ -66,7 +80,6 @@ class ControlVariable(object):
             if self.__default.size > 1:
                 return self.__default
             else:
-                print(type(self.__default))
                 return self.__default[0]
         else:
             return None
@@ -84,10 +97,8 @@ class ControlVariable(object):
         if self.__datatype in DATA_TYPES.keys():
             value = datatype_conv[self.__datatype](value)
         else:
-            raise TypeError('Defined datatype {} for control variable {} is not valid'.format(self.__datatype,
-                                                                                              self.__name))
+            raise TypeError('Defined datatype {} for control variable {} is not valid'.format(self.__datatype, self.__name))
 
-        print('\tvalue: {}'.format(value))
         self.__default = np.array(value)
 
     @property
@@ -104,6 +115,24 @@ class ControlVariable(object):
             return self.__default.size
         else:
             return 0
+
+
+    @property
+    def valid_values(self):
+        return self.__valid_values
+
+    @valid_values.setter
+    def valid_values(self, data):
+        if isinstance(data, dict):
+            self.__valid_values = data
+
+    @property
+    def value_repr(self):
+        return self.__value_repr
+
+    @value_repr.setter
+    def value_repr(self, data):
+        self.__value_repr = data
 
     @property
     def values(self):
@@ -137,7 +166,7 @@ class ControlVariable(object):
         """
 
         # Convert provide list of data to float
-        if isinstance(data, basestring):
+        if isinstance(data, str):
             return [float(data)]
         else:
             try:
@@ -151,8 +180,7 @@ class ControlVariable(object):
         :returns: array of integers
         """
 
-        if isinstance(data, basestring):
-            print('\tbasestring')
+        if isinstance(data, str):
             return [int(data)]
         else:
             # Convert list of data to integer
@@ -166,7 +194,7 @@ class ControlVariable(object):
 
         :returns: data unchanged"""
         # nop for list of strings
-        if isinstance(data, basestring):
+        if isinstance(data, str):
             return [data]
         else:
             return data
@@ -189,6 +217,24 @@ class Control(object):
         return self.__control_vars
 
     @property
+    def dynamic_parameters(self):
+        """Returns a list of parameters that have the dynamic flag set"""
+        dyn_params = []
+
+        for dv in self.__control_vars.keys():
+            if self.get(dv).value_repr == 'parameter':
+                if self.get(dv).values > 0:
+                    dyn_params.extend(self.get(dv).associated_values)
+                    # dyn_params.append(self.get(dv).associated_values)
+        return dyn_params
+
+    @property
+    def has_dynamic_parameters(self):
+        if len(self.dynamic_parameters) > 0:
+            return True
+        return False
+
+    @property
     def header(self):
         """Returns any header information defined for a control object"""
         return self.__header
@@ -207,7 +253,14 @@ class Control(object):
 
         for xx in ctl_variable_modules:
             if self.exists(xx):
-                mod_dict[xx] = self.get(xx).values
+                if xx == 'precip_module':
+                    if self.get(xx).values == 'climate_hru':
+                        mod_dict[xx] = 'precipitation_hru'
+                elif xx == 'temp_module':
+                    if self.get(xx).values == 'climate_hru':
+                        mod_dict[xx] = 'temperature_hru'
+                else:
+                    mod_dict[xx] = self.get(xx).values
 
         # Add the modules that are implicitly included
         for xx in ctl_implicit_modules:
@@ -270,7 +323,7 @@ class Control(object):
             else:
                 continue
 
-            print(kk)
+            # print(kk)
             outfile.write('{}\n'.format(VAR_DELIM))
             outfile.write('{}\n'.format(kk))
 
