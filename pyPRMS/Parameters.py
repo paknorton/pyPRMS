@@ -389,7 +389,12 @@ class Parameter(object):
         """
 
         if index < len(self.__dimensions.dimensions.items()):
-            return self.__dimensions.dimensions.items()[index][1].size
+            try:
+                # Python 2.7.x
+                return self.__dimensions.dimensions.items()[index][1].size
+            except TypeError:
+                # Python 3.x
+                return list(self.__dimensions.dimensions.items())[index][1].size
         raise ValueError('Parameter has no dimension at index {}'.format(index))
 
     def has_correct_size(self):
@@ -512,13 +517,20 @@ class Parameters(object):
             pp.check()
 
     def remove(self, name):
-        """Delete a parameter if it exists
+        """Delete one or more parameters if they exist
 
-        :param name: The name of the parameter to remove
+        :param name: Single parameter or list of parameters to remove
         """
 
-        if self.exists(name):
-            del self.__parameters[name]
+        if isinstance(name, list):
+            # Remove multiple parameters
+            for cparam in name:
+                if self.exists(name):
+                    del self.__parameters[cparam]
+            pass
+        else:
+            if self.exists(name):
+                del self.__parameters[name]
 
     def exists(self, name):
         """Checks if a given parameter name exists
