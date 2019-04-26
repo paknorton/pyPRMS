@@ -13,7 +13,7 @@ import xml.etree.ElementTree as xmlET
 import io
 import pkgutil
 
-from pyPRMS.constants import ctl_order, DATA_TYPES, VAR_DELIM
+from pyPRMS.constants import DATA_TYPES, VAR_DELIM
 from pyPRMS.Control import Control
 from pyPRMS.Exceptions_custom import ControlError
 
@@ -86,6 +86,9 @@ class ControlFile(Control):
                 self.get(name).default = elem.find('default').text
 
             self.get(name).description = elem.find('desc').text
+
+            if elem.find('force_default') is not None:
+                self.get(name).force_default = elem.find('force_default').text
 
             outvals = {}
             for cvals in elem.findall('./values'):

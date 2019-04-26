@@ -26,6 +26,7 @@ class ControlVariable(object):
         self.__datatype = datatype
         self.__default = default
         self.__description = description
+        self.__force_default = False
         self.__valid_values = valid_values  # Possible valid values
         self.__value_repr = value_repr  # What do the valid_values represent (e.g. flag, parameter, etc)?
         self.__associated_value = None  # Based on a value what's the associated valid_value?
@@ -75,6 +76,15 @@ class ControlVariable(object):
             print('WARNING: Datatype, {}, is not valid.'.format(dtype))
 
     @property
+    def force_default(self):
+        return self.__force_default
+
+    @force_default.setter
+    def force_default(self, value):
+        """Set (or unset) forced use of default value"""
+        self.__force_default = bool(value)
+
+    @property
     def default(self):
         if self.__default is not None:
             if self.__default.size > 1:
@@ -116,7 +126,6 @@ class ControlVariable(object):
         else:
             return 0
 
-
     @property
     def valid_values(self):
         return self.__valid_values
@@ -137,7 +146,9 @@ class ControlVariable(object):
     @property
     def values(self):
         if self.__values is not None:
-            if self.__values.size > 1:
+            if self.__force_default:
+                return self.default
+            elif self.__values.size > 1:
                 return self.__values
             else:
                 return self.__values[0]
