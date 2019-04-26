@@ -622,19 +622,22 @@
         <desc>String to define the prefix for each basin summary output file.</desc>
     </control_param>
     <control_param name="covden_sum_dynamic">
-        <default>dyn_covden_sum</default>
+        <default>dyn_covden_sum.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for summer plant-cover density used to set values of covden_sum for each HRU</desc>
     </control_param>
     <control_param name="covden_win_dynamic">
-        <default>dyn_covden_win</default>
+        <default>dyn_covden_win.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for winter plant-cover density used to set values of covden_win for each HRU</desc>
     </control_param>
     <control_param name="covtype_dynamic">
-        <default>dyn_cov_type</default>
+        <default>dyn_cov_type.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values used to set values of cov_type for each HRU</desc>
@@ -646,13 +649,15 @@
         <desc>Pathname of CSV output file</desc>
     </control_param>
     <control_param name="dprst_depth_dynamic">
-        <default>dyn_dprst_depth</default>
+        <default>dyn_dprst_depth.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values used to set values of dprst_depth_avg</desc>
     </control_param>
     <control_param name="dprst_frac_dynamic">
-        <default>dyn_dprst_frac</default>
+        <default>dyn_dprst_frac.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values used to set values of dprst_frac</desc>
@@ -688,7 +693,8 @@
         <desc>Pathname of the time series of pre-processed flow rates for transfers from external sources</desc>
     </control_param>
     <control_param name="fallfrost_dynamic">
-        <default>dyn_fall_frost</default>
+        <default>dyn_fall_frost.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter fall_frost</desc>
@@ -706,13 +712,15 @@
         <desc>Pathname of the CBH file of pre-processed humidity input data for each HRU to specify variable humidity_hru-percentage</desc>
     </control_param>
     <control_param name="imperv_frac_dynamic">
-        <default>dyn_hru_percent_imperv</default>
+        <default>dyn_hru_percent_imperv.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter hru_percent_imperv</desc>
     </control_param>
     <control_param name="imperv_stor_dynamic">
-        <default>dyn_imperv_stor_max</default>
+        <default>dyn_imperv_stor_max.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter imperv_stor_max</desc>
@@ -778,7 +786,8 @@
         <desc>Pathname of the CBH file of pre-processed potential-ET input data for each HRU to specify variable potet-inches </desc>
     </control_param>
     <control_param name="potetcoef_dynamic">
-        <default>dyn_potet_coef</default>
+        <default>dyn_potet_coef.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed potential evapotranspiration coefficient values where the parameter is dependent on the value of et_module </desc>
@@ -796,7 +805,8 @@
         <desc>Module name for precipitation-distribution method (climate_hru, ide_dist, precip_1sta, precip_dist2, precip_laps, or xyz_dist)</desc>
     </control_param>
     <control_param name="radtrncf_dynamic">
-        <default>dyn_rad_trncf</default>
+        <default>dyn_rad_trncf.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter rad_trncf</desc>
@@ -808,25 +818,29 @@
         <desc>Pathname of the time series of pre-processed flow rates for transfers from stream segments </desc>
     </control_param>
     <control_param name="snareathresh_dynamic">
-        <default>dyn_snarea_thresh</default>
+        <default>dyn_snarea_thresh.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>none</desc>
     </control_param>
     <control_param name="snow_intcp_dynamic">
-        <default>dyn_snow_intcp</default>
+        <default>dyn_snow_intcp.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter snow_intcp</desc>
     </control_param>
     <control_param name="soilmoist_dynamic">
-        <default>dyn_soil_moist</default>
+        <default>dyn_soil_moist.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter soil_moist_max</desc>
     </control_param>
     <control_param name="soilrechr_dynamic">
-        <default>dyn_soil_rechr</default>
+        <default>dyn_soil_rechr.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter soil_rechr_max_frac</desc>
@@ -844,25 +858,29 @@
         <desc>Module name for solar-radiation-distribution method (ccsolrad or ddsolrad)</desc>
     </control_param>
     <control_param name="springfrost_dynamic">
-        <default>dyn_spring_frost</default>
+        <default>dyn_spring_frost.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter spring_frost</desc>
     </control_param>
     <control_param name="srain_intcp_dynamic">
-        <default>dyn_srain_intcp</default>
+        <default>dyn_srain_intcp.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter srain_intcp</desc>
     </control_param>
     <control_param name="sro2dprst_imperv_dyn">
-        <default>dyn_sro_to_dprst_imperv</default>
+        <default>dyn_sro_to_dprst_imperv.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter sro_to_dprst_imperv</desc>
     </control_param>
     <control_param name="sro2dprst_perv_dyn">
-        <default>dyn_sro_to_dprst_perv</default>
+        <default>dyn_sro_to_dprst_perv.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter sro_to_dprst_perv</desc>
@@ -879,7 +897,7 @@
         <numvals>1</numvals>
         <desc>none</desc>
     </control_param>
-    <control_param name="statvar_file">
+    <control_param name="stat_var_file">
         <default>statvar.out</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -928,19 +946,19 @@
         <desc>Module name for transpiration simulation method (climate_hru, transp_frost, or transp_tindex)</desc>
     </control_param>
     <control_param name="transp_on_dynamic">
-        <default>dyn_transp_on</default>
+        <default>dyn_transp_on.param</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>none</desc>
     </control_param>
     <control_param name="transpbeg_dynamic">
-        <default>dyn_transp_beg</default>
+        <default>dyn_transp_beg.param</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter transp_beg</desc>
     </control_param>
     <control_param name="transpend_dynamic">
-        <default>dyn_transp_end</default>
+        <default>dyn_transp_end.param</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter transp_end</desc>
@@ -964,7 +982,7 @@
         <desc>Pathname of the CBH file of pre-processed wind speed input data for each HRU to specify variable windspeed_hru-meters/second</desc>
     </control_param>
     <control_param name="wrain_intcp_dynamic">
-        <default>dyn_wrain_intcp</default>
+        <default>dyn_wrain_intcp.param</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter wrain_intcp </desc>
