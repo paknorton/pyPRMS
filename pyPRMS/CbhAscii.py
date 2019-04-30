@@ -4,7 +4,8 @@ from future.utils import iteritems
 import os
 import pandas as pd
 # import fastparquet as fp
-# import xarray as xr
+import netCDF4 as nc
+import xarray as xr
 from collections import OrderedDict
 
 from pyPRMS.prms_helpers import dparse
@@ -14,7 +15,7 @@ CBH_VARNAMES = ['prcp', 'tmin', 'tmax']
 CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]
 
 
-class Cbh(object):
+class CbhAscii(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2016-12-05
     # Description: Class for working with individual cbh files
@@ -36,11 +37,10 @@ class Cbh(object):
     # took care of those corrections itself. This would provide a more seamless workflow
     # from GDP to PRMS. At this point I'm not taking this on though -- for a future revision.
 
-    def __init__(self, filename=None, st_date=None, en_date=None, indices=None, nhm_hrus=None, mapping=None,
-                 var=None, regions=REGIONS):
+    def __init__(self, src_path=None, st_date=None, en_date=None, indices=None, nhm_hrus=None, mapping=None):
         # def __init__(self, cbhdb_dir, st_date=None, en_date=None, indices=None, nhm_hrus=None, mapping=None):
         #     self.__cbhdb_dir = cbhdb_dir
-        self.__filename = filename
+        self.__src_path = src_path
 
         # self.__indices = [str(kk) for kk in indices]
         self.__indices = indices    # OrdereDict: nhm_ids -> local_ids
@@ -50,14 +50,8 @@ class Cbh(object):
         self.__nhm_hrus = nhm_hrus
         self.__mapping = mapping
         self.__date_range = None
-        self.__data = None
+        self.__dataset = None
         self.__final_outorder = None
-        self.__var = var
-        self.__regions = regions
-
-    @property
-    def data(self):
-        return self.__data
 
     def read_cbh(self):
         # Reads a full cbh file
@@ -73,7 +67,7 @@ class Cbh(object):
         # print(incl_cols)
 
         # Columns 0-5 always represent date/time information
-        self.__data = pd.read_csv(self.__filename, sep=' ', skipinitialspace=True, usecols=incl_cols,
+        self.__data = pd.read_csv(self.__src_path, sep=' ', skipinitialspace=True, usecols=incl_cols,
                                   skiprows=3, engine='c', memory_map=True,
                                   date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                                   index_col='time', header=None, na_values=[-99.0, -999.0])
@@ -97,7 +91,7 @@ class Cbh(object):
 
         print('READING')
         # Columns 0-5 always represent date/time information
-        self.__data = pd.read_csv(self.__filename, sep=' ', skipinitialspace=True,
+        self.__data = pd.read_csv(self.__src_path, sep=' ', skipinitialspace=True,
                                   skiprows=3, engine='c', memory_map=True,
                                   date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                                   index_col='time', header=None, na_values=[-99.0, -999.0])
@@ -120,12 +114,25 @@ class Cbh(object):
         self.__data['minute'] = 0
         self.__data['second'] = 0
 
-    def read_cbh_multifile(self, src_dir):
-        """Read cbh data from multiple csv files"""
-        first = True
+    def read_ascii_file(self, filename, columns=None):
+        # Columns 0-5 always represent date/time information
+        if columns is not None:
+            df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
+                             usecols=columns,
+                             skiprows=3, engine='c', memory_map=True,
+                             date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                             index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
+        else:
+            df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
+                             skiprows=3, engine='c', memory_map=True,
+                             date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                             index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
+        return df
 
-        for rr in self.__regions:
-            rvals = self.__mapping[rr]
+    def check_region(self, region):
+        if self.__indices is not None:
+            # Get the range of nhm_ids for the region
+            rvals = self.__mapping[region]
 
             # print('Examining {} ({} to {})'.format(rr, rvals[0], rvals[1]))
             if rvals[0] >= rvals[1]:
@@ -135,34 +142,45 @@ class Cbh(object):
 
             for yy in self.__indices.keys():
                 if rvals[0] <= yy <= rvals[1]:
-                    # print('\tMatching region {}, HRU: {} ({})'.format(rr, yy, hru_order_ss[yy]))
-                    idx_retrieve[self.__indices[yy]] = yy   # {local_ids: nhm_ids}
+                    idx_retrieve[self.__indices[yy]] = yy  # {local_ids: nhm_ids}
+
+            return idx_retrieve
+        return None
+
+    def read_cbh_multifile(self, var=None):
+        """Read cbh data from multiple csv files"""
+
+        if var is None:
+            raise ValueError('Variable name (var) must be provided')
+
+        first = True
+        data = None
+
+        for rr in REGIONS:
+            idx_retrieve = self.check_region(region=rr)
 
             if len(idx_retrieve) > 0:
-                # The current region contains HRUs in the model subset
-                # Read in the data for those HRUs
-                cbh_file = '{}/{}_{}.cbh.gz'.format(src_dir, rr, self.__var)
-
-                print('\tLoad {} HRUs from {}'.format(len(idx_retrieve), rr))
-
-                if not os.path.isfile(cbh_file):
-                    # Missing data file for this variable and region
-                    # bandit_log.error('Required CBH file, {}, is missing. Unable to continue'.format(cbh_file))
-                    raise IOError('Required CBH file, {}, is missing.'.format(cbh_file))
-
                 # Build the list of columns to load
                 # The given local ids must be adjusted by 5 to reflect:
                 #     1) the presence of 6 columns of time information
                 #     2) 0-based column names
                 load_cols = list(CBH_INDEX_COLS)
                 load_cols.extend([xx+5 for xx in idx_retrieve.keys()])
+            else:
+                load_cols = None
 
-                # Columns 0-5 always represent date/time information
-                df = pd.read_csv(cbh_file, sep=' ', skipinitialspace=True,
-                                 usecols=load_cols,
-                                 skiprows=3, engine='c', memory_map=True,
-                                 date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
-                                 index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
+            if len(idx_retrieve) > 0:
+                # The current region contains HRUs in the model subset
+                # Read in the data for those HRUs
+                cbh_file = '{}/{}_{}.cbh.gz'.format(self.__src_path, rr, var)
+
+                print('\tLoad {} HRUs from {}'.format(len(idx_retrieve), rr))
+
+                if not os.path.isfile(cbh_file):
+                    # Missing data file for this variable and region
+                    raise IOError('Required CBH file, {}, is missing.'.format(cbh_file))
+
+                df = self.read_ascii_file(cbh_file, columns=load_cols)
 
                 if self.__stdate is not None and self.__endate is not None:
                     # Restrict the date range
@@ -175,18 +193,105 @@ class Cbh(object):
                 df.rename(columns=ren_dict, inplace=True)
 
                 if first:
-                    self.__data = df.copy()
+                    data = df.copy()
                     first = False
                 else:
-                    self.__data = self.__data.join(df, how='left')
-                    # outdata = pd.merge(outdata, cc1.data, on=[0, 1, 2, 3, 4, 5])
+                    data = data.join(df, how='left')
+        return data
 
-        self.__data['year'] = self.__data.index.year
-        self.__data['month'] = self.__data.index.month
-        self.__data['day'] = self.__data.index.day
-        self.__data['hour'] = 0
-        self.__data['minute'] = 0
-        self.__data['second'] = 0
+    def get_var(self, var):
+        data = self.read_cbh_multifile(var=var)
+        return data
+
+    def write_ascii(self, fileprefix=None, vars=None):
+        # For out_order the first six columns contain the time information and
+        # are always output for the cbh files
+        out_order = [kk for kk in self.__nhm_hrus]
+        for cc in ['second', 'minute', 'hour', 'day', 'month', 'year']:
+            out_order.insert(0, cc)
+
+        if vars is None:
+            var_list = CBH_VARNAMES
+        elif isinstance(list, vars):
+            var_list = vars
+
+        for cvar in var_list:
+            data = self.get_var(var=cvar)
+
+            # Add time information as columns
+            data['year'] = data.index.year
+            data['month'] = data.index.month
+            data['day'] = data.index.day
+            data['hour'] = 0
+            data['minute'] = 0
+            data['second'] = 0
+
+            # Output ASCII CBH files
+            if fileprefix is None:
+                outfile = '{}.cbh'.format(cvar)
+            else:
+                outfile = '{}_{}.cbh'.format(fileprefix, cvar)
+
+            out_cbh = open(outfile, 'w')
+            out_cbh.write('Written by Bandit\n')
+            out_cbh.write('{} {}\n'.format(cvar, len(self.__nhm_hrus)))
+            out_cbh.write('########################################\n')
+
+            data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.3f',
+                        sep=' ', index=False, header=False, encoding=None, chunksize=50)
+            out_cbh.close()
+
+    def write_netcdf(self, filename=None, vars=None):
+        """Write CBH to netcdf format file"""
+
+        # NetCDF-related variables
+        var_desc = {'tmax': 'Maximum Temperature', 'tmin': 'Minimum temperature', 'prcp': 'Precipitation'}
+        var_units = {'tmax': 'C', 'tmin': 'C', 'prcp': 'inches'}
+
+        # Create a netCDF file for the CBH data
+        nco = nc.Dataset(filename, 'w', clobber=True)
+        nco.createDimension('hru', len(self.__nhm_hrus))
+        nco.createDimension('time', None)
+
+        timeo = nco.createVariable('time', 'f4', ('time'))
+        timeo.calendar = 'standard'
+        # timeo.bounds = 'time_bnds'
+        timeo.units = 'days since 1980-01-01 00:00:00'
+
+        hruo = nco.createVariable('hru', 'i4', ('hru'))
+        hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
+
+        if vars is None:
+            var_list = CBH_VARNAMES
+        elif isinstance(list, vars):
+            var_list = vars
+
+        for cvar in var_list:
+            varo = nco.createVariable(cvar, 'f4', ('time', 'hru'), fill_value=nc.default_fillvals['f4'], zlib=True)
+            varo.long_name = var_desc[cvar]
+            varo.units = var_units[cvar]
+
+        nco.setncattr('Description', 'Climate by HRU')
+        # nco.setncattr('Bandit_version', __version__)
+        # nco.setncattr('NHM_version', nhmparamdb_revision)
+
+        # Write the HRU ids
+        hruo[:] = self.__nhm_hrus
+
+        first = True
+        for cvar in var_list:
+            data = self.get_var(var=cvar)
+
+            if first:
+                timeo[:] = nc.date2num(data.index.tolist(),
+                                       units='days since 1980-01-01 00:00:00',
+                                       calendar='standard')
+                first = False
+
+            # Write the CBH values
+            nco.variables[cvar][:, :] = data[self.__nhm_hrus].values
+
+        nco.close()
 
     # def write_cbh_subset(self, outdir):
     #     outdata = None
@@ -203,7 +308,7 @@ class Cbh(object):
     #                     idx_retrieve[yy] = self.__nhm_hrus[yy]
     #
     #             if len(idx_retrieve) > 0:
-    #                 self.__filename = '{}/{}_{}.cbh.gz'.format(self.__cbhdb_dir, rr, vv)
+    #                 self.__src_path = '{}/{}_{}.cbh.gz'.format(self.__cbhdb_dir, rr, vv)
     #                 self.read_cbh()
     #                 if first:
     #                     outdata = self.__data
@@ -254,32 +359,4 @@ class Cbh(object):
     #     self.__data['minute'] = 0
     #     self.__data['second'] = 0
     #
-    # def read_cbh_netcdf(self, src_dir):
-    #     """Read CBH files stored in netCDF format"""
-    #     if self.__indices:
-    #         print('\t\tOpen dataarray')
-    #         ds = xr.open_dataarray('{}/daymet_{}.nc'.format(src_dir, self.__var), chunks={'hru': 1000})
-    #
-    #         print('\t\tConvert subset to pandas dataframe')
-    #         self.__data = ds.loc[:, self.__indices].to_pandas()
-    #
-    #         print('\t\tRestrict to date range')
-    #         if self.__stdate is not None and self.__endate is not None:
-    #             # Restrict dataframe to the given date range
-    #             self.__data = self.__data[self.__stdate:self.__endate]
-    #
-    #         # self.__data = self.__data[self.__indices]
-    #
-    #     print('\t\tInsert date info')
-    #     # self.__data.insert(0, 'second', 0)
-    #     # self.__data.insert(0, 'minute', 0)
-    #     # self.__data.insert(0, 'hour', 0)
-    #     # self.__data.insert(0, 'day', self.__data.index.day)
-    #     # self.__data.insert(0, 'month', self.__data.index.month)
-    #     # self.__data.insert(0, 'year', self.__data.index.year)
-    #     self.__data['year'] = self.__data.index.year
-    #     self.__data['month'] = self.__data.index.month
-    #     self.__data['day'] = self.__data.index.day
-    #     self.__data['hour'] = 0
-    #     self.__data['minute'] = 0
-    #     self.__data['second'] = 0
+
