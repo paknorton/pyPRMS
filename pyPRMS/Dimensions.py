@@ -296,7 +296,7 @@ class ParamDimensions(Dimensions):
                 except ValueError as err:
                     print(err)
             else:
-                curr_pos = self.dimensions.keys().index(name)
+                curr_pos = list(self.dimensions.keys()).index(name)
 
                 if curr_pos != pos:
                     # This indicates a problem in one of the paramdb files
