@@ -117,6 +117,7 @@ setup(
     entry_points={
         'console_scripts': [
             'convert_params=pyPRMS.utilities.convert_params:main',
+            'convert_cbh=pyPRMS.utilities.convert_cbh:main',
         ],
     },
 )
