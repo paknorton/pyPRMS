@@ -50,6 +50,7 @@ class CbhAscii(object):
         self.__nhm_hrus = nhm_hrus
         self.__mapping = mapping
         self.__date_range = None
+        self.__dataframe = None
         self.__dataset = None
         self.__final_outorder = None
 
@@ -154,7 +155,7 @@ class CbhAscii(object):
             raise ValueError('Variable name (var) must be provided')
 
         first = True
-        data = None
+        self.__dataframe = None
 
         for rr in REGIONS:
             idx_retrieve = self.check_region(region=rr)
@@ -193,11 +194,11 @@ class CbhAscii(object):
                 df.rename(columns=ren_dict, inplace=True)
 
                 if first:
-                    data = df.copy()
+                    self.__dataframe = df.copy()
                     first = False
                 else:
-                    data = data.join(df, how='left')
-        return data
+                    self.__dataframe = self.__dataframe.join(df, how='left')
+        return self.__dataframe
 
     def get_var(self, var):
         data = self.read_cbh_multifile(var=var)
