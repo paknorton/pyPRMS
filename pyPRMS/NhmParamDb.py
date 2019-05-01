@@ -4,6 +4,7 @@ from future.utils import iteritems    # , iterkeys
 
 
 # import numpy as np
+from collections import OrderedDict
 
 from pyPRMS.prms_helpers import read_xml
 # from pyPRMS.Exceptions_custom import ParameterError
@@ -17,6 +18,7 @@ class NhmParamDb(ParameterSet):
         super(NhmParamDb, self).__init__()
         self.__paramdb_dir = paramdb_dir
 
+        self.__warnings = []
         # Build mappings between national and regional ids
         self.__reg_to_nhm_seg = {}
         self.__nhm_to_reg_seg = {}
@@ -31,6 +33,9 @@ class NhmParamDb(ParameterSet):
 
         # Populate the global dimensions information
         self._build_global_dimensions()
+
+        if len(self.__warnings) > 0:
+            print('There were {} warnings while reading'.format(len(self.__warnings)))
 
     @property
     def available_parameters(self):
@@ -47,6 +52,10 @@ class NhmParamDb(ParameterSet):
     @property
     def hru_nhm_to_region(self):
         return self.__nhm_reg_range_hru
+
+    @property
+    def warnings(self):
+        return self.__warnings
 
     def _build_global_dimensions(self):
         """Populate the global dimensions object with total dimension sizes from the parameters"""
@@ -87,7 +96,8 @@ class NhmParamDb(ParameterSet):
         name = 'nhm_id'
 
         self.__nhm_reg_range_hru = {}
-        self.__nhm_to_reg_hru = {}
+        self.__nhm_to_reg_hru = OrderedDict()
+        # self.__nhm_to_reg_hru = {}
 
         for rr in REGIONS:
             tmp_data = []
@@ -129,7 +139,7 @@ class NhmParamDb(ParameterSet):
 
             if self.parameters.exists(xml_param_name):
                 # Sometimes the global parameter file has duplicates of parameters
-                print('WARNING: {} is duplicated in {}'.format(xml_param_name, PARAMETERS_XML))
+                self.__warnings.append('WARNING: {} is duplicated in {}'.format(xml_param_name, PARAMETERS_XML))
                 continue
             else:
                 self.parameters.add(xml_param_name)
@@ -176,7 +186,7 @@ class NhmParamDb(ParameterSet):
                         try:
                             tmp_data.append(self.__reg_to_nhm_seg[rr][int(val)])
                         except KeyError:
-                            print('WARNING: poi_gage_segment for local segment {} in {}  is zero'.format(idx, rr))
+                            self.__warnings.append('WARNING: poi_gage_segment for local segment {} in {}  is zero'.format(idx, rr))
                             tmp_data.append(0)
                     elif xml_param_name == 'hru_deplcrv':
                         tmp_data.append(int(val) + crv_offset)
