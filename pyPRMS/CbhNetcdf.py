@@ -43,7 +43,8 @@ class CbhNetcdf(object):
 
         if self.__nhm_hrus:
             # print('\t\tOpen dataset')
-            self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1000})
+            # self.__dataset = xr.open_mfdataset(self.__src_path)
+            self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040})
         else:
             print('ERROR: write the code for all HRUs')
             exit()
