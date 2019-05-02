@@ -7,7 +7,7 @@ import pandas as pd
 from collections import OrderedDict
 import xml.etree.ElementTree as xmlET
 
-from pyPRMS.Exceptions_custom import ParameterError
+from pyPRMS.Exceptions_custom import ParameterError, ConcatError
 from pyPRMS.constants import DATA_TYPES
 from pyPRMS.Dimensions import ParamDimensions
 
@@ -362,8 +362,11 @@ class Parameter(object):
             # than 1 value. Output warning if the incoming value is different
             # from a pre-existing value
             if data_np[0] != self.__data[0]:
-                print('WARNING: {} with dimension "one" has different '.format(self.__name) +
-                      'value ({}) from current ({}). Keeping current value.'.format(data_np[0], self.__data[0]))
+                raise ConcatError('Parameter, {}, with dimension "one" already '.format(self.__name) +
+                                  'has assigned value = {}; '.format(self.__data[0]) +
+                                  'Cannot concatenate additional value(s), {}'.format(data_np[0]))
+                # print('WARNING: {} with dimension "one" has different '.format(self.__name) +
+                #       'value ({}) from current ({}). Keeping current value.'.format(data_np[0], self.__data[0]))
         else:
             self.__data = np.concatenate((self.__data, data_np))
             # self.__data = data_np

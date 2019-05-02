@@ -7,7 +7,7 @@ from future.utils import iteritems    # , iterkeys
 from collections import OrderedDict
 
 from pyPRMS.prms_helpers import read_xml
-# from pyPRMS.Exceptions_custom import ParameterError
+from pyPRMS.Exceptions_custom import ConcatError
 from pyPRMS.ParameterSet import ParameterSet
 from pyPRMS.constants import REGIONS, NHM_DATATYPES
 from pyPRMS.constants import PARAMETERS_XML
@@ -195,5 +195,9 @@ class NhmParamDb(ParameterSet):
                 if len(tmp_data) != size:
                     print('ERROR: {} ({}) mismatch between dimensions and data ({} != {})'.format(xml_param_name, rr, size, len(tmp_data)))
 
-                self.parameters.get(xml_param_name).concat(tmp_data)
+                try:
+                    self.parameters.get(xml_param_name).concat(tmp_data)
+                except ConcatError as e:
+                    self.__warnings.append(e)
+
                 crv_offset = self.parameters.get(xml_param_name).data.size
