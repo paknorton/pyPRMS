@@ -72,7 +72,8 @@ def main():
         hruo = nco.createVariable('hru', 'i4', ('hru'))
         hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
 
-        varo = nco.createVariable(args.var, 'f4', ('time', 'hru'), fill_value=netCDF4.default_fillvals['f4'], zlib=True)
+        varo = nco.createVariable(args.var, 'f4', ('time', 'hru'), fill_value=netCDF4.default_fillvals['f4'],
+                                  zlib=True, complevel=1, chunksizes=[31, 260])
         varo.long_name = var_desc[args.var]
         varo.units = var_units[args.var]
 
