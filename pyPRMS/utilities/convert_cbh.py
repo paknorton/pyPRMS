@@ -32,6 +32,7 @@ def main():
     # st_date = datetime.datetime(1980, 1, 1)
     # en_date = datetime.datetime(2016, 12, 31)
 
+    print('Reading NHM paramDb')
     nhm_pdb = NhmParamDb(paramdb_dir=args.paramdb_dir)
     hru_nhm_to_local = nhm_pdb.hru_nhm_to_local
     hru_nhm_to_region = nhm_pdb.hru_nhm_to_region
