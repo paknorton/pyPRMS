@@ -2,10 +2,11 @@ from __future__ import (absolute_import, division, print_function)
 from future.utils import iteritems
 
 import os
+import numpy as np
 import pandas as pd
 # import fastparquet as fp
 import netCDF4 as nc
-import xarray as xr
+# import xarray as xr
 from collections import OrderedDict
 
 from pyPRMS.prms_helpers import dparse
@@ -181,7 +182,24 @@ class CbhAscii(object):
                     # Missing data file for this variable and region
                     raise IOError('Required CBH file, {}, is missing.'.format(cbh_file))
 
-                df = self.read_ascii_file(cbh_file, columns=load_cols)
+                # df = self.read_ascii_file(cbh_file, columns=load_cols)
+
+                # Small read to get number of columns
+                df = pd.read_csv(cbh_file, sep=' ', skipinitialspace=True,
+                                 usecols=load_cols, nrows=2,
+                                 skiprows=3, engine='c', memory_map=True,
+                                 date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                                 index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
+
+                # Override Pandas rather stupid default of float64
+                col_dtypes = {xx: np.float32 for xx in df.columns}
+
+                # Now read the whole file using float32 instead of float64
+                df = pd.read_csv(cbh_file, sep=' ', skipinitialspace=True,
+                                 usecols=load_cols, dtype=col_dtypes,
+                                 skiprows=3, engine='c', memory_map=True,
+                                 date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                                 index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
 
                 if self.__stdate is not None and self.__endate is not None:
                     # Restrict the date range
