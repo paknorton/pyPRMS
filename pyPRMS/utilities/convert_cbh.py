@@ -15,6 +15,10 @@ __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
 def main():
     parser = argparse.ArgumentParser(description='Convert parameter files to different formats')
+    parser.add_argument('-s', '--start_date', type=lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),
+                        help='Starting date in the format YYYY-MM-DD')
+    parser.add_argument('-e', '--end_date', type=lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),
+                        help='Ending date in the format YYYY-MM-DD')
     parser.add_argument('-P', '--paramdb_dir', help='Location of parameter database')
     parser.add_argument('-C', '--cbh_path', help='Location of CBH files')
     parser.add_argument('--dst', help='Destination file or directory')
@@ -23,8 +27,10 @@ def main():
 
     args = parser.parse_args()
 
-    st_date = datetime.datetime(1980, 1, 1)
-    en_date = datetime.datetime(2016, 12, 31)
+    st_date = args.start_date
+    en_date = args.end_date
+    # st_date = datetime.datetime(1980, 1, 1)
+    # en_date = datetime.datetime(2016, 12, 31)
 
     nhm_pdb = NhmParamDb(paramdb_dir=args.paramdb_dir)
     hru_nhm_to_local = nhm_pdb.hru_nhm_to_local
