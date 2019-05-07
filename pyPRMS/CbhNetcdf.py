@@ -57,7 +57,7 @@ class CbhNetcdf(object):
 
         return data
 
-    def write_ascii(self, fileprefix=None, vars=None):
+    def write_ascii(self, pathname=None, fileprefix=None, vars=None):
         # For out_order the first six columns contain the time information and
         # are always output for the cbh files
         out_order = [kk for kk in self.__nhm_hrus]
@@ -85,6 +85,9 @@ class CbhNetcdf(object):
                 outfile = '{}.cbh'.format(cvar)
             else:
                 outfile = '{}_{}.cbh'.format(fileprefix, cvar)
+
+            if pathname is not None:
+                outfile = '{}/{}'.format(pathname, outfile)
 
             out_cbh = open(outfile, 'w')
             out_cbh.write('Written by Bandit\n')
