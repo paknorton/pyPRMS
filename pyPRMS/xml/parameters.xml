@@ -2733,7 +2733,7 @@
         <maximum>1</maximum>
         <default>1</default>
         <modules>
-            <module>setup_param</module>
+            <module>basin</module>
         </modules>
         <dimensions>
             <dimension name="npoigages">
@@ -2803,7 +2803,7 @@
         <minimum>0</minimum>
         <maximum>9999999</maximum>
         <modules>
-            <module>setup_param</module>
+            <module>basin</module>
             <module>prms_summary</module>
         </modules>
         <dimensions>
@@ -2821,7 +2821,7 @@
         <maximum>nsegment</maximum>
         <default>0</default>
         <modules>
-            <module>setup_param</module>
+            <module>basin</module>
             <module>prms_summary</module>
         </modules>
         <dimensions>
