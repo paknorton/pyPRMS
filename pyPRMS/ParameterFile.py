@@ -130,7 +130,7 @@ class ParameterFile(ParameterSet):
                     while True:
                         cval = next(it)
 
-                        if cval == VAR_DELIM or cval.strip() == '':
+                        if cval[0:4] == VAR_DELIM or cval.strip() == '':
                             break
                         vals.append(cval)
                 except StopIteration:
@@ -142,7 +142,7 @@ class ParameterFile(ParameterSet):
                           '({} != {}).. skipping'.format(varname, len(vals), numval))
 
                     # Remove the parameter from the dictionary
-                    self.parameters.del_param(varname)
+                    self.parameters.remove(varname)
                 else:
                     # Convert the values to the correct datatype
                     self.parameters.get(varname).data = vals
