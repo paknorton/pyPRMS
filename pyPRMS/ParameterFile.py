@@ -13,13 +13,15 @@ import functools
 
 
 class ParameterFile(ParameterSet):
-    def __init__(self, filename):
+    def __init__(self, filename, verbose=False):
         super(ParameterFile, self).__init__()
 
         self.__filename = None
         self.__header = None
 
         self.__isloaded = False
+        self.__updated_params = set()
+        self.__verbose = verbose
         self.filename = filename
 
     @property
@@ -38,6 +40,10 @@ class ParameterFile(ParameterSet):
     def headers(self):
         """Returns the headers read from the parameter file"""
         return self.__header
+
+    @property
+    def updated_params(self):
+        return self.__updated_params
 
     def _read(self):
         # Read the parameter file into memory and parse it
@@ -75,16 +81,19 @@ class ParameterFile(ParameterSet):
             try:
                 self.parameters.add(varname)
             except ParameterError:
-                print('%s: Duplicate parameter name.. skipping' % varname)
+                if self.__verbose:
+                    print(f'Parameter, {varname}, updated with new values')
+                self.__updated_params.add(varname)
+                # print('%s: Duplicate parameter name.. skipping' % varname)
 
                 # Skip to the next parameter
-                try:
-                    while next(it) != VAR_DELIM:
-                        pass
-                except StopIteration:
-                    # Hit end of file
-                    pass
-                continue
+                # try:
+                #     while next(it) != VAR_DELIM:
+                #         pass
+                # except StopIteration:
+                #     # Hit end of file
+                #     pass
+                # continue
 
             # Read in the dimension names
             ndims = int(next(it))  # number of dimensions for this variable
