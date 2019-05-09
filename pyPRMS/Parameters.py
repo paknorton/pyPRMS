@@ -412,10 +412,7 @@ class Parameter(object):
             total_size *= self.dimensions.get(dd).size
 
         # This assumes a numpy array
-        if self.data.size == total_size:
-            # The number of values for the defined dimensions match
-            return True
-        return False
+        return self.data.size == total_size
 
     def tolist(self):
         """Returns the parameter data as a list
@@ -443,6 +440,10 @@ class Parameter(object):
                  'dimensions': self.dimensions.tostructure(),
                  'data': self.tolist()}
         return param
+
+    def unique(self):
+        """Returns array of unique values for parameter"""
+        return np.unique(self.__data)
 
     def __str_to_float(self, data):
         """Convert strings to a floats
@@ -519,6 +520,10 @@ class Parameters(object):
         for pp in self.__parameters.values():
             pp.check()
 
+            if pp.name == 'snarea_curve':
+                if pp.as_dataframe.values.reshape((-1, 11)).size != self.__parameters['hru_deplcrv'].unique().size:
+                    print('  WARNING: snarea_curve has more entries than needed by hru_deplcrv')
+
     def remove(self, name):
         """Delete one or more parameters if they exist
 
@@ -558,8 +563,8 @@ class Parameters(object):
 
     def get_dataframe(self, name):
         """Returns a pandas DataFrame for a parameter. If the parameter dimensions includes
-           either nhrus or nsegment then the respective national ids are included as the
-           index in the return dataframe.
+           either nhrus or nsegment then the respective national ids are included,
+           if they exist, as the index in the return dataframe.
 
            :param name: The name of the parameter
            :returns: Pandas DataFrame of the parameter data
@@ -571,11 +576,16 @@ class Parameters(object):
 
             if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
                 if name != 'nhm_id':
-                    param_id = self.__parameters['nhm_id'].as_dataframe
+                    try:
+                        param_id = self.__parameters['nhm_id'].as_dataframe
 
-                    # Create a DataFrame of the parameter
-                    param_data = param_data.merge(param_id, left_index=True, right_index=True)
-                    param_data.set_index('nhm_id', inplace=True)
+                        # Create a DataFrame of the parameter
+                        param_data = param_data.merge(param_id, left_index=True, right_index=True)
+                        param_data.set_index('nhm_id', inplace=True)
+                    except KeyError:
+                        # If there is no nhm_id parameter then just return the
+                        # requested parameter by itself
+                        param_data.index.name = 'hru'
                 else:
                     param_data = self.__parameters['nhm_id'].as_dataframe
             elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
@@ -584,7 +594,13 @@ class Parameters(object):
                 # Create a DataFrame of the parameter
                 param_data = param_data.merge(param_id, left_index=True, right_index=True)
                 param_data.set_index(['nhm_seg'], inplace=True)
-
+            elif name == 'snarea_curve':
+                # Special handling for snarea_curve parameter
+                param_data = pd.DataFrame(cparam.as_dataframe.values.reshape((-1, 11)))
+                param_data.rename(columns={k: k+1 for k in param_data.columns},
+                                  index={k: k+1 for k in param_data.index},
+                                  inplace=True)
+                param_data.index.name = 'curve_index'
             return param_data
         raise ValueError('Parameter, {}, has no associated data'.format(name))
 
