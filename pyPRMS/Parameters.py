@@ -521,7 +521,7 @@ class Parameters(object):
             pp.check()
 
             if pp.name == 'snarea_curve':
-                if pp.as_dataframe.values.reshape((-1, 11)).size != self.__parameters['hru_deplcrv'].unique().size:
+                if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
                     print('  WARNING: snarea_curve has more entries than needed by hru_deplcrv')
 
     def remove(self, name):
@@ -585,6 +585,8 @@ class Parameters(object):
                     except KeyError:
                         # If there is no nhm_id parameter then just return the
                         # requested parameter by itself
+                        param_data.rename(index={k: k + 1 for k in param_data.index},
+                                          inplace=True)
                         param_data.index.name = 'hru'
                 else:
                     param_data = self.__parameters['nhm_id'].as_dataframe
