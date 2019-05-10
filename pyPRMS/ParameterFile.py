@@ -82,7 +82,7 @@ class ParameterFile(ParameterSet):
                 self.parameters.add(varname)
             except ParameterError:
                 if self.__verbose:
-                    print(f'Parameter, {varname}, updated with new values')
+                    print('Parameter, {}, updated with new values'.format(varname))
                 self.__updated_params.add(varname)
                 # print('%s: Duplicate parameter name.. skipping' % varname)
 

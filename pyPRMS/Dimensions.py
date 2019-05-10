@@ -309,7 +309,7 @@ class ParamDimensions(Dimensions):
     def get_position(self, name):
         """Returns the 0-based index position of the given dimension name"""
         # TODO: method name should be index() ??
-        return self.dimensions.keys().index(name)
+        return list(self.dimensions.keys()).index(name)
 
     def tostructure(self):
         """Returns a structure of the dimensions including position information"""
