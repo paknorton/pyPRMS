@@ -4,17 +4,29 @@ from __future__ import (absolute_import, division, print_function)
 import io
 import pkgutil
 import xml.etree.ElementTree as xmlET
-from pyPRMS.ParameterSet import ParameterSet
+from pyPRMS.Parameters import Parameters
 from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.constants import NHM_DATATYPES
 
 
-class ValidParams(ParameterSet):
+class ValidParams(Parameters):
+
+    """Object containing master list of parameters."""
+
     # Author: Parker Norton (pnorton@usgs.gov)
-    # Create date: 2016-01-06
-    # Description: Object for the database of valid input parameters
+    # Create date: 2019-04
 
     def __init__(self, filename=None):
+        """Create ValidParams object.
+
+        Will read an XML file of parameters to use as a master of valid
+        PRMS parameters. If no filename is specified an internal library XML file
+        is read.
+
+        :param filename: name of XML parameter file
+        :type filename: str or None
+        """
+
         super(ValidParams, self).__init__()
 
         self.__filename = filename
@@ -33,13 +45,29 @@ class ValidParams(ParameterSet):
 
     @property
     def filename(self):
+        """Get XML filename.
+
+        Returned filename is None if reading from the library-internal XML file.
+
+        :returns: name of XML file
+        :rtype: str or None
+        """
+
         return self.__filename
 
     @filename.setter
-    def filename(self, filename):
+    def filename(self, filename=None):
+        """Set the XML file name.
+
+        If no filename is specified an library-internal XML file is read.
+
+        :param filename: name of XML parameter file
+        :type filename: str or None
+        """
+
         self.__filename = filename
 
-        if filename:
+        if filename is not None:
             self.__xml_tree = xmlET.parse(self.__filename)
         else:
             # Use the package parameters.xml by default
@@ -51,7 +79,13 @@ class ValidParams(ParameterSet):
         self.__isloaded = True
 
     def get_params_for_modules(self, modules):
-        """Returns a list of unique parameters required for a given list of modules"""
+        """Get list of unique parameters required for a given list of modules.
+
+        :param list[str] modules: list of PRMS modules
+
+        :returns: set of parameter names
+        :rtype: set[str]
+        """
 
         params_by_module = []
 
@@ -62,7 +96,10 @@ class ValidParams(ParameterSet):
         return set(params_by_module)
 
     def _read(self):
-        """Read a parameter.xml file to create a parameter set with no data"""
+        """Read an XML parameter file.
+
+        The resulting Parameters object will have parameters that have not data.
+        """
 
         xml_root = self.__xml_tree.getroot()
 
@@ -73,18 +110,18 @@ class ValidParams(ParameterSet):
             dtype = elem.find('type').text
             # print(name)
             try:
-                self.parameters.add(name)
+                self.add(name)
 
-                self.parameters.get(name).datatype = NHM_DATATYPES[dtype]
-                self.parameters.get(name).description = elem.find('desc').text
-                self.parameters.get(name).maximum = elem.find('maximum').text
+                self.get(name).datatype = NHM_DATATYPES[dtype]
+                self.get(name).description = elem.find('desc').text
+                self.get(name).maximum = elem.find('maximum').text
 
                 # Add dimensions for current parameter
                 for cdim in elem.findall('./dimensions/dimension'):
-                    self.parameters.get(name).dimensions.add(cdim.attrib.get('name'))
+                    self.get(name).dimensions.add(cdim.attrib.get('name'))
 
                 for cmod in elem.findall('./modules/module'):
-                    self.parameters.get(name).modules = cmod.text
+                    self.get(name).modules = cmod.text
             except ParameterError:
                 # Parameter exists add any new attribute information
                 pass
