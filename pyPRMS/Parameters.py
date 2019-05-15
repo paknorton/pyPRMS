@@ -1,6 +1,6 @@
 
 from __future__ import (absolute_import, division, print_function)
-# from future.utils import iteritems
+from future.utils import iteritems
 
 import numpy as np
 import pandas as pd
@@ -13,8 +13,8 @@ from pyPRMS.Dimensions import ParamDimensions
 
 
 class Parameter(object):
-    """
-    Container for a single Parameter object
+
+    """Container for a single Parameter object.
 
     A parameter has a name, datatype, optional units, one or more dimensions, and
     associated data.
@@ -23,30 +23,44 @@ class Parameter(object):
     # Container for a single parameter
     def __init__(self, name=None, datatype=None, units=None, model=None, description=None,
                  help=None, modules=None, minimum=None, maximum=None, default=None):
-        """Initialize the Parameter object
+        """Initialize the Parameter object.
 
-        :param name: A valid PRMS parameter name
-        :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
-        :param units: Option units string for the parameter"""
+        :param str name: A valid PRMS parameter name
+        :param int datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
+        :param str units: Option units string for the parameter
+        :param str model: <<FILL IN LATER>>
+        :param str description: Description of the parameter
+        :param str help: Help text for the parameter
+        :param modules: List of modules that require the parameter
+        :type modules: list[str] or None
+        :param minimum: Minimum value allowed in the parameter data
+        :type minimum: int or float or None
+        :param maximum: Maximum value allowed in the parameter data
+        :type maximum: int or float or None
+        :param default: Default value used for parameter data
+        :type default: int or float or None
+        """
 
-        self.__modules = []
-
-        self.__name = name  # string
-        self.__datatype = datatype  # ??
-        self.__units = units    # string (optional)
-        self.__model = model    # string (optional)
-        self.__description = description    # string (optional)
-        self.__help = help      # string (optional)
-        self.modules = modules      # PRMS modules that use the parameter (optional)
-        self.__minimum = minimum    # Minimum value allowed (optional)
-        self.__maximum = maximum    # Maximum value allowed (optional)
-        self.__default = default    # Default value for parameter (optional)
+        self.__name = name
+        self.__datatype = datatype
+        self.__units = units
+        self.__model = model
+        self.__description = description
+        self.__help = help
+        self.__modules = modules
+        self.__minimum = minimum
+        self.__maximum = maximum
+        self.__default = default
 
         self.__dimensions = ParamDimensions()
         self.__data = None  # array
 
     def __str__(self):
-        """Return a pretty print string representation of the parameter information"""
+        """Pretty-print string representation of the parameter information.
+
+        :return: Parameter information
+        :rtype: str
+        """
 
         outstr = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndescription: {}\nhelp: {}\n'.format(self.name, self.datatype,
                                                                          self.units, self.ndims, self.description, self.help)
@@ -79,7 +93,7 @@ class Parameter(object):
 
     @property
     def as_dataframe(self):
-        """Returns the data for the parameter as a pandas dataframe"""
+        """Returns the parameter data as a pandas DataFrame."""
 
         if len(self.data.shape) == 2:
             df = pd.DataFrame(self.data)
@@ -93,20 +107,23 @@ class Parameter(object):
 
     @property
     def name(self):
-        """Returns the name of the parameter"""
+        """Returns the parameter name."""
         return self.__name
 
     @property
     def datatype(self):
-        """Returns the datatype of the parameter"""
+        """Returns the datatype of the parameter.
+
+        :rtype: int"""
         return self.__datatype
 
     @datatype.setter
     def datatype(self, dtype):
-        """Sets the datatype for the parameter
+        """Sets the datatype for the parameter.
 
-        :param dtype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
+        :param int dtype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
         """
+
         # TODO: Should this be able to handle both string (e.g. 'I') and integer datatypes?
         # TODO: If datatype is changed should verify existing data can be cast to it
         if dtype in DATA_TYPES:
@@ -116,66 +133,82 @@ class Parameter(object):
 
     @property
     def units(self):
-        """Returns the units used for the parameter data"""
+        """Returns the parameter units.
+
+        :rtype: str
+        """
         return self.__units
 
     @units.setter
     def units(self, unitstr):
-        """Set the units used for the parameter data
+        """Set the parameter units.
 
-        :param unitstr: String denoting the units for the parameter (e.g. mm)
+        :param str unitstr: String denoting the units for the parameter (e.g. mm)
         """
         self.__units = unitstr
 
     @property
     def model(self):
-        """Returns the model the parameter is used in"""
+        """Returns the model the parameter is used in.
+
+        :rtype: str
+        """
         return self.__model
 
     @model.setter
     def model(self, modelstr):
-        """Set the model description for the parameter
+        """Set the model description for the parameter.
 
-        :param modelstr: String denoting the model (e.g. PRMS)
+        :param str modelstr: String denoting the model (e.g. PRMS)
         """
         self.__model = modelstr
 
     @property
     def description(self):
-        """Returns the parameter description"""
+        """Returns the parameter description.
+
+        :rtype: str
+        """
         return self.__description
 
     @description.setter
     def description(self, descstr):
-        """Set the model description for the parameter
+        """Set the model description for the parameter.
 
-        :param descstr: Description string
+        :param str descstr: Description string
         """
         self.__description = descstr
 
     @property
     def help(self):
-        """Returns the help information for the parameter"""
+        """Returns the help information for the parameter.
+
+        :rtype: str
+        """
         return self.__help
 
     @help.setter
     def help(self, helpstr):
-        """Set the help string for the parameter
+        """Set the help string for the parameter.
 
-        :param helpstr: Help string
+        :param str helpstr: Help string
         """
         self.__help = helpstr
 
     @property
     def minimum(self):
-        """Returns the minimum valid value for the parameter"""
+        """Returns the minimum valid value for the parameter.
+
+        :rtype: int or float or None
+        """
         return self.__minimum
 
     @minimum.setter
     def minimum(self, value):
-        """Set the minimum valid value for the parameter
+        """Set the minimum valid value for the parameter.
 
-        :param value: The value to use
+        :param value: The minimum value
+        :type value: int or float or None
         """
         if self.__datatype is None:
             self.__minimum = value
@@ -192,14 +225,18 @@ class Parameter(object):
 
     @property
     def maximum(self):
-        """Returns the maximum valid value for the parameter"""
+        """Returns the maximum valid value for the parameter.
+
+        :rtype: int or float or None
+        """
         return self.__maximum
 
     @maximum.setter
     def maximum(self, value):
-        """Set the maximum valid value for the parameter
+        """Set the maximum valid value for the parameter.
 
-        :param value: The value to use
+        :param value: The maximum value
+        :type value: int or float or None
         """
         if self.__datatype is None:
             self.__maximum = value
@@ -216,14 +253,18 @@ class Parameter(object):
 
     @property
     def default(self):
-        """Returns the minimum valid value for the parameter"""
+        """Returns the default value for the parameter.
+
+        :rtype: int or float or None
+        """
         return self.__default
 
     @default.setter
     def default(self, value):
-        """Set the default value for the parameter
+        """Set the default value for the parameter.
 
-        :param value: The value to use
+        :param value: The default value
+        :type value: int or float or None
         """
         if self.__datatype is None:
             self.__default = value
@@ -236,47 +277,56 @@ class Parameter(object):
 
     @property
     def modules(self):
-        """Returns the names of the modules that use the parameter"""
+        """Returns the names of the modules require the parameter.
+
+        :rtype: list[str] or None
+        """
         return self.__modules
 
     @modules.setter
     def modules(self, modulestr):
-        """Set the names of the modules that use the parameter
+        """Set the names of the modules that require the parameter.
 
         :param modulestr: Single module name or list of module names to add
+        :type modulestr: list[str] or str or None
         """
         if modulestr is not None:
             if isinstance(modulestr, list):
-                self.__modules.extend(modulestr)
+                self.__modules = modulestr
             else:
-                self.__modules.append(modulestr)
+                self.__modules = [modulestr]
         else:
-            # Don't add a None type to the set of modules
-            pass
+            self.__modules = None
 
     @property
     def dimensions(self):
-        """Returns the Dimensions object associated with the parameter"""
+        """Returns the Dimensions object associated with the parameter."""
         return self.__dimensions
 
     @property
     def ndims(self):
-        """Returns the number of dimensions that are defined for the parameter"""
-        # Return the number of dimensions defined for the parameter
+        """Returns the number of dimensions that are defined for the parameter.
+
+        :rtype: int"""
         return self.__dimensions.ndims
 
     @property
     def data(self):
-        """Returns the data associated with the parameter"""
+        """Returns the data associated with the parameter.
+
+        :rtype: np.ndarray
+        """
         if self.__data is not None:
             return self.__data
         raise ValueError('Parameter, {}, has no data'.format(self.__name))
 
     @data.setter
     def data(self, data_in):
-        """Sets the data associated with the parameter
+        """Sets the data for the parameter.
 
-        :param data_in: A list containing the data for the parameter
+        :param list data_in: A list containing the parameter data
+        :raises TypeError: if the datatype for the parameter is invalid
+        :raises ValueError: if the number of dimensions for the parameter is greater than 2
         """
         # Raise an error if no dimensions are defined for parameter
         if not self.ndims:
@@ -318,7 +368,10 @@ class Parameter(object):
 
     @property
     def xml(self):
-        """Return the xml metadata for the parameter as xml Element"""
+        """Return the xml metadata for the parameter as an xml Element.
+
+        :rtype: xmlET.Element
+        """
         param_root = xmlET.Element('parameter')
         param_root.set('name', self.name)
         param_root.set('version', 'ver')
@@ -326,10 +379,17 @@ class Parameter(object):
         return param_root
 
     def concat(self, data_in):
-        """Takes a list and concatenates to the end of the parameter data.
-        This is most useful when reading 2D parameter data by region where
+        """Takes a list of parameter data and concatenates it to the end of the existing parameter data.
+
+        This is useful when reading 2D parameter data by region where
         the ordering of the data must be correctly maintained in the final
-        dataset"""
+        dataset
+
+        :param list data_in: Data to concatenate (or append) to existing parameter data
+        :raises TypeError: if the datatype for the parameter is invalid
+        :raises ValueError: if the number of dimensions for the parameter is greater than 2
+        :raises ConcatError: if concatenation is attempted with a parameter of dimension 'one' (e.g. scalar)
+        """
 
         if not self.ndims:
             raise ValueError('No dimensions have been defined for {}. Unable to concatenate data'.format(self.name))
@@ -372,23 +432,27 @@ class Parameter(object):
             # self.__data = data_np
 
     def check(self):
-        """Verifies the total size of the data for the parameter matches the total declared dimension sizes
-        and returns a message """
+        """Verifies the total size of the data for the parameter matches the total declared dimension(s) size
+        and returns a message.
+
+        :rtype: str
+        """
 
         # Check a variable to see if the number of values it has is
         # consistent with the given dimensions
-
         if self.has_correct_size():
             # The number of values for the defined dimensions match
-            print('%s: OK' % self.name)
+            return '{}: OK'.format(self.name)
         else:
-            print('%s: BAD' % self.name)
+            return '{}: BAD'.format(self.name)
 
     def get_dimsize_by_index(self, index):
-        """Return size of dimension at the given index
+        """Return size of dimension at the given index.
 
-        :param index: The 0-based position of the dimension.
-        :returns: Integer size of the dimension.
+        :param int index: The 0-based position of the dimension.
+        :returns: Size of the dimension.
+        :rtype: int
+        :raises ValueError: if index is greater than number dimensions for the parameter
         """
 
         if index < len(self.__dimensions.dimensions.items()):
@@ -401,7 +465,9 @@ class Parameter(object):
         raise ValueError('Parameter has no dimension at index {}'.format(index))
 
     def has_correct_size(self):
-        """Verifies the total size of the data for the parameter matches the total declared dimension sizes"""
+        """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
+
+        :rtype: bool"""
 
         # Check a variable to see if the number of values it has is
         # consistent with the given dimensions
@@ -414,24 +480,76 @@ class Parameter(object):
         # This assumes a numpy array
         return self.data.size == total_size
 
-    def tolist(self):
-        """Returns the parameter data as a list
+    def reshape(self, new_dims):
+        """Reshape a parameter, broadcasting existing values as necessary.
 
-        :returns: Parameter data as a list"""
+        :param collections.OrderedDict new_dims: Dimension names and sizes that will be used to reshape the parameter data
+        """
+
+        if self.dimensions.ndims == 1:
+            if 'one' in self.dimensions.keys():
+                # Reshaping from a scalar to a 1D or 2D array
+                print('Scalar to 1D or 2D')
+                new_sizes = [vv.size for vv in new_dims.values()]
+                tmp_data = np.broadcast_to(self.__data, new_sizes)
+
+                # Remove the original dimension
+                self.dimensions.remove('one')
+
+                # Add the new ones
+                for kk, vv in iteritems(new_dims):
+                    self.dimensions.add(kk, vv.size)
+
+                self.__data = tmp_data
+            elif set(self.dimensions.keys()).issubset(set(new_dims.keys())):
+                # Reschaping a 1D to a 2D
+                if len(new_dims) == 1:
+                    print('ERROR: Cannot reshape from 1D array to 1D array')
+                else:
+                    print('1D array to 2D array')
+                    new_sizes = [vv.size for vv in new_dims.values()]
+                    try:
+                        tmp_data = np.broadcast_to(self.__data, new_sizes)
+                    except ValueError:
+                        # operands could not be broadcast together with remapped shapes
+                        tmp_data = np.broadcast_to(self.__data, new_sizes[::-1]).T
+
+                    old_dim = list(self.dimensions.keys())[0]
+                    self.dimensions.remove(old_dim)
+
+                    for kk, vv in iteritems(new_dims):
+                        self.dimensions.add(kk, vv.size)
+
+                    self.__data = tmp_data
+
+    def tolist(self):
+        """Returns the parameter data as a list.
+
+        :returns: Parameter data
+        :rtype: list
+        """
+
         # Return a list of the data
         return self.__data.ravel(order='F').tolist()
 
     def toparamdb(self):
-        """Outputs parameter data in the paramDb csv format"""
+        """Outputs parameter data in the paramDb csv format.
+
+        :rtype: str
+        """
+
         outstr = '$id,{}\n'.format(self.name)
         for ii, dd in enumerate(self.tolist()):
             outstr += '{},{}\n'.format(ii+1, dd)
         return outstr
 
     def tostructure(self):
-        """Returns a dictionary structure of the parameter. This is typically used for serializing parameters.
+        """Returns a dictionary structure of the parameter.
 
-        :returns: dictionary structure of the parameter.
+        This is typically used for serializing parameters.
+
+        :returns: dictionary structure of the parameter
+        :rtype: dict
         """
 
         # Return all information about this parameter in the following form
@@ -442,13 +560,20 @@ class Parameter(object):
         return param
 
     def unique(self):
-        """Returns array of unique values for parameter"""
+        """Create array of unique values from the parameter data.
+
+        :returns: Array of unique values
+        :rtype: np.ndarray
+        """
         return np.unique(self.__data)
 
     def __str_to_float(self, data):
-        """Convert strings to a floats
+        """Convert strings to a floats.
+
+        :param list[str] data: list of data
 
         :returns: array of floats
+        :rtype: list[float]
         """
 
         # Convert provide list of data to float
@@ -458,9 +583,12 @@ class Parameter(object):
             print(ve)
 
     def __str_to_int(self, data):
-        """Converts strings to integers
+        """Converts strings to integers.
+
+        :param list[str] data: list of data
 
         :returns: array of integers
+        :rtype: list[int]
         """
 
         # Convert list of data to integer
@@ -470,44 +598,63 @@ class Parameter(object):
             print(ve)
 
     def __str_to_str(self, data):
-        """Null op for string to string conversion
+        """Null op for string-to-string conversion.
 
-        :returns: data unchanged"""
+        :param list[str] data: list of data
+
+        :returns: unmodified array of data
+        :rtype: list[str]
+        """
+
         # nop for list of strings
         return data
 
 
 class Parameters(object):
-    """Container of multiple Parameter objects"""
+    """Container of multiple pyPRMS.Parameter objects.
+    """
+
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2017-05-01
-    # Description: Class object to handle reading and writing the PRMS
-    #              parameter files which have been generated by Java.
 
     # TODO: Add basic statistical functions
 
     def __init__(self):
-        """Create an ordered dictionary to contain individual parameter objects"""
+        """Initialize the Parameters object.
+
+        Create an ordered dictionary to contain pyPRMS.Parameter objects
+        """
         self.__parameters = OrderedDict()
-    # END __init__
 
     def __getattr__(self, name):
+        """Not sure what to write yet.
+        """
+
         # Undefined attributes will look up the given parameter
         # return self.get(item)
         return getattr(self.__parameters, name)
 
     def __getitem__(self, item):
+        """Not sure what to write yet.
+        """
+
         return self.get(item)
 
     @property
     def parameters(self):
-        """Returns an ordered dictionary of parameter names"""
+        """Returns an ordered dictionary of parameter objects.
+
+        :rtype: collections.OrderedDict[str, Parameter]
+        """
+
         return self.__parameters
 
     def add(self, name):
-        """Add a new parameter by name
+        """Add a new parameter by name.
 
-        :param name: A valid PRMS parameter name
+        :param str name: A valid PRMS parameter name
+
+        :raises ParameterError: if parameter already exists
         """
 
         # Add a new parameter
@@ -516,18 +663,21 @@ class Parameters(object):
         self.__parameters[name] = Parameter(name=name)
 
     def check(self):
-        """Check all parameter variables for proper array size"""
+        """Check all parameter variables for proper array size.
+        """
+
         for pp in self.__parameters.values():
-            pp.check()
+            print(pp.check())
 
             if pp.name == 'snarea_curve':
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
                     print('  WARNING: snarea_curve has more entries than needed by hru_deplcrv')
 
     def remove(self, name):
-        """Delete one or more parameters if they exist
+        """Delete one or more parameters if they exist.
 
-        :param name: Single parameter or list of parameters to remove
+        :param name: parameter or list of parameters to remove
+        :type name: str or list[str]
         """
 
         if isinstance(name, list):
@@ -541,19 +691,21 @@ class Parameters(object):
                 del self.__parameters[name]
 
     def exists(self, name):
-        """Checks if a given parameter name exists
+        """Checks if a given parameter name exists.
 
-        :param name: The name of the parameter
-        :returns: Boolean (True if parameter exists otherwise False)
+        :param str name: Name of the parameter
+        :returns: True if parameter exists, otherwise False
+        :rtype: bool
         """
 
         return name in self.parameters.keys()
 
     def get(self, name):
-        """Returns the given parameter object
+        """Returns the given parameter object.
 
-        :param name: The name of the parameter
+        :param str name: The name of the parameter
         :returns: Parameter object
+        :rtype: Parameter
         """
 
         # Return the given parameter
@@ -562,13 +714,16 @@ class Parameters(object):
         raise ValueError('Parameter, {}, does not exist.'.format(name))
 
     def get_dataframe(self, name):
-        """Returns a pandas DataFrame for a parameter. If the parameter dimensions includes
-           either nhrus or nsegment then the respective national ids are included,
-           if they exist, as the index in the return dataframe.
+        """Returns a pandas DataFrame for a parameter.
 
-           :param name: The name of the parameter
-           :returns: Pandas DataFrame of the parameter data
-           """
+        If the parameter dimensions includes either nhrus or nsegment then the
+        respective national ids are included, if they exist, as the index in the
+        returned dataframe.
+
+        :param str name: The name of the parameter
+        :returns: Pandas DataFrame of the parameter data
+        :rtype: pd.DataFrame
+        """
 
         if self.exists(name):
             cparam = self.__parameters[name]
