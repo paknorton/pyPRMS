@@ -3,6 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 from future.utils import iteritems
 
 import netCDF4 as nc
+import numpy as np
 import os
 import sys
 import xml.dom.minidom as minidom
@@ -10,34 +11,61 @@ import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
-from pyPRMS.constants import CATEGORY_DELIM, NETCDF_DATATYPES, NHM_DATATYPES, PARAMETERS_XML, DIMENSIONS_XML, VAR_DELIM
+from pyPRMS.ValidParams import ValidParams
+from pyPRMS.constants import CATEGORY_DELIM, NETCDF_DATATYPES, NHM_DATATYPES, PARAMETERS_XML, DIMENSIONS_XML, VAR_DELIM, HRU_DIMS
 from pyPRMS.prms_helpers import float_to_str
 
 
 class ParameterSet(object):
+
     """
-    A parameteter set which is a container for a Parameters objects and a Dimensions objects.
+    Container for a Parameters object and a Dimensions object.
     """
 
     def __init__(self):
-        """Create a new ParameterSet"""
+        """Create a new ParameterSet."""
 
         self.__parameters = Parameters()
         self.__dimensions = Dimensions()
+        self.__master_params = ValidParams()
 
     @property
     def dimensions(self):
-        """Returns the Dimensions object"""
+        """Get dimensions object.
+
+        :returns: dimensions object
+        :rtype: Dimensions
+        """
+
         return self.__dimensions
 
     @property
+    def master_parameters(self):
+        """Get master parameters.
+
+        :returns: master parameters object
+        :rtype: ValidParams
+        """
+
+        return self.__master_params
+
+    @property
     def parameters(self):
-        """Returns the Parameters object"""
+        """Get Parameters object.
+
+        :returns: Parameters object
+        :rtype: Parameters
+        """
+
         return self.__parameters
 
     @property
     def xml_global_dimensions(self):
-        """Return an xml ElementTree of the dimensions used by all parameters"""
+        """Get XML element tree of the dimensions used by all parameters.
+
+        :returns: element tree of dimensions
+        :rtype: xmlET.Element
+        """
 
         dims_xml = xmlET.Element('dimensions')
 
@@ -54,7 +82,12 @@ class ParameterSet(object):
 
     @property
     def xml_global_parameters(self):
-        """Return an xml ElementTree of the parameters"""
+        """Get XML element tree of the parameters.
+
+        :returns: element tree of parameters
+        :rtype: xmlET.Element
+        """
+
         inv_map = {vv: kk for kk, vv in iteritems(NHM_DATATYPES)}
         # print(inv_map)
 
@@ -102,11 +135,81 @@ class ParameterSet(object):
         return params_xml
 
     def _read(self):
+        """Abstract function for reading.
+        """
+
         assert False, 'ParameterSet._read() must be defined by child class'
 
+    def degenerate_params(self):
+        """List parameters that have fewer dimensions than specified in the master parameters."""
+
+        for kk, vv in iteritems(self.parameters):
+            try:
+                if set(vv.dimensions.keys()) != set(self.__master_params[kk].dimensions.keys()):
+                    if not (set(self.__master_params[kk].dimensions.keys()).issubset(set(HRU_DIMS)) and
+                            set(vv.dimensions.keys()).issubset(HRU_DIMS)):
+                        print('Parameter, {}, is degenerate'.format(kk))
+                        print('  parameter: ', list(vv.dimensions.keys()))
+                        print('     master: ', list(self.__master_params[kk].dimensions.keys()))
+            except ValueError:
+                print('ERROR: Parameter, {}, is not a valid PRMS parameter'.format(kk))
+
+    def expand_parameter(self, name):
+        """Expand an existing parameter.
+
+        Expands (e.g. reshape) a parameter, broadcasting existing value(s) into
+        new shape specified by master parameters. The hru_deplcrv parameter has
+        special handling to also update the snarea_curve parameter.
+
+        :param str name: name of parameter
+        """
+
+        # 1) make sure parameter exists
+        if self.__master_params.exists(name):
+            # 2) get dimensions from master parameters
+            new_dims = self.__master_params.parameters[name].dimensions.copy()
+
+            # The new_dims copy is no longer of type Dimensions, instead it
+            # is an OrderedDict
+            # 3) get dimension sizes from global dimensions object
+            for kk, vv in iteritems(new_dims):
+                vv.size = self.__dimensions[kk].size
+
+            if set(new_dims.keys()) == set(self.__parameters[name].dimensions.keys()):
+                print('Parameter, {}, already has the maximum number of dimensions'.format(name))
+                print('    current: ', list(self.__parameters[name].dimensions.keys()))
+                print('  requested: ', list(new_dims.keys()))
+            else:
+                # 4) call reshape for the parameter
+                self.__parameters[name].reshape(new_dims)
+
+                if name == 'hru_deplcrv':
+                    # hru_deplcrv needs special handling
+                    # 2) get current value of hru_deplcrv, this is the snow_index to use
+                    # 3) replace broadcast original value with np.arange(1:nhru)
+                    orig_index = self.__parameters[name].data[0] - 1
+                    new_indices = np.arange(1, new_dims['nhru'].size + 1)
+                    self.__parameters['hru_deplcrv'].data = new_indices
+                    # 5) get snarea_curve associated with original hru_deplcrv value
+                    curr_snarea_curve = self.__parameters['snarea_curve'].data.reshape((-1, 11))[orig_index, :]
+
+                    # 6) replace current snarea_curve values with broadcast of select snarea_curve*nhru
+                    new_snarea_curve = np.broadcast_to(curr_snarea_curve, (new_dims['nhru'].size, 11))
+                    # 7) reset snarea_curve dimension size to nhru*11
+                    self.__parameters['snarea_curve'].dimensions['ndeplval'].size = new_dims['nhru'].size * 11
+                    self.__parameters['snarea_curve'].data = new_snarea_curve.flatten(order='C')
+
     def remove_unneeded_parameters(self, required_params=None):
-        """Given a set of required parameters, removes parameters that are not
-        needed"""
+        """Remove parameters that are not needed.
+
+        Given a set of required parameters removes parameters that are not
+        listed.
+
+        :param required_params: list or set of required parameters names
+        :type required_params: list or set
+
+        :raises TypeError: if required_params is not a set or list
+        """
 
         if isinstance(required_params, set):
             remove_list = set(self.parameters.keys()).difference(required_params)
@@ -119,21 +222,32 @@ class ParameterSet(object):
             self.parameters.remove(rparam)
 
     def write_parameters_xml(self, output_dir):
-        """Write global parameters.xml"""
+        """Write global parameters.xml file.
+
+        :param str output_dir: output path for parameters.xml file
+        """
+
         # Write the global parameters xml file
         xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_parameters)).toprettyxml(indent='    ')
         with open('{}/{}'.format(output_dir, PARAMETERS_XML), 'w') as ff:
             ff.write(xmlstr)
 
     def write_dimensions_xml(self, output_dir):
-        """Write global dimensions.xml"""
+        """Write global dimensions.xml file.
+
+        :param str output_dir: output path for dimensions.xml file
+        """
+
         # Write the global dimensions xml file
         xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_dimensions)).toprettyxml(indent='    ')
         with open('{}/{}'.format(output_dir, DIMENSIONS_XML), 'w') as ff:
             ff.write(xmlstr)
 
     def write_netcdf(self, filename):
-        """Write parameters to a netcdf file"""
+        """Write parameters to a netcdf format file.
+
+        :param str filename: full path for output file
+        """
 
         # Create the netcdf file
         nc_hdl = nc.Dataset(filename, 'w', clobber=True)
@@ -240,7 +354,10 @@ class ParameterSet(object):
         nc_hdl.close()
 
     def write_paramdb(self, output_dir):
-        """Write all parameters using the paramDb output format"""
+        """Write all parameters using the paramDb output format.
+
+        :param str output_dir: output path for paramDb files
+        """
 
         # check for / create output directory
         try:
@@ -272,7 +389,11 @@ class ParameterSet(object):
                 ff.write(xmlstr.encode('utf-8'))
 
     def write_parameter_file(self, filename, header=None):
-        """Write a parameter file using defined dimensions and parameters"""
+        """Write a parameter file.
+
+        :param str filename: name of parameter file
+        :param list[str] header: list of header lines
+        """
 
         # Write the parameters out to a file
         outfile = open(filename, 'w')
