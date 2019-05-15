@@ -1,19 +1,24 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-# import os
-# import xml.dom.minidom as minidom
-# import xml.etree.ElementTree as xmlET
-
 from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.ParameterSet import ParameterSet
-from pyPRMS.constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
+from pyPRMS.constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM, HRU_DIMS
 
 import functools
 
 
 class ParameterFile(ParameterSet):
+
+    """Class to handle reading PRMS parameter file format."""
+
     def __init__(self, filename, verbose=False):
+        """Create the ParameterFile object.
+
+        :param str filename: name of parameter file
+        :param bool verbose: output debugging information
+        """
+
         super(ParameterFile, self).__init__()
 
         self.__filename = None
@@ -26,10 +31,21 @@ class ParameterFile(ParameterSet):
 
     @property
     def filename(self):
+        """Get parameter filename.
+
+        :returns: name of parameter file
+        :rtype: str
+        """
+
         return self.__filename
 
     @filename.setter
     def filename(self, name):
+        """Set the name of the parameter file.
+
+        :param str name: name of parameter file
+        """
+
         self.__isloaded = False
         self.__filename = name
         self.__header = []  # Initialize the list of file headers
@@ -38,14 +54,28 @@ class ParameterFile(ParameterSet):
 
     @property
     def headers(self):
-        """Returns the headers read from the parameter file"""
+        """Get the headers from the parameter file.
+
+        :returns: list of headers from parameter file
+        :rtype: list[str]
+        """
+
         return self.__header
 
     @property
     def updated_params(self):
+        """Get list of parameters that had more than one entry in the parameter file.
+
+        :returns: list of parameters
+        :rtype: list[str]
+        """
+
         return self.__updated_params
 
     def _read(self):
+        """Read parameter file.
+        """
+
         # Read the parameter file into memory and parse it
         infile = open(self.filename, 'r')
         rawdata = infile.read().splitlines()
@@ -109,6 +139,13 @@ class ParameterFile(ParameterSet):
             numval = int(next(it))
 
             self.parameters.get(varname).datatype = int(next(it))
+
+            master_info = self.master_parameters.parameters[varname]
+
+            self.parameters.get(varname).units = master_info.units
+            self.parameters.get(varname).description = master_info.description
+            self.parameters.get(varname).help = master_info.help
+            self.parameters.get(varname).modules = master_info.modules
 
             # Add the dimensions to the parameter, dimension size is looked up from the global Dimensions object
             for dd in dim_tmp:
