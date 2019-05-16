@@ -2,8 +2,6 @@
 from __future__ import (absolute_import, division, print_function)
 from future.utils import iteritems    # , iterkeys
 
-
-# import numpy as np
 from collections import OrderedDict
 
 from pyPRMS.prms_helpers import read_xml
@@ -14,7 +12,15 @@ from pyPRMS.constants import PARAMETERS_XML
 
 
 class NhmParamDb(ParameterSet):
+
+    """ParameterSet sub-class which works with the NHMparamDb v1."""
+
     def __init__(self, paramdb_dir):
+        """Initialize NhmParamDb object.
+
+        :param str paramdb_dir: path the NHMparamDb directory
+        """
+
         super(NhmParamDb, self).__init__()
         self.__paramdb_dir = paramdb_dir
 
@@ -39,26 +45,58 @@ class NhmParamDb(ParameterSet):
 
     @property
     def available_parameters(self):
-        return self.parameters.keys()
+        """Get a list of parameter names in the ParameterSet.
+
+        :returns: list of parameter names
+        :rtype: list[str]
+        """
+
+        return list(self.parameters.keys())
 
     @property
     def segment_nhm_to_region(self):
+        """Get the dictionary which maps nhm segment ids to regional segment ids.
+
+        :returns: dictionary NHM to regional segment ids
+        :rtype: dict
+        """
+
         return self.__nhm_to_reg_seg
 
     @property
     def hru_nhm_to_local(self):
+        """Get the dictionary which maps NHM HRU ids to local HRU ids.
+
+        :returns: dictionary of NHM to regional HRU ids
+        :rtype: dict
+        """
+
         return self.__nhm_to_reg_hru
 
     @property
     def hru_nhm_to_region(self):
+        """Get the dictionary which maps NHM HRU ids to their respective region.
+
+        :returns: dictionary of NHM HRU ids to region
+        :rtype: dict
+        """
+
         return self.__nhm_reg_range_hru
 
     @property
     def warnings(self):
+        """Get the warnings that have occurred.
+
+        :returns: list of warnings
+        :rtype: list[str]
+        """
+
         return self.__warnings
 
     def _build_global_dimensions(self):
-        """Populate the global dimensions object with total dimension sizes from the parameters"""
+        """Populate the global dimensions object with total dimension sizes from the parameters.
+        """
+
         for kk, pp in iteritems(self.parameters):
             for dd in pp.dimensions.values():
                 if self.dimensions.exists(dd.name):
@@ -69,6 +107,8 @@ class NhmParamDb(ParameterSet):
                     self.dimensions.add(name=dd.name, size=dd.size)
 
     def _create_seg_maps(self):
+        """Create mapping dictionaries NHM-to-regional segments IDs (and vice-versa).
+        """
         name = 'nhm_seg'
         self.__reg_to_nhm_seg = {}
         self.__nhm_to_reg_seg = {}
@@ -93,6 +133,12 @@ class NhmParamDb(ParameterSet):
                 self.__nhm_to_reg_seg[val] = idx
 
     def _create_hru_maps(self):
+        """Create the mapping dictionaries for HRUs.
+
+        Creates two dictionaries which map: 1) NHM HRU ids to regional HRU ids,
+        and 2) the range of NHM HRU ids for each region.
+        """
+
         name = 'nhm_id'
 
         self.__nhm_reg_range_hru = {}
@@ -118,7 +164,11 @@ class NhmParamDb(ParameterSet):
             self.__nhm_reg_range_hru[rr] = [min(tmp_data), max(tmp_data)]
 
     def _data_it(self, filename):
-        """Returns iterator to parameter db file"""
+        """Get iterator to a parameter db file.
+
+        :returns: iterator
+        """
+
         # Read the data
         fhdl = open(filename)
         rawdata = fhdl.read().splitlines()
@@ -126,6 +176,9 @@ class NhmParamDb(ParameterSet):
         return iter(rawdata)
 
     def _read(self):
+        """Read a paramDb file.
+        """
+
         # Get the parameters available from the parameter database
         # Returns a dictionary of parameters and associated units and types
         global_params_file = '{}/{}'.format(self.__paramdb_dir, PARAMETERS_XML)
