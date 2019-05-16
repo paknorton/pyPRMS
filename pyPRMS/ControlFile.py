@@ -79,7 +79,7 @@ class ControlFile(Control):
                 dt = elem.find('default').text.split('-')
                 if len(dt) < 6:
                     # pad short date with zeros for hms
-                    dt.extend([0 for __ in range(6 - len(dt))])
+                    dt.extend([0 for _ in range(6 - len(dt))])
                 self.get(name).default = dt
             else:
                 # print('{}: {} {}'.format(name, type(elem.find('default').text), elem.find('default').text))
