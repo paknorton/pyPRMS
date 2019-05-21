@@ -489,7 +489,7 @@ class Parameter(object):
         if self.dimensions.ndims == 1:
             if 'one' in self.dimensions.keys():
                 # Reshaping from a scalar to a 1D or 2D array
-                print('Scalar to 1D or 2D')
+                # print('Scalar to 1D or 2D')
                 new_sizes = [vv.size for vv in new_dims.values()]
                 tmp_data = np.broadcast_to(self.__data, new_sizes)
 
@@ -506,7 +506,7 @@ class Parameter(object):
                 if len(new_dims) == 1:
                     print('ERROR: Cannot reshape from 1D array to 1D array')
                 else:
-                    print('1D array to 2D array')
+                    # print('1D array to 2D array')
                     new_sizes = [vv.size for vv in new_dims.values()]
                     try:
                         tmp_data = np.broadcast_to(self.__data, new_sizes)
@@ -567,7 +567,8 @@ class Parameter(object):
         """
         return np.unique(self.__data)
 
-    def __str_to_float(self, data):
+    @staticmethod
+    def __str_to_float(data):
         """Convert strings to a floats.
 
         :param list[str] data: list of data
@@ -582,7 +583,8 @@ class Parameter(object):
         except ValueError as ve:
             print(ve)
 
-    def __str_to_int(self, data):
+    @staticmethod
+    def __str_to_int(data):
         """Converts strings to integers.
 
         :param list[str] data: list of data
@@ -597,7 +599,8 @@ class Parameter(object):
         except ValueError as ve:
             print(ve)
 
-    def __str_to_str(self, data):
+    @staticmethod
+    def __str_to_str(data):
         """Null op for string-to-string conversion.
 
         :param list[str] data: list of data
