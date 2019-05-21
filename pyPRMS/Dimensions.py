@@ -153,9 +153,10 @@ class Dimensions(object):
 
     """Container of Dimension objects."""
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         """Create ordered dictionary to contain Dimension objects."""
         self.__dimensions = OrderedDict()
+        self.__verbose=verbose
 
     def __str__(self):
         outstr = ''
@@ -228,7 +229,10 @@ class Dimensions(object):
             try:
                 self.__dimensions[name] = Dimension(name=name, size=size)
             except ValueError as err:
-                print(err)
+                if self.__verbose:
+                    print(err)
+                else:
+                    pass
         # else:
         #     # TODO: Should this raise an error?
         #     print('Dimension {} already exists...skipping add name'.format(name))
