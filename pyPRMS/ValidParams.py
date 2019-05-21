@@ -19,8 +19,8 @@ class ValidParams(Parameters):
     def __init__(self, filename=None):
         """Create ValidParams object.
 
-        Will read an XML file of parameters to use as a master of valid
-        PRMS parameters. If no filename is specified an internal library XML file
+        Read an XML file of parameters to use as a master of valid PRMS
+        parameters. If no filename is specified an internal library XML file
         is read.
 
         :param filename: name of XML parameter file
@@ -120,8 +120,11 @@ class ValidParams(Parameters):
                 for cdim in elem.findall('./dimensions/dimension'):
                     self.get(name).dimensions.add(cdim.attrib.get('name'))
 
+                mods = []
                 for cmod in elem.findall('./modules/module'):
-                    self.get(name).modules = cmod.text
+                    mods.append(cmod.text)
+
+                self.get(name).modules = mods
             except ParameterError:
                 # Parameter exists add any new attribute information
                 pass
