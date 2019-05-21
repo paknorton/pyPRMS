@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 from __future__ import (absolute_import, division, print_function)
@@ -38,23 +37,18 @@ class ControlFile(Control):
 
     @property
     def filename(self):
-        if not self.__isloaded:
-            self._read(self.__filename)
         return self.__filename
 
     @filename.setter
     def filename(self, fname):
         self.__isloaded = False
         self.__filename = fname
-        self._read(self.__filename)
+        self._read()
 
-    def _read(self, filename):
+    def _read(self):
         """Load a control file.
 
         Reads the contents of a control file into the class.
-
-        Args:
-            filename: The name of the control file to read.
         """
 
         # Read the control file into memory and parse it
@@ -102,7 +96,7 @@ class ControlFile(Control):
             self.get(name).valid_values = outvals
 
         header_tmp = []
-        infile = open(filename, 'r')
+        infile = open(self.filename, 'r')
         rawdata = infile.read().splitlines()
         infile.close()
 
