@@ -12,14 +12,15 @@ class ParameterFile(ParameterSet):
 
     """Class to handle reading PRMS parameter file format."""
 
-    def __init__(self, filename, verbose=False):
+    def __init__(self, filename, verbose=False, verify=True):
         """Create the ParameterFile object.
 
         :param str filename: name of parameter file
         :param bool verbose: output debugging information
+        :param bool verify: whether to load the master parameters (default=True)
         """
 
-        super(ParameterFile, self).__init__()
+        super(ParameterFile, self).__init__(verbose=verbose, verify=verify)
 
         self.__filename = None
         self.__header = None
@@ -140,12 +141,13 @@ class ParameterFile(ParameterSet):
 
             self.parameters.get(varname).datatype = int(next(it))
 
-            master_info = self.master_parameters.parameters[varname]
+            if self.master_parameters is not None:
+                master_info = self.master_parameters.parameters[varname]
 
-            self.parameters.get(varname).units = master_info.units
-            self.parameters.get(varname).description = master_info.description
-            self.parameters.get(varname).help = master_info.help
-            self.parameters.get(varname).modules = master_info.modules
+                self.parameters.get(varname).units = master_info.units
+                self.parameters.get(varname).description = master_info.description
+                self.parameters.get(varname).help = master_info.help
+                self.parameters.get(varname).modules = master_info.modules
 
             # Add the dimensions to the parameter, dimension size is looked up from the global Dimensions object
             for dd in dim_tmp:
