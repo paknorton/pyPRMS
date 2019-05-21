@@ -451,6 +451,10 @@
         <minimum>bounded</minimum>
         <maximum>nhru</maximum>
         <default>0</default>
+        <requires>
+            <control>cascade_flag=1</control>
+            <dimension>ncascade>0</dimension>
+        </requires>
         <modules>
             <module>cascade</module>
         </modules>
@@ -563,7 +567,7 @@
     <parameter name="rad_conv">
         <type>F</type>
         <units>Langleys/radiation units</units>
-        <desc>Conversion factor to Langleys for measured radiation</desc>
+        <desc>Conversion factor to Langleys for measured solar radiation</desc>
         <help>Conversion factor to Langleys for measured solar radiation</help>
         <minimum>0.1</minimum>
         <maximum>100.0</maximum>
