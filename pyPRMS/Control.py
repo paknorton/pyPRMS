@@ -254,7 +254,8 @@ class ControlVariable(object):
         # Convert to ndarray
         self.__values = np.array(data)
 
-    def __str_to_float(self, data):
+    @staticmethod
+    def __str_to_float(data):
         """Convert strings to a floats.
 
         :param data: value(s)
@@ -273,7 +274,8 @@ class ControlVariable(object):
             except ValueError as ve:
                 print(ve)
 
-    def __str_to_int(self, data):
+    @staticmethod
+    def __str_to_int(data):
         """Converts strings to integers.
 
         :param data: value(s)
@@ -292,7 +294,8 @@ class ControlVariable(object):
             except ValueError as ve:
                 print(ve)
 
-    def __str_to_str(self, data):
+    @staticmethod
+    def __str_to_str(data):
         """Null op for string-to-string conversion.
 
         :param data: value(s)
