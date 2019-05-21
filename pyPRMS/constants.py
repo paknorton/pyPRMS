@@ -32,6 +32,7 @@ ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'm
 
 ctl_variable_modules = ['et_module', 'precip_module', 'soilzone_module', 'solrad_module',
                         'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module']
+
 ctl_implicit_modules = {'basin_module': 'basin',
                         'intcp_module': 'intcp',
                         'obs_module': 'obs',
@@ -58,7 +59,8 @@ DIMENSION_NAMES = ['mxnsos', 'ncascade', 'ncascdgw', 'nconsumed', 'ndays', 'ndep
                    'numlakes', 'nwateruse', 'nwind', 'one',
                    'nstage', 'nstage2', 'nstage3', 'nstage4']
 
-HRU_DIMS = ['nhru', 'ngw', 'nssr']  # These dimensions are related and should have same size
+# These dimensions are related and should have same size
+HRU_DIMS = ['nhru', 'ngw', 'nssr']
 
 # Constants for NhmParamDb
 REGIONS = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
