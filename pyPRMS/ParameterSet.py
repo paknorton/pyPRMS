@@ -22,12 +22,21 @@ class ParameterSet(object):
     Container for a Parameters object and a Dimensions object.
     """
 
-    def __init__(self):
-        """Create a new ParameterSet."""
+    def __init__(self, verbose=False, verify=True):
+        """Create a new ParameterSet.
+
+        :param bool verbose: output debugging information
+        :param bool verify: whether to load the master parameters (default=True)
+        """
 
         self.__parameters = Parameters()
         self.__dimensions = Dimensions()
-        self.__master_params = ValidParams()
+
+        self.__master_params = None
+        if verify:
+            self.__master_params = ValidParams()
+
+        self.verbose = verbose
 
     @property
     def dimensions(self):
@@ -140,19 +149,20 @@ class ParameterSet(object):
 
         assert False, 'ParameterSet._read() must be defined by child class'
 
-    def degenerate_params(self):
+    def degenerate_parameters(self):
         """List parameters that have fewer dimensions than specified in the master parameters."""
 
-        for kk, vv in iteritems(self.parameters):
-            try:
-                if set(vv.dimensions.keys()) != set(self.__master_params[kk].dimensions.keys()):
-                    if not (set(self.__master_params[kk].dimensions.keys()).issubset(set(HRU_DIMS)) and
-                            set(vv.dimensions.keys()).issubset(HRU_DIMS)):
-                        print('Parameter, {}, is degenerate'.format(kk))
-                        print('  parameter: ', list(vv.dimensions.keys()))
-                        print('     master: ', list(self.__master_params[kk].dimensions.keys()))
-            except ValueError:
-                print('ERROR: Parameter, {}, is not a valid PRMS parameter'.format(kk))
+        if self.__master_params is not None:
+            for kk, vv in iteritems(self.parameters):
+                try:
+                    if set(vv.dimensions.keys()) != set(self.__master_params[kk].dimensions.keys()):
+                        if not (set(self.__master_params[kk].dimensions.keys()).issubset(set(HRU_DIMS)) and
+                                set(vv.dimensions.keys()).issubset(HRU_DIMS)):
+                            print('Parameter, {}, is degenerate'.format(kk))
+                            print('  parameter: ', list(vv.dimensions.keys()))
+                            print('     master: ', list(self.__master_params[kk].dimensions.keys()))
+                except ValueError:
+                    print('ERROR: Parameter, {}, is not a valid PRMS parameter'.format(kk))
 
     def expand_parameter(self, name):
         """Expand an existing parameter.
@@ -164,42 +174,56 @@ class ParameterSet(object):
         :param str name: name of parameter
         """
 
-        # 1) make sure parameter exists
-        if self.__master_params.exists(name):
-            # 2) get dimensions from master parameters
-            new_dims = self.__master_params.parameters[name].dimensions.copy()
+        if self.__master_params is not None:
+            # 1) make sure parameter exists
+            if self.__master_params.exists(name):
+                # 2) get dimensions from master parameters
+                new_dims = self.__master_params.parameters[name].dimensions.copy()
 
-            # The new_dims copy is no longer of type Dimensions, instead it
-            # is an OrderedDict
-            # 3) get dimension sizes from global dimensions object
-            for kk, vv in iteritems(new_dims):
-                vv.size = self.__dimensions[kk].size
+                # The new_dims copy is no longer of type Dimensions, instead it
+                # is an OrderedDict
+                # 3) get dimension sizes from global dimensions object
+                for kk, vv in iteritems(new_dims):
+                    vv.size = self.__dimensions[kk].size
 
-            if set(new_dims.keys()) == set(self.__parameters[name].dimensions.keys()):
-                print('Parameter, {}, already has the maximum number of dimensions'.format(name))
-                print('    current: ', list(self.__parameters[name].dimensions.keys()))
-                print('  requested: ', list(new_dims.keys()))
-            else:
-                # 4) call reshape for the parameter
-                self.__parameters[name].reshape(new_dims)
+                if set(new_dims.keys()) == set(self.__parameters[name].dimensions.keys()):
+                    print('Parameter, {}, already has the maximum number of dimensions'.format(name))
+                    print('    current: ', list(self.__parameters[name].dimensions.keys()))
+                    print('  requested: ', list(new_dims.keys()))
+                else:
+                    # 4) call reshape for the parameter
+                    self.__parameters[name].reshape(new_dims)
 
-                if name == 'hru_deplcrv':
-                    # hru_deplcrv needs special handling
-                    # 2) get current value of hru_deplcrv, this is the snow_index to use
-                    # 3) replace broadcast original value with np.arange(1:nhru)
-                    orig_index = self.__parameters[name].data[0] - 1
-                    new_indices = np.arange(1, new_dims['nhru'].size + 1)
-                    self.__parameters['hru_deplcrv'].data = new_indices
-                    # 5) get snarea_curve associated with original hru_deplcrv value
-                    curr_snarea_curve = self.__parameters['snarea_curve'].data.reshape((-1, 11))[orig_index, :]
+                    if name == 'hru_deplcrv':
+                        # hru_deplcrv needs special handling
+                        # 2) get current value of hru_deplcrv, this is the snow_index to use
+                        # 3) replace broadcast original value with np.arange(1:nhru)
+                        orig_index = self.__parameters[name].data[0] - 1
+                        new_indices = np.arange(1, new_dims['nhru'].size + 1)
+                        self.__parameters['hru_deplcrv'].data = new_indices
 
-                    # 6) replace current snarea_curve values with broadcast of select snarea_curve*nhru
-                    new_snarea_curve = np.broadcast_to(curr_snarea_curve, (new_dims['nhru'].size, 11))
-                    # 7) reset snarea_curve dimension size to nhru*11
-                    self.__parameters['snarea_curve'].dimensions['ndeplval'].size = new_dims['nhru'].size * 11
-                    self.__parameters['snarea_curve'].data = new_snarea_curve.flatten(order='C')
+                        # 5) get snarea_curve associated with original hru_deplcrv value
+                        curr_snarea_curve = self.__parameters['snarea_curve'].data.reshape((-1, 11))[orig_index, :]
 
-    def remove_unneeded_parameters(self, required_params=None):
+                        # 6) replace current snarea_curve values with broadcast of select snarea_curve*nhru
+                        new_snarea_curve = np.broadcast_to(curr_snarea_curve, (new_dims['nhru'].size, 11))
+                        # 7) reset snarea_curve dimension size to nhru*11
+                        self.__parameters['snarea_curve'].dimensions['ndeplval'].size = new_dims['nhru'].size * 11
+                        self.__parameters['snarea_curve'].data = new_snarea_curve.flatten(order='C')
+
+                        if self.verbose:
+                            print('hru_deplcrv and snarea_curve have been expanded/updated')
+
+    def reduce_by_modules(self, control=None):
+        """Reduce the ParameterSet to the parameters required by the modules
+        defined in a control file.
+        """
+
+        if self.__master_params is not None:
+            pset = self.master_parameters.get_params_for_modules(modules=control.modules.values())
+            self.reduce_parameters(required_params=pset)
+
+    def reduce_parameters(self, required_params=None):
         """Remove parameters that are not needed.
 
         Given a set of required parameters removes parameters that are not
