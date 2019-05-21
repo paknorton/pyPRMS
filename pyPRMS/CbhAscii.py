@@ -17,10 +17,13 @@ CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]
 
 
 class CbhAscii(object):
+
+    """Class for handling classic climate-by-hru (CBH) files.
+    """
+
     # Author: Parker Norton (pnorton@usgs.gov)
-    # Create date: 2016-12-05
-    # Description: Class for working with individual cbh files
-    #
+    # Create date: 2019-04
+
     # This class assumes it is dealing with regional cbh files (not a CONUS-level NHM file)
     # TODO: As currently written type of data (e.g. tmax, tmin, prcp) is ignored.
     # TODO: Verify that given data type size matches number of columns
@@ -39,8 +42,9 @@ class CbhAscii(object):
     # from GDP to PRMS. At this point I'm not taking this on though -- for a future revision.
 
     def __init__(self, src_path=None, st_date=None, en_date=None, indices=None, nhm_hrus=None, mapping=None):
-        # def __init__(self, cbhdb_dir, st_date=None, en_date=None, indices=None, nhm_hrus=None, mapping=None):
-        #     self.__cbhdb_dir = cbhdb_dir
+        """Create CbhAscii object.
+        """
+
         self.__src_path = src_path
 
         # self.__indices = [str(kk) for kk in indices]
@@ -56,7 +60,8 @@ class CbhAscii(object):
         self.__final_outorder = None
 
     def read_cbh(self):
-        # Reads a full cbh file
+        """Reads an entire CBH file.
+        """
 
         # incl_cols = list(self.__indices.values())
         # for xx in CBH_INDEX_COLS[:-1]:
@@ -87,6 +92,9 @@ class CbhAscii(object):
         self.__data.rename(columns=ren_dict, inplace=True)
 
     def read_cbh_full(self):
+        """Read entire CBH file.
+        """
+
         # incl_cols = list(self.__indices.values())
         # for xx in CBH_INDEX_COLS[:-1]:
         #     incl_cols.insert(0, xx)
@@ -117,6 +125,11 @@ class CbhAscii(object):
         self.__data['second'] = 0
 
     def read_ascii_file(self, filename, columns=None):
+        """Reads a single CBH file.
+
+        :param str filename: name of the CBH file
+        :param columns: columns to read
+        :type columns: None or """
         # Columns 0-5 always represent date/time information
         if columns is not None:
             df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
