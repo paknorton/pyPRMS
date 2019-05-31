@@ -347,13 +347,15 @@ class ParameterSet(object):
             else:
                 # String parameter
                 # Get the maximum string length in the array of data
+                # print('String parameter: {}'.format(vv.name))
                 str_size = len(max(vv.data, key=len))
+                # print('size: {}'.format(str_size))
 
                 # Create a dimension for the string length
                 nc_hdl.createDimension(vv.name + '_nchars', str_size)
 
                 # Temporary to add extra dimension for number of characters
-                tmp_dims = vv.dimensions.keys()
+                tmp_dims = list(vv.dimensions.keys())
                 tmp_dims.extend([vv.name + '_nchars'])
                 curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(tmp_dims),
                                                    fill_value=nc.default_fillvals[curr_datatype], zlib=True)
@@ -368,6 +370,12 @@ class ParameterSet(object):
                 if vv.units:
                     curr_param.units = vv.units
 
+                # print('dimensions: {}'.format(tmp_dims))
+                # print('original data shape: ', vv.data.shape)
+                # print('original data type: ', vv.data.dtype)
+                # print('data:')
+                # print(nc.stringtochar(vv.data, encoding='none'))
+                # print('data shape: ', nc.stringtochar(vv.data, encoding='none').shape)
                 # Write the data
                 if len(tmp_dims) == 1:
                     curr_param[:] = nc.stringtochar(vv.data)
