@@ -77,8 +77,11 @@ class ParameterFile(ParameterSet):
         """Read parameter file.
         """
 
+        if self.__verbose:
+            print('INFO: Reading parameter file')
+
         # Read the parameter file into memory and parse it
-        infile = open(self.filename, 'r')
+        infile = open(self.filename, 'r', encoding='ascii')
         rawdata = infile.read().splitlines()
         infile.close()
 
@@ -90,6 +93,10 @@ class ParameterFile(ParameterSet):
             if line.strip('* ') == DIMENSIONS_HDR:
                 break
             self.__header.append(line)
+
+        if self.__verbose:
+            print('INFO: headers:')
+            print(self.__header)
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Now process the dimensions
