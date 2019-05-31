@@ -610,6 +610,10 @@ class Parameter(object):
         """
 
         # nop for list of strings
+        # 2019-05-22 PAN: For python 3 force string type to byte
+        #                 otherwise they are treated as unicode
+        #                 which breaks the write_netcdf() routine.
+        data = [dd.encode() for dd in data]
         return data
 
 
