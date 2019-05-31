@@ -307,9 +307,11 @@ class ControlVariable(object):
 
         # nop for list of strings
         if isinstance(data, str):
-            return [data]
-        else:
-            return data
+            data = [data]
+
+        # 2019-05-22 PAN: For python 3 force string type to byte
+        #                 otherwise they are treated as unicode
+        return [dd.encode() for dd in data]
 
 
 class Control(object):
