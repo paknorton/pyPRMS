@@ -311,7 +311,8 @@ class ControlVariable(object):
 
         # 2019-05-22 PAN: For python 3 force string type to byte
         #                 otherwise they are treated as unicode
-        return [dd.encode() for dd in data]
+        return data
+        # return [dd.encode() for dd in data]
 
 
 class Control(object):
@@ -504,7 +505,12 @@ class Control(object):
                     outfile.write('{}\n'.format(cvar.datatype))
                 if item == 'values':
                     if cvar.size == 1:
-                        outfile.write('{}\n'.format(cvar.values))
+                        # print(type(cvar.values))
+                        if isinstance(cvar.values, np.bytes_):
+                            print("BYTES")
+                            outfile.write('{}\n'.format(cvar.values.decode()))
+                        else:
+                            outfile.write('{}\n'.format(cvar.values))
                     else:
                         for cval in cvar.values:
                             outfile.write('{}\n'.format(cval))
