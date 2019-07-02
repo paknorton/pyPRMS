@@ -11,17 +11,17 @@ from pyPRMS.constants import REGIONS, NHM_DATATYPES
 from pyPRMS.constants import PARAMETERS_XML
 
 
-class NhmParamDb(ParameterSet):
+class ParamDbRegion(ParameterSet):
 
-    """ParameterSet sub-class which works with the NHMparamDb v1."""
+    """ParameterSet sub-class which works with the ParamDb stored by CONUS regions."""
 
-    def __init__(self, paramdb_dir):
+    def __init__(self, paramdb_dir, verbose=False, verify=True):
         """Initialize NhmParamDb object.
 
         :param str paramdb_dir: path the NHMparamDb directory
         """
 
-        super(NhmParamDb, self).__init__()
+        super(ParamDbRegion, self).__init__(verbose=verbose, verify=verify)
         self.__paramdb_dir = paramdb_dir
 
         self.__warnings = []
@@ -163,7 +163,8 @@ class NhmParamDb(ParameterSet):
 
             self.__nhm_reg_range_hru[rr] = [min(tmp_data), max(tmp_data)]
 
-    def _data_it(self, filename):
+    @staticmethod
+    def _data_it(filename):
         """Get iterator to a parameter db file.
 
         :returns: iterator
@@ -201,6 +202,21 @@ class NhmParamDb(ParameterSet):
                 self.parameters.get(xml_param_name).model = param.get('model')
                 self.parameters.get(xml_param_name).description = param.get('desc')
                 self.parameters.get(xml_param_name).help = param.get('help')
+
+                # The original paramDb by CONUS regions does not include all the
+                # information for the parameters; fill it in with the
+                # master_parameters object.
+                if self.master_parameters is not None:
+                    try:
+                        master_info = self.master_parameters.parameters[xml_param_name]
+
+                        self.parameters.get(xml_param_name).modules = master_info.modules
+                        self.parameters.get(xml_param_name).default = master_info.default
+                        self.parameters.get(xml_param_name).minimum = master_info.minimum
+                        self.parameters.get(xml_param_name).maximum = master_info.maximum
+                    except KeyError:
+                        # parameter doesn't exist in master parameter list - silently fail
+                        pass
 
             # Get dimensions information for each of the parameters
             for rr in REGIONS:
