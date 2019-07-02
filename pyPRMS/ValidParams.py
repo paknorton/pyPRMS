@@ -98,7 +98,7 @@ class ValidParams(Parameters):
     def _read(self):
         """Read an XML parameter file.
 
-        The resulting Parameters object will have parameters that have not data.
+        The resulting Parameters object will have parameters that have no data.
         """
 
         xml_root = self.__xml_tree.getroot()
@@ -115,6 +115,14 @@ class ValidParams(Parameters):
                 self.get(name).datatype = NHM_DATATYPES[dtype]
                 self.get(name).description = elem.find('desc').text
                 self.get(name).maximum = elem.find('maximum').text
+                self.get(name).minimum = elem.find('minimum').text
+                self.get(name).units = elem.find('units').text
+
+                try:
+                    self.get(name).default = elem.find('default').text
+                except AttributeError:
+                    # Parameter has no default value
+                    pass
 
                 # Add dimensions for current parameter
                 for cdim in elem.findall('./dimensions/dimension'):
