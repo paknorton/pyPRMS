@@ -6,7 +6,7 @@ import argparse
 import os
 # import shutil
 
-from pyPRMS.NhmParamDb import NhmParamDb
+from pyPRMS.ParamDbRegion import ParamDbRegion
 from pyPRMS.ParameterFile import ParameterFile
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
@@ -43,7 +43,7 @@ def main():
     if os.path.isdir(args.src):
         # If a directory is provided for the source we assume it is a
         # paramdb format.
-        params = NhmParamDb(args.src)
+        params = ParamDbRegion(args.src)
     elif os.path.isfile(args.src):
         # A parameter file in either classic format or netcdf format
         if os.path.splitext(args.src)[1] == '.param':

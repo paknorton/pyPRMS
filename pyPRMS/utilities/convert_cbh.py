@@ -8,7 +8,7 @@ import netCDF4
 import os
 
 from pyPRMS.CbhAscii import CbhAscii
-from pyPRMS.NhmParamDb import NhmParamDb
+from pyPRMS.ParamDbRegion import ParamDbRegion
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
@@ -33,7 +33,7 @@ def main():
     # en_date = datetime.datetime(2016, 12, 31)
 
     print('Reading NHM paramDb')
-    nhm_pdb = NhmParamDb(paramdb_dir=args.paramdb_dir)
+    nhm_pdb = ParamDbRegion(paramdb_dir=args.paramdb_dir, verbose=True, verify=True)
     hru_nhm_to_local = nhm_pdb.hru_nhm_to_local
     hru_nhm_to_region = nhm_pdb.hru_nhm_to_region
 
