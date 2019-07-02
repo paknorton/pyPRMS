@@ -77,19 +77,15 @@ class ParamDb(ParameterSet):
             else:
                 self.parameters.add(xml_param_name)
                 self.parameters.get(xml_param_name).datatype = NHM_DATATYPES[param.find('type').text]
-                self.parameters.get(xml_param_name).units = param.find('units').text
-                self.parameters.get(xml_param_name).description = param.find('desc').text
-                self.parameters.get(xml_param_name).help = param.find('help').text
+                self.parameters.get(xml_param_name).units = getattr(param.find('units'), 'text', None)
+                self.parameters.get(xml_param_name).description = getattr(param.find('desc'), 'text', None)
+                self.parameters.get(xml_param_name).help = getattr(param.find('help'), 'text', None)
                 # self.parameters.get(xml_param_name).model = param.get('model')
 
-                try:
-                    self.parameters.get(xml_param_name).default = param.find('default').text
-                except AttributeError:
-                    # print('\tNo default set')
-                    pass
+                self.parameters.get(xml_param_name).default = getattr(param.find('default'), 'text', None)
 
-                self.parameters.get(xml_param_name).minimum = param.find('minimum').text
-                self.parameters.get(xml_param_name).maximum = param.find('maximum').text
+                self.parameters.get(xml_param_name).minimum = getattr(param.find('minimum'), 'text', None)
+                self.parameters.get(xml_param_name).maximum = getattr(param.find('maximum'), 'text', None)
                 self.parameters.get(xml_param_name).modules = [cmod.text for cmod in param.findall('./modules/module')]
 
             # Read the parameter data
