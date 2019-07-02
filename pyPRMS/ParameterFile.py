@@ -138,6 +138,8 @@ class ParameterFile(ParameterSet):
             dim_tmp = [next(it) for _ in range(ndims)]
 
             # Lookup dimension size for each dimension name
+            # If a dimension name does not exist in the list of global dimensions
+            # an error occurs.
             arr_shp = [self.dimensions.get(dd).size for dd in dim_tmp]
 
             # Compute the total size of the parameter
