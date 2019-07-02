@@ -270,3 +270,6 @@ class ParamDbRegion(ParameterSet):
                     self.__warnings.append(e)
 
                 crv_offset = self.parameters.get(xml_param_name).data.size
+
+        # self.parameters['tosegment'].data = self.parameters['tosegment_nhm'].data
+        # self.parameters['hru_segment'].data = self.parameters['hru_segment_nhm'].data
