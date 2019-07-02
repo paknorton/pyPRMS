@@ -210,7 +210,7 @@ class Parameter(object):
         :param value: The minimum value
         :type value: int or float or None
         """
-        if self.__datatype is None:
+        if self.__datatype is None or value is None:
             self.__minimum = value
         elif DATA_TYPES[self.__datatype] == 'float':
             self.__minimum = float(value)
@@ -238,7 +238,7 @@ class Parameter(object):
         :param value: The maximum value
         :type value: int or float or None
         """
-        if self.__datatype is None:
+        if self.__datatype is None or value is None:
             self.__maximum = value
         elif DATA_TYPES[self.__datatype] == 'float':
             self.__maximum = float(value)
@@ -266,7 +266,7 @@ class Parameter(object):
         :param value: The default value
         :type value: int or float or None
         """
-        if self.__datatype is None:
+        if self.__datatype is None or value is None:
             self.__default = value
         elif DATA_TYPES[self.__datatype] == 'float':
             self.__default = float(value)
