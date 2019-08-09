@@ -204,7 +204,7 @@ class CbhAscii(object):
                                  date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                                  index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
 
-                # Override Pandas rather stupid default of float64
+                # Override Pandas' rather stupid default of float64
                 col_dtypes = {xx: np.float32 for xx in df.columns}
 
                 # Now read the whole file using float32 instead of float64

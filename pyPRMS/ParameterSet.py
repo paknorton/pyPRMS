@@ -380,7 +380,11 @@ class ParameterSet(object):
                 if len(tmp_dims) == 1:
                     curr_param[:] = nc.stringtochar(vv.data)
                 elif len(tmp_dims) == 2:
-                    curr_param[:, :] = nc.stringtochar(vv.data)
+                    # curr_param._Encoding = 'ascii'
+
+                    # The stringtochar() routine won't handle the unicode numpy
+                    # datatype properly so we force it to dtype='S'
+                    curr_param[:, :] = nc.stringtochar(vv.data.astype('S'))
             sys.stdout.flush()
         # Close the netcdf file
         nc_hdl.close()
