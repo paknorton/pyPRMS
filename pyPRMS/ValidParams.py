@@ -114,9 +114,17 @@ class ValidParams(Parameters):
 
                 self.get(name).datatype = NHM_DATATYPES[dtype]
                 self.get(name).description = elem.find('desc').text
-                self.get(name).maximum = elem.find('maximum').text
-                self.get(name).minimum = elem.find('minimum').text
                 self.get(name).units = elem.find('units').text
+
+                try:
+                    self.get(name).minimum = elem.find('minimum').text
+                except AttributeError:
+                    pass
+
+                try:
+                    self.get(name).maximum = elem.find('maximum').text
+                except AttributeError:
+                    pass
 
                 try:
                     self.get(name).default = elem.find('default').text
