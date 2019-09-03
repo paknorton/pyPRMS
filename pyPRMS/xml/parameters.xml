@@ -4917,6 +4917,7 @@
     </parameter>
     <parameter name="mann_n">
         <type>F</type>
+        <units>notsure</units>
         <model>PRMS</model>
         <desc>Manning's n</desc>
         <help>Manning's n</help>
