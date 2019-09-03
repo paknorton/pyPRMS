@@ -1,4 +1,5 @@
 <?xml version="1.0" ?>
+<?xml-stylesheet type="text/xsl" href="parameters.xsl" ?>
 <parameters>
     <parameter name="cov_type">
         <type>I</type>
@@ -1249,6 +1250,7 @@
         <modules>
             <module>muskingum</module>
             <module>muskingum_lake</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2431,6 +2433,7 @@
             <module>routing</module>
             <module>streamflow</module>
             <module>muskingum</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2583,6 +2586,7 @@
             <module>routing</module>
             <module>streamflow</module>
             <module>muskingum</module>
+            <module>muksingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -4069,6 +4073,8 @@
         <default>1000.0</default>
         <modules>
             <module>stream_temp</module>
+            <module>muskingum_mann</module>
+            <module>mizuroute</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -4086,6 +4092,8 @@
         <default>0.015</default>
         <modules>
             <module>stream_temp</module>
+            <module>muskingum_mann</module>
+            <module>mizuroute</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -4904,6 +4912,54 @@
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="mann_n">
+        <type>F</type>
+        <model>PRMS</model>
+        <desc>Manning's n</desc>
+        <help>Manning's n</help>
+        <modules>
+            <module>muskingum_mann</module>
+            <module>mizuroute</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+                <size>56460</size>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_depth">
+        <type>F</type>
+        <units>meter</units>
+        <model>PRMS</model>
+        <desc>Depth of bankfull water in segment</desc>
+        <help>Width of segment</help>
+        <modules>
+            <module>muskingum_mann</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+                <size>56460</size>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_width">
+        <type>F</type>
+        <units>meter</units>
+        <model>PRMS</model>
+        <desc>Width of bankfull water segment</desc>
+        <help>Width of segment</help>
+        <modules>
+            <module>mizuroute</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+                <size>56460</size>
             </dimension>
         </dimensions>
     </parameter>
