@@ -74,7 +74,8 @@ def main():
         timeo = nco.createVariable('time', 'f4', ('time'))
         timeo.calendar = 'standard'
         # timeo.bounds = 'time_bnds'
-        timeo.units = 'days since 1980-01-01 00:00:00'
+        # timeo.units = 'days since 1980-01-01 00:00:00'
+        timeo.units = 'days since {}-{:02d}-{:02d} 00:00:00'.format(st_date.year, st_date.month, 1)
 
         hruo = nco.createVariable('hru', 'i4', ('hru'))
         hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
