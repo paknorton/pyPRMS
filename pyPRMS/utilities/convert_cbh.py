@@ -92,8 +92,11 @@ def main():
         # Write the HRU ids
         hruo[:] = list(hru_nhm_to_local.keys())
 
-        timeo[:] = netCDF4.date2num(data[c_start:c_end].index.tolist(), units='days since 1980-01-01 00:00:00',
-                                    calendar='standard')
+        curr_calendar = timeo.calendar
+        curr_units = timeo.units
+
+        timeo[:] = netCDF4.date2num(data[c_start:c_end].index.tolist(), units=curr_units,
+                                    calendar=curr_calendar)
 
         # Write the CBH values
         nco.variables[args.var][:, :] = data[c_start:c_end].values
