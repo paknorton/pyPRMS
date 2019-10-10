@@ -332,39 +332,51 @@ class Parameter(object):
         if not self.ndims:
             raise ValueError('No dimensions have been defined for {}. Unable to append data'.format(self.name))
 
-        # Convert datatype first
-        datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
-                         3: self.__str_to_float, 4: self.__str_to_str}
+        if isinstance(data_in, list):
+            # Convert datatype first
+            datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
+                             3: self.__str_to_float, 4: self.__str_to_str}
 
-        if self.__datatype in DATA_TYPES.keys():
-            data_in = datatype_conv[self.__datatype](data_in)
-        else:
-            raise TypeError('Defined datatype {} for parameter {} is not valid'.format(self.__datatype,
-                                                                                       self.__name))
+            if self.__datatype in DATA_TYPES.keys():
+                data_in = datatype_conv[self.__datatype](data_in)
+            else:
+                raise TypeError('Defined datatype {} for parameter {} is not valid'.format(self.__datatype,
+                                                                                           self.__name))
 
-        # Convert list to np.array
-        if self.ndims == 2:
-            data_np = np.array(data_in).reshape((-1, self.get_dimsize_by_index(1),), order='F')
-            # data_np = np.array(data_in).reshape((-1, self.__dimensions.get_dimsize_by_index(1),), order='F')
-        elif self.ndims == 1:
-            data_np = np.array(data_in)
-        else:
-            raise ValueError('Number of dimensions, {}, is not supported'.format(self.ndims))
+            # Convert list to np.array
+            if self.ndims == 2:
+                data_np = np.array(data_in).reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
+                # data_np = np.array(data_in).reshape((-1, self.__dimensions.get_dimsize_by_index(1),), order='F')
+            elif self.ndims == 1:
+                data_np = np.array(data_in)
+            else:
+                raise ValueError('Number of dimensions, {}, is not supported'.format(self.ndims))
 
-        # Replace data
-        # self.__data = data_np
+            # Replace data
+            # self.__data = data_np
 
-        if 'one' in self.__dimensions.dimensions.keys():
-            # A parameter with the dimension 'one' should never have more
-            # than 1 value. Output warning if the incoming value is different
-            # from a pre-existing value
-            if data_np.size > 1:
-                print('WARNING: {} with dimension "one" has {} values. Using first ' +
-                      'value only.'.format(self.__name, data_np.size))
-            # self.__data = np.array(data_np[0])
-            self.__data = data_np
-        else:
-            self.__data = data_np
+            if 'one' in self.__dimensions.dimensions.keys():
+                # A parameter with the dimension 'one' should never have more
+                # than 1 value. Output warning if the incoming value is different
+                # from a pre-existing value
+                if data_np.size > 1:
+                    print('WARNING: {} with dimension "one" has {} values. Using first ' +
+                          'value only.'.format(self.__name, data_np.size))
+                # self.__data = np.array(data_np[0])
+                self.__data = data_np
+            else:
+                self.__data = data_np
+
+        elif isinstance(data_in, np.ndarray):
+            if data_in.ndim == self.ndims:
+                self.__data = data_in
+            else:
+                raise IndexError('Number of dimensions for new data ({}) doesn\'t match old ({})'.format(data_in.ndim, self.ndims))
+
+    @property
+    def index_map(self):
+        """Returns an ordered dictionary which maps data values to index position"""
+        return OrderedDict((val, idx) for idx, val in enumerate(self.__data.tolist()))
 
     @property
     def xml(self):
@@ -446,23 +458,23 @@ class Parameter(object):
         else:
             return '{}: BAD'.format(self.name)
 
-    def get_dimsize_by_index(self, index):
-        """Return size of dimension at the given index.
-
-        :param int index: The 0-based position of the dimension.
-        :returns: Size of the dimension.
-        :rtype: int
-        :raises ValueError: if index is greater than number dimensions for the parameter
-        """
-
-        if index < len(self.__dimensions.dimensions.items()):
-            try:
-                # Python 2.7.x
-                return self.__dimensions.dimensions.items()[index][1].size
-            except TypeError:
-                # Python 3.x
-                return list(self.__dimensions.dimensions.items())[index][1].size
-        raise ValueError('Parameter has no dimension at index {}'.format(index))
+    # def get_dimsize_by_index(self, index):
+    #     """Return size of dimension at the given index.
+    #
+    #     :param int index: The 0-based position of the dimension.
+    #     :returns: Size of the dimension.
+    #     :rtype: int
+    #     :raises ValueError: if index is greater than number dimensions for the parameter
+    #     """
+    #
+    #     if index < len(self.__dimensions.dimensions.items()):
+    #         try:
+    #             # Python 2.7.x
+    #             return self.__dimensions.dimensions.items()[index][1].size
+    #         except TypeError:
+    #             # Python 3.x
+    #             return list(self.__dimensions.dimensions.items())[index][1].size
+    #     raise ValueError('Parameter has no dimension at index {}'.format(index))
 
     def has_correct_size(self):
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
@@ -479,6 +491,19 @@ class Parameter(object):
 
         # This assumes a numpy array
         return self.data.size == total_size
+
+    def remove_by_index(self, dim_name, indices):
+        """Remove columns (nhru or nsegment) from data array given a list of indices"""
+
+        if isinstance(indices, type(OrderedDict().values())):
+            indices = list(indices)
+
+        if self.__data.size == 1:
+            print('{}: Cannot reduce array of size one'.format(self.name))
+            return
+
+        self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
+        self.dimensions[dim_name].size = self.__data.shape[self.dimensions.get_position(dim_name)]
 
     def reshape(self, new_dims):
         """Reshape a parameter, broadcasting existing values as necessary.
@@ -521,6 +546,21 @@ class Parameter(object):
                         self.dimensions.add(kk, vv.size)
 
                     self.__data = tmp_data
+
+    def subset_by_index(self, dim_name, indices):
+        """Reduce columns (nhru or nsegment) from data array given a list of indices"""
+
+        if isinstance(indices, type(OrderedDict().values())):
+            indices = list(indices)
+
+        if self.__data.size == 1:
+            print('{}: Cannot reduce array of size one'.format(self.name))
+            return
+
+        self.__data = self.__data[indices]
+        self.dimensions[dim_name].size = self.__data.shape[self.dimensions.get_position(dim_name)]
+        # self.__data = np.take(self.__data, indices, axis=0)
+        # self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
 
     def tolist(self):
         """Returns the parameter data as a list.
@@ -770,6 +810,127 @@ class Parameters(object):
                 param_data.index.name = 'curve_index'
             return param_data
         raise ValueError('Parameter, {}, has no associated data'.format(name))
+
+    def get_subset(self, name, global_ids):
+        """Returns a subset for a parameter based on the global_ids (e.g. nhm)"""
+        param = self.__parameters[name]
+        dim_set = set(param.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw', 'nsegment'})
+        id_index_map = {}
+        cdim = dim_set.pop()
+
+        if cdim in ['nhru', 'nssr', 'ngw']:
+            # Global IDs should be in the range of nhm_id
+            id_index_map = self.__parameters['nhm_id'].index_map
+        elif cdim in ['nsegment']:
+            # Global IDs should be in the range of nhm_seg
+            id_index_map = self.__parameters['nhm_seg'].index_map
+
+        # Zero-based indices in order of global_ids
+        nhm_idx0 = []
+        for kk in global_ids:
+            nhm_idx0.append(id_index_map[kk])
+
+        # print('='*40)
+        # print(nhm_idx0)
+        # print('='*40)
+        # outdata = np.array(cparam['data']).reshape((-1, dims[second_dimension]), order='F')
+        if param.dimensions.ndims == 2:
+            # tmp = param.data.reshape((-1, param.dimensions.get_dimsize_by_index(1)), order='F')
+            # return tmp[tuple(nhm_idx0), :]
+            return param.data[tuple(nhm_idx0), :]
+        else:
+            return param.data[tuple(nhm_idx0), ]
+
+    def remove_by_global_id(self, hrus=None, segs=None):
+        """Removes data-by-id (nhm_seg, nhm_id) from all parameters"""
+
+        if segs is not None:
+            pass
+
+        if hrus is not None:
+            # Map original nhm_id to their index
+            nhm_idx = OrderedDict((hid, ii) for ii, hid in enumerate(self.get('nhm_id').data.tolist()))
+            nhm_seg = self.get('nhm_seg').data.tolist()
+
+            print(list(nhm_idx.keys())[0:10])
+
+            for xx in list(nhm_idx.keys()):
+                if xx in hrus:
+                    del nhm_idx[xx]
+
+            print('-'*40)
+            print(list(nhm_idx.keys())[0:10])
+            print(list(nhm_idx.values())[0:10])
+
+            # [hru_segment_nhm[yy] for yy in nhm_idx.values()]
+            self.get('nhm_id').subset_by_index('nhru', nhm_idx.values())
+
+            # Update hru_segment_nhm then go back and make sure the referenced nhm_segs are valid
+            self.get('hru_segment_nhm').subset_by_index('nhru', nhm_idx.values())
+            self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk==0 else -1
+                                                for kk in self.get('hru_segment_nhm').data.tolist()]
+
+            # Now do the local hru_segment
+            self.get('hru_segment').subset_by_index('nhru', nhm_idx.values())
+            self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk==0 else -1
+                                            for kk in self.get('hru_segment_nhm').data.tolist()]
+
+            # # First remove the HRUs from nhm_id and hru_segment_nhm
+            # id_to_seg = np.column_stack((self.get('nhm_id').data, self.get('hru_segment_nhm').data))
+            #
+            # # Create ordered dictionary to reindex hru_segment
+            # nhm_id_to_hru_segment_nhm = OrderedDict((nhm, hseg) for nhm, hseg in id_to_seg)
+            #
+            # nhm_seg = self.get('nhm_seg').data.tolist()
+            #
+            # self.get('nhm_id').data = [xx for xx in nhm_id_to_hru_segment_nhm.keys()]
+            # # self.get('nhm_id').remove_by_index('nhru', hrus)
+            #
+            # self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk == 0 else -1
+            #                                     for kk in nhm_id_to_hru_segment_nhm.values()]
+            #
+            # self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk == 0 else -1
+            #                                 for kk in nhm_id_to_hru_segment_nhm.values()]
+
+            for pp in self.__parameters.values():
+                if pp.name not in ['nhm_id', 'hru_segment_nhm', 'hru_segment']:
+                    dim_set = set(pp.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw'})
+
+                    if bool(dim_set):
+                        if len(dim_set) > 1:
+                            raise ValueError('dim_set > 1 for {}'.format(pp.name))
+                        else:
+                            cdim = dim_set.pop()
+                            pp.subset_by_index(cdim, nhm_idx.values())
+
+                            if pp.name == 'hru_deplcrv':
+                                # Save the list of snow indices for reducing the snarea_curve later
+                                uniq_deplcrv_idx = list(set(pp.data.tolist()))
+                                uniq_dict = {}
+                                for ii, xx in enumerate(uniq_deplcrv_idx):
+                                    uniq_dict[xx] = ii + 1
+
+                                uniq_deplcrv_idx0 = [xx - 1 for xx in uniq_deplcrv_idx]
+
+                                # Renumber the hru_deplcrv indices
+                                data_copy = pp.data.copy()
+                                with np.nditer(data_copy, op_flags=['readwrite']) as it:
+                                    for xx in it:
+                                        xx[...] = uniq_dict[int(xx)]
+
+                                pp.data = data_copy
+
+                                tmp = self.__parameters['snarea_curve'].data.reshape((-1, 11))[tuple(uniq_deplcrv_idx0), :]
+
+                                self.__parameters['snarea_curve'].data = tmp.ravel()
+
+                                self.__parameters['snarea_curve'].dimensions['ndeplval'].size = tmp.size
+
+
+            # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
+            # new_deplcrv = pp['hru_deplcrv'].data.tolist()
+
+
 
     # def replace_values(self, varname, newvals, newdims=None):
     #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
