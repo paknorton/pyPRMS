@@ -381,6 +381,24 @@ class ParamDimensions(Dimensions):
                         # NOTE: This will always try to grow a dimension if it already exists!
                         self.dimensions[name].size += size
 
+    def get_dimsize_by_index(self, index):
+        """Return size of dimension at the given index.
+
+        :param int index: The 0-based position of the dimension.
+        :returns: Size of the dimension.
+        :rtype: int
+        :raises ValueError: if index is greater than number dimensions for the parameter
+        """
+
+        if index < len(self.dimensions.items()):
+            try:
+                # Python 2.7.x
+                return self.dimensions.items()[index][1].size
+            except TypeError:
+                # Python 3.x
+                return list(self.dimensions.items())[index][1].size
+        raise ValueError('Parameter has no dimension at index {}'.format(index))
+
     def get_position(self, name):
         """Get 0-based index position of a dimension.
 
