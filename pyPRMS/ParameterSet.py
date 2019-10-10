@@ -245,6 +245,23 @@ class ParameterSet(object):
         for rparam in remove_list:
             self.parameters.remove(rparam)
 
+    def remove_by_global_id(self, hrus=None, segs=None):
+        """Removes data-by-id (nhm_seg, nhm_id) from all parameters"""
+        self.__parameters.remove_by_global_id(hrus=hrus, segs=segs)
+
+        # Adjust the global dimensions
+        if segs is not None:
+            self.__dimensions['nsegment'].size -= len(segs)
+
+        if hrus is not None:
+            self.__dimensions['nhru'].size -= len(hrus)
+
+            if self.__dimensions.exists('nssr'):
+                self.__dimensions['nssr'].size -= len(hrus)
+            if self.__dimensions.exists('ngw'):
+                self.__dimensions['ngw'].size -= len(hrus)
+
+
     def write_parameters_xml(self, output_dir):
         """Write global parameters.xml file.
 
@@ -472,7 +489,11 @@ class ParameterSet(object):
                     outfile.write('{}\n'.format(datatype))
                 elif item == 'data':
                     # Write one value per line
-                    for xx in vv.data.flatten(order='A'):
+                    # WARNING: 2019-10-10: had to change next line from order='A' to order='F'
+                    #          because flatten with 'A' was only honoring the Fortran memory layout
+                    #          if the array was contiguous which isn't always the
+                    #          case if the arrays have been altered in size.
+                    for xx in vv.data.flatten(order='F'):
                         if datatype in [2, 3]:
                             # Float and double types have to be formatted specially so
                             # they aren't written in exponential notation or with
