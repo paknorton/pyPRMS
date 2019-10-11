@@ -102,7 +102,8 @@ class ParamDb(ParameterSet):
             # Add dimensions for current parameter
             for cdim in param.findall('./dimensions/dimension'):
                 dim_name = cdim.attrib.get('name')
-                self.parameters.get(xml_param_name).dimensions.add(name=dim_name, size=self.dimensions.get(dim_name).size)
+                self.parameters.get(xml_param_name).dimensions.add(name=dim_name,
+                                                                   size=self.dimensions.get(dim_name).size)
 
             # Read the parameter values
             for rec in it:
@@ -112,5 +113,6 @@ class ParamDb(ParameterSet):
             self.parameters.get(xml_param_name).data = tmp_data
 
             if not self.parameters.get(xml_param_name).has_correct_size():
-                print('ERROR: {} mismatch between dimensions and size of data. Removed from parameter set.'.format(xml_param_name))
+                err_txt = 'ERROR: {} mismatch between dimensions and size of data. Removed from parameter set.'
+                print(err_txt.format(xml_param_name))
                 self.parameters.remove(xml_param_name)

@@ -12,7 +12,8 @@ import xml.etree.ElementTree as xmlET
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
 from pyPRMS.ValidParams import ValidParams
-from pyPRMS.constants import CATEGORY_DELIM, NETCDF_DATATYPES, NHM_DATATYPES, PARAMETERS_XML, DIMENSIONS_XML, VAR_DELIM, HRU_DIMS
+from pyPRMS.constants import CATEGORY_DELIM, NETCDF_DATATYPES, NHM_DATATYPES, PARAMETERS_XML
+from pyPRMS.constants import DIMENSIONS_XML, VAR_DELIM, HRU_DIMS
 from pyPRMS.prms_helpers import float_to_str
 
 
@@ -261,7 +262,6 @@ class ParameterSet(object):
             if self.__dimensions.exists('ngw'):
                 self.__dimensions['ngw'].size -= len(hrus)
 
-
     def write_parameters_xml(self, output_dir):
         """Write global parameters.xml file.
 
@@ -330,7 +330,8 @@ class ParameterSet(object):
                         curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
                                                            fill_value=nc.default_fillvals[curr_datatype], zlib=True)
                     else:
-                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(list(vv.dimensions.keys())[::-1]),
+                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
+                                                           tuple(list(vv.dimensions.keys())[::-1]),
                                                            fill_value=nc.default_fillvals[curr_datatype], zlib=True)
 
                 # Add the attributes

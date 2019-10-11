@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 
 from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.ParameterSet import ParameterSet
-from pyPRMS.constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM, HRU_DIMS
+from pyPRMS.constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
 
 import functools
 
@@ -183,10 +183,9 @@ class ParameterFile(ParameterSet):
                 self.parameters.del_param(varname)
             else:
                 # Check if number of values written match the number of values declared
+                vals = []
                 try:
                     # Read in the data values
-                    vals = []
-
                     while True:
                         cval = next(it)
 

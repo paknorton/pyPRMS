@@ -156,7 +156,7 @@ class Dimensions(object):
     def __init__(self, verbose=False):
         """Create ordered dictionary to contain Dimension objects."""
         self.__dimensions = OrderedDict()
-        self.__verbose=verbose
+        self.__verbose = verbose
 
     def __str__(self):
         outstr = ''
@@ -381,6 +381,7 @@ class ParamDimensions(Dimensions):
                         # NOTE: This will always try to grow a dimension if it already exists!
                         self.dimensions[name].size += size
 
+    # noinspection PyUnresolvedReferences
     def get_dimsize_by_index(self, index):
         """Return size of dimension at the given index.
 

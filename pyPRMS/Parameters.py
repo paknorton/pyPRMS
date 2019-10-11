@@ -61,9 +61,9 @@ class Parameter(object):
         :return: Parameter information
         :rtype: str
         """
-
-        outstr = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndescription: {}\nhelp: {}\n'.format(self.name, self.datatype,
-                                                                         self.units, self.ndims, self.description, self.help)
+        out_text = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndescription: {}\nhelp: {}\n'
+        outstr = out_text.format(self.name, self.datatype, self.units, self.ndims, self.description,
+                                 self.help)
 
         if self.__minimum is not None:
             outstr += 'Minimum value: {}\n'.format(self.__minimum)
@@ -371,7 +371,8 @@ class Parameter(object):
             if data_in.ndim == self.ndims:
                 self.__data = data_in
             else:
-                raise IndexError('Number of dimensions for new data ({}) doesn\'t match old ({})'.format(data_in.ndim, self.ndims))
+                err_txt = 'Number of dimensions for new data ({}) doesn\'t match old ({})'
+                raise IndexError(err_txt.format(data_in.ndim, self.ndims))
 
     @property
     def index_map(self):
@@ -423,7 +424,7 @@ class Parameter(object):
 
         # Convert list to np.array
         if self.ndims == 2:
-            data_np = np.array(data_in).reshape((-1, self.get_dimsize_by_index(1),), order='F')
+            data_np = np.array(data_in).reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
         elif self.ndims == 1:
             data_np = np.array(data_in)
         else:
@@ -733,7 +734,7 @@ class Parameters(object):
         if isinstance(name, list):
             # Remove multiple parameters
             for cparam in name:
-                if self.exists(name):
+                if self.exists(cparam):
                     del self.__parameters[cparam]
             pass
         else:
@@ -830,13 +831,7 @@ class Parameters(object):
         for kk in global_ids:
             nhm_idx0.append(id_index_map[kk])
 
-        # print('='*40)
-        # print(nhm_idx0)
-        # print('='*40)
-        # outdata = np.array(cparam['data']).reshape((-1, dims[second_dimension]), order='F')
         if param.dimensions.ndims == 2:
-            # tmp = param.data.reshape((-1, param.dimensions.get_dimsize_by_index(1)), order='F')
-            # return tmp[tuple(nhm_idx0), :]
             return param.data[tuple(nhm_idx0), :]
         else:
             return param.data[tuple(nhm_idx0), ]
@@ -850,7 +845,7 @@ class Parameters(object):
         if hrus is not None:
             # Map original nhm_id to their index
             nhm_idx = OrderedDict((hid, ii) for ii, hid in enumerate(self.get('nhm_id').data.tolist()))
-            nhm_seg = self.get('nhm_seg').data.tolist()
+            nhm_seg = self.get('nhm_seg').tolist()
 
             print(list(nhm_idx.keys())[0:10])
 
@@ -867,12 +862,12 @@ class Parameters(object):
 
             # Update hru_segment_nhm then go back and make sure the referenced nhm_segs are valid
             self.get('hru_segment_nhm').subset_by_index('nhru', nhm_idx.values())
-            self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk==0 else -1
+            self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk == 0 else -1
                                                 for kk in self.get('hru_segment_nhm').data.tolist()]
 
             # Now do the local hru_segment
             self.get('hru_segment').subset_by_index('nhru', nhm_idx.values())
-            self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk==0 else -1
+            self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk == 0 else -1
                                             for kk in self.get('hru_segment_nhm').data.tolist()]
 
             # # First remove the HRUs from nhm_id and hru_segment_nhm
@@ -926,11 +921,8 @@ class Parameters(object):
 
                                 self.__parameters['snarea_curve'].dimensions['ndeplval'].size = tmp.size
 
-
             # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
             # new_deplcrv = pp['hru_deplcrv'].data.tolist()
-
-
 
     # def replace_values(self, varname, newvals, newdims=None):
     #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""

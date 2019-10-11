@@ -242,6 +242,7 @@ class CbhAscii(object):
         for cc in ['second', 'minute', 'hour', 'day', 'month', 'year']:
             out_order.insert(0, cc)
 
+        var_list = []
         if vars is None:
             var_list = CBH_VARNAMES
         elif isinstance(list, vars):
@@ -296,6 +297,7 @@ class CbhAscii(object):
         hruo = nco.createVariable('hru', 'i4', ('hru'))
         hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
 
+        var_list = []
         if vars is None:
             var_list = CBH_VARNAMES
         elif isinstance(list, vars):
@@ -394,4 +396,3 @@ class CbhAscii(object):
     #     self.__data['minute'] = 0
     #     self.__data['second'] = 0
     #
-

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems
+# from future.utils import iteritems
 
 import numpy as np
 from collections import OrderedDict
@@ -43,7 +43,7 @@ class ControlVariable(object):
 
         outstr += 'Size of data: '
         if self.values is not None:
-            outstr += '{}\n'.format(self.values.size)
+            outstr += '{}\n'.format(self.size)
         else:
             outstr += '<empty>\n'
 
@@ -141,7 +141,8 @@ class ControlVariable(object):
         if self.__datatype in DATA_TYPES.keys():
             value = datatype_conv[self.__datatype](value)
         else:
-            raise TypeError('Defined datatype {} for control variable {} is not valid'.format(self.__datatype, self.__name))
+            err_txt = 'Defined datatype {} for control variable {} is not valid'
+            raise TypeError(err_txt.format(self.__datatype, self.__name))
 
         self.__default = np.array(value)
 
