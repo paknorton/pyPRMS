@@ -103,7 +103,9 @@ class ParameterSet(object):
 
         params_xml = xmlET.Element('parameters')
 
-        for vv in self.parameters.values():
+        for pk in sorted(list(self.__parameters.keys())):
+            vv = self.__parameters[pk]
+        # for vv in self.parameters.values():
             # print(vv.name, inv_map[vv.datatype])
             param_sub = xmlET.SubElement(params_xml, 'parameter')
             param_sub.set('name', vv.name)
