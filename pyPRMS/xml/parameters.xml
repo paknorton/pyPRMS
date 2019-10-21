@@ -100,6 +100,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -237,6 +238,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -254,6 +256,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -271,6 +274,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -288,6 +292,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -305,6 +310,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -322,6 +328,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -482,6 +489,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -502,6 +510,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -521,6 +530,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -562,6 +572,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -581,6 +592,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -641,6 +653,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -661,6 +674,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -681,6 +695,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -701,6 +716,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -721,6 +737,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -741,6 +758,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -761,6 +779,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -781,6 +800,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -808,6 +828,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -828,6 +849,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -836,8 +858,8 @@
         <units>dday/temp_units</units>
         <desc>Slope in temperature degree-day relationship</desc>
         <help>Monthly (January to December) slope in degree-day equation for each HRU</help>
-        <minimum>0.2</minimum>
-        <maximum>0.9</maximum>
+        <minimum>0.1</minimum>
+        <maximum>1.4</maximum>
         <default>0.4</default>
         <modules>
             <module>ddsolrad</module>
@@ -848,6 +870,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -868,6 +891,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -888,6 +912,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -908,6 +933,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1002,7 +1028,7 @@
         <desc>Initial storage in each GWR</desc>
         <help>Storage in each GWR at the beginning of a simulation</help>
         <minimum>0.0</minimum>
-        <maximum>10.0</maximum>
+        <maximum>50.0</maximum>
         <default>2.0</default>
         <modules>
             <module>gwflow</module>
@@ -1083,6 +1109,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1202,6 +1229,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1219,6 +1247,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1236,6 +1265,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1783,6 +1813,7 @@
         <dimensions>
             <dimension name="nmonths">
                 <position>1</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1800,6 +1831,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1820,6 +1852,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1840,6 +1873,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1848,9 +1882,9 @@
         <units>per degrees Fahrenheit</units>
         <desc>Monthly air temperature coefficient for each HRU - Jensen-Haise</desc>
         <help>Monthly (January to December) air temperature coefficient used in Jensen-Haise potential ET computations for each HRU</help>
-        <minimum>0.0</minimum>
-        <maximum>0.1</maximum>
-        <default>0.013999999999999999</default>
+        <minimum>-0.5</minimum>
+        <maximum>1.5</maximum>
+        <default>0.014</default>
         <modules>
             <module>potet_jh</module>
         </modules>
@@ -1860,6 +1894,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1915,6 +1950,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1936,6 +1972,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -1957,6 +1994,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2011,6 +2049,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2034,6 +2073,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2054,6 +2094,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2078,6 +2119,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2102,6 +2144,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2156,6 +2199,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2176,6 +2220,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2196,6 +2241,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2216,6 +2262,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2236,6 +2283,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2253,6 +2301,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2270,6 +2319,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2290,6 +2340,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2344,6 +2395,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2364,6 +2416,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2382,6 +2435,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2452,6 +2506,7 @@
         <modules>
             <module>routing</module>
             <module>streamflow</module>
+            <module>strmflow_in_out</module>
             <module>muskingum</module>
         </modules>
         <dimensions>
@@ -2471,6 +2526,7 @@
         <modules>
             <module>routing</module>
             <module>streamflow</module>
+            <module>strmflow_in_out</module>
             <module>muskingum</module>
         </modules>
         <dimensions>
@@ -2547,6 +2603,7 @@
         <modules>
             <module>routing</module>
             <module>streamflow</module>
+            <module>strmflow_in_out</module>
             <module>muskingum</module>
         </modules>
         <dimensions>
@@ -2566,6 +2623,7 @@
         <modules>
             <module>routing</module>
             <module>streamflow</module>
+            <module>strmflow_in_out</module>
             <module>muskingum</module>
         </modules>
         <dimensions>
@@ -2737,7 +2795,7 @@
         <units>none</units>
         <desc>Type code for each POI gage</desc>
         <help>Type code for each POI gage</help>
-        <minimum>1</minimum>
+        <minimum>0</minimum>
         <maximum>1</maximum>
         <default>1</default>
         <modules>
@@ -2852,6 +2910,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2869,6 +2928,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2886,6 +2946,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2903,6 +2964,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2923,6 +2985,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2940,6 +3003,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -2957,6 +3021,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -3110,6 +3175,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -3127,6 +3193,7 @@
         <dimensions>
             <dimension name="ndeplval">
                 <position>1</position>
+                <default>11</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -3181,6 +3248,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -3232,6 +3300,7 @@
         <dimensions>
             <dimension name="nmonths">
                 <position>1</position>
+                <default>12</default>
             </dimension>
             <dimension name="nlake">
                 <position>2</position>
@@ -3577,8 +3646,8 @@
         <units>decimal fraction</units>
         <desc>Fraction of unsatisfied potential evapotranspiration to apply to surface-depression storage</desc>
         <help>Fraction of unsatisfied potential evapotranspiration to apply to surface-depression storage</help>
-        <minimum>0.0</minimum>
-        <maximum>1.0</maximum>
+        <minimum>0.5</minimum>
+        <maximum>1.5</maximum>
         <default>1.0</default>
         <modules>
             <module>srunoff</module>
@@ -3634,8 +3703,8 @@
         <units>fraction/day</units>
         <desc>Coefficient used in linear seepage flow equation for closed surface depressions</desc>
         <help>Coefficient used in linear seepage flow equation for closed surface depressions for each HRU</help>
-        <minimum>0.0001</minimum>
-        <maximum>0.1</maximum>
+        <minimum>0.0</minimum>
+        <maximum>0.2</maximum>
         <default>0.02</default>
         <modules>
             <module>srunoff</module>
@@ -3653,8 +3722,8 @@
         <units>fraction/day</units>
         <desc>Coefficient used in linear seepage flow equation for open surface depressions</desc>
         <help>Coefficient used in linear seepage flow equation for open surface depressions for each HRU</help>
-        <minimum>0.0001</minimum>
-        <maximum>0.1</maximum>
+        <minimum>0.0</minimum>
+        <maximum>0.2</maximum>
         <default>0.02</default>
         <modules>
             <module>srunoff</module>
@@ -3710,7 +3779,7 @@
         <desc>Exponent in contributing area computations</desc>
         <help>Exponent in non-linear contributing area algorithm for each HRU</help>
         <minimum>0.0</minimum>
-        <maximum>1.0</maximum>
+        <maximum>5.0</maximum>
         <default>0.3</default>
         <modules>
             <module>srunoff</module>
@@ -3850,6 +3919,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -3955,6 +4025,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -3972,6 +4043,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -3989,6 +4061,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4043,6 +4116,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4067,12 +4141,12 @@
         <type>F</type>
         <units>meters</units>
         <desc>Length of each segment</desc>
-        <help>Length of each segment</help>
-        <minimum>1.0</minimum>
-        <maximum>100000.0</maximum>
+        <help>Length of each segment, bounds based on CONUS</help>
+        <minimum>.001</minimum>
+        <maximum>200000.0</maximum>
         <default>1000.0</default>
         <modules>
-            <module>stream_temp</module>
+            <module>strmflow</module>
             <module>muskingum_mann</module>
             <module>mizuroute</module>
         </modules>
@@ -4085,13 +4159,13 @@
     <parameter name="seg_slope">
         <type>F</type>
         <units>decimal fraction</units>
-        <desc>Bed slope of each segment</desc>
-        <help>Bed slope of each segment</help>
-        <minimum>0.0001</minimum>
+        <desc>Surface slope of each segment</desc>
+        <help>Surface slope of each segment</help>
+        <minimum>0.0000001</minimum>
         <maximum>2.0</maximum>
-        <default>0.015</default>
+        <default>0.0001</default>
         <modules>
-            <module>stream_temp</module>
+            <module>strmflow</module>
             <module>muskingum_mann</module>
             <module>mizuroute</module>
         </modules>
@@ -4271,23 +4345,6 @@
             </dimension>
         </dimensions>
     </parameter>
-    <parameter name="vdwan">
-        <type>F</type>
-        <units>decimal fraction</units>
-        <desc>Minimum west bank vegetation density</desc>
-        <help>Minimum west bank vegetation density for each segment</help>
-        <minimum>0.0</minimum>
-        <maximum>1.0</maximum>
-        <default>0.0</default>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </parameter>
     <parameter name="vdwmx">
         <type>F</type>
         <units>decimal fraction</units>
@@ -4390,23 +4447,6 @@
             </dimension>
         </dimensions>
     </parameter>
-    <parameter name="width_flow">
-        <type>F</type>
-        <units>cms</units>
-        <desc>Minimum flow, maximum flow and flow interval for width values array</desc>
-        <help>Minimum flow, maximum flow and flow interval for width values array</help>
-        <minimum>0.0</minimum>
-        <maximum>220000.0</maximum>
-        <default>50.0</default>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="three">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </parameter>
     <parameter name="width_m">
         <type>F</type>
         <units>unknown</units>
@@ -4421,26 +4461,6 @@
         <dimensions>
             <dimension name="nsegment">
                 <position>1</position>
-            </dimension>
-        </dimensions>
-    </parameter>
-    <parameter name="width_values">
-        <type>F</type>
-        <units>meters</units>
-        <desc>Width at each specified outflow interval</desc>
-        <help>Width at each specified outflow interval for each segment</help>
-        <minimum>0.0</minimum>
-        <maximum>200.0</maximum>
-        <default>10.0</default>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-            <dimension name="width_dim">
-                <position>2</position>
             </dimension>
         </dimensions>
     </parameter>
@@ -4513,6 +4533,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4552,6 +4573,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4576,6 +4598,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4600,6 +4623,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4634,6 +4658,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4654,6 +4679,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4674,6 +4700,7 @@
             </dimension>
             <dimension name="nmonths">
                 <position>2</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4691,6 +4718,7 @@
         <dimensions>
             <dimension name="nmonths">
                 <position>1</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4708,6 +4736,7 @@
         <dimensions>
             <dimension name="nmonths">
                 <position>1</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4725,6 +4754,7 @@
         <dimensions>
             <dimension name="nmonths">
                 <position>1</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4742,6 +4772,7 @@
         <dimensions>
             <dimension name="nmonths">
                 <position>1</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4759,6 +4790,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4776,6 +4808,7 @@
         <dimensions>
             <dimension name="nmonths">
                 <position>1</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4793,6 +4826,7 @@
         <dimensions>
             <dimension name="nmonths">
                 <position>1</position>
+                <default>12</default>
             </dimension>
         </dimensions>
     </parameter>
@@ -4917,10 +4951,13 @@
     </parameter>
     <parameter name="mann_n">
         <type>F</type>
-        <units>notsure</units>
+        <units>dimensionless</units>
         <model>PRMS</model>
-        <desc>Manning's n</desc>
-        <help>Manning's n</help>
+        <desc>Manning's roughness coefficient</desc>
+        <help>Manning's roughness coefficient for each segment</help>
+        <minimum>0.001</minimum>
+        <maximum>0.15</maximum>
+        <default>0.04</default>
         <modules>
             <module>muskingum_mann</module>
             <module>mizuroute</module>
@@ -4938,6 +4975,9 @@
         <model>PRMS</model>
         <desc>Depth of bankfull water in segment</desc>
         <help>Width of segment</help>
+        <minimum>0.03</minimum>
+        <maximum>250.0</maximum>
+        <default>1.0</default>
         <modules>
             <module>muskingum_mann</module>
         </modules>
@@ -4952,8 +4992,11 @@
         <type>F</type>
         <units>meter</units>
         <model>PRMS</model>
-        <desc>Width of bankfull water segment</desc>
-        <help>Width of segment</help>
+        <desc>Segment river width</desc>
+        <help>Segment river width, narrowest observed from Zimmerman 1967, Amazon biggest</help>
+        <minimum>0.18</minimum>
+        <maximum>40000.0</maximum>
+        <default>15.0</default>
         <modules>
             <module>mizuroute</module>
         </modules>
