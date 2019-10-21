@@ -438,10 +438,10 @@ class ParameterSet(object):
                 ff.write(xx.toparamdb())
 
             # Write xml file for the parameter
-            xmlstr = minidom.parseString(xmlET.tostring(xx.xml)).toprettyxml(indent='    ')
-            with open('{}/{}.xml'.format(output_dir, xx.name), 'w') as ff:
-                # ff.write(xmlstr.encode('utf-8'))
-                ff.write(xmlstr)
+            # xmlstr = minidom.parseString(xmlET.tostring(xx.xml)).toprettyxml(indent='    ')
+            # with open('{}/{}.xml'.format(output_dir, xx.name), 'w') as ff:
+            #     # ff.write(xmlstr.encode('utf-8'))
+            #     ff.write(xmlstr)
 
     def write_parameter_file(self, filename, header=None):
         """Write a parameter file.
