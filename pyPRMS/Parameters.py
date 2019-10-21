@@ -41,19 +41,33 @@ class Parameter(object):
         :type default: int or float or None
         """
 
+        # Set the parameter name
         self.__name = name
-        self.__datatype = datatype
-        self.__units = units
-        self.__model = model
-        self.__description = description
-        self.__help = help
-        self.__modules = modules
-        self.__minimum = minimum
-        self.__maximum = maximum
-        self.__default = default
+
+        # Initialize internal variables
+        self.__datatype = None
+        self.__units = None
+        self.__model = None
+        self.__description = None
+        self.__help = None
+        self.__modules = None
+        self.__minimum = None
+        self.__maximum = None
+        self.__default = None
 
         self.__dimensions = ParamDimensions()
         self.__data = None  # array
+
+        # Use setters for most internal variables
+        self.datatype = datatype
+        self.units = units
+        self.model = model
+        self.description = description
+        self.help = help
+        self.modules = modules
+        self.minimum = minimum
+        self.maximum = maximum
+        self.default = default
 
     def __str__(self):
         """Pretty-print string representation of the parameter information.
@@ -128,7 +142,10 @@ class Parameter(object):
         # TODO: If datatype is changed should verify existing data can be cast to it
         if dtype in DATA_TYPES:
             self.__datatype = dtype
+        elif dtype is None:
+            self.__datatype = None
         else:
+            # TODO: This should raise and error (what kind?)
             print('WARNING: Datatype, {}, is not valid.'.format(dtype))
 
     @property
@@ -360,10 +377,9 @@ class Parameter(object):
                 # than 1 value. Output warning if the incoming value is different
                 # from a pre-existing value
                 if data_np.size > 1:
-                    print('WARNING: {} with dimension "one" has {} values. Using first ' +
-                          'value only.'.format(self.__name, data_np.size))
-                # self.__data = np.array(data_np[0])
-                self.__data = data_np
+                    print('WARNING: {} with dimension "one" has {} values. Using first value only.'.format(self.__name, data_np.size))
+                self.__data = np.array(data_np[0], ndmin=1)
+                # self.__data = data_np[0]
             else:
                 self.__data = data_np
 
@@ -451,6 +467,7 @@ class Parameter(object):
         :rtype: str
         """
 
+        # TODO: check that values are between min and max values
         # Check a variable to see if the number of values it has is
         # consistent with the given dimensions
         if self.has_correct_size():
@@ -459,23 +476,12 @@ class Parameter(object):
         else:
             return '{}: BAD'.format(self.name)
 
-    # def get_dimsize_by_index(self, index):
-    #     """Return size of dimension at the given index.
-    #
-    #     :param int index: The 0-based position of the dimension.
-    #     :returns: Size of the dimension.
-    #     :rtype: int
-    #     :raises ValueError: if index is greater than number dimensions for the parameter
-    #     """
-    #
-    #     if index < len(self.__dimensions.dimensions.items()):
-    #         try:
-    #             # Python 2.7.x
-    #             return self.__dimensions.dimensions.items()[index][1].size
-    #         except TypeError:
-    #             # Python 3.x
-    #             return list(self.__dimensions.dimensions.items())[index][1].size
-    #     raise ValueError('Parameter has no dimension at index {}'.format(index))
+    def check_values(self):
+        if self.__minimum is not None and self.__maximum is not None:
+            # Check both ends of the range
+            if not(isinstance(self.__minimum, str) or isinstance(self.__maximum, str)):
+                return (self.__data >= self.__minimum).all() and (self.__data <= self.__maximum).all()
+        return True
 
     def has_correct_size(self):
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
@@ -570,6 +576,7 @@ class Parameter(object):
         :rtype: list
         """
 
+        # TODO: is this correct for snarea_curve?
         # Return a list of the data
         return self.__data.ravel(order='F').tolist()
 
@@ -638,7 +645,12 @@ class Parameter(object):
         try:
             return [int(vv) for vv in data]
         except ValueError as ve:
-            print(ve)
+            # Perhaps it's a float, try converting to float and then integer
+            try:
+                tmp = [float(vv) for vv in data]
+                return [int(vv) for vv in tmp]
+            except ValueError as ve:
+                print(ve)
 
     @staticmethod
     def __str_to_str(data):
@@ -667,8 +679,6 @@ class Parameters(object):
 
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2017-05-01
-
-    # TODO: Add basic statistical functions
 
     def __init__(self):
         """Initialize the Parameters object.
@@ -700,18 +710,54 @@ class Parameters(object):
 
         return self.__parameters
 
-    def add(self, name):
+    def add(self, name, datatype=None, units=None, model=None, description=None,
+            help=None, modules=None, minimum=None, maximum=None, default=None,
+            info=None):
         """Add a new parameter by name.
 
         :param str name: A valid PRMS parameter name
+        :param int datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
+        :param str units: Option units string for the parameter
+        :param str model: <<FILL IN LATER>>
+        :param str description: Description of the parameter
+        :param str help: Help text for the parameter
+        :param modules: List of modules that require the parameter
+        :type modules: list[str] or None
+        :param minimum: Minimum value allowed in the parameter data
+        :type minimum: int or float or None
+        :param maximum: Maximum value allowed in the parameter data
+        :type maximum: int or float or None
+        :param default: Default value used for parameter data
+        :type default: int or float or None
+        :param info: Parameter object containing the metadata information for the parameter
+        :type info: Parameter
 
-        :raises ParameterError: if parameter already exists
+        :raises ParameterError: if parameter already exists or name is None
         """
 
         # Add a new parameter
         if self.exists(name):
             raise ParameterError("Parameter already exists")
-        self.__parameters[name] = Parameter(name=name)
+        elif name is None:
+            raise ParameterError("None is not a valid parameter name")
+
+        if isinstance(info, Parameter):
+            self.__parameters[name] = Parameter(name=name,
+                                                datatype=info.datatype,
+                                                units=info.units,
+                                                model=info.model,
+                                                description=info.description,
+                                                help=info.help,
+                                                modules=info.modules,
+                                                minimum=info.minimum,
+                                                maximum=info.maximum,
+                                                default=info.default)
+        else:
+            self.__parameters[name] = Parameter(name=name, datatype=datatype, units=units,
+                                                model=model, description=description,
+                                                help=help, modules=modules,
+                                                minimum=minimum, maximum=maximum,
+                                                default=default)
 
     def check(self):
         """Check all parameter variables for proper array size.
@@ -719,6 +765,9 @@ class Parameters(object):
 
         for pp in self.__parameters.values():
             print(pp.check())
+
+            if not pp.check_values():
+                print('    WARNING: Value(s) (range: {}, {}) outside the valid range of ({}, {})'.format(pp.data.min(), pp.data.max(), pp.minimum, pp.maximum))
 
             if pp.name == 'snarea_curve':
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
