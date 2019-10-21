@@ -85,7 +85,18 @@ class Dimension(object):
         """
         if not isinstance(value, int) or value < 0:
             raise ValueError('Dimension size must be a positive integer')
-        self.__size = value
+
+        if self.__name == 'one':
+            self.__size = 1
+        elif self.__name == 'nmonths':
+            self.__size = 12
+        elif self.__name == 'ndays':
+            self.__size = 366
+        else:
+            self.__size = value
+
+        if self.__name not in ['one', 'nmonths', 'ndays'] and self.__size != value:
+            print('ERROR: Dimension, {}, size={}, but size {} was requested'.format(self.__name, self.__size, value))
 
     @property
     def description(self):
@@ -251,7 +262,7 @@ class Dimensions(object):
 
         # TODO: We can't guarantee the order of the dimensions in the xml file
         #       so we should make sure dimensions are added in the correct order
-        #       dictacted by the position attribute.
+        #       dictated by the position attribute.
         #       1) read all dimensions in the correct 'position'-dictated order into a list
         #       2) add dimensions in list to the dimensions ordereddict
         for cdim in xml_root.findall('./dimensions/dimension'):
