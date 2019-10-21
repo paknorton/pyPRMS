@@ -477,6 +477,7 @@ class Parameter(object):
             return '{}: BAD'.format(self.name)
 
     def check_values(self):
+        """Returns true if all data values are within the min/max values for the parameter."""
         if self.__minimum is not None and self.__maximum is not None:
             # Check both ends of the range
             if not(isinstance(self.__minimum, str) or isinstance(self.__maximum, str)):
@@ -763,7 +764,10 @@ class Parameters(object):
         """Check all parameter variables for proper array size.
         """
 
-        for pp in self.__parameters.values():
+        # for pp in self.__parameters.values():
+        for pk in sorted(list(self.__parameters.keys())):
+            pp = self.__parameters[pk]
+
             print(pp.check())
 
             if not pp.check_values():
