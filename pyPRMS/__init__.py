@@ -6,4 +6,4 @@
 # provided on the condition that neither the USGS nor the U.S. Government shall be held liable for any damages
 # resulting from the authorized or unauthorized use of the software.
 
-__version__ = '0.5.1a1'
+__version__ = '0.7.0a1'
