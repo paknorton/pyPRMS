@@ -134,7 +134,11 @@ class ValidParams(Parameters):
 
                 # Add dimensions for current parameter
                 for cdim in elem.findall('./dimensions/dimension'):
-                    self.get(name).dimensions.add(cdim.attrib.get('name'))
+                    try:
+                        self.get(name).dimensions.add(cdim.attrib.get('name'), size=int(cdim.find('default').text))
+                    except AttributeError:
+                        # Dimension has no default value
+                        self.get(name).dimensions.add(cdim.attrib.get('name'))
 
                 mods = []
                 for cmod in elem.findall('./modules/module'):
