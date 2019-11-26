@@ -30,8 +30,15 @@ ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'm
              'external_transfer_file', 'gwr_transferON_OFF', 'gwr_transfer_file', 'lake_transferON_OFF',
              'lake_transfer_file', 'segment_transferON_OFF', 'segment_transfer_file', 'segmentOutON_OFF']
 
-ctl_module_params = ['et_module', 'precip_module', 'soilzone_module', 'solrad_module',
-                     'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module']
+ctl_variable_modules = ['et_module', 'precip_module', 'soilzone_module', 'solrad_module',
+                        'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module']
+
+ctl_implicit_modules = {'basin_module': 'basin',
+                        'intcp_module': 'intcp',
+                        'obs_module': 'obs',
+                        'snow_module': 'snowcomp',
+                        'gw_module': 'gwflow',
+                        'soilzone_module': 'soilzone'}
 
 # valtypes = ['', 'integer', 'float', 'double', 'string']
 
@@ -44,17 +51,22 @@ VAR_DELIM = '####'  # Used to delimit dimensions and parameters
 DATA_TYPES = {1: 'integer', 2: 'float', 3: 'double', 4: 'string'}
 
 # Valid dimensions names for PRMS
-DIMENSION_NAMES = ['ncascade', 'ncascdgw', 'nconsumed', 'ndays', 'ndepl', 'ndeplval',
+DIMENSION_NAMES = ['mxnsos', 'ncascade', 'ncascdgw', 'nconsumed', 'ndays', 'ndepl',
+                   'ndeplval', 'ngate', 'ngate2', 'ngate3', 'ngate4',
                    'nevap', 'nexternal', 'ngw', 'ngwcell', 'nhru', 'nhrucell', 'nhumid',
-                   'nlake', 'nlakeelev', 'nmonths', 'nobs', 'npoigages', 'nrain',
+                   'nlake', 'nlakeelev', 'nlapse', 'nmonths', 'nobs', 'npoigages', 'nrain',
                    'nratetbl', 'nsegment', 'nsnow', 'nsol', 'nssr', 'nsub', 'ntemp',
-                   'numlakes', 'nwateruse', 'nwind', 'one']
+                   'numlakes', 'nwateruse', 'nwind', 'one',
+                   'nstage', 'nstage2', 'nstage3', 'nstage4']
 
-HRU_DIMS = ['nhru', 'ngw', 'nssr']  # These dimensions are related and should have same size
+# These dimensions are related and should have same size
+HRU_DIMS = ['nhru', 'ngw', 'nssr']
 
 # Constants for NhmParamDb
 REGIONS = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
            'r10L', 'r10U', 'r11', 'r12', 'r13', 'r14', 'r15', 'r16', 'r17', 'r18']
 PARAMETERS_XML = 'parameters.xml'
 DIMENSIONS_XML = 'dimensions.xml'
+NETCDF_DATATYPES = {1: 'i4', 2: 'f4', 3: 'f4', 4: 'S1'}
 NHM_DATATYPES = {'I': 1, 'F': 2, 'D': 3, 'S': 4}
+PARNAME_DATATYPES = {'long': 1, 'float': 2, 'double': 3, 'string': 4}

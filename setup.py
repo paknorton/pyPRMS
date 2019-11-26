@@ -95,7 +95,8 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    package_data={
+    package_data={'pyPRMS': ['xml/*.xml'],
+
         # 'sample': ['package_data.dat'],
     },
 
@@ -113,4 +114,10 @@ setup(
     #         'sample=sample:main',
     #     ],
     # },
+    entry_points={
+        'console_scripts': [
+            'convert_params=pyPRMS.utilities.convert_params:main',
+            'convert_cbh=pyPRMS.utilities.convert_cbh:main',
+        ],
+    },
 )

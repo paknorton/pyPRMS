@@ -1,3 +1,6 @@
 numpy
+netCDF4
 pandas
 future
+xarray
+dask

@@ -10,43 +10,54 @@ from pyPRMS.prms_helpers import read_xml
 
 
 def _valid_dimension_name(name):
-    """Returns true if given dimension name is a valid name for PRMS
+    """Check if given dimension name is valid for PRMS.
 
-    :param name: dimension name
-    :returns: boolean (True if dimension name is valid otherwise False)
+    :param str name: dimension name
+    :returns: True if dimension name is valid otherwise False
+    :rtype: bool
     """
 
     return name in DIMENSION_NAMES
 
 
 class Dimension(object):
-    """Defines a single dimension"""
 
-    # Container for a single dimension
-    def __init__(self, name=None, size=0):
+    """Defines a single dimension."""
+
+    def __init__(self, name=None, size=0, description=None):
         """Create a new dimension object.
 
         A dimension has a name and a size associated with it.
 
-        :param name: The name of the dimension
-        :param size: The size of the dimension
+        :param str name: The name of the dimension
+        :param int size: The size of the dimension
+        :param description: Description of the dimension
+        :type description: str or None
         """
 
         self.__name = None
         self.__size = None
-        self.name = name  # Name of the dimension
-        self.size = size  # integer
+        self.__description = None
+        self.name = name
+        self.size = size
+        self.description = description
 
     @property
     def name(self):
-        """Returns the name of the dimension"""
+        """Name of the dimension.
+
+        :returns: Name of the dimension
+        :rtype: str
+        """
+
         return self.__name
 
     @name.setter
     def name(self, name):
-        """Sets the name of the dimension
+        """Sets the name of the dimension.
 
-        :param name: The name of the dimension
+        :param str name: Name of the dimension
+        :raises ValueError: if dimension name is not a valid PRMS dimension
         """
 
         if _valid_dimension_name(name):
@@ -57,26 +68,67 @@ class Dimension(object):
 
     @property
     def size(self):
-        """"Returns the size of the dimension"""
+        """Size of the dimension.
+
+        :returns: size of the dimension
+        :rtype: int
+        """
+
         return self.__size
 
     @size.setter
     def size(self, value):
-        """Set the size of the dimension
+        """Set the size of the dimension.
 
-        :param value: The total size of the dimension"""
+        :param int value: size of the dimension
+        :raises ValueError: if dimension size in not a positive integer
+        """
         if not isinstance(value, int) or value < 0:
             raise ValueError('Dimension size must be a positive integer')
-        self.__size = value
+
+        if self.__name == 'one':
+            self.__size = 1
+        elif self.__name == 'nmonths':
+            self.__size = 12
+        elif self.__name == 'ndays':
+            self.__size = 366
+        else:
+            self.__size = value
+
+        if self.__name not in ['one', 'nmonths', 'ndays'] and self.__size != value:
+            print('ERROR: Dimension, {}, size={}, but size {} was requested'.format(self.__name, self.__size, value))
+
+    @property
+    def description(self):
+        """Description for the dimension.
+
+        :returns: description for the dimension
+        :rtype: str
+        """
+
+        return self.__description
+
+    @description.setter
+    def description(self, descstr):
+        """Set the description of the dimension.
+
+        :param str descstr: description string
+        """
+
+        self.__description = descstr
 
     def __repr__(self):
         return 'Dimension(name={}, size={!r})'.format(self.name, self.size)
 
     def __iadd__(self, other):
-        """Adds integer to dimension size
+        """Add a number to dimension size.
 
-        :param other: Integer value
-        :returns: integer dimension size.
+        :param int other: integer value
+
+        :returns: dimension size
+        :rtype: int
+
+        :raises ValueError: if type of parameter is not an integer
         """
 
         # augment in-place addition so the instance plus a number results
@@ -87,10 +139,15 @@ class Dimension(object):
         return self
 
     def __isub__(self, other):
-        """Subtracts integer from dimension size
+        """Subtracts integer from dimension size.
 
-        :param other: Integer value
-        :returns: integer dimension size
+        :param int other: integer value
+
+        :returns: dimension size
+        :rtype: int
+
+        :raises ValueError: if type of parameter is not an integer
+        :raises ValeuError: if parameter is not a positive integer
         """
 
         # augment in-place addition so the instance minus a number results
@@ -104,11 +161,13 @@ class Dimension(object):
 
 
 class Dimensions(object):
-    """Container of Dimension objects"""
 
-    def __init__(self):
-        """Create ordered dictionary to contain Dimension objects"""
-        self.__dimensions = OrderedDict()  # ordered dictionary of Dimension()
+    """Container of Dimension objects."""
+
+    def __init__(self, verbose=False):
+        """Create ordered dictionary to contain Dimension objects."""
+        self.__dimensions = OrderedDict()
+        self.__verbose = verbose
 
     def __str__(self):
         outstr = ''
@@ -124,24 +183,37 @@ class Dimensions(object):
         return getattr(self.__dimensions, name)
 
     def __getitem__(self, item):
-        """Get named dimension"""
+        """Get named dimension."""
         return self.__dimensions[item]
 
     @property
     def dimensions(self):
-        """Returns ordered dictionary of Dimension objects"""
-        # Return the ordered dictionary of defined dimensions
+        """Get ordered dictionary of Dimension objects.
+
+        :returns: OrderedDict of Dimension objects
+        :rtype: collections.OrderedDict[str, Dimension]
+        """
+
         return self.__dimensions
 
     @property
     def ndims(self):
-        """Return the total number of dimensions"""
-        # Number of dimensions
+        """Get number of dimensions.
+
+        :returns: number of dimensions
+        :rtype: int
+        """
+
         return len(self.__dimensions)
 
     @property
     def xml(self):
-        """Returns the xml for the dimensions"""
+        """Get xml element for the dimensions.
+
+        :returns: XML element for the dimensions
+        :rtype: xmlET.Element
+        """
+
         # <dimensions>
         #     <dimension name = "nsegment" position = "1" size = "1434" />
         # </ dimensions>
@@ -150,31 +222,36 @@ class Dimensions(object):
         for kk, vv in iteritems(self.dimensions):
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
-            dim_sub.set('size', str(vv.size))
+            xmlET.SubElement(dim_sub, 'size').text = str(vv.size)
+            # dim_sub.set('size', str(vv.size))
         return dims_xml
 
     def add(self, name, size=0):
         """Add a new dimension.
 
-        :param name: The name of the dimension.
-        :param size: The size of the dimension.
+        :param str name: name of the dimension
+        :param int size: size of the dimension
         """
 
         # This method adds a dimension if it doesn't exist
+        # Duplicate dimension names are silently ignored
         # TODO: check for valid dimension size for ndays, nmonths, and one
         if name not in self.__dimensions:
             try:
                 self.__dimensions[name] = Dimension(name=name, size=size)
             except ValueError as err:
-                print(err)
-        else:
-            # TODO: Should this raise an error?
-            print('Dimension {} already exists...skipping add name'.format(name))
+                if self.__verbose:
+                    print(err)
+                else:
+                    pass
+        # else:
+        #     # TODO: Should this raise an error?
+        #     print('Dimension {} already exists...skipping add name'.format(name))
 
     def add_from_xml(self, filename):
-        """Add one or more dimensions from an xml file
+        """Add one or more dimensions from an xml file.
 
-        :param filename: The name of the xml file to read.
+        :param str filename: name of xml file to read
         """
 
         # Add dimensions and grow dimension sizes from xml information for a parameter
@@ -183,6 +260,11 @@ class Dimensions(object):
         # has the same or same number of dimensions.
         xml_root = read_xml(filename)
 
+        # TODO: We can't guarantee the order of the dimensions in the xml file
+        #       so we should make sure dimensions are added in the correct order
+        #       dictated by the position attribute.
+        #       1) read all dimensions in the correct 'position'-dictated order into a list
+        #       2) add dimensions in list to the dimensions ordereddict
         for cdim in xml_root.findall('./dimensions/dimension'):
             name = cdim.get('name')
             size = int(cdim.get('size'))
@@ -198,19 +280,24 @@ class Dimensions(object):
                     self.__dimensions[name].size += size
 
     def exists(self, name):
-        """Verifies if a dimension exists
+        """Check if dimension exists.
 
-        :param name: The name of the dimension
-        :returns: boolen (True if dimension exists otherwise False).
+        :param str name: name of the dimension
+        :returns: True if dimension exists, otherwise False
+        :rtype: bool
         """
 
         return name in self.dimensions.keys()
 
     def get(self, name):
-        """Returns the given dimensions if it exists
+        """Get dimension.
 
-        :param name: name of the dimension
-        :returns: dimension object
+        :param str name: name of the dimension
+
+        :returns: dimension
+        :rtype: Dimension
+
+        :raises ValueError: if dimension does not exist
         """
 
         if self.exists(name):
@@ -218,17 +305,21 @@ class Dimensions(object):
         raise ValueError('Dimension, {}, does not exist.'.format(name))
 
     def remove(self, name):
-        """Removes a dimension
+        """Remove dimension.
 
-        :param name: dimension name
+        :param str name: dimension name
         """
 
         if self.exists(name):
             del self.__dimensions[name]
 
     def tostructure(self):
-        """Returns a data structure of Dimensions data for serialization"""
-        # Return the dimensions info/data as a data structure
+        """Get data structure of Dimensions data for serialization.
+
+        :returns: dictionary of dimension names and sizes
+        :rtype: dict
+        """
+
         dims = {}
         for kk, vv in iteritems(self.dimensions):
             dims[kk] = {'size': vv.size}
@@ -236,11 +327,19 @@ class Dimensions(object):
 
 
 class ParamDimensions(Dimensions):
-    """Container for parameter dimensions. This object adds tracking dimension position."""
+    """Container for parameter dimensions.
+
+    This object adds tracking of dimension position.
+    """
 
     @property
     def xml(self):
-        """Returns the xml for the dimensions"""
+        """Get xml for the dimensions.
+
+        :returns: XML element of the dimensions
+        :rtype: xmlET.Element
+        """
+
         # <dimensions>
         #     <dimension name = "nsegment" position = "1" size = "1434" />
         # </ dimensions>
@@ -249,14 +348,21 @@ class ParamDimensions(Dimensions):
         for kk, vv in iteritems(self.dimensions):
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
-            dim_sub.set('position', str(self.get_position(kk)+1))
-            dim_sub.set('size', str(vv.size))
+            xmlET.SubElement(dim_sub, 'position').text = str(self.get_position(kk)+1)
+            xmlET.SubElement(dim_sub, 'size').text = str(vv.size)
+
+            # dim_sub.set('position', str(self.get_position(kk)+1))
+            # dim_sub.set('size', str(vv.size))
         return dims_xml
 
     def add_from_xml(self, filename):
-        """Add one or more dimensions from an xml file. This version also checks dimension position.
+        """Add one or more dimensions from an xml file.
 
-        :param filename: The name of the xml file to read.
+        Add or grow dimensions from XML information. This version also checks dimension position.
+
+        :param str filename: name of the xml file
+
+        :raises ValueError: if existing dimension position is altered
         """
 
         # Add dimensions and grow dimension sizes from xml information for a parameter
@@ -276,7 +382,7 @@ class ParamDimensions(Dimensions):
                 except ValueError as err:
                     print(err)
             else:
-                curr_pos = self.dimensions.keys().index(name)
+                curr_pos = list(self.dimensions.keys()).index(name)
 
                 if curr_pos != pos:
                     # This indicates a problem in one of the paramdb files
@@ -286,13 +392,44 @@ class ParamDimensions(Dimensions):
                         # NOTE: This will always try to grow a dimension if it already exists!
                         self.dimensions[name].size += size
 
+    # noinspection PyUnresolvedReferences
+    def get_dimsize_by_index(self, index):
+        """Return size of dimension at the given index.
+
+        :param int index: The 0-based position of the dimension.
+        :returns: Size of the dimension.
+        :rtype: int
+        :raises ValueError: if index is greater than number dimensions for the parameter
+        """
+
+        if index < len(self.dimensions.items()):
+            try:
+                # Python 2.7.x
+                return self.dimensions.items()[index][1].size
+            except TypeError:
+                # Python 3.x
+                return list(self.dimensions.items())[index][1].size
+        raise ValueError('Parameter has no dimension at index {}'.format(index))
+
     def get_position(self, name):
-        """Returns the 0-based index position of the given dimension name"""
+        """Get 0-based index position of a dimension.
+
+        :param str name: name of the dimension
+
+        :returns: index position of dimension
+        :rtype: int
+        """
+
         # TODO: method name should be index() ??
-        return self.dimensions.keys().index(name)
+        return list(self.dimensions.keys()).index(name)
 
     def tostructure(self):
-        """Returns a structure of the dimensions including position information"""
+        """Get dictionary structure of the dimensions.
+
+        :returns: dictionary of Dimensions names, sizes, and positions
+        :rtype: dict
+        """
+
         ldims = super(ParamDimensions, self).tostructure()
         for kk, vv in iteritems(ldims):
             vv['position'] = self.get_position(kk)
