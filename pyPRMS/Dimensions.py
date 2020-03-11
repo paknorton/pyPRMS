@@ -1,6 +1,6 @@
 
 from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems
+# from future.utils import iteritems
 
 from collections import OrderedDict
 import xml.etree.ElementTree as xmlET
@@ -174,7 +174,7 @@ class Dimensions(object):
         if len(self.__dimensions) == 0:
             outstr = '<empty>'
         else:
-            for kk, vv in iteritems(self.__dimensions):
+            for kk, vv in iter(self.__dimensions.items()):
                 outstr += '{}: {}\n'.format(kk, vv)
         return outstr
 
@@ -219,7 +219,7 @@ class Dimensions(object):
         # </ dimensions>
         dims_xml = xmlET.Element('dimensions')
 
-        for kk, vv in iteritems(self.dimensions):
+        for kk, vv in iter(self.dimensions.items()):
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
             xmlET.SubElement(dim_sub, 'size').text = str(vv.size)
@@ -321,7 +321,7 @@ class Dimensions(object):
         """
 
         dims = {}
-        for kk, vv in iteritems(self.dimensions):
+        for kk, vv in iter(self.dimensions.items()):
             dims[kk] = {'size': vv.size}
         return dims
 
@@ -345,7 +345,7 @@ class ParamDimensions(Dimensions):
         # </ dimensions>
         dims_xml = xmlET.Element('dimensions')
 
-        for kk, vv in iteritems(self.dimensions):
+        for kk, vv in iter(self.dimensions.items()):
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
             xmlET.SubElement(dim_sub, 'position').text = str(self.get_position(kk)+1)
@@ -431,6 +431,6 @@ class ParamDimensions(Dimensions):
         """
 
         ldims = super(ParamDimensions, self).tostructure()
-        for kk, vv in iteritems(ldims):
+        for kk, vv in iter(ldims.items()):
             vv['position'] = self.get_position(kk)
         return ldims

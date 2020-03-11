@@ -1,5 +1,5 @@
 from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems
+# from future.utils import iteritems
 
 import os
 import numpy as np
@@ -85,8 +85,8 @@ class CbhAscii(object):
         # self.__data.reset_index(drop=True, inplace=True)
 
         # Rename columns with NHM HRU ids
-        ren_dict = {v + 5: k for k, v in iteritems(self.__indices)}
-        # ren_dict = {v + 5: '{}'.format(k) for k, v in self.__indices.iteritems()}
+        ren_dict = {v + 5: k for k, v in iter(self.__indices.items())}
+        # ren_dict = {v + 5: '{}'.format(k) for k, v in self.__iter(indices.items())}
 
         # NOTE: The rename is an expensive operation
         self.__data.rename(columns=ren_dict, inplace=True)
@@ -112,8 +112,8 @@ class CbhAscii(object):
         # self.__data.reset_index(drop=True, inplace=True)
 
         # Rename columns with NHM HRU ids
-        # ren_dict = {v + 5: k for k, v in iteritems(self.__indices)}
-        # ren_dict = {v + 5: '{}'.format(k) for k, v in self.__indices.iteritems()}
+        # ren_dict = {v + 5: k for k, v in iter(self.__indices.items())}
+        # ren_dict = {v + 5: '{}'.format(k) for k, v in self.__iter(indices.items())}
 
         # NOTE: The rename is an expensive operation
         # self.__data.rename(columns=ren_dict, inplace=True)
@@ -219,7 +219,7 @@ class CbhAscii(object):
                     df = df[self.__stdate:self.__endate]
 
                 # Rename columns with NHM HRU ids
-                ren_dict = {k+5: v for k, v in iteritems(idx_retrieve)}
+                ren_dict = {k+5: v for k, v in iter(idx_retrieve.items())}
 
                 # NOTE: The rename is an expensive operation
                 df.rename(columns=ren_dict, inplace=True)
@@ -337,7 +337,7 @@ class CbhAscii(object):
     #     for vv in CBH_VARNAMES:
     #         outorder = list(CBH_INDEX_COLS)
     #
-    #         for rr, rvals in iteritems(self.__mapping):
+    #         for rr, rvals in iter(self.__mapping.items()):
     #             idx_retrieve = {}
     #
     #             for yy in self.__nhm_hrus.keys():

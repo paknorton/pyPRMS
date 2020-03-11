@@ -1,6 +1,6 @@
 
 from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems
+# from future.utils import iteritems
 
 import numpy as np
 import pandas as pd
@@ -530,7 +530,7 @@ class Parameter(object):
                 self.dimensions.remove('one')
 
                 # Add the new ones
-                for kk, vv in iteritems(new_dims):
+                for kk, vv in iter(new_dims.items()):
                     self.dimensions.add(kk, vv.size)
 
                 self.__data = tmp_data
@@ -550,7 +550,7 @@ class Parameter(object):
                     old_dim = list(self.dimensions.keys())[0]
                     self.dimensions.remove(old_dim)
 
-                    for kk, vv in iteritems(new_dims):
+                    for kk, vv in iter(new_dims.items()):
                         self.dimensions.add(kk, vv.size)
 
                     self.__data = tmp_data

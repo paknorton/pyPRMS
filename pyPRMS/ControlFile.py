@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import (absolute_import, division, print_function)
-# from future.utils import iteritems
+# # from future.utils import iteritems
 
 # from collections import OrderedDict
 # try:
@@ -175,7 +175,7 @@ class ControlFile(Control):
     #               'nhruOut': {'nhruOutVars': 0, 'nhruOutON_OFF': 0, 'nhruOutVar_names': []},
     #               'statVar': {'nstatVars': 0, 'statsON_OFF': 0, 'statVar_element': [], 'statVar_names': []}}
     #
-    #     for (kk, vv) in iteritems(groups[group_name]):
+    #     for (kk, vv) in iter(groups[group_name]).items():
     #         if kk in self.__controldict:
     #             self.replace_values(kk, vv)
     #

@@ -1,7 +1,7 @@
 
 
 from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems
+# from future.utils import iteritems
 
 import re
 import numpy as np
@@ -355,7 +355,7 @@ class Streamflow(object):
         tmpl = []
 
         # Create list of types in the correct order
-        for (kk, vv) in iteritems(self.__types):
+        for (kk, vv) in iter(self.__types.items()):
             if kk in type_count:
                 tmpl.insert(vv[0], [kk, type_count[kk]])
 
