@@ -86,7 +86,7 @@ class CbhAscii(object):
 
         # Rename columns with NHM HRU ids
         ren_dict = {v + 5: k for k, v in iter(self.__indices.items())}
-        # ren_dict = {v + 5: '{}'.format(k) for k, v in self.__iter(indices.items())}
+        # ren_dict = {v + 5: '{}'.format(k) for k, v in iter(self.__indices.items())}
 
         # NOTE: The rename is an expensive operation
         self.__data.rename(columns=ren_dict, inplace=True)
@@ -113,7 +113,7 @@ class CbhAscii(object):
 
         # Rename columns with NHM HRU ids
         # ren_dict = {v + 5: k for k, v in iter(self.__indices.items())}
-        # ren_dict = {v + 5: '{}'.format(k) for k, v in self.__iter(indices.items())}
+        # ren_dict = {v + 5: '{}'.format(k) for k, v in iter(self.__indices.items())}
 
         # NOTE: The rename is an expensive operation
         # self.__data.rename(columns=ren_dict, inplace=True)
