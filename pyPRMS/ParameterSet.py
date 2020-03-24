@@ -1,6 +1,6 @@
 
-from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems
+# from __future__ import (absolute_import, division, print_function)
+# from future.utils import iteritems
 
 import netCDF4 as nc
 import numpy as np
@@ -79,7 +79,7 @@ class ParameterSet(object):
 
         dims_xml = xmlET.Element('dimensions')
 
-        for kk, vv in iteritems(self.dimensions):
+        for kk, vv in self.dimensions.items():
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
 
@@ -98,7 +98,7 @@ class ParameterSet(object):
         :rtype: xmlET.Element
         """
 
-        inv_map = {vv: kk for kk, vv in iteritems(NHM_DATATYPES)}
+        inv_map = {vv: kk for kk, vv in NHM_DATATYPES.items()}
         # print(inv_map)
 
         params_xml = xmlET.Element('parameters')
@@ -156,7 +156,7 @@ class ParameterSet(object):
         """List parameters that have fewer dimensions than specified in the master parameters."""
 
         if self.__master_params is not None:
-            for kk, vv in iteritems(self.parameters):
+            for kk, vv in self.parameters.items():
                 try:
                     if set(vv.dimensions.keys()) != set(self.__master_params[kk].dimensions.keys()):
                         if not (set(self.__master_params[kk].dimensions.keys()).issubset(set(HRU_DIMS)) and
@@ -186,7 +186,7 @@ class ParameterSet(object):
                 # The new_dims copy is no longer of type Dimensions, instead it
                 # is an OrderedDict
                 # 3) get dimension sizes from global dimensions object
-                for kk, vv in iteritems(new_dims):
+                for kk, vv in new_dims.items():
                     vv.size = self.__dimensions[kk].size
 
                 if set(new_dims.keys()) == set(self.__parameters[name].dimensions.keys()):

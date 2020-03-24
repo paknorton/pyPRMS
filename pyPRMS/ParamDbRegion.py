@@ -1,6 +1,6 @@
 
-from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems    # , iterkeys
+# from __future__ import (absolute_import, division, print_function)
+# from future.utils import iteritems    # , iterkeys
 
 from collections import OrderedDict
 
@@ -97,7 +97,7 @@ class ParamDbRegion(ParameterSet):
         """Populate the global dimensions object with total dimension sizes from the parameters.
         """
 
-        for kk, pp in iteritems(self.parameters):
+        for kk, pp in self.parameters.items():
             for dd in pp.dimensions.values():
                 if self.dimensions.exists(dd.name):
                     if self.dimensions.get(dd.name).size != dd.size:
