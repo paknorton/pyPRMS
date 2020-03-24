@@ -322,6 +322,16 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to specify whether or not the Initial Conditions File is specified as an input file (0=no; 1=yes; 2=yes and use parameter values in Parameter File instead of values in Initial Conditions File)</desc>
+        <values type="parameter">
+            <value name="0">no</value>
+            <value name="1">yes</value>
+            <value name="2">yes and use parameters dprst_frac_init, snowpack_init, segment_flow_init, elevlake_init, gwstor_init, soil_rechr_init_frac, soil_moist_init_frac, and ssstor_init_frac</value>
+            <value name="3">yes and use parameter snowpack_init</value>
+            <value name="4">yes and use parameter elevlake_init</value>
+            <value name="5">yes and use parameters soil_rechr_init_frac, soil_moist_init_frac, and ssstor_init_frac</value>
+            <value name="6">yes and use parameter gwstor_init</value>
+            <value name="7">yes and use parameter dprst_frac_init</value>
+        </values>
     </control_param>
     <control_param name="lake_transferON_OFF">
         <default>0</default>
