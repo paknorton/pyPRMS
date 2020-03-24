@@ -1,16 +1,10 @@
 
-# from __future__ import (absolute_import, division, print_function)
-# from future.utils import iteritems
-
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
-# import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Parameter import Parameter
 from pyPRMS.Exceptions_custom import ParameterError
-# from pyPRMS.constants import DATA_TYPES
-# from pyPRMS.Dimensions import ParamDimensions
 
 
 class Parameters(object):
