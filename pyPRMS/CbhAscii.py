@@ -1,12 +1,10 @@
-from __future__ import (absolute_import, division, print_function)
-from future.utils import iteritems
+# from __future__ import (absolute_import, division, print_function)
+# from future.utils import iteritems
 
 import os
 import numpy as np
 import pandas as pd
-# import fastparquet as fp
 import netCDF4 as nc
-# import xarray as xr
 from collections import OrderedDict
 
 from pyPRMS.prms_helpers import dparse
@@ -85,8 +83,7 @@ class CbhAscii(object):
         # self.__data.reset_index(drop=True, inplace=True)
 
         # Rename columns with NHM HRU ids
-        ren_dict = {v + 5: k for k, v in iteritems(self.__indices)}
-        # ren_dict = {v + 5: '{}'.format(k) for k, v in self.__indices.iteritems()}
+        ren_dict = {v + 5: k for k, v in self.__indices.items()}
 
         # NOTE: The rename is an expensive operation
         self.__data.rename(columns=ren_dict, inplace=True)
@@ -112,8 +109,7 @@ class CbhAscii(object):
         # self.__data.reset_index(drop=True, inplace=True)
 
         # Rename columns with NHM HRU ids
-        # ren_dict = {v + 5: k for k, v in iteritems(self.__indices)}
-        # ren_dict = {v + 5: '{}'.format(k) for k, v in self.__indices.iteritems()}
+        # ren_dict = {v + 5: k for k, v in self.__indices.items()}
 
         # NOTE: The rename is an expensive operation
         # self.__data.rename(columns=ren_dict, inplace=True)
@@ -219,7 +215,7 @@ class CbhAscii(object):
                     df = df[self.__stdate:self.__endate]
 
                 # Rename columns with NHM HRU ids
-                ren_dict = {k+5: v for k, v in iteritems(idx_retrieve)}
+                ren_dict = {k+5: v for k, v in idx_retrieve.items()}
 
                 # NOTE: The rename is an expensive operation
                 df.rename(columns=ren_dict, inplace=True)
