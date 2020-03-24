@@ -1,7 +1,3 @@
-
-# from __future__ import (absolute_import, division, print_function)
-
-
 # Order to write control file parameters for printing and writing a new control file
 ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'model_mode', 'param_file', 'data_file',
              'model_output_file', 'parameter_check_flag', 'print_debug', 'et_module', 'precip_module',

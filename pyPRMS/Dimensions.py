@@ -1,7 +1,4 @@
 
-# from __future__ import (absolute_import, division, print_function)
-# from future.utils import iteritems
-
 from collections import OrderedDict
 import xml.etree.ElementTree as xmlET
 

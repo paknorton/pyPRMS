@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-# from __future__ import (absolute_import, division, print_function)
-# from future.utils import iteritems
-
-# from collections import OrderedDict
-# try:
-#     import xml.etree.cElementTree as xmlET
-# except ImportError:
 import xml.etree.ElementTree as xmlET
 
 import io

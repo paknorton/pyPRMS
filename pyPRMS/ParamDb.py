@@ -1,11 +1,5 @@
 
-# from __future__ import (absolute_import, division, print_function)
-# from future.utils import iteritems    # , iterkeys
-
-# from collections import OrderedDict
-
 from pyPRMS.prms_helpers import read_xml
-# from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.ParameterSet import ParameterSet
 from pyPRMS.constants import NHM_DATATYPES
 from pyPRMS.constants import PARAMETERS_XML, DIMENSIONS_XML

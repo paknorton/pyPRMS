@@ -1,6 +1,3 @@
-
-# from __future__ import (absolute_import, division, print_function)
-
 import io
 import pkgutil
 import xml.etree.ElementTree as xmlET
