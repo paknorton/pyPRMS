@@ -124,15 +124,18 @@ class ParameterFile(ParameterSet):
                     print('Parameter, {}, updated with new values'.format(varname))
                 self.__updated_params.add(varname)
                 # print('%s: Duplicate parameter name.. skipping' % varname)
+            except ValueError:
+                if self.__verbose:
+                    print(f'Parameter, {varname}, is not a valid parameter; skipping.')
 
                 # Skip to the next parameter
-                # try:
-                #     while next(it) != VAR_DELIM:
-                #         pass
-                # except StopIteration:
-                #     # Hit end of file
-                #     pass
-                # continue
+                try:
+                    while next(it) != VAR_DELIM:
+                        pass
+                except StopIteration:
+                    # Hit end of file
+                    pass
+                continue
 
             # Read in the dimension names
             ndims = int(next(it))  # number of dimensions for this variable
