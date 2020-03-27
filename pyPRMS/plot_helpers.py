@@ -5,7 +5,7 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize, LogNorm, PowerNorm
 from matplotlib.collections import PatchCollection
-import geopandas
+# import geopandas
 
 from matplotlib.patches import Polygon
 import shapely
@@ -177,96 +177,97 @@ def set_colormap(the_var, param_data, min_val=None, max_val=None):
 
 
 def main():
-    from collections import namedtuple
-
-    # Data source
-    work_dir = '/Users/pnorton/tmp/tmp_paramdb'
-
-    # Output-related variables
-    output_dir = '/Users/pnorton/tmp/v1_figs'
-    fversion = 'v11'  # version to include in output filenames
-
-    # GIS-related variables
-    shpfile = '/Users/pnorton/Projects/National_Hydrology_Model/Trans-boundary_HRUs/GIS/GFv1.1_v2e.gdb'
-    layer_name = 'nhru_v11'
-    shape_key = 'nhru_v11'
-
-    # Parameter information
-    Param = namedtuple('Param', ['name', 'min', 'max'])
-    params = {'tmax_allsnow': Param(name='tmax_allsnow', min=28.2, max=35.8),
-              'tmax_allrain_offset': Param(name='tmax_allrain_offset', min=0.0, max=11.0)}
-
-    the_var = params['tmax_allrain_offset']
-    time_index = 0
-
-    print(f'Parameter name: {the_var.name}')
-    print(f'Starting time index: {time_index}')
-
-    print('Reading parameter database')
-    pdb = ParamDb(paramdb_dir=work_dir, verbose=True, verify=True)
-
-    # extent_dms = get_extent(shpfile, layer_name=layer_name, driver='OpenFileGDB')
-
-    # Read the shapefile
-    print(f'Reading shapefile: {shpfile}')
-    hru_df = geopandas.read_file(shpfile, layer=layer_name)
-
-    if hru_df.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
-        print(f'Overriding USGS aea crs with EPSG:5070')
-        hru_df.crs = 'EPSG:5070'
-
-    # Get extent information
-    minx, miny, maxx, maxy = hru_df.geometry.total_bounds
-
-    # param_var = pdb.parameters.get_dataframe(the_var).iloc[:]
-
-    # Use the following for nhru x nmonths parameters
-    param_var = pdb.parameters.get_dataframe(the_var.name).iloc[:, time_index].to_frame(name=the_var.name)
-
-    # Override for tmax_allsnow: min_val = 28.2, max_val = 35.8
-    # Override for tmax_allrain_offset: min_val = 0.0, max_val = 11.0
-    cmap, norm = set_colormap(the_var.name, param_var, min_val=the_var.min, max_val=the_var.max)
-
-    crs_proj = get_projection(hru_df)
-
-    print('Writing first plot')
-    # This takes care of multipolygons that are in the NHM geodatabase/shapefile
-    geoms_exploded = hru_df.explode().reset_index(level=1, drop=True)
-
-    df_mrg = geoms_exploded.merge(param_var, left_on=shape_key, right_index=True, how='left')
-
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
-
-    ax = plt.axes(projection=crs_proj)
-    ax.coastlines()
-    ax.gridlines()
-
-    ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
-    # ax.set_extent(extent_dms)
-
-    mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-    mapper.set_array(df_mrg[the_var.name])
-    plt.colorbar(mapper, shrink=0.6)
-
-    # plt.title('Variable: {},  Date: {}'.format(the_var, xdf_df['time'].iloc[0].isoformat()))
-    plt.title(f'Variable: {the_var.name},  Month: {time_index+1}')
-    # plt.title('Variable: {}'.format(the_var))
-
-    col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[the_var.name], colormap=cmap, norm=norm, linewidth=0.0)
-
-    plt.savefig(f'{output_dir}/{the_var.name}_{fversion}_{time_index+1:02}.png', dpi=150, bbox_inches='tight')
-
-    print('Writing remaining plots')
-    for tt in range(1, 12):
-        print(f'    Index: {tt}')
-        param_var = pdb.parameters.get_dataframe(the_var.name).iloc[:, tt].to_frame(name=the_var.name)
-        df_mrg = geoms_exploded.merge(param_var, left_on=shape_key, right_index=True, how='left')
-
-        # ax.set_title('Variable: {},  Date: {}'.format(the_var, xdf_df['time'].iloc[0].isoformat()))
-        ax.set_title(f'Variable: {the_var.name},  Month: {tt+1}')
-        col.set_array(df_mrg[the_var.name])
-        # fig
-        plt.savefig(f'{output_dir}/{the_var.name}_{fversion}_{tt+1:02}.png', dpi=150, bbox_inches='tight')
+    pass
+    # from collections import namedtuple
+    #
+    # # Data source
+    # work_dir = '/Users/pnorton/tmp/tmp_paramdb'
+    #
+    # # Output-related variables
+    # output_dir = '/Users/pnorton/tmp/v1_figs'
+    # fversion = 'v11'  # version to include in output filenames
+    #
+    # # GIS-related variables
+    # shpfile = '/Users/pnorton/Projects/National_Hydrology_Model/Trans-boundary_HRUs/GIS/GFv1.1_v2e.gdb'
+    # layer_name = 'nhru_v11'
+    # shape_key = 'nhru_v11'
+    #
+    # # Parameter information
+    # Param = namedtuple('Param', ['name', 'min', 'max'])
+    # params = {'tmax_allsnow': Param(name='tmax_allsnow', min=28.2, max=35.8),
+    #           'tmax_allrain_offset': Param(name='tmax_allrain_offset', min=0.0, max=11.0)}
+    #
+    # the_var = params['tmax_allrain_offset']
+    # time_index = 0
+    #
+    # print(f'Parameter name: {the_var.name}')
+    # print(f'Starting time index: {time_index}')
+    #
+    # print('Reading parameter database')
+    # pdb = ParamDb(paramdb_dir=work_dir, verbose=True, verify=True)
+    #
+    # # extent_dms = get_extent(shpfile, layer_name=layer_name, driver='OpenFileGDB')
+    #
+    # # Read the shapefile
+    # print(f'Reading shapefile: {shpfile}')
+    # hru_df = geopandas.read_file(shpfile, layer=layer_name)
+    #
+    # if hru_df.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
+    #     print(f'Overriding USGS aea crs with EPSG:5070')
+    #     hru_df.crs = 'EPSG:5070'
+    #
+    # # Get extent information
+    # minx, miny, maxx, maxy = hru_df.geometry.total_bounds
+    #
+    # # param_var = pdb.parameters.get_dataframe(the_var).iloc[:]
+    #
+    # # Use the following for nhru x nmonths parameters
+    # param_var = pdb.parameters.get_dataframe(the_var.name).iloc[:, time_index].to_frame(name=the_var.name)
+    #
+    # # Override for tmax_allsnow: min_val = 28.2, max_val = 35.8
+    # # Override for tmax_allrain_offset: min_val = 0.0, max_val = 11.0
+    # cmap, norm = set_colormap(the_var.name, param_var, min_val=the_var.min, max_val=the_var.max)
+    #
+    # crs_proj = get_projection(hru_df)
+    #
+    # print('Writing first plot')
+    # # This takes care of multipolygons that are in the NHM geodatabase/shapefile
+    # geoms_exploded = hru_df.explode().reset_index(level=1, drop=True)
+    #
+    # df_mrg = geoms_exploded.merge(param_var, left_on=shape_key, right_index=True, how='left')
+    #
+    # fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
+    #
+    # ax = plt.axes(projection=crs_proj)
+    # ax.coastlines()
+    # ax.gridlines()
+    #
+    # ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
+    # # ax.set_extent(extent_dms)
+    #
+    # mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+    # mapper.set_array(df_mrg[the_var.name])
+    # plt.colorbar(mapper, shrink=0.6)
+    #
+    # # plt.title('Variable: {},  Date: {}'.format(the_var, xdf_df['time'].iloc[0].isoformat()))
+    # plt.title(f'Variable: {the_var.name},  Month: {time_index+1}')
+    # # plt.title('Variable: {}'.format(the_var))
+    #
+    # col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[the_var.name], colormap=cmap, norm=norm, linewidth=0.0)
+    #
+    # plt.savefig(f'{output_dir}/{the_var.name}_{fversion}_{time_index+1:02}.png', dpi=150, bbox_inches='tight')
+    #
+    # print('Writing remaining plots')
+    # for tt in range(1, 12):
+    #     print(f'    Index: {tt}')
+    #     param_var = pdb.parameters.get_dataframe(the_var.name).iloc[:, tt].to_frame(name=the_var.name)
+    #     df_mrg = geoms_exploded.merge(param_var, left_on=shape_key, right_index=True, how='left')
+    #
+    #     # ax.set_title('Variable: {},  Date: {}'.format(the_var, xdf_df['time'].iloc[0].isoformat()))
+    #     ax.set_title(f'Variable: {the_var.name},  Month: {tt+1}')
+    #     col.set_array(df_mrg[the_var.name])
+    #     # fig
+    #     plt.savefig(f'{output_dir}/{the_var.name}_{fversion}_{tt+1:02}.png', dpi=150, bbox_inches='tight')
 
 
 if __name__ == '__main__':

@@ -1,9 +1,12 @@
-
+import geopandas
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 from pyPRMS.Parameter import Parameter
+from pyPRMS.plot_helpers import set_colormap, get_projection, plot_polygon_collection
 from pyPRMS.Exceptions_custom import ParameterError
 
 
@@ -20,6 +23,8 @@ class Parameters(object):
         Create an ordered dictionary to contain pyPRMS.Parameter objects
         """
         self.__parameters = OrderedDict()
+        self.__hru_poly = None
+        self.__hru_shape_key = None
 
     def __getattr__(self, name):
         """Not sure what to write yet.
@@ -156,6 +161,7 @@ class Parameters(object):
         # Return the given parameter
         if self.exists(name):
             return self.__parameters[name]
+        # TODO: This shouldn't be a value error
         raise ValueError('Parameter, {}, does not exist.'.format(name))
 
     def get_dataframe(self, name):
@@ -229,6 +235,73 @@ class Parameters(object):
             return param.data[tuple(nhm_idx0), :]
         else:
             return param.data[tuple(nhm_idx0), ]
+
+    def plot(self, name, output_dir=None):
+        '''Plot a parameter'''
+
+        is_monthly = False
+        time_index = None
+
+        if self.exists(name):
+            # Get extent information
+            minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
+
+            cparam = self.__parameters[name]
+
+            if set(cparam.dimensions.keys()).intersection({'nmonths'}):
+                # Need 12 monthly plots of parameter
+                is_monthly = True
+                time_index = 0  # starting time index
+                param_var = self.get_dataframe(name).iloc[:, time_index].to_frame(name=name)
+            else:
+                param_var = self.get_dataframe(name).iloc[:]
+
+            cmap, norm = set_colormap(name, param_var, min_val=cparam.minimum, max_val=cparam.maximum)
+
+            crs_proj = get_projection(self.__hru_poly)
+
+            # This takes care of multipolygons that are in the NHM geodatabase/shapefile
+            geoms_exploded = self.__hru_poly.explode().reset_index(level=1, drop=True)
+
+            print('Writing first plot')
+            df_mrg = geoms_exploded.merge(param_var, left_on=self.__hru_shape_key, right_index=True, how='left')
+
+            fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
+
+            ax = plt.axes(projection=crs_proj)
+            ax.coastlines()
+            ax.gridlines()
+            ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
+
+            mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+            mapper.set_array(df_mrg[name])
+            plt.colorbar(mapper, shrink=0.6)
+
+            if is_monthly:
+                plt.title(f'Variable: {name},  Month: {time_index+1}')
+            else:
+                plt.title('Variable: {}'.format(name))
+
+            col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name], colormap=cmap,
+                                          norm=norm, linewidth=0.0)
+
+            if output_dir is not None:
+                if is_monthly:
+                    plt.savefig(f'{output_dir}/{name}_{time_index+1:02}.png', dpi=150, bbox_inches='tight')
+
+                    for tt in range(1, 12):
+                        print(f'    Index: {tt}')
+                        param_var = self.get_dataframe(name).iloc[:, tt].to_frame(name=name)
+                        df_mrg = geoms_exploded.merge(param_var, left_on=self.__hru_shape_key, right_index=True, how='left')
+
+                        if is_monthly:
+                            ax.set_title(f'Variable: {name},  Month: {tt+1}')
+
+                        col.set_array(df_mrg[name])
+                        # fig
+                        plt.savefig(f'{output_dir}/{name}_{tt+1:02}.png', dpi=150, bbox_inches='tight')
+                else:
+                    plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
 
     def remove_by_global_id(self, hrus=None, segs=None):
         """Removes data-by-id (nhm_seg, nhm_id) from all parameters"""
@@ -317,6 +390,17 @@ class Parameters(object):
 
             # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
             # new_deplcrv = pp['hru_deplcrv'].data.tolist()
+
+    def shapefile_hrus(self, filename, layer_name=None, shape_key=None):
+        '''Read a shapefile or geodatabase that corresponds to HRUs
+        '''
+
+        self.__hru_poly = geopandas.read_file(filename, layer=layer_name)
+
+        if self.__hru_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
+            print(f'Overriding USGS aea crs with EPSG:5070')
+            self.__hru_poly.crs = 'EPSG:5070'
+        self.__hru_shape_key = shape_key
 
     # def replace_values(self, varname, newvals, newdims=None):
     #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
