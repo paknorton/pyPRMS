@@ -1,6 +1,8 @@
+pyproj
+shapely
+matplotlib
+cartopy
 numpy
 netCDF4
 pandas
-future
 xarray
-dask
