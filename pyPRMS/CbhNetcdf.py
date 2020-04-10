@@ -40,15 +40,22 @@ class CbhNetcdf(object):
 
         if self.__nhm_hrus:
             # print('\t\tOpen dataset')
-            # self.__dataset = xr.open_mfdataset(self.__src_path)
-            self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040})
+            self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hruid': 1040}, combine='by_coords')
         else:
             print('ERROR: write the code for all HRUs')
             exit()
 
     def get_var(self, var):
         if self.__stdate is not None and self.__endate is not None:
-            data = self.__dataset[var].loc[self.__stdate:self.__endate, self.__nhm_hrus].to_pandas()
+            # print(var, type(var))
+            # print(self.__stdate, type(self.__stdate))
+            # print(self.__endate, type(self.__endate))
+            # print(self.__nhm_hrus, type(self.__nhm_hrus))
+            try:
+                data = self.__dataset[var].loc[self.__stdate:self.__endate, self.__nhm_hrus].to_pandas()
+            except IndexError:
+                print(f'ERROR: Indices (time, hruid) were used to subset {var} which expects indices ({" ".join(map(str, self.__dataset[var].coords))})')
+                raise
         else:
             data = self.__dataset[var].loc[:, self.__nhm_hrus].to_pandas()
 
@@ -64,37 +71,40 @@ class CbhNetcdf(object):
         var_list = []
         if vars is None:
             var_list = self.__dataset.data_vars
-        elif isinstance(list, vars):
+        elif isinstance(vars, list):
             var_list = vars
 
         for cvar in var_list:
-            data = self.get_var(var=cvar)
+            if cvar in self.__dataset.data_vars:
+                data = self.get_var(var=cvar)
 
-            # Add time information as columns
-            data['year'] = data.index.year
-            data['month'] = data.index.month
-            data['day'] = data.index.day
-            data['hour'] = 0
-            data['minute'] = 0
-            data['second'] = 0
+                # Add time information as columns
+                data['year'] = data.index.year
+                data['month'] = data.index.month
+                data['day'] = data.index.day
+                data['hour'] = 0
+                data['minute'] = 0
+                data['second'] = 0
 
-            # Output ASCII CBH files
-            if fileprefix is None:
-                outfile = '{}.cbh'.format(cvar)
+                # Output ASCII CBH files
+                if fileprefix is None:
+                    outfile = '{}.cbh'.format(cvar)
+                else:
+                    outfile = '{}_{}.cbh'.format(fileprefix, cvar)
+
+                if pathname is not None:
+                    outfile = '{}/{}'.format(pathname, outfile)
+
+                out_cbh = open(outfile, 'w')
+                out_cbh.write('Written by Bandit\n')
+                out_cbh.write('{} {}\n'.format(cvar, len(self.__nhm_hrus)))
+                out_cbh.write('########################################\n')
+                # data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.3f',
+                data.to_csv(out_cbh, columns=out_order, na_rep='-999',
+                            sep=' ', index=False, header=False, encoding=None, chunksize=50)
+                out_cbh.close()
             else:
-                outfile = '{}_{}.cbh'.format(fileprefix, cvar)
-
-            if pathname is not None:
-                outfile = '{}/{}'.format(pathname, outfile)
-
-            out_cbh = open(outfile, 'w')
-            out_cbh.write('Written by Bandit\n')
-            out_cbh.write('{} {}\n'.format(cvar, len(self.__nhm_hrus)))
-            out_cbh.write('########################################\n')
-            # data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.3f',
-            data.to_csv(out_cbh, columns=out_order, na_rep='-999',
-                        sep=' ', index=False, header=False, encoding=None, chunksize=50)
-            out_cbh.close()
+                print(f'WARNING: {cvar} does not exist in source CBH files..skipping')
 
     def write_netcdf(self, filename=None, vars=None):
         """Write CBH to netcdf format file"""
