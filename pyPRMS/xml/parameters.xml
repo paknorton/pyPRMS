@@ -4967,7 +4967,26 @@
         <dimensions>
             <dimension name="nsegment">
                 <position>1</position>
-                <size>56460</size>
+            </dimension>
+        </dimensions>
+    </parameter>
+    <parameter name="seg_cum_area">
+        <type>F</type>
+        <units>acres</units>
+        <model>PRMS</model>
+        <desc>Cumulative area for each stream segment</desc>
+        <help>Cumulative area for each stream segment</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E9</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>muskingum</module>
+            <module>muskingum_mann</module>
+            <module>mizuroute</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
             </dimension>
         </dimensions>
     </parameter>
@@ -4986,7 +5005,6 @@
         <dimensions>
             <dimension name="nsegment">
                 <position>1</position>
-                <size>56460</size>
             </dimension>
         </dimensions>
     </parameter>
@@ -5005,7 +5023,6 @@
         <dimensions>
             <dimension name="nsegment">
                 <position>1</position>
-                <size>56460</size>
             </dimension>
         </dimensions>
     </parameter>
