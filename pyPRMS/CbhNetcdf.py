@@ -100,7 +100,7 @@ class CbhNetcdf(object):
                 out_cbh.write('{} {}\n'.format(cvar, len(self.__nhm_hrus)))
                 out_cbh.write('########################################\n')
                 # data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.3f',
-                data.to_csv(out_cbh, columns=out_order, na_rep='-999',
+                data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.2f',
                             sep=' ', index=False, header=False, encoding=None, chunksize=50)
                 out_cbh.close()
             else:
