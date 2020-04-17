@@ -3,8 +3,9 @@
 import cartopy.crs as ccrs
 
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 from matplotlib.colors import Normalize, LogNorm, PowerNorm
-from matplotlib.collections import PatchCollection
+from matplotlib.collections import LineCollection, PatchCollection
 # import geopandas
 
 from matplotlib.patches import Polygon
@@ -19,8 +20,35 @@ import numpy as np
 # from pyPRMS.ParamDb import ParamDb
 
 
-def plot_polygon_collection(ax, geoms, values=None, colormap='Set1',  facecolor=None, edgecolor=None,
-                            alpha=0.5, linewidth=1.0, **kwargs):
+def plot_line_collection(ax, geoms, values=None, cmap=None, vary_width=False, vary_color=True, colors=None,
+                         alpha=1.0, linewidth=1.0, **kwargs):
+    """ Plot a collection of line geometries """
+    lines = []
+    for geom in geoms:
+        a = np.asarray(geom.coords)
+
+        if geom.has_z:
+            a = shapely.geometry.LineString(zip(*geom.xy))
+
+        lines.append(shapely.geometry.LineString(a))
+
+    if vary_width:
+        lwidths = ((values / values.max()).to_numpy() + 0.01) * linewidth
+        lines = LineCollection(lines, linewidths=lwidths, colors=colors, alpha=alpha)
+    elif vary_color:
+        lines = LineCollection(lines, linewidth=linewidth, alpha=alpha)
+
+    if vary_color and values is not None:
+        lines.set_array(values)
+        lines.set_cmap(cmap)
+
+    ax.add_collection(lines, autolim=True)
+    ax.autoscale_view()
+    return lines
+
+
+def plot_polygon_collection(ax, geoms, values=None, cmap=None, facecolor=None, edgecolor=None,
+                            alpha=1.0, linewidth=1.0, **kwargs):
     """ Plot a collection of Polygon geometries """
     # from https://stackoverflow.com/questions/33714050/geopandas-plotting-any-way-to-speed-things-up
     patches = []
@@ -29,16 +57,16 @@ def plot_polygon_collection(ax, geoms, values=None, colormap='Set1',  facecolor=
 
         a = np.asarray(poly.exterior)
         if poly.has_z:
-            poly = shapely.geometry.Polygon(zip(*poly.exterior.xy))
+            a = shapely.geometry.Polygon(zip(*poly.exterior.xy))
 
         patches.append(Polygon(a))
 
     patches = PatchCollection(patches, facecolor=facecolor, linewidth=linewidth, edgecolor=edgecolor,
-                              alpha=alpha, **kwargs)
+                              alpha=alpha)
 
     if values is not None:
         patches.set_array(values)
-        patches.set_cmap(colormap)
+        patches.set_cmap(cmap)
 
     ax.add_collection(patches, autolim=True)
     ax.autoscale_view()
@@ -122,31 +150,38 @@ def get_extent(shapefile, layer_name=None, driver='ESRI Shapefile'):
     return extent_dms
 
 
-def set_colormap(the_var, param_data, min_val=None, max_val=None):
+def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **kwargs):
     # Create the colormap
     # cmap = 'BrBG' #'GnBu_r' # for snow
     # cmap = 'GnBu_r'
     # cmap = 'jet'
 
-    if the_var == 'tmax_allsnow':
-        cmap = 'RdBu_r'
-    elif the_var == 'tmax_allrain_offset':
-        cmap = 'tab20'
-        # cmap = 'OrRd'
-    elif the_var in ['net_ppt', 'net_rain', 'net_snow']:
-        cmap = 'YlGnBu'
-    elif the_var in ['tmax_cbh_adj', 'tmin_cbh_adj']:
-        cmap = 'coolwarm'
-    else:
-        cmap = 'jet'
+    if cmap is None:
+        if the_var == 'tmax_allsnow':
+            cmap = 'RdBu_r'
+        elif the_var in ['tmax', 'tmin']:
+            cmap = 'bwr'
+        elif the_var == 'tmax_allrain_offset':
+            cmap = 'tab20'
+            # cmap = 'OrRd'
+        elif the_var == 'snarea_thresh':
+            cmap = 'tab20'
+        elif the_var in ['net_ppt', 'net_rain', 'net_snow']:
+            cmap = 'YlGnBu'
+        elif the_var in ['tmax_cbh_adj', 'tmin_cbh_adj']:
+            cmap = 'coolwarm'
+        else:
+            cmap = 'brg'
 
     # Create the colormap if a list of names is given, otherwise use the given colormap
-    lscm = mpl.colors.LinearSegmentedColormap
     if isinstance(cmap, (list, tuple)):
+        lscm = mpl.colors.LinearSegmentedColormap
         cmap = lscm.from_list('mycm', cmap)
     else:
-        cmap = plt.get_cmap(cmap)
-
+        if the_var == 'hru_deplcrv':
+            cmap = plt.cm.get_cmap(name=cmap, lut=param_data.max().max())
+        else:
+            cmap = plt.get_cmap(cmap)
     # missing_color = '#ff00cb'   # pink/magenta
 
     # Get the min and max values for the variable
@@ -166,12 +201,18 @@ def set_colormap(the_var, param_data, min_val=None, max_val=None):
         else:
             norm = Normalize(vmin=0.000001, vmax=max_val)
     else:
-        if the_var in ['tmax_allsnow', 'tmax_allrain_offset']:
+        if the_var in ['tmax_hru', 'tmin_hru', 'tmax', 'tmin']:
+            norm = Normalize(vmin=-max_val, vmax=max_val)
+        elif the_var in ['tmax_allsnow', 'tmax_allrain_offset']:
             norm = Normalize(vmin=min_val, vmax=max_val)
         elif the_var in ['tmax_cbh_adj', 'tmin_cbh_adj']:
             norm = Normalize(vmin=-max_val, vmax=max_val)
         else:
             norm = Normalize(vmin=min_val, vmax=max_val)
+
+    if the_var == 'hru_deplcrv':
+        bnds = np.arange(param_data.min().min(), param_data.max().max()+2) - 0.5
+        norm = colors.BoundaryNorm(boundaries=bnds, ncolors=param_data.max().max())
 
     return cmap, norm
 
