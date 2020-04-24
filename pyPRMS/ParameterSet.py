@@ -469,7 +469,6 @@ class ParameterSet(object):
 
         if prms_version == 5:
             # Add the ngw and nssr dimensions. These are always equal to nhru.
-            print('Ooooh! PRMS5 output')
             for kk in ['ngw', 'nssr']:
                 outfile.write('{}\n'.format(VAR_DELIM))
                 outfile.write('{}\n'.format(kk))
@@ -492,7 +491,6 @@ class ParameterSet(object):
                     for dd in vv.dimensions.values():
                         # Write dimension names
                         if prms_version == 5:
-                            print('INFO: Version 5 parameter modification')
                             # On-the-fly change of dimension names for certain parameters
                             # when the prms version is 5.
                             if dd.name == 'nhru':
