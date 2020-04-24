@@ -328,12 +328,14 @@ class Parameters(object):
                 else:
                     minx, miny, maxx, maxy = self.__seg_poly.geometry.total_bounds
 
+                seg_geoms_exploded = self.__seg_poly.explode().reset_index(level=1, drop=True)
+
                 param_data = self.get_dataframe(name).iloc[:]
 
                 crs_proj = get_projection(self.__seg_poly)
 
                 print('Writing first plot')
-                df_mrg = self.__seg_poly.merge(param_data, left_on=self.__seg_shape_key, right_index=True, how='left')
+                df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key, right_index=True, how='left')
 
                 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
 
@@ -347,13 +349,13 @@ class Parameters(object):
                 if kwargs.get('vary_color', True):
                     mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                     mapper.set_array(df_mrg[name])
-                    plt.colorbar(mapper, shrink=0.6)
+                    plt.colorbar(mapper, shrink=0.6, label=cparam.units)
 
                 plt.title('Variable: {}'.format(name))
 
                 if self.__hru_poly is not None:
                     hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry,
-                                                       **dict(kwargs, cmap=cmap, linewidth=0.5))
+                                                       **dict(kwargs, cmap=cmap, linewidth=0.5, alpha=.7))
 
                 col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
                                            **dict(kwargs, cmap=cmap))
