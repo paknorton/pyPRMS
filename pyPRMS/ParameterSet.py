@@ -442,11 +442,12 @@ class ParameterSet(object):
             #     # ff.write(xmlstr.encode('utf-8'))
             #     ff.write(xmlstr)
 
-    def write_parameter_file(self, filename, header=None):
+    def write_parameter_file(self, filename, header=None, prms_version=6):
         """Write a parameter file.
 
         :param str filename: name of parameter file
         :param list[str] header: list of header lines
+        :param int prms_version: Output either version 5 or 5 parameter files
         """
 
         # Write the parameters out to a file
@@ -466,6 +467,14 @@ class ParameterSet(object):
             outfile.write('{}\n'.format(kk))
             outfile.write('{:d}\n'.format(vv.size))
 
+        if prms_version == 5:
+            # Add the ngw and nssr dimensions. These are always equal to nhru.
+            print('Ooooh! PRMS5 output')
+            for kk in ['ngw', 'nssr']:
+                outfile.write('{}\n'.format(VAR_DELIM))
+                outfile.write('{}\n'.format(kk))
+                outfile.write('{:d}\n'.format(self.dimensions['nhru'].size))
+
         # Now write out the Parameter category
         order = ['name', 'dimensions', 'datatype', 'data']
 
@@ -482,7 +491,23 @@ class ParameterSet(object):
 
                     for dd in vv.dimensions.values():
                         # Write dimension names
-                        outfile.write('{}\n'.format(dd.name))
+                        if prms_version == 5:
+                            print('INFO: Version 5 parameter modification')
+                            # On-the-fly change of dimension names for certain parameters
+                            # when the prms version is 5.
+                            if dd.name == 'nhru':
+                                if vv.name in ['gwflow_coef', 'gwsink_coef', 'gwstor_init',
+                                               'gwstor_min', 'gw_seep_coef']:
+                                    outfile.write('{}\n'.format('ngw'))
+                                elif vv.name in ['ssr2gw_exp', 'ssr2gw_rate', 'ssstor_init',
+                                                 'ssstor_init_frac']:
+                                    outfile.write('{}\n'.format('nssr'))
+                                else:
+                                    outfile.write('{}\n'.format(dd.name))
+                            else:
+                                outfile.write('{}\n'.format(dd.name))
+                        else:
+                            outfile.write('{}\n'.format(dd.name))
                 elif item == 'datatype':
                     # dimsize (which is computed) must be written before datatype
                     outfile.write('{}\n'.format(vv.data.size))
