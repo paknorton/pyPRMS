@@ -20,7 +20,7 @@ import numpy as np
 # from pyPRMS.ParamDb import ParamDb
 
 
-def plot_line_collection(ax, geoms, values=None, cmap=None, vary_width=False, vary_color=True, colors=None,
+def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_width=False, vary_color=True, colors=None,
                          alpha=1.0, linewidth=1.0, **kwargs):
     """ Plot a collection of line geometries """
     lines = []
@@ -36,18 +36,18 @@ def plot_line_collection(ax, geoms, values=None, cmap=None, vary_width=False, va
         lwidths = ((values / values.max()).to_numpy() + 0.01) * linewidth
         lines = LineCollection(lines, linewidths=lwidths, colors=colors, alpha=alpha)
     elif vary_color:
-        lines = LineCollection(lines, linewidth=linewidth, alpha=alpha)
+        lines = LineCollection(lines, linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm)
 
     if vary_color and values is not None:
         lines.set_array(values)
-        lines.set_cmap(cmap)
+        # lines.set_cmap(cmap)
 
     ax.add_collection(lines, autolim=True)
     ax.autoscale_view()
     return lines
 
 
-def plot_polygon_collection(ax, geoms, values=None, cmap=None, facecolor=None, edgecolor=None,
+def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, facecolor=None, edgecolor=None,
                             alpha=1.0, linewidth=1.0, **kwargs):
     """ Plot a collection of Polygon geometries """
     # from https://stackoverflow.com/questions/33714050/geopandas-plotting-any-way-to-speed-things-up
@@ -62,11 +62,11 @@ def plot_polygon_collection(ax, geoms, values=None, cmap=None, facecolor=None, e
         patches.append(Polygon(a))
 
     patches = PatchCollection(patches, facecolor=facecolor, linewidth=linewidth, edgecolor=edgecolor,
-                              alpha=alpha)
+                              alpha=alpha, cmap=cmap, norm=norm)
 
     if values is not None:
         patches.set_array(values)
-        patches.set_cmap(cmap)
+        # patches.set_cmap(cmap)
 
     ax.add_collection(patches, autolim=True)
     ax.autoscale_view()
@@ -158,18 +158,19 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
 
     if cmap is None:
         if the_var == 'tmax_allsnow':
-            cmap = 'RdBu_r'
+            cmap = 'coolwarm'
         elif the_var in ['tmax', 'tmin']:
             cmap = 'bwr'
         elif the_var == 'tmax_allrain_offset':
-            cmap = 'tab20'
-            # cmap = 'OrRd'
+            cmap = 'OrRd'
         elif the_var == 'snarea_thresh':
             cmap = 'tab20'
         elif the_var in ['net_ppt', 'net_rain', 'net_snow']:
             cmap = 'YlGnBu'
-        elif the_var in ['tmax_cbh_adj', 'tmin_cbh_adj']:
+        elif the_var in ['tmax_cbh_adj', 'tmin_cbh_adj', 'jh_coef']:
             cmap = 'coolwarm'
+        elif the_var in ['snow_cbh_adj', 'rain_cbh_adj']:
+            cmap = 'YlGnBu'
         else:
             cmap = 'brg'
 
@@ -194,21 +195,19 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
     # norm = PowerNorm(gamma=0.05)
     # norm = LogNorm(vmin=min_val, vmax=max_val)
 
-    if min_val == 0.:
-        if the_var in ['net_ppt', 'net_rain', 'net_snow']:
-            cmap.set_under(color='None')
-            norm = LogNorm(vmin=0.000001, vmax=max_val)
-        else:
-            norm = Normalize(vmin=0.000001, vmax=max_val)
+    # if min_val == 0.:
+    #     if the_var in ['net_ppt', 'net_rain', 'net_snow']:
+    #         # cmap.set_under(color='None')
+    #         norm = LogNorm(vmin=0.000001, vmax=max_val)
+    #     else:
+    #         norm = Normalize(vmin=0.0, vmax=max_val)
+    # else:
+    if the_var in ['tmax_hru', 'tmin_hru', 'tmax', 'tmin']:
+        norm = Normalize(vmin=-max_val, vmax=max_val)
+    elif the_var in ['tmax_cbh_adj', 'tmin_cbh_adj', 'tmax_allsnow', 'jh_coef']:
+        norm = Normalize(vmin=-max_val, vmax=max_val)
     else:
-        if the_var in ['tmax_hru', 'tmin_hru', 'tmax', 'tmin']:
-            norm = Normalize(vmin=-max_val, vmax=max_val)
-        elif the_var in ['tmax_allsnow', 'tmax_allrain_offset']:
-            norm = Normalize(vmin=min_val, vmax=max_val)
-        elif the_var in ['tmax_cbh_adj', 'tmin_cbh_adj']:
-            norm = Normalize(vmin=-max_val, vmax=max_val)
-        else:
-            norm = Normalize(vmin=min_val, vmax=max_val)
+        norm = Normalize(vmin=min_val, vmax=max_val)
 
     if the_var == 'hru_deplcrv':
         bnds = np.arange(param_data.min().min(), param_data.max().max()+2) - 0.5

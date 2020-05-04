@@ -255,7 +255,7 @@ class Parameters(object):
         if self.exists(name):
             cparam = self.__parameters[name]
 
-            if set(cparam.dimensions.keys()).intersection({'nhru'}):
+            if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
                 # Get extent information
                 minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
 
@@ -282,7 +282,12 @@ class Parameters(object):
                 ax.gridlines()
                 ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
 
-                cmap, norm = set_colormap(name, param_data, **kwargs)
+                if name == 'jh_coef':
+                    cmap, norm = set_colormap(name, param_data, min_val=-0.05,
+                                              max_val=0.05, **kwargs)
+                else:
+                    cmap, norm = set_colormap(name, param_data, min_val=cparam.minimum,
+                                              max_val=cparam.maximum, **kwargs)
 
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                 mapper.set_array(df_mrg[name])
@@ -292,7 +297,7 @@ class Parameters(object):
                     cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label='Curve index')
                     cb.ax.tick_params(length=0)
                 else:
-                    plt.colorbar(mapper, shrink=0.6)
+                    plt.colorbar(mapper, shrink=0.6, label=cparam.units)
 
                 if is_monthly:
                     plt.title(f'Variable: {name},  Month: {time_index+1}')
@@ -300,7 +305,7 @@ class Parameters(object):
                     plt.title('Variable: {}'.format(name))
 
                 col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
-                                              **dict(kwargs, cmap=cmap))
+                                              **dict(kwargs, cmap=cmap, norm=norm))
 
                 if output_dir is not None:
                     if is_monthly:
@@ -322,48 +327,50 @@ class Parameters(object):
             elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
                 # Plot segment parameters
                 # Get extent information
-                if self.__hru_poly is not None:
-                    minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
-                    hru_geoms_exploded = self.__hru_poly.explode().reset_index(level=1, drop=True)
+                if self.__seg_poly is not None:
+                    if self.__hru_poly is not None:
+                        minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
+                        hru_geoms_exploded = self.__hru_poly.explode().reset_index(level=1, drop=True)
+                    else:
+                        minx, miny, maxx, maxy = self.__seg_poly.geometry.total_bounds
+
+                    seg_geoms_exploded = self.__seg_poly.explode().reset_index(level=1, drop=True)
+
+                    param_data = self.get_dataframe(name).iloc[:]
+
+                    crs_proj = get_projection(self.__seg_poly)
+
+                    print('Writing first plot')
+                    df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key, right_index=True, how='left')
+
+                    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
+
+                    ax = plt.axes(projection=crs_proj)
+                    ax.coastlines()
+                    ax.gridlines()
+                    ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
+
+                    cmap, norm = set_colormap(name, param_data, **kwargs)
+
+                    if kwargs.get('vary_color', True):
+                        mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+                        mapper.set_array(df_mrg[name])
+                        plt.colorbar(mapper, shrink=0.6, label=cparam.units)
+
+                    plt.title('Variable: {}'.format(name))
+
+                    if self.__hru_poly is not None:
+                        hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry,
+                                                           **dict(kwargs, cmap=cmap, norm=norm, linewidth=0.5, alpha=.7))
+
+                    col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
+                                               **dict(kwargs, cmap=cmap, norm=norm))
+                                               # colors='blue',
+                                               # colormap=cmap, norm=norm, alpha=1.0, linewidth=3.0)
+                    if output_dir is not None:
+                        plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
                 else:
-                    minx, miny, maxx, maxy = self.__seg_poly.geometry.total_bounds
-
-                seg_geoms_exploded = self.__seg_poly.explode().reset_index(level=1, drop=True)
-
-                param_data = self.get_dataframe(name).iloc[:]
-
-                crs_proj = get_projection(self.__seg_poly)
-
-                print('Writing first plot')
-                df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key, right_index=True, how='left')
-
-                fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
-
-                ax = plt.axes(projection=crs_proj)
-                ax.coastlines()
-                ax.gridlines()
-                ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
-
-                cmap, norm = set_colormap(name, param_data, **kwargs)
-
-                if kwargs.get('vary_color', True):
-                    mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-                    mapper.set_array(df_mrg[name])
-                    plt.colorbar(mapper, shrink=0.6, label=cparam.units)
-
-                plt.title('Variable: {}'.format(name))
-
-                if self.__hru_poly is not None:
-                    hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry,
-                                                       **dict(kwargs, cmap=cmap, linewidth=0.5, alpha=.7))
-
-                col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
-                                           **dict(kwargs, cmap=cmap))
-                                           # colors='blue',
-                                           # colormap=cmap, norm=norm, alpha=1.0, linewidth=3.0)
-                if output_dir is not None:
-                    plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
-
+                    print('No segment shapefile is loaded; skipping')
             else:
                 print('Non-plottable parameter')
 
