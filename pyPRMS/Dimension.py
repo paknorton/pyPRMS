@@ -128,7 +128,7 @@ class Dimension(object):
         # in a change to self.__size
         if not isinstance(other, int):
             raise ValueError('Dimension size type must be an integer')
-        self.__size += other
+        self.size += other
         return self
 
     def __isub__(self, other):
