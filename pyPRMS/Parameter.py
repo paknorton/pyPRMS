@@ -142,7 +142,7 @@ class Parameter(object):
             self.__datatype = None
         else:
             # TODO: This should raise and error (what kind?)
-            print('WARNING: Datatype, {}, is not valid.'.format(dtype))
+            raise TypeError(f'Invalid datatype, {dtype}, specified for parameter')
 
     @property
     def units(self):
@@ -279,6 +279,8 @@ class Parameter(object):
         :param value: The default value
         :type value: int or float or None
         """
+        # TODO: 2020-04-30 PAN: This should check if given value is between
+        #                       min and max valid values (if set)
         if self.__datatype is None or value is None:
             self.__default = value
         elif DATA_TYPES[self.__datatype] == 'float':
