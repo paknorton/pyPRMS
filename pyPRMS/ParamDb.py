@@ -20,16 +20,6 @@ class ParamDb(ParameterSet):
         # Read the parameters from the parameter database
         self._read()
 
-    @property
-    def available_parameters(self):
-        """Get a list of parameter names in the ParameterSet.
-
-        :returns: list of parameter names
-        :rtype: list[str]
-        """
-
-        return list(self.parameters.keys())
-
     @staticmethod
     def _data_it(filename):
         """Get iterator to a parameter db file.

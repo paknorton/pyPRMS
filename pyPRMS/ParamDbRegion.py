@@ -41,16 +41,6 @@ class ParamDbRegion(ParameterSet):
             print('There were {} warnings while reading'.format(len(self.__warnings)))
 
     @property
-    def available_parameters(self):
-        """Get a list of parameter names in the ParameterSet.
-
-        :returns: list of parameter names
-        :rtype: list[str]
-        """
-
-        return list(self.parameters.keys())
-
-    @property
     def segment_nhm_to_region(self):
         """Get the dictionary which maps nhm segment ids to regional segment ids.
 

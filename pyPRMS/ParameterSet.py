@@ -37,6 +37,16 @@ class ParameterSet(object):
         self.verbose = verbose
 
     @property
+    def available_parameters(self):
+        """Get a list of parameter names in the ParameterSet.
+
+        :returns: list of parameter names
+        :rtype: list[str]
+        """
+
+        return list(self.parameters.keys())
+
+    @property
     def dimensions(self):
         """Get dimensions object.
 
