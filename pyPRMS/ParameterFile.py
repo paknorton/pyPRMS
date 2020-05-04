@@ -23,7 +23,7 @@ class ParameterFile(ParameterSet):
         self.__header = None
 
         self.__isloaded = False
-        self.__updated_params = set()
+        self.__updated_parameters = set()
         self.__verbose = verbose
         self.filename = filename
 
@@ -61,14 +61,14 @@ class ParameterFile(ParameterSet):
         return self.__header
 
     @property
-    def updated_params(self):
+    def updated_parameters(self):
         """Get list of parameters that had more than one entry in the parameter file.
 
         :returns: list of parameters
         :rtype: list[str]
         """
 
-        return self.__updated_params
+        return self.__updated_parameters
 
     def _read(self):
         """Read parameter file.
@@ -122,7 +122,7 @@ class ParameterFile(ParameterSet):
             except ParameterError:
                 if self.__verbose:
                     print('Parameter, {}, updated with new values'.format(varname))
-                self.__updated_params.add(varname)
+                self.__updated_parameters.add(varname)
                 # print('%s: Duplicate parameter name.. skipping' % varname)
             except ValueError:
                 if self.__verbose:
