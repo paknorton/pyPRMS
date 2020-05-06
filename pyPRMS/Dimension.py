@@ -76,6 +76,9 @@ class Dimension(object):
         :param int value: size of the dimension
         :raises ValueError: if dimension size in not a positive integer
         """
+        if isinstance(value, str):
+            value = int(value)
+
         if not isinstance(value, int) or value < 0:
             raise ValueError('Dimension size must be a positive integer')
 

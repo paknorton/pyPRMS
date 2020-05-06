@@ -21,12 +21,14 @@ class TestDimension():
         with pytest.raises(ValueError):
             Dimension(name='nhru', size=size)
 
-    def test_create_dimension_specified_size(self):
+    @pytest.mark.parametrize('size, tname', [(4, 'int'),
+                                             ('4', 'str')])
+    def test_create_dimension_specified_size(self, size, tname):
         """Set and get Dimension size"""
 
         # Set Dimension name and size during instantiation
-        adim = Dimension(name='nhru', size=4)
-        assert (adim.name == 'nhru' and adim.size == 4)
+        adim = Dimension(name='nhru', size=size)
+        assert (adim.name == 'nhru' and adim.size == int(size))
 
     def test_create_dimension_default_size(self):
         """Set and get Dimension size"""
