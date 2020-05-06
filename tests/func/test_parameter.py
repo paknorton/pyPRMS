@@ -15,13 +15,22 @@ class TestParameter:
         with pytest.raises(ValueError):
             aparam.data = [1, 2, 3, 4]
 
-    def test_add_data_with_wrong_dtype_raises(self):
+    def test_add_data_int_to_str(self):
         aparam = Parameter(name='someparam')
         aparam.dimensions.add(name='nhru', size=4)
-        aparam.datatype = 2
+        aparam.datatype = 4
+        aparam.data = [1, 2, 3, 4]
 
-        with pytest.raises(TypeError):
-            aparam.data = [1, 2, 3, 4]
+        assert aparam.tolist() == ['1', '2', '3', '4']
+
+    @pytest.mark.parametrize('dtype', [1, 2, 3])
+    def test_add_data_bad_convert_raises(self, dtype):
+        aparam = Parameter(name='someparam')
+        aparam.dimensions.add(name='nhru', size=4)
+        aparam.datatype = dtype
+
+        with pytest.raises(ValueError):
+            aparam.data = [1, 2, '3a', 4]
 
     def test_add_bad_datatype_raises(self):
         aparam = Parameter(name='someparam')

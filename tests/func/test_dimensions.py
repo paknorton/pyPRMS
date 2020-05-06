@@ -23,7 +23,6 @@ class TestEmptyDimensions():
     def test_dimensions_add_fixed_dimension(self, dims_obj, name, size, actual_size):
         dims_obj.add(name=name, size=size)
         assert dims_obj[name].size == actual_size
-        pass
 
     def test_dimensions_duplicate_ignore(self, dims_obj):
         """Adding a duplicate dimension name should be silently ignored"""
@@ -38,3 +37,4 @@ class TestEmptyDimensions():
         pre_exist = dims_obj.exists('one')
         dims_obj.remove('one')
         assert pre_exist and not dims_obj.exists('one')
+
