@@ -72,7 +72,7 @@ class ParamDbRegion(ParameterSet):
 
     @property
     def warnings(self):
-        """Get the warnings that have occurred.
+        """Get the warnings that occurred when the parameter database was read.
 
         :returns: list of warnings
         :rtype: list[str]
@@ -242,7 +242,7 @@ class ParamDbRegion(ParameterSet):
                         try:
                             tmp_data.append(self.__reg_to_nhm_seg[rr][int(val)])
                         except KeyError:
-                            self.__warnings.append('WARNING: poi_gage_segment for local segment {} in {}  is zero'.format(idx, rr))
+                            self.__warnings.append('WARNING: poi_gage_segment for local segment {} in {} is zero'.format(idx, rr))
                             tmp_data.append(0)
                     elif xml_param_name == 'hru_deplcrv':
                         tmp_data.append(int(val) + crv_offset)

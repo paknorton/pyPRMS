@@ -154,17 +154,6 @@ class ParameterFile(ParameterSet):
 
             self.parameters.get(varname).datatype = int(next(it))
 
-            # if self.master_parameters is not None:
-            #     try:
-            #         master_info = self.master_parameters.parameters[varname]
-            #
-            #         self.parameters.get(varname).units = master_info.units
-            #         self.parameters.get(varname).description = master_info.description
-            #         self.parameters.get(varname).help = master_info.help
-            #         self.parameters.get(varname).modules = master_info.modules
-            #     except KeyError:
-            #         print('WARNING: {} has no master information'.format(varname))
-
             # Add the dimensions to the parameter, dimension size is looked up from the global Dimensions object
             for dd in dim_tmp:
                 self.parameters.get(varname).dimensions.add(dd, self.dimensions.get(dd).size)
