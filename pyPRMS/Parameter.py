@@ -637,10 +637,11 @@ class Parameter(object):
         """
 
         # Convert provide list of data to float
-        try:
-            return [float(vv) for vv in data]
-        except ValueError as ve:
-            print(ve)
+        return [float(vv) for vv in data]
+        # try:
+        #     return [float(vv) for vv in data]
+        # except ValueError as ve:
+        #     print(ve)
 
     @staticmethod
     def __str_to_int(data):
@@ -657,11 +658,8 @@ class Parameter(object):
             return [int(vv) for vv in data]
         except ValueError:
             # Perhaps it's a float, try converting to float and then integer
-            try:
-                tmp = [float(vv) for vv in data]
-                return [int(vv) for vv in tmp]
-            except ValueError as ve:
-                print(ve)
+            tmp = [float(vv) for vv in data]
+            return [int(vv) for vv in tmp]
 
     @staticmethod
     def __str_to_str(data):
@@ -681,4 +679,6 @@ class Parameter(object):
         #                 parameter files. Instead the conversion to ascii is
         #                 handled in the write_netcdf routine of ParameterSet
         # data = [dd.encode() for dd in data]
+        if not all(isinstance(dd, str) for dd in data):
+            return [str(vv) for vv in data]
         return data
