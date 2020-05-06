@@ -59,18 +59,16 @@ class ParamDb(ParameterSet):
                 print('WARNING: {} is duplicated in {}'.format(xml_param_name, PARAMETERS_XML))
                 continue
             else:
-                self.parameters.add(xml_param_name)
-                self.parameters.get(xml_param_name).datatype = NHM_DATATYPES[param.find('type').text]
-                self.parameters.get(xml_param_name).units = getattr(param.find('units'), 'text', None)
-                self.parameters.get(xml_param_name).description = getattr(param.find('desc'), 'text', None)
-                self.parameters.get(xml_param_name).help = getattr(param.find('help'), 'text', None)
-                # self.parameters.get(xml_param_name).model = param.get('model')
-
-                self.parameters.get(xml_param_name).default = getattr(param.find('default'), 'text', None)
-
-                self.parameters.get(xml_param_name).minimum = getattr(param.find('minimum'), 'text', None)
-                self.parameters.get(xml_param_name).maximum = getattr(param.find('maximum'), 'text', None)
-                self.parameters.get(xml_param_name).modules = [cmod.text for cmod in param.findall('./modules/module')]
+                self.parameters.add(name=xml_param_name,
+                                    datatype=NHM_DATATYPES[param.find('type').text],
+                                    units=getattr(param.find('units'), 'text', None),
+                                    description=getattr(param.find('desc'), 'text', None),
+                                    help=getattr(param.find('help'), 'text', None),
+                                    default=getattr(param.find('default'), 'text', None),
+                                    minimum=getattr(param.find('minimum'), 'text', None),
+                                    maximum=getattr(param.find('maximum'), 'text', None),
+                                    modules=[cmod.text for cmod in param.findall('./modules/module')])
+                # # self.parameters.get(xml_param_name).model = param.get('model')
 
             # Read the parameter data
             tmp_data = []
