@@ -36,14 +36,11 @@ ctl_implicit_modules = {'basin_module': 'basin',
                         'gw_module': 'gwflow',
                         'soilzone_module': 'soilzone'}
 
-# valtypes = ['', 'integer', 'float', 'double', 'string']
-
 # Constants related to parameter files
 DIMENSIONS_HDR = 'Dimensions'
 PARAMETERS_HDR = 'Parameters'
 CATEGORY_DELIM = '**'  # Delimiter for categories of variables
 VAR_DELIM = '####'  # Used to delimit dimensions and parameters
-# DATA_TYPES = ['', 'integer', 'float', 'double', 'string']
 DATA_TYPES = {1: 'integer', 2: 'float', 3: 'double', 4: 'string'}
 
 # Valid dimensions names for PRMS
