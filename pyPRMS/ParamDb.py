@@ -48,7 +48,7 @@ class ParamDb(ParameterSet):
 
         # Populate the global dimensions from the xml file
         for xml_dim in dimens_root.findall('dimension'):
-            self.dimensions.add(name=xml_dim.attrib.get('name'), size=int(xml_dim.find('size').text))
+            self.dimensions.add(name=xml_dim.attrib.get('name'), size=xml_dim.find('size').text)
 
         # Populate parameterSet with all available parameter names
         for param in params_root.findall('parameter'):
