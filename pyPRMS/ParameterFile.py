@@ -2,8 +2,6 @@ from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.ParameterSet import ParameterSet
 from pyPRMS.constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
 
-import functools
-
 
 class ParameterFile(ParameterSet):
 
@@ -121,9 +119,8 @@ class ParameterFile(ParameterSet):
                     self.parameters.add(varname)
             except ParameterError:
                 if self.__verbose:
-                    print('Parameter, {}, updated with new values'.format(varname))
+                    print(f'Parameter, {varname}, updated with new values')
                 self.__updated_parameters.add(varname)
-                # print('%s: Duplicate parameter name.. skipping' % varname)
             except ValueError:
                 if self.__verbose:
                     print(f'Parameter, {varname}, is not a valid parameter; skipping.')
@@ -137,31 +134,25 @@ class ParameterFile(ParameterSet):
                     pass
                 continue
 
-            # Read in the dimension names
+            # Read the dimension names
             ndims = int(next(it))  # number of dimensions for this variable
-            dim_tmp = [next(it) for _ in range(ndims)]
+            dim_names = [next(it) for _ in range(ndims)]
 
-            # Lookup dimension size for each dimension name
-            # If a dimension name does not exist in the list of global dimensions
-            # an error occurs.
-            arr_shp = [self.dimensions.get(dd).size for dd in dim_tmp]
-
-            # Compute the total size of the parameter
-            dim_size = functools.reduce(lambda x, y: x * y, arr_shp)
-
-            # Total dimension size declared for parameter in file; it should be total size of declared dimensions.
-            numval = int(next(it))
+            # Total dimension size declared for parameter in file; it should equal the size of
+            # the declared global dimensions.
+            dim_size = int(next(it))
 
             self.parameters.get(varname).datatype = int(next(it))
 
             # Add the dimensions to the parameter, dimension size is looked up from the global Dimensions object
-            for dd in dim_tmp:
+            for dd in dim_names:
                 self.parameters.get(varname).dimensions.add(dd, self.dimensions.get(dd).size)
 
-            if numval != dim_size:
+            # if numval != dim_size:
+            if dim_size != self.parameters.get(varname).size:
                 # The declared total size doesn't match the total size of the declared dimensions
-                print('{}: Declared total size for parameter does not match the total size of the ' +
-                      'declared dimension(s) ({} != {}).. skipping'.format(varname, numval, dim_size))
+                print(f'{varname}: Declared total size for parameter does not match the total size of the ' +
+                      f'declared dimension(s) ({dim_size} != {self.parameters.get(varname).size}); skipping')
 
                 # Still have to read all the values to skip this properly
                 try:
@@ -189,9 +180,9 @@ class ParameterFile(ParameterSet):
                     # Hit the end of the file
                     pass
 
-                if len(vals) != numval:
-                    print('{}: number of values does not match dimension size ' +
-                          '({} != {}).. skipping'.format(varname, len(vals), numval))
+                if len(vals) != dim_size:
+                    print(f'{varname}: number of values does not match declared dimension size ' +
+                          f'({len(vals)} != {dim_size}); skipping')
 
                     # Remove the parameter from the dictionary
                     self.parameters.remove(varname)
