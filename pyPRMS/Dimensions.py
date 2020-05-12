@@ -201,6 +201,18 @@ class ParamDimensions(Dimensions):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
+    def add(self, name, size=0):
+        """Add a new dimension.
+
+        :param str name: name of the dimension
+        :param int size: size of the dimension
+        """
+
+        # Restrict number of dimensions for parameters
+        if self.ndims == 2:
+            raise ValueError(f'Number of dimensions greater than 2 is not supported')
+        super().add(name, size)
+
     def add_from_xml(self, filename):
         """Add one or more dimensions from an xml file.
 
