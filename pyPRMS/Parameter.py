@@ -385,9 +385,17 @@ class Parameter(object):
         elif isinstance(data_in, np.ndarray):
             if data_in.ndim == self.ndims:
                 self.__data = data_in
+            elif data_in.ndim == 1 and data_in.size == self.size:
+                # Matching size, different shapes
+                if self.ndims == 2:
+                    self.__data = data_in.reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
+                elif self.ndims == 1:
+                    self.__data = data_in
+                else:
+                    raise ValueError('Number of dimensions, {}, is not supported'.format(self.ndims))
             else:
-                err_txt = 'Number of dimensions for new data ({}) doesn\'t match old ({})'
-                raise IndexError(err_txt.format(data_in.ndim, self.ndims))
+                err_txt = '{}: Number of dimensions for new data ({}) doesn\'t match old ({})'
+                raise IndexError(err_txt.format(self.name, data_in.ndim, self.ndims))
 
     @property
     def index_map(self):
