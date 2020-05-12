@@ -15,6 +15,16 @@ class TestParameter:
         with pytest.raises(ValueError):
             aparam.data = [1, 2, 3, 4]
 
+    def test_parameter_dims_gt2_raises(self):
+        # Trying to to add more than 2 dimensions to a parameter
+        # should raise an error
+        aparam = Parameter(name='someparam')
+        aparam.dimensions.add(name='nhru', size=4)
+        aparam.dimensions.add(name='nmonths', size=12)
+
+        with pytest.raises(ValueError):
+            aparam.dimensions.add(name='ngw', size=2)
+
     def test_add_data_int_to_str(self):
         aparam = Parameter(name='someparam')
         aparam.dimensions.add(name='nhru', size=4)

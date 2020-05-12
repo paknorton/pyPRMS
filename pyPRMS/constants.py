@@ -1,3 +1,5 @@
+import numpy as np
+
 # Order to write control file parameters for printing and writing a new control file
 ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'model_mode', 'param_file', 'data_file',
              'model_output_file', 'parameter_check_flag', 'print_debug', 'et_module', 'precip_module',
@@ -63,3 +65,4 @@ DIMENSIONS_XML = 'dimensions.xml'
 NETCDF_DATATYPES = {1: 'i4', 2: 'f4', 3: 'f4', 4: 'S1'}
 NHM_DATATYPES = {'I': 1, 'F': 2, 'D': 3, 'S': 4}
 PARNAME_DATATYPES = {'long': 1, 'float': 2, 'double': 3, 'string': 4}
+DATATYPE_TO_DTYPE = {1: np.int, 2: np.float, 3: np.float, 4: np.str_}
