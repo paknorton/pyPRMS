@@ -5,7 +5,7 @@ from collections import OrderedDict
 import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Exceptions_custom import ConcatError
-from pyPRMS.constants import DATA_TYPES
+from pyPRMS.constants import DATA_TYPES, DATATYPE_TO_DTYPE
 from pyPRMS.Dimensions import ParamDimensions
 
 
@@ -346,56 +346,39 @@ class Parameter(object):
         """
         # Raise an error if no dimensions are defined for parameter
         if not self.ndims:
-            raise ValueError('No dimensions have been defined for {}. Unable to append data'.format(self.name))
+            raise ValueError(f'No dimensions have been defined for {self.name}; unable to append data')
+
+        data_np = None
 
         if isinstance(data_in, list):
-            # Convert datatype first
-            datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
-                             3: self.__str_to_float, 4: self.__str_to_str}
-
-            if self.__datatype in DATA_TYPES.keys():
-                data_in = datatype_conv[self.__datatype](data_in)
-            else:
-                raise TypeError('Defined datatype {} for parameter {} is not valid'.format(self.__datatype,
-                                                                                           self.__name))
-
-            # Convert list to np.array
-            if self.ndims == 2:
-                data_np = np.array(data_in).reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
-                # data_np = np.array(data_in).reshape((-1, self.__dimensions.get_dimsize_by_index(1),), order='F')
-            elif self.ndims == 1:
-                data_np = np.array(data_in)
-            else:
-                raise ValueError('Number of dimensions, {}, is not supported'.format(self.ndims))
-
-            # Replace data
-            # self.__data = data_np
-
-            if 'one' in self.__dimensions.dimensions.keys():
-                # A parameter with the dimension 'one' should never have more
-                # than 1 value. Output warning if the incoming value is different
-                # from a pre-existing value
-                if data_np.size > 1:
-                    print('WARNING: {} with dimension "one" has {} values. Using first value only.'.format(self.__name, data_np.size))
-                self.__data = np.array(data_np[0], ndmin=1)
-                # self.__data = data_np[0]
-            else:
-                self.__data = data_np
-
+            data_np = np.array(data_in, dtype=DATATYPE_TO_DTYPE[self.datatype])
         elif isinstance(data_in, np.ndarray):
-            if data_in.ndim == self.ndims:
-                self.__data = data_in
-            elif data_in.ndim == 1 and data_in.size == self.size:
-                # Matching size, different shapes
-                if self.ndims == 2:
-                    self.__data = data_in.reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
-                elif self.ndims == 1:
-                    self.__data = data_in
-                else:
-                    raise ValueError('Number of dimensions, {}, is not supported'.format(self.ndims))
+            data_np = data_in
+        elif isinstance(data_in, pd.Series):
+            data_np = data_in.to_numpy()
+
+        if data_np.size == self.size:
+            # The incoming size matches the epected size for the parameter
+            if data_np.ndim < self.ndims:
+                # Assume data_np is 1D, parameter is 2D; there are no scalars
+                # order higher dimension possibilities.
+                data_np = data_np.reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
+            elif data_np.ndim == self.ndims:
+                pass
             else:
-                err_txt = '{}: Number of dimensions for new data ({}) doesn\'t match old ({})'
-                raise IndexError(err_txt.format(self.name, data_in.ndim, self.ndims))
+                raise ValueError(f'{self.__name}, source data ndim, {data_np.ndim} > parameter ndim, {self.ndims}')
+        elif data_np.size > self.size and 'one' in self.__dimensions.dimensions.keys():
+            # In certain circumstances it is possible for a one-dimensioned
+            # parameter to be passed a data array with size > 1. If this happens
+            # just use the first element from the array.
+            print(f'WARNING: {self.__name}, with dimension "one" was passed {data_np.size}' +
+                  f'values; using first value only.')
+            data_np = np.array(data_np[0], ndmin=1)
+        else:
+            err_txt = '{}: Number of dimensions for new data ({}) doesn\'t match old ({})'
+            raise IndexError(err_txt.format(self.name, data_in.ndim, self.ndims))
+
+        self.__data = data_np
 
     @property
     def index_map(self):
