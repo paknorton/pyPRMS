@@ -2,6 +2,7 @@
 import numpy as np
 import os
 import pandas as pd
+from pyPRMS.constants import DATATYPE_TO_DTYPE
 from pyPRMS.prms_helpers import read_xml
 from pyPRMS.ParameterSet import ParameterSet
 from pyPRMS.constants import NHM_DATATYPES
@@ -26,8 +27,6 @@ class ParamDb(ParameterSet):
     def _read(self):
         """Read a paramDb file.
         """
-
-        datatype_conv = {1: np.int, 2: np.float, 3: np.float, 4: np.str_}
 
         # Get the parameters available from the parameter database
         # Returns a dictionary of parameters and associated units and types
@@ -71,8 +70,8 @@ class ParamDb(ParameterSet):
                                                                        size=self.dimensions.get(dim_name).size)
 
                 tmp_data = pd.read_csv(curr_file, skiprows=0, usecols=[1],
-                                       dtype={1: datatype_conv[self.parameters.get(xml_param_name).datatype]},
-                                       squeeze=True).to_numpy()
+                                       dtype={1: DATATYPE_TO_DTYPE[self.parameters.get(xml_param_name).datatype]},
+                                       squeeze=True)
 
                 self.parameters.get(xml_param_name).data = tmp_data
 
