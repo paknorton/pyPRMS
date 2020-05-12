@@ -1,3 +1,4 @@
+import functools
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
@@ -392,6 +393,14 @@ class Parameter(object):
     def index_map(self):
         """Returns an ordered dictionary which maps data values to index position"""
         return OrderedDict((val, idx) for idx, val in enumerate(self.__data.tolist()))
+
+    @property
+    def size(self):
+        """Return the total size of the parameter for the defined dimensions"""
+        arr_shp = [dd.size for dd in self.dimensions.values()]
+
+        # Compute the total size of the parameter
+        return functools.reduce(lambda x, y: x * y, arr_shp)
 
     @property
     def xml(self):
