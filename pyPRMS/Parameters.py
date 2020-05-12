@@ -126,23 +126,6 @@ class Parameters(object):
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
                     print('  WARNING: snarea_curve has more entries than needed by hru_deplcrv')
 
-    def remove(self, name):
-        """Delete one or more parameters if they exist.
-
-        :param name: parameter or list of parameters to remove
-        :type name: str or list[str]
-        """
-
-        if isinstance(name, list):
-            # Remove multiple parameters
-            for cparam in name:
-                if self.exists(cparam):
-                    del self.__parameters[cparam]
-            pass
-        else:
-            if self.exists(name):
-                del self.__parameters[name]
-
     def exists(self, name):
         """Checks if a given parameter name exists.
 
@@ -373,6 +356,23 @@ class Parameters(object):
                     print('No segment shapefile is loaded; skipping')
             else:
                 print('Non-plottable parameter')
+
+    def remove(self, name):
+        """Delete one or more parameters if they exist.
+
+        :param name: parameter or list of parameters to remove
+        :type name: str or list[str]
+        """
+
+        if isinstance(name, list):
+            # Remove multiple parameters
+            for cparam in name:
+                if self.exists(cparam):
+                    del self.__parameters[cparam]
+            pass
+        else:
+            if self.exists(name):
+                del self.__parameters[name]
 
     def remove_by_global_id(self, hrus=None, segs=None):
         """Removes data-by-id (nhm_seg, nhm_id) from all parameters"""
