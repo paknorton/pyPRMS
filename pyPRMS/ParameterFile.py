@@ -164,7 +164,7 @@ class ParameterFile(ParameterSet):
                 except StopIteration:
                     # Hit the end of the file
                     pass
-                self.parameters.del_param(varname)
+                self.parameters.remove(varname)
             else:
                 # Check if number of values written match the number of values declared
                 vals = []
