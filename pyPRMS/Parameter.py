@@ -1,7 +1,7 @@
 import functools
 import numpy as np
 import pandas as pd
-from collections import OrderedDict
+from collections import namedtuple, OrderedDict
 import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Exceptions_custom import ConcatError
@@ -488,11 +488,14 @@ class Parameter(object):
         return True
 
     def stats(self):
-        """Prints out basic statistics on parameter values"""
-        print(f'minimum: {np.min(self.__data)}')
-        print(f'maximum: {np.max(self.__data)}')
-        print(f'   mean: {np.mean(self.__data)}')
-        print(f' median: {np.median(self.__data)}')
+        """Returns basic statistics on parameter values"""
+        Stats = namedtuple('Stats', ['name', 'min', 'max', 'mean', 'median'])
+
+        if self.__name in ['poi_gage_id']:
+            return Stats(self.__name, '', '', '', '')
+
+        return Stats(self.__name, np.min(self.__data), np.max(self.__data),
+                     np.mean(self.__data), np.median(self.__data))
 
     def has_correct_size(self):
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
