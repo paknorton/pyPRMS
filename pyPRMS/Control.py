@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import numpy as np
 from collections import OrderedDict
@@ -33,14 +33,14 @@ class ControlVariable(object):
         self.__values = None
 
     def __str__(self):
-        outstr = 'name: {}\ndatatype: {}\n'.format(self.name, self.datatype)
+        outstr = f'name: {self.name}\ndatatype: {self.datatype}\n'
 
         if self.default is not None:
-            outstr += 'default: {}\n'.format(self.default)
+            outstr += f'default: {self.default}\n'
 
         outstr += 'Size of data: '
         if self.values is not None:
-            outstr += '{}\n'.format(self.size)
+            outstr += f'{self.size}\n'
         else:
             outstr += '<empty>\n'
 
@@ -86,7 +86,7 @@ class ControlVariable(object):
         if dtype in DATA_TYPES:
             self.__datatype = dtype
         else:
-            print('WARNING: Datatype, {}, is not valid.'.format(dtype))
+            print(f'WARNING: Datatype, {dtype}, is not valid.')
 
     @property
     def force_default(self):
@@ -138,8 +138,8 @@ class ControlVariable(object):
         if self.__datatype in DATA_TYPES.keys():
             value = datatype_conv[self.__datatype](value)
         else:
-            err_txt = 'Defined datatype {} for control variable {} is not valid'
-            raise TypeError(err_txt.format(self.__datatype, self.__name))
+            err_txt = f'Defined datatype {self.__datatype} for control variable {self.__name} is not valid'
+            raise TypeError(err_txt)
 
         self.__default = np.array(value)
 
@@ -246,8 +246,7 @@ class ControlVariable(object):
         if self.__datatype in DATA_TYPES.keys():
             data = datatype_conv[self.__datatype](data)
         else:
-            raise TypeError('Defined datatype {} for parameter {} is not valid'.format(self.__datatype,
-                                                                                       self.__name))
+            raise TypeError(f'Defined datatype {self.__datatype} for parameter {self.__name} is not valid')
 
         # Convert to ndarray
         self.__values = np.array(data)
@@ -457,7 +456,7 @@ class Control(object):
 
         if self.exists(name):
             return self.__control_vars[name]
-        raise ValueError('Control variable, {}, does not exist.'.format(name))
+        raise ValueError(f'Control variable, {name}, does not exist.')
 
     def remove(self, name):
         """Delete a control variable if it exists.
@@ -477,7 +476,7 @@ class Control(object):
         outfile = open(filename, 'w')
 
         for hh in self.__header:
-            outfile.write('{}\n'.format(hh))
+            outfile.write(f'{hh}\n')
 
         order = ['datatype', 'values']
 
@@ -494,24 +493,24 @@ class Control(object):
                 continue
 
             # print(kk)
-            outfile.write('{}\n'.format(VAR_DELIM))
-            outfile.write('{}\n'.format(kk))
+            outfile.write(f'{VAR_DELIM}\n')
+            outfile.write(f'{kk}\n')
 
             for item in order:
                 if item == 'datatype':
-                    outfile.write('{}\n'.format(cvar.size))
-                    outfile.write('{}\n'.format(cvar.datatype))
+                    outfile.write(f'{cvar.size}\n')
+                    outfile.write(f'{cvar.datatype}\n')
                 if item == 'values':
                     if cvar.size == 1:
                         # print(type(cvar.values))
                         if isinstance(cvar.values, np.bytes_):
                             print("BYTES")
-                            outfile.write('{}\n'.format(cvar.values.decode()))
+                            outfile.write(f'{cvar.values.decode()}\n')
                         else:
-                            outfile.write('{}\n'.format(cvar.values))
+                            outfile.write(f'{cvar.values}\n')
                     else:
                         for cval in cvar.values:
-                            outfile.write('{}\n'.format(cval))
+                            outfile.write(f'{cval}\n')
 
         outfile.close()
 

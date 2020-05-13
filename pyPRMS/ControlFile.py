@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import xml.etree.ElementTree as xmlET
 
@@ -120,12 +120,11 @@ class ControlFile(Control):
                         else:  # character
                             vals.append(next(it))
                     except ValueError:
-                        print("varname: %s value type and defined type (%s) don't match" %
-                              (varname, DATA_TYPES[valuetype]))
+                        print(f'varname: {varname} value type and defined type {DATA_TYPES[valuetype]} don\'t match')
 
                 if len(vals) != numval:
-                    print('ERROR: Not enough values provided for %s' % varname)
-                    print('       Expect %d, got %d' % (numval, len(vals)))
+                    print(f'ERROR: Not enough values provided for {varname}')
+                    print(f'       Expected {numval}, got {len(vals)}')
 
                 try:
                     cnt = numval
@@ -133,9 +132,9 @@ class ControlFile(Control):
                         cnt += 1
 
                     if cnt > numval:
-                        print('WARNING: Too many values specified for %s' % varname)
-                        print('       %d expected, %d given' % (numval, cnt))
-                        print('       Keeping first %d values' % numval)
+                        print(f'WARNING: Too many values specified for {varname}')
+                        print(f'      {numval} expected, {cnt} given')
+                        print(f'       Keeping first {numval} values')
                 except StopIteration:
                     # Hit the end of the file
                     pass
