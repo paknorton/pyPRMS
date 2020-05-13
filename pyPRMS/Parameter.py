@@ -371,7 +371,7 @@ class Parameter(object):
             # In certain circumstances it is possible for a one-dimensioned
             # parameter to be passed a data array with size > 1. If this happens
             # just use the first element from the array.
-            print(f'WARNING: {self.__name}, with dimension "one" was passed {data_np.size}' +
+            print(f'WARNING: {self.__name}, with dimension "one" was passed {data_np.size} ' +
                   f'values; using first value only.')
             data_np = np.array(data_np[0], ndmin=1)
         else:
@@ -601,8 +601,22 @@ class Parameter(object):
         """
 
         outstr = '$id,{}\n'.format(self.name)
-        for ii, dd in enumerate(self.tolist()):
-            outstr += '{},{}\n'.format(ii+1, dd)
+
+        ii = 0
+        # Do not use self.tolist() here because it causes minor changes
+        # to the values for floats.
+        for dd in self.__data.ravel(order='F'):
+            if self.datatype in [2, 3]:
+                # Float and double types have to be formatted specially so
+                # they aren't written in exponential notation or with
+                # extraneous zeroes
+                tmp = '{:<20f}'.format(dd).rstrip('0 ')
+                if tmp[-1] == '.':
+                    tmp += '0'
+                outstr += '{},{}\n'.format(ii+1, tmp)
+            else:
+                outstr += '{},{}\n'.format(ii+1, dd)
+            ii += 1
         return outstr
 
     def tostructure(self):
