@@ -169,11 +169,11 @@ class ParameterSet(object):
                     if set(vv.dimensions.keys()) != set(self.__master_params[kk].dimensions.keys()):
                         if not (set(self.__master_params[kk].dimensions.keys()).issubset(set(HRU_DIMS)) and
                                 set(vv.dimensions.keys()).issubset(HRU_DIMS)):
-                            print('Parameter, {}, is degenerate'.format(kk))
+                            print(f'Parameter, {kk}, is degenerate')
                             print('  parameter: ', list(vv.dimensions.keys()))
                             print('     master: ', list(self.__master_params[kk].dimensions.keys()))
                 except ValueError:
-                    print('ERROR: Parameter, {}, is not a valid PRMS parameter'.format(kk))
+                    print(f'ERROR: Parameter, {kk}, is not a valid PRMS parameter')
 
     def expand_parameter(self, name):
         """Expand an existing parameter.
@@ -198,7 +198,7 @@ class ParameterSet(object):
                     vv.size = self.__dimensions[kk].size
 
                 if set(new_dims.keys()) == set(self.__parameters[name].dimensions.keys()):
-                    print('Parameter, {}, already has the maximum number of dimensions'.format(name))
+                    print(f'Parameter, {name}, already has the maximum number of dimensions')
                     print('    current: ', list(self.__parameters[name].dimensions.keys()))
                     print('  requested: ', list(new_dims.keys()))
                 else:
@@ -280,7 +280,7 @@ class ParameterSet(object):
 
         # Write the global parameters xml file
         xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_parameters)).toprettyxml(indent='    ')
-        with open('{}/{}'.format(output_dir, PARAMETERS_XML), 'w') as ff:
+        with open(f'{output_dir}/{PARAMETERS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
     def write_dimensions_xml(self, output_dir):
@@ -291,7 +291,7 @@ class ParameterSet(object):
 
         # Write the global dimensions xml file
         xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_dimensions)).toprettyxml(indent='    ')
-        with open('{}/{}'.format(output_dir, DIMENSIONS_XML), 'w') as ff:
+        with open(f'{output_dir}/{DIMENSIONS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
     def write_netcdf(self, filename):
@@ -425,7 +425,7 @@ class ParameterSet(object):
 
         # check for / create output directory
         try:
-            print('Creating output directory: {}'.format(output_dir))
+            print(f'Creating output directory: {output_dir}')
             os.makedirs(output_dir)
         except OSError:
             print("\tUsing existing directory")
@@ -446,7 +446,7 @@ class ParameterSet(object):
             # Write out each parameter in the paramDb csv format
             if self.verbose:
                 print(xx.name)
-            with open('{}/{}.csv'.format(output_dir, xx.name), 'w') as ff:
+            with open(f'{output_dir}/{xx.name}.csv', 'w') as ff:
                 ff.write(xx.toparamdb())
 
             # Write xml file for the parameter
@@ -469,28 +469,28 @@ class ParameterSet(object):
         if header:
             for hh in header:
                 # Write out any header stuff
-                outfile.write('{}\n'.format(hh))
+                outfile.write(f'{hh}\n')
 
         # Dimension section must be written first
-        outfile.write('{} Dimensions {}\n'.format(CATEGORY_DELIM, CATEGORY_DELIM))
+        outfile.write(f'{CATEGORY_DELIM} Dimensions {CATEGORY_DELIM}\n')
 
         for (kk, vv) in self.dimensions.items():
             # Write each dimension name and size separated by VAR_DELIM
-            outfile.write('{}\n'.format(VAR_DELIM))
-            outfile.write('{}\n'.format(kk))
-            outfile.write('{:d}\n'.format(vv.size))
+            outfile.write(f'{VAR_DELIM}\n')
+            outfile.write(f'{kk}\n')
+            outfile.write(f'{vv.size:d}\n')
 
         if prms_version == 5:
             # Add the ngw and nssr dimensions. These are always equal to nhru.
             for kk in ['ngw', 'nssr']:
-                outfile.write('{}\n'.format(VAR_DELIM))
-                outfile.write('{}\n'.format(kk))
-                outfile.write('{:d}\n'.format(self.dimensions['nhru'].size))
+                outfile.write(f'{VAR_DELIM}\n')
+                outfile.write(f'{kk}\n')
+                outfile.write(f'{self.dimensions["nhru"].size:d}\n')
 
         # Now write out the Parameter category
         order = ['name', 'dimensions', 'datatype', 'data']
 
-        outfile.write('{} Parameters {}\n'.format(CATEGORY_DELIM, CATEGORY_DELIM))
+        outfile.write(f'{CATEGORY_DELIM} Parameters {CATEGORY_DELIM}\n')
 
         for vv in self.parameters.values():
             datatype = vv.datatype
@@ -499,7 +499,7 @@ class ParameterSet(object):
                 # Write each variable out separated by self.__rowdelim
                 if item == 'dimensions':
                     # Write number of dimensions first
-                    outfile.write('{}\n'.format(vv.dimensions.ndims))
+                    outfile.write(f'{vv.dimensions.ndims}\n')
 
                     for dd in vv.dimensions.values():
                         # Write dimension names
@@ -509,20 +509,20 @@ class ParameterSet(object):
                             if dd.name == 'nhru':
                                 if vv.name in ['gwflow_coef', 'gwsink_coef', 'gwstor_init',
                                                'gwstor_min', 'gw_seep_coef']:
-                                    outfile.write('{}\n'.format('ngw'))
+                                    outfile.write('ngw\n')
                                 elif vv.name in ['ssr2gw_exp', 'ssr2gw_rate', 'ssstor_init',
                                                  'ssstor_init_frac']:
-                                    outfile.write('{}\n'.format('nssr'))
+                                    outfile.write('nssr\n')
                                 else:
-                                    outfile.write('{}\n'.format(dd.name))
+                                    outfile.write(f'{dd.name}\n')
                             else:
-                                outfile.write('{}\n'.format(dd.name))
+                                outfile.write(f'{dd.name}\n')
                         else:
-                            outfile.write('{}\n'.format(dd.name))
+                            outfile.write(f'{dd.name}\n')
                 elif item == 'datatype':
                     # dimsize (which is computed) must be written before datatype
-                    outfile.write('{}\n'.format(vv.data.size))
-                    outfile.write('{}\n'.format(datatype))
+                    outfile.write(f'{vv.data.size}\n')
+                    outfile.write(f'{datatype}\n')
                 elif item == 'data':
                     # Write one value per line
                     # WARNING: 2019-10-10: had to change next line from order='A' to order='F'
@@ -534,16 +534,17 @@ class ParameterSet(object):
                             # Float and double types have to be formatted specially so
                             # they aren't written in exponential notation or with
                             # extraneous zeroes
-                            tmp = '{:<20f}'.format(xx).rstrip('0 ')
+                            tmp = f'{xx:<20f}'.rstrip('0 ')
+                            # tmp = '{:<20f}'.format(xx).rstrip('0 ')
                             if tmp[-1] == '.':
                                 tmp += '0'
 
-                            outfile.write('{}\n'.format(tmp))
+                            outfile.write(f'{tmp}\n')
                         else:
-                            outfile.write('{}\n'.format(xx))
+                            outfile.write(f'{xx}\n')
                 elif item == 'name':
                     # Write the self.__rowdelim before the variable name
-                    outfile.write('{}\n'.format(VAR_DELIM))
-                    outfile.write('{}\n'.format(vv.name))
+                    outfile.write(f'{VAR_DELIM}\n')
+                    outfile.write(f'{vv.name}\n')
 
         outfile.close()

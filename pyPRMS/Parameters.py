@@ -112,7 +112,8 @@ class Parameters(object):
             print(pp.check())
 
             if not pp.check_values():
-                print('    WARNING: Value(s) (range: {}, {}) outside the valid range of ({}, {})'.format(pp.data.min(), pp.data.max(), pp.minimum, pp.maximum))
+                print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
+                      f'the valid range of ({pp.minimum}, {pp.maximum})')
 
             if pp.all_equal():
                 if pp.data.ndim == 2:
@@ -148,7 +149,7 @@ class Parameters(object):
         if self.exists(name):
             return self.__parameters[name]
         # TODO: This shouldn't be a value error
-        raise ValueError('Parameter, {}, does not exist.'.format(name))
+        raise ValueError(f'Parameter, {name}, does not exist.')
 
     def get_dataframe(self, name):
         """Returns a pandas DataFrame for a parameter.
@@ -190,8 +191,7 @@ class Parameters(object):
                     param_data = param_data.merge(param_id, left_index=True, right_index=True)
                     param_data.set_index('nhm_seg', inplace=True)
                 except KeyError:
-                    param_data.rename(index={k: k + 1 for k in param_data.index},
-                                      inplace=True)
+                    param_data.rename(index={k: k + 1 for k in param_data.index}, inplace=True)
                     param_data.index.name = 'seg'
             elif name == 'snarea_curve':
                 # Special handling for snarea_curve parameter
@@ -201,7 +201,7 @@ class Parameters(object):
                                   inplace=True)
                 param_data.index.name = 'curve_index'
             return param_data
-        raise ValueError('Parameter, {}, has no associated data'.format(name))
+        raise ValueError(f'Parameter, {name}, has no associated data')
 
     def get_subset(self, name, global_ids):
         """Returns a subset for a parameter based on the global_ids (e.g. nhm)"""
@@ -285,7 +285,7 @@ class Parameters(object):
                 if is_monthly:
                     plt.title(f'Variable: {name},  Month: {time_index+1}')
                 else:
-                    plt.title('Variable: {}'.format(name))
+                    plt.title(f'Variable: {name}')
 
                 col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
                                               **dict(kwargs, cmap=cmap, norm=norm))
@@ -456,7 +456,6 @@ class Parameters(object):
                                 tmp = self.__parameters['snarea_curve'].data.reshape((-1, 11))[tuple(uniq_deplcrv_idx0), :]
 
                                 self.__parameters['snarea_curve'].data = tmp.ravel()
-
                                 self.__parameters['snarea_curve'].dimensions['ndeplval'].size = tmp.size
 
             # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
@@ -469,7 +468,7 @@ class Parameters(object):
         self.__seg_poly = geopandas.read_file(filename, layer=layer_name)
 
         if self.__seg_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
-            print(f'Overriding USGS aea crs with EPSG:5070')
+            print('Overriding USGS aea crs with EPSG:5070')
             self.__seg_poly.crs = 'EPSG:5070'
         self.__seg_shape_key = shape_key
 
@@ -480,7 +479,7 @@ class Parameters(object):
         self.__hru_poly = geopandas.read_file(filename, layer=layer_name)
 
         if self.__hru_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
-            print(f'Overriding USGS aea crs with EPSG:5070')
+            print('Overriding USGS aea crs with EPSG:5070')
             self.__hru_poly.crs = 'EPSG:5070'
         self.__hru_shape_key = shape_key
 

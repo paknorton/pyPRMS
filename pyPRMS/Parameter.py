@@ -77,17 +77,17 @@ class Parameter(object):
                                  self.help)
 
         if self.__minimum is not None:
-            outstr += 'Minimum value: {}\n'.format(self.__minimum)
+            outstr += f'Minimum value: {self.__minimum}\n'
 
         if self.__maximum is not None:
-            outstr += 'Maximum value: {}\n'.format(self.__maximum)
+            outstr += f'Maximum value: {self.__maximum}\n'
 
         if self.__default is not None:
-            outstr += 'Default value: {}\n'.format(self.__default)
+            outstr += f'Default value: {self.__default}\n'
 
         outstr += 'Size of data: '
         if self.__data is not None:
-            outstr += '{}\n'.format(self.data.size)
+            outstr += f'{self.data.size}\n'
         else:
             outstr += '<empty>\n'
 
@@ -95,7 +95,7 @@ class Parameter(object):
             outstr += 'Modules: '
 
             for xx in self.__modules:
-                outstr += '{} '.format(xx)
+                outstr += f'{xx} '
             outstr += '\n'
 
         if self.ndims:
@@ -334,7 +334,7 @@ class Parameter(object):
         """
         if self.__data is not None:
             return self.__data
-        raise ValueError('Parameter, {}, has no data'.format(self.__name))
+        raise ValueError(f'Parameter, {self.__name}, has no data')
 
     @data.setter
     def data(self, data_in):
@@ -375,8 +375,9 @@ class Parameter(object):
                   f'values; using first value only.')
             data_np = np.array(data_np[0], ndmin=1)
         else:
-            err_txt = '{}: Number of dimensions for new data ({}) doesn\'t match old ({})'
-            raise IndexError(err_txt.format(self.name, data_in.ndim, self.ndims))
+            err_txt = f'{self.name}: Number of dimensions for new data ({data_in.ndim}) ' + \
+                      f'doesn\'t match old ({self.ndims})'
+            raise IndexError(err_txt)
 
         self.__data = data_np
 
@@ -424,7 +425,7 @@ class Parameter(object):
         """
 
         if not self.ndims:
-            raise ValueError('No dimensions have been defined for {}. Unable to concatenate data'.format(self.name))
+            raise ValueError(f'No dimensions have been defined for {self.name}. Unable to concatenate data')
 
         if self.__data is None:
             # Don't bother with the concatenation if there is no pre-existing data
@@ -438,8 +439,7 @@ class Parameter(object):
         if self.__datatype in DATA_TYPES.keys():
             data_in = datatype_conv[self.__datatype](data_in)
         else:
-            raise TypeError('Defined datatype {} for parameter {} is not valid'.format(self.__datatype,
-                                                                                       self.__name))
+            raise TypeError(f'Defined datatype {self.__datatype} for parameter {self.__name} is not valid')
 
         # Convert list to np.array
         if self.ndims == 2:
@@ -447,16 +447,16 @@ class Parameter(object):
         elif self.ndims == 1:
             data_np = np.array(data_in)
         else:
-            raise ValueError('Number of dimensions, {}, is not supported'.format(self.ndims))
+            raise ValueError(f'Number of dimensions, {self.ndims}, is not supported')
 
         if 'one' in self.__dimensions.dimensions.keys():
             # A parameter with the dimension 'one' should never have more
             # than 1 value. Output warning if the incoming value is different
             # from a pre-existing value
             if data_np[0] != self.__data[0]:
-                raise ConcatError('Parameter, {}, with dimension "one" already '.format(self.__name) +
-                                  'has assigned value = {}; '.format(self.__data[0]) +
-                                  'Cannot concatenate additional value(s), {}'.format(data_np[0]))
+                raise ConcatError(f'Parameter, {self.__name}, with dimension "one" already ' +
+                                  f'has assigned value = {self.__data[0]}; ' +
+                                  f'Cannot concatenate additional value(s), {data_np[0]}')
                 # print('WARNING: {} with dimension "one" has different '.format(self.__name) +
                 #       'value ({}) from current ({}). Keeping current value.'.format(data_np[0], self.__data[0]))
         else:
@@ -475,9 +475,9 @@ class Parameter(object):
         # consistent with the given dimensions
         if self.has_correct_size():
             # The number of values for the defined dimensions match
-            return '{}: OK'.format(self.name)
+            return f'{self.name}: OK'
         else:
-            return '{}: BAD'.format(self.name)
+            return f'{self.name}: BAD'
 
     def check_values(self):
         """Returns true if all data values are within the min/max values for the parameter."""
@@ -520,7 +520,7 @@ class Parameter(object):
             indices = list(indices)
 
         if self.__data.size == 1:
-            print('{}: Cannot reduce array of size one'.format(self.name))
+            print(f'{self.name}: Cannot reduce array of size one')
             return
 
         self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
@@ -575,7 +575,7 @@ class Parameter(object):
             indices = list(indices)
 
         if self.__data.size == 1:
-            print('{}: Cannot reduce array of size one'.format(self.name))
+            print(f'{self.name}: Cannot reduce array of size one')
             return
 
         self.__data = self.__data[indices]
@@ -610,12 +610,12 @@ class Parameter(object):
                 # Float and double types have to be formatted specially so
                 # they aren't written in exponential notation or with
                 # extraneous zeroes
-                tmp = '{:<20f}'.format(dd).rstrip('0 ')
+                tmp = f'{dd:<20f}'.rstrip('0 ')
                 if tmp[-1] == '.':
                     tmp += '0'
-                outstr += '{},{}\n'.format(ii+1, tmp)
+                outstr += f'{ii+1},{tmp}\n'
             else:
-                outstr += '{},{}\n'.format(ii+1, dd)
+                outstr += f'{ii+1},{dd}\n'
             ii += 1
         return outstr
 
