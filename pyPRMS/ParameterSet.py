@@ -444,6 +444,8 @@ class ParameterSet(object):
 
         for xx in self.parameters.values():
             # Write out each parameter in the paramDb csv format
+            if self.verbose:
+                print(xx.name)
             with open('{}/{}.csv'.format(output_dir, xx.name), 'w') as ff:
                 ff.write(xx.toparamdb())
 
