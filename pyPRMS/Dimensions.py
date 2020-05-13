@@ -21,7 +21,7 @@ class Dimensions(object):
             outstr = '<empty>'
         else:
             for kk, vv in self.__dimensions.items():
-                outstr += '{}: {}\n'.format(kk, vv)
+                outstr += f'{kk}: {vv}\n'
         return outstr
 
     def __getattr__(self, name):
@@ -148,7 +148,7 @@ class Dimensions(object):
 
         if self.exists(name):
             return self.__dimensions[name]
-        raise ValueError('Dimension, {}, does not exist.'.format(name))
+        raise ValueError(f'Dimension, {name}, does not exist.')
 
     def remove(self, name):
         """Remove dimension.
@@ -210,7 +210,7 @@ class ParamDimensions(Dimensions):
 
         # Restrict number of dimensions for parameters
         if self.ndims == 2:
-            raise ValueError(f'Number of dimensions greater than 2 is not supported')
+            raise ValueError('Number of dimensions greater than 2 is not supported')
         super().add(name, size)
 
     def add_from_xml(self, filename):
@@ -244,7 +244,7 @@ class ParamDimensions(Dimensions):
 
                 if curr_pos != pos:
                     # This indicates a problem in one of the paramdb files
-                    raise ValueError('{}: Attempted position change from {} to {}'.format(name, curr_pos, pos))
+                    raise ValueError(f'{name}: Attempted position change from {curr_pos} to {pos}')
                 else:
                     if name not in ['nmonths', 'ndays', 'one']:
                         # NOTE: This will always try to grow a dimension if it already exists!
@@ -267,7 +267,7 @@ class ParamDimensions(Dimensions):
             except TypeError:
                 # Python 3.x
                 return list(self.dimensions.items())[index][1].size
-        raise ValueError('Parameter has no dimension at index {}'.format(index))
+        raise ValueError(f'Parameter has no dimension at index {index}')
 
     def get_position(self, name):
         """Get 0-based index position of a dimension.
