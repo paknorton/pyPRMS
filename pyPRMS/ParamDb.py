@@ -30,8 +30,8 @@ class ParamDb(ParameterSet):
 
         # Get the parameters available from the parameter database
         # Returns a dictionary of parameters and associated units and types
-        global_params_file = '{}/{}'.format(self.__paramdb_dir, PARAMETERS_XML)
-        global_dimens_file = '{}/{}'.format(self.__paramdb_dir, DIMENSIONS_XML)
+        global_params_file = f'{self.__paramdb_dir}/{PARAMETERS_XML}'
+        global_dimens_file = f'{self.__paramdb_dir}/{DIMENSIONS_XML}'
 
         # Read in the parameters.xml and dimensions.xml file
         params_root = read_xml(global_params_file)
