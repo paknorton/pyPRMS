@@ -57,7 +57,7 @@ class Dimension(object):
             self.__name = name
         else:
             # TODO: Should this raise an error?
-            raise ValueError('Dimension name, {}, is not a valid PRMS dimension name'.format(name))
+            raise ValueError(f'Dimension name, {name}, is not a valid PRMS dimension name')
 
     @property
     def size(self):
@@ -92,7 +92,7 @@ class Dimension(object):
             self.__size = value
 
         if self.__name not in ['one', 'nmonths', 'ndays'] and self.__size != value:
-            print('ERROR: Dimension, {}, size={}, but size {} was requested'.format(self.__name, self.__size, value))
+            print(f'ERROR: Dimension, {self.__name}, size={self.__size}, but size {value} was requested')
 
     @property
     def description(self):
