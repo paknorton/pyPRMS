@@ -1,6 +1,7 @@
 
 from collections import OrderedDict
 from pathlib import Path
+import numpy as np
 import pandas as pd
 
 from pyPRMS.prms_helpers import read_xml
@@ -204,14 +205,23 @@ class ParamDbRegion(ParameterSet):
                                     description=param.get('desc'), help=param.get('help'))
 
             self._set_parameter_dimension_size(xml_param_name)
+            curr_param = self.parameters.get(xml_param_name)
 
             all_param_files = sorted(Path(f'{self.__paramdb_dir}/{xml_param_name}').rglob('*.csv'))
 
             df_list = [pd.read_csv(f, usecols=[1], squeeze=True,
                                    dtype={1: DATATYPE_TO_DTYPE[self.parameters.get(xml_param_name).datatype]})
                        for f in all_param_files]
-            param_data = pd.concat(df_list)
-            self.parameters.get(xml_param_name).data = param_data
+
+            if curr_param.ndims == 2:
+                # Handle 2D parameters a bit differently; each region has to be reshaped before
+                # being concatenated together.
+                param_data = [dd.values.reshape((-1, curr_param.dimensions.get_dimsize_by_index(1),), order='F')
+                              for dd in df_list]
+                param_data = np.vstack(param_data)
+            else:
+                param_data = pd.concat(df_list)
+            curr_param.data = param_data
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Deal with the special case: poi_gage_segment
@@ -293,3 +303,15 @@ class ParamDbRegion(ParameterSet):
 
             # Add/grow dimensions for current parameter
             self.parameters.get(name).dimensions.add_from_xml(f'{cdir}/{name}.xml')
+
+    def _get_parameter_dimension_names(self, name):
+        """Returns a set of dimension names for a parameter"""
+        dtmp = []
+        for rr in REGIONS:
+            cdir = f'{self.__paramdb_dir}/{name}/{rr}'
+            xml_root = read_xml(f'{cdir}/r01/{name}.xml')
+
+            for cdim in xml_root.findall('./dimensions/dimension'):
+                dtmp.append(cdim.get('name'))
+
+        return set(dtmp)
