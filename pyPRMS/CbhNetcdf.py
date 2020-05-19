@@ -40,7 +40,10 @@ class CbhNetcdf(object):
 
         if self.__nhm_hrus:
             # print('\t\tOpen dataset')
-            self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hruid': 1040}, combine='by_coords')
+            try:
+                self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hruid': 1040}, combine='by_coords')
+            except ValueError:
+                self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040}, combine='by_coords')
         else:
             print('ERROR: write the code for all HRUs')
             exit()
