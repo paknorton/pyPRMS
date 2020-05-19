@@ -1,4 +1,5 @@
 import geopandas
+import networkx as nx
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
@@ -357,6 +358,57 @@ class Parameters(object):
             else:
                 print('Non-plottable parameter')
 
+    # def plot_stream_network(self):
+    #     # Build the stream network
+    #     num_outlets = 0
+    #     include_hrus = False
+    #
+    #     dag_streamnet = nx.DiGraph()
+    #
+    #     for ii, vv in enumerate(tosegment_nhm):
+    #         if vv == 0 or vv not in nhm_seg:
+    #             dag_streamnet.add_node(nhm_seg[ii], style='filled', fontcolor='white', fillcolor='blue')
+    #             dag_streamnet.add_node(vv, style='filled', fontcolor='white', fillcolor='grey')
+    #             dag_streamnet.add_edge(nhm_seg[ii], vv)
+    #
+    #             num_outlets += 1
+    #         else:
+    #             dag_streamnet.add_edge(nhm_seg[ii], tosegment_nhm[ii])
+    #             if nhm_seg[ii] > 56460:
+    #                 # NOTE: This will only work correctly prior to renumbering the NHM segments
+    #                 dag_streamnet.nodes[nhm_seg[ii]]['fillcolor'] = 'deeppink'
+    #                 dag_streamnet.nodes[nhm_seg[ii]]['style'] = 'filled'
+    #
+    #         if ii + 1 in poi:
+    #             dag_streamnet.nodes[nhm_seg[ii]]['shape'] = 'box'
+    #             dag_streamnet.nodes[nhm_seg[ii]]['label'] = '{}\n POI: {}'.format(nhm_seg[ii], poi[ii + 1])
+    #
+    #     if include_hrus:
+    #         # Add the HRUs
+    #         nr_cnt = 0
+    #
+    #         for ii, vv in enumerate(hru_segment_nhm):
+    #             hru_node = 'H_{}'.format(nhm_id[ii])
+    #
+    #             dag_streamnet.add_node(hru_node, style='filled', fillcolor='yellow')
+    #
+    #             if vv == 0:
+    #                 nr_cnt += 1
+    #                 strm_node = 'NR_{}'.format(nr_cnt)
+    #
+    #                 dag_streamnet.add_node(strm_node, fontcolor='white', style='filled', fillcolor='red')
+    #                 dag_streamnet.add_edge(hru_node, strm_node)
+    #             else:
+    #                 dag_streamnet.add_edge(hru_node, vv)
+    #
+    #     # Output any cycles/loops
+    #     # Also update attributes for nodes which are part of a cycle
+    #     for xx in nx.simple_cycles(dag_streamnet):
+    #         for yy in xx:
+    #             dag_streamnet.nodes[yy]['style'] = 'filled'
+    #             dag_streamnet.nodes[yy]['fillcolor'] = 'orange'
+    #         print(xx)
+
     def remove(self, name):
         """Delete one or more parameters if they exist.
 
@@ -482,6 +534,22 @@ class Parameters(object):
             print('Overriding USGS aea crs with EPSG:5070')
             self.__hru_poly.crs = 'EPSG:5070'
         self.__hru_shape_key = shape_key
+
+    def stream_network(self, tosegment, seg_id):
+        if self.exists(tosegment) and self.exists(seg_id):
+            seg = self.__parameters.get(seg_id).tolist()
+            toseg = self.__parameters.get(tosegment).tolist()
+
+            dag_ds = nx.DiGraph()
+            for ii, vv in enumerate(toseg):
+                #     dag_ds.add_edge(ii+1, vv)
+                if vv == 0:
+                    dag_ds.add_edge(seg[ii], 'Out_{}'.format(seg[ii]))
+                else:
+                    dag_ds.add_edge(seg[ii], vv)
+
+            return dag_ds
+        return None
 
     # def replace_values(self, varname, newvals, newdims=None):
     #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
