@@ -4,7 +4,7 @@ import pandas as pd
 from collections import namedtuple, OrderedDict
 import xml.etree.ElementTree as xmlET
 
-from pyPRMS.Exceptions_custom import ConcatError
+# from pyPRMS.Exceptions_custom import ConcatError
 from pyPRMS.constants import DATA_TYPES, DATATYPE_TO_DTYPE
 from pyPRMS.Dimensions import ParamDimensions
 
@@ -411,57 +411,57 @@ class Parameter(object):
             return (self.__data == self.__data[0]).all()
         return False
 
-    def concat(self, data_in):
-        """Takes a list of parameter data and concatenates it to the end of the existing parameter data.
-
-        This is useful when reading 2D parameter data by region where
-        the ordering of the data must be correctly maintained in the final
-        dataset
-
-        :param list data_in: Data to concatenate (or append) to existing parameter data
-        :raises TypeError: if the datatype for the parameter is invalid
-        :raises ValueError: if the number of dimensions for the parameter is greater than 2
-        :raises ConcatError: if concatenation is attempted with a parameter of dimension 'one' (e.g. scalar)
-        """
-
-        if not self.ndims:
-            raise ValueError(f'No dimensions have been defined for {self.name}. Unable to concatenate data')
-
-        if self.__data is None:
-            # Don't bother with the concatenation if there is no pre-existing data
-            self.data = data_in
-            return
-
-        # Convert datatype first
-        datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
-                         3: self.__str_to_float, 4: self.__str_to_str}
-
-        if self.__datatype in DATA_TYPES.keys():
-            data_in = datatype_conv[self.__datatype](data_in)
-        else:
-            raise TypeError(f'Defined datatype {self.__datatype} for parameter {self.__name} is not valid')
-
-        # Convert list to np.array
-        if self.ndims == 2:
-            data_np = np.array(data_in).reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
-        elif self.ndims == 1:
-            data_np = np.array(data_in)
-        else:
-            raise ValueError(f'Number of dimensions, {self.ndims}, is not supported')
-
-        if 'one' in self.__dimensions.dimensions.keys():
-            # A parameter with the dimension 'one' should never have more
-            # than 1 value. Output warning if the incoming value is different
-            # from a pre-existing value
-            if data_np[0] != self.__data[0]:
-                raise ConcatError(f'Parameter, {self.__name}, with dimension "one" already ' +
-                                  f'has assigned value = {self.__data[0]}; ' +
-                                  f'Cannot concatenate additional value(s), {data_np[0]}')
-                # print('WARNING: {} with dimension "one" has different '.format(self.__name) +
-                #       'value ({}) from current ({}). Keeping current value.'.format(data_np[0], self.__data[0]))
-        else:
-            self.__data = np.concatenate((self.__data, data_np))
-            # self.__data = data_np
+    # def concat(self, data_in):
+    #     """Takes a list of parameter data and concatenates it to the end of the existing parameter data.
+    #
+    #     This is useful when reading 2D parameter data by region where
+    #     the ordering of the data must be correctly maintained in the final
+    #     dataset
+    #
+    #     :param list data_in: Data to concatenate (or append) to existing parameter data
+    #     :raises TypeError: if the datatype for the parameter is invalid
+    #     :raises ValueError: if the number of dimensions for the parameter is greater than 2
+    #     :raises ConcatError: if concatenation is attempted with a parameter of dimension 'one' (e.g. scalar)
+    #     """
+    #
+    #     if not self.ndims:
+    #         raise ValueError(f'No dimensions have been defined for {self.name}. Unable to concatenate data')
+    #
+    #     if self.__data is None:
+    #         # Don't bother with the concatenation if there is no pre-existing data
+    #         self.data = data_in
+    #         return
+    #
+    #     # Convert datatype first
+    #     datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
+    #                      3: self.__str_to_float, 4: self.__str_to_str}
+    #
+    #     if self.__datatype in DATA_TYPES.keys():
+    #         data_in = datatype_conv[self.__datatype](data_in)
+    #     else:
+    #         raise TypeError(f'Defined datatype {self.__datatype} for parameter {self.__name} is not valid')
+    #
+    #     # Convert list to np.array
+    #     if self.ndims == 2:
+    #         data_np = np.array(data_in).reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
+    #     elif self.ndims == 1:
+    #         data_np = np.array(data_in)
+    #     else:
+    #         raise ValueError(f'Number of dimensions, {self.ndims}, is not supported')
+    #
+    #     if 'one' in self.__dimensions.dimensions.keys():
+    #         # A parameter with the dimension 'one' should never have more
+    #         # than 1 value. Output warning if the incoming value is different
+    #         # from a pre-existing value
+    #         if data_np[0] != self.__data[0]:
+    #             raise ConcatError(f'Parameter, {self.__name}, with dimension "one" already ' +
+    #                               f'has assigned value = {self.__data[0]}; ' +
+    #                               f'Cannot concatenate additional value(s), {data_np[0]}')
+    #             # print('WARNING: {} with dimension "one" has different '.format(self.__name) +
+    #             #       'value ({}) from current ({}). Keeping current value.'.format(data_np[0], self.__data[0]))
+    #     else:
+    #         self.__data = np.concatenate((self.__data, data_np))
+    #         # self.__data = data_np
 
     def check(self):
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) size
