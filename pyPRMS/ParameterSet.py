@@ -480,7 +480,7 @@ class ParameterSet(object):
             outfile.write(f'{kk}\n')
             outfile.write(f'{vv.size:d}\n')
 
-        if prms_version == 5:
+        if prms_version == 5 and {'ngw', 'nssr'}.isdisjoint(set(self.dimensions.keys())):
             # Add the ngw and nssr dimensions. These are always equal to nhru.
             for kk in ['ngw', 'nssr']:
                 outfile.write(f'{VAR_DELIM}\n')
