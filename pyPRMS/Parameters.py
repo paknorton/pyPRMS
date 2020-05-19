@@ -53,6 +53,13 @@ class Parameters(object):
 
         return self.__parameters
 
+    @property
+    def poi_to_seg(self):
+        """Returns a dictionary mapping poi_id to poi_seg"""
+
+        return dict(zip(self.__parameters['poi_gage_id'].data,
+                        self.__parameters['poi_gage_segment'].data))
+
     def add(self, name, datatype=None, units=None, model=None, description=None,
             help=None, modules=None, minimum=None, maximum=None, default=None,
             info=None):
