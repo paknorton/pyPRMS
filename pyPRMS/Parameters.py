@@ -1,3 +1,6 @@
+
+# NOTE: cached_property is not available in version < 3.8
+from functools import cached_property
 import geopandas
 import networkx as nx
 import numpy as np
@@ -29,6 +32,8 @@ class Parameters(object):
         self.__hru_shape_key = None
         self.__seg_poly = None
         self.__seg_shape_key = None
+        self.__seg_to_hru = None
+        self.__hru_to_seg = None
 
     def __getattr__(self, name):
         """Not sure what to write yet.
@@ -43,6 +48,18 @@ class Parameters(object):
         """
 
         return self.get(item)
+
+    @cached_property
+    def hru_to_seg(self):
+        self.__hru_to_seg = OrderedDict()
+
+        hru_segment = self.__parameters['hru_segment_nhm'].tolist()
+        nhm_id = self.__parameters['nhm_id'].tolist()
+
+        for ii, vv in enumerate(hru_segment):
+            # keys are 1-based, values in arrays are 1-based
+            self.__hru_to_seg[nhm_id[ii]] = vv
+        return self.__hru_to_seg
 
     @property
     def parameters(self):
@@ -59,6 +76,19 @@ class Parameters(object):
 
         return dict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data))
+
+    @cached_property
+    def seg_to_hru(self):
+        self.__seg_to_hru = OrderedDict()
+
+        hru_segment = self.__parameters['hru_segment_nhm'].tolist()
+        nhm_id = self.__parameters['nhm_id'].tolist()
+
+        for ii, vv in enumerate(hru_segment):
+            # keys are 1-based, values in arrays are 1-based
+            # Non-routed HRUs have a seg key = zero
+            self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
+        return self.__seg_to_hru
 
     def add(self, name, datatype=None, units=None, model=None, description=None,
             help=None, modules=None, minimum=None, maximum=None, default=None,
