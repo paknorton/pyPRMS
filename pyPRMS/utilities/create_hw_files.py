@@ -26,6 +26,7 @@ def main():
 
     # Roland's original script used 0.00404685642 for conversion to sq km
     acre_to_sq_km = 0.0040468564224
+    # sq_km_to_acre = 247.10538
 
     pdb = None
 
@@ -187,10 +188,15 @@ def main():
     fhdl_hru_hw = open(f'{args.dst}/hw_hrus.csv', 'w')
     fhdl_hru_hw.write('nhm_id,hw_id\n')
 
+    fhdl_hw_area = open(f'{args.dst}/hw_area.csv', 'w')
+    fhdl_hw_area.write('hw_id,seg_outlet,seg_cum_area_sqkm\n')
+
     cnt = 1
     for kk, vv in out_seg_hw.items():
         out_seg_str = ','.join([str(xx) for xx in vv])
         fhdl_hw_segs.write(f'{cnt},{kk},{out_seg_str}\n')
+
+        fhdl_hw_area.write(f'{cnt},{kk},{out_seg_cum_area[kk]}\n')
 
         for ss in vv:
             if ss in seg_to_hru:
@@ -202,6 +208,7 @@ def main():
 
     fhdl_hw_segs.close()
     fhdl_hru_hw.close()
+    fhdl_hw_area.close()
     print('.. done!')
     print('='*40)
 
