@@ -1,6 +1,7 @@
 
 from collections import OrderedDict
 from pathlib import Path
+from typing import Any,  Union, Dict, Iterator, List, OrderedDict as OrderedDictType, Set
 import numpy as np
 import pandas as pd
 
@@ -15,7 +16,7 @@ class ParamDbRegion(ParameterSet):
 
     """ParameterSet sub-class which works with the ParamDb stored by CONUS regions."""
 
-    def __init__(self, paramdb_dir, verbose=False, verify=True):
+    def __init__(self, paramdb_dir: str, verbose=False, verify=True):
         """Initialize NhmParamDb object.
 
         :param str paramdb_dir: path the NHMparamDb directory
@@ -45,7 +46,7 @@ class ParamDbRegion(ParameterSet):
             print('There were {} warnings while reading'.format(len(self.__warnings)))
 
     @property
-    def segment_nhm_to_region(self):
+    def segment_nhm_to_region(self) -> Dict[int, int]:
         """Get the dictionary which maps nhm segment ids to regional segment ids.
 
         :returns: dictionary NHM to regional segment ids
@@ -55,7 +56,7 @@ class ParamDbRegion(ParameterSet):
         return self.__nhm_to_reg_seg
 
     @property
-    def hru_nhm_to_local(self):
+    def hru_nhm_to_local(self) -> Dict[int, int]:
         """Get the dictionary which maps NHM HRU ids to local HRU ids.
 
         :returns: dictionary of NHM to regional HRU ids
@@ -65,7 +66,7 @@ class ParamDbRegion(ParameterSet):
         return self.__nhm_to_reg_hru
 
     @property
-    def hru_nhm_to_region(self):
+    def hru_nhm_to_region(self) -> Dict[int, int]:
         """Get the dictionary which maps NHM HRU ids to their respective region.
 
         :returns: dictionary of NHM HRU ids to region
@@ -75,7 +76,7 @@ class ParamDbRegion(ParameterSet):
         return self.__nhm_reg_range_hru
 
     @property
-    def warnings(self):
+    def warnings(self) -> List[str]:
         """Get the warnings that occurred when the parameter database was read.
 
         :returns: list of warnings
@@ -155,7 +156,7 @@ class ParamDbRegion(ParameterSet):
             self.__nhm_reg_range_hru[rr] = [min(tmp_data), max(tmp_data)]
 
     @staticmethod
-    def _data_it(filename):
+    def _data_it(filename: str) -> Iterator:
         """Get iterator to a parameter db file.
 
         :returns: iterator
@@ -295,7 +296,7 @@ class ParamDbRegion(ParameterSet):
         # self.parameters['tosegment'].data = self.parameters['tosegment_nhm'].data
         # self.parameters['hru_segment'].data = self.parameters['hru_segment_nhm'].data
 
-    def _set_parameter_dimension_size(self, name):
+    def _set_parameter_dimension_size(self, name: str):
         # Set dimensions size for entire NHM for parameter
         for rr in REGIONS:
             # Read parameter information
@@ -304,7 +305,7 @@ class ParamDbRegion(ParameterSet):
             # Add/grow dimensions for current parameter
             self.parameters.get(name).dimensions.add_from_xml(f'{cdir}/{name}.xml')
 
-    def _get_parameter_dimension_names(self, name):
+    def _get_parameter_dimension_names(self, name: str) -> Set[str]:
         """Returns a set of dimension names for a parameter"""
         dtmp = []
         for rr in REGIONS:

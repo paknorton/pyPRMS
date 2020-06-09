@@ -1,5 +1,6 @@
 
 from collections import OrderedDict
+from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Dimension import Dimension
@@ -33,7 +34,7 @@ class Dimensions(object):
         return self.__dimensions[item]
 
     @property
-    def dimensions(self):
+    def dimensions(self) -> OrderedDictType[str, Dimension]:
         """Get ordered dictionary of Dimension objects.
 
         :returns: OrderedDict of Dimension objects
@@ -53,7 +54,7 @@ class Dimensions(object):
         return len(self.__dimensions)
 
     @property
-    def xml(self):
+    def xml(self) -> xmlET.Element:
         """Get xml element for the dimensions.
 
         :returns: XML element for the dimensions
@@ -159,7 +160,7 @@ class Dimensions(object):
         if self.exists(name):
             del self.__dimensions[name]
 
-    def tostructure(self):
+    def tostructure(self) -> Dict[str, Dict[str, int]]:
         """Get data structure of Dimensions data for serialization.
 
         :returns: dictionary of dimension names and sizes
@@ -179,7 +180,7 @@ class ParamDimensions(Dimensions):
     """
 
     @property
-    def xml(self):
+    def xml(self) -> xmlET.Element:
         """Get xml for the dimensions.
 
         :returns: XML element of the dimensions
@@ -281,7 +282,7 @@ class ParamDimensions(Dimensions):
         # TODO: method name should be index() ??
         return list(self.dimensions.keys()).index(name)
 
-    def tostructure(self):
+    def tostructure(self) -> Dict[str, Dict[str, int]]:
         """Get dictionary structure of the dimensions.
 
         :returns: dictionary of Dimensions names, sizes, and positions

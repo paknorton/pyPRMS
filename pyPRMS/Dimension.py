@@ -113,7 +113,7 @@ class Dimension(object):
 
         self.__description = descstr
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Dimension(name={}, size={!r})'.format(self.name, self.size)
 
     def __iadd__(self, other):

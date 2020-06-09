@@ -1,3 +1,6 @@
+
+from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
+
 from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.ParameterSet import ParameterSet
 from pyPRMS.constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
@@ -26,7 +29,7 @@ class ParameterFile(ParameterSet):
         self.filename = filename
 
     @property
-    def filename(self):
+    def filename(self) -> str:
         """Get parameter filename.
 
         :returns: name of parameter file
@@ -36,7 +39,7 @@ class ParameterFile(ParameterSet):
         return self.__filename
 
     @filename.setter
-    def filename(self, name):
+    def filename(self, name: str):
         """Set the name of the parameter file.
 
         :param str name: name of parameter file
@@ -49,7 +52,7 @@ class ParameterFile(ParameterSet):
         self._read()
 
     @property
-    def headers(self):
+    def headers(self) -> List[str]:
         """Get the headers from the parameter file.
 
         :returns: list of headers from parameter file
@@ -59,11 +62,11 @@ class ParameterFile(ParameterSet):
         return self.__header
 
     @property
-    def updated_parameters(self):
+    def updated_parameters(self) -> Set[str]:
         """Get list of parameters that had more than one entry in the parameter file.
 
         :returns: list of parameters
-        :rtype: list[str]
+        :rtype: set[str]
         """
 
         return self.__updated_parameters
