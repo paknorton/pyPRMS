@@ -2,6 +2,7 @@
 
 import numpy as np
 from collections import OrderedDict
+from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Sequence
 
 from pyPRMS.Exceptions_custom import ControlError
 from pyPRMS.constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, \
@@ -32,7 +33,7 @@ class ControlVariable(object):
         self.__associated_value = None  # Based on a value what's the associated valid_value?
         self.__values = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         outstr = f'name: {self.name}\ndatatype: {self.datatype}\n'
 
         if self.default is not None:
@@ -47,7 +48,7 @@ class ControlVariable(object):
         return outstr
 
     @property
-    def associated_values(self):
+    def associated_values(self) -> List[str]:
         """Get list of control variable names which are associated with this
         control variable.
 
@@ -67,7 +68,7 @@ class ControlVariable(object):
         return assoc_vals
 
     @property
-    def datatype(self):
+    def datatype(self) -> int:
         """Get the datatype of the control variable.
 
         :returns: datatype
@@ -77,7 +78,7 @@ class ControlVariable(object):
         return self.__datatype
 
     @datatype.setter
-    def datatype(self, dtype):
+    def datatype(self, dtype: int):
         """Sets the datatype of the control variable.
 
         :param int dtype: The datatype for the control variable (1-Integer, 2-Float, 3-Double, 4-String)
@@ -89,7 +90,7 @@ class ControlVariable(object):
             print(f'WARNING: Datatype, {dtype}, is not valid.')
 
     @property
-    def force_default(self):
+    def force_default(self) -> bool:
         """Get logical value which indicates whether the default value for a
         control variable should always be used instead of the current value.
 
@@ -99,7 +100,7 @@ class ControlVariable(object):
         return self.__force_default
 
     @force_default.setter
-    def force_default(self, value):
+    def force_default(self, value: Union[bool, int]):
         """Set (or unset) forced use of default value.
 
         :param bool value: new force_default value
@@ -108,7 +109,7 @@ class ControlVariable(object):
         self.__force_default = bool(value)
 
     @property
-    def default(self):
+    def default(self) -> Union[int, float, str, None]:
         """Get default value for control variable.
 
         :returns: current default value
@@ -124,7 +125,7 @@ class ControlVariable(object):
             return None
 
     @default.setter
-    def default(self, value):
+    def default(self, value: Union[int, float, str]):
         """Set the default value for the control variable.
 
         :param value: new default value
@@ -144,7 +145,7 @@ class ControlVariable(object):
         self.__default = np.array(value)
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Returns the name of the control variable.
 
         :returns: name of control variable
@@ -154,7 +155,7 @@ class ControlVariable(object):
         return self.__name
 
     @property
-    def size(self):
+    def size(self) -> int:
         """Get the number of values for the control variable.
 
         :returns: number of values
@@ -169,7 +170,7 @@ class ControlVariable(object):
             return 0
 
     @property
-    def valid_values(self):
+    def valid_values(self) -> Dict:
         """Get the values that are valid for the control variable.
 
         :returns: valid values for the control variable
@@ -179,7 +180,7 @@ class ControlVariable(object):
         return self.__valid_values
 
     @valid_values.setter
-    def valid_values(self, data):
+    def valid_values(self, data: Dict):
         """Set the values that are valid for the control variable.
 
         :param dict data: valid values for the control variable
@@ -189,7 +190,7 @@ class ControlVariable(object):
             self.__valid_values = data
 
     @property
-    def value_repr(self):
+    def value_repr(self) -> str:
         """Get what the control variable value represents.
 
         A control variable value can represent a flag, interval, or parameter.
@@ -201,7 +202,7 @@ class ControlVariable(object):
         return self.__value_repr
 
     @value_repr.setter
-    def value_repr(self, data):
+    def value_repr(self, data: Union[str, None]):
         """Set the control variable representation.
 
         :param data: representation value
@@ -211,11 +212,11 @@ class ControlVariable(object):
         self.__value_repr = data
 
     @property
-    def values(self):
+    def values(self) -> Union[List[str], List[int], int, float, str]:
         """Get the values for the control variable.
 
         If force_default is True then the default value is returned regardless
-        of what values is set to; otherwise, current values is returned.
+        of what the value is set to; otherwise, current value is returned.
 
         :returns: value(s) of control variable
         :rtype: list[int or str] or int or float or str
@@ -232,7 +233,7 @@ class ControlVariable(object):
             return self.default
 
     @values.setter
-    def values(self, data):
+    def values(self, data: Union[Sequence[str], str]):
         """Set the values for the control variable.
 
         :param data: new value(s)
@@ -330,7 +331,7 @@ class Control(object):
         self.__header = None
 
     @property
-    def control_variables(self):
+    def control_variables(self) -> OrderedDictType[str, ControlVariable]:
         """Get control variable objects.
 
         :returns: control variable objects
@@ -340,7 +341,7 @@ class Control(object):
         return self.__control_vars
 
     @property
-    def dynamic_parameters(self):
+    def dynamic_parameters(self) -> List[str]:
         """Get parameter names that have the dynamic flag set.
 
         :returns: list of parameter names
@@ -357,31 +358,27 @@ class Control(object):
         return dyn_params
 
     @property
-    def has_dynamic_parameters(self):
+    def has_dynamic_parameters(self) -> bool:
         """Indicates if any dynamic parameters have been requested.
 
         :returns: True if dynamic parameters are required
         :rtype: bool
         """
-
-        if len(self.dynamic_parameters) > 0:
-            return True
-        return False
+        return len(self.dynamic_parameters) > 0
 
     @property
-    def header(self):
+    def header(self) -> Union[List[str], None]:
         """Get header information defined for a control object.
 
         This is typically taken from the first two lines of a control file.
 
         :returns: header information
-        :rtype: bool
         """
 
         return self.__header
 
     @header.setter
-    def header(self, info):
+    def header(self, info: Union[Sequence[str], str]):
         """Set the header information.
 
         :param info: header line(s)
@@ -394,7 +391,7 @@ class Control(object):
             self.__header = [info]
 
     @property
-    def modules(self):
+    def modules(self) -> Dict[str, str]:
         """Get the modules defined in the control file.
 
         :returns: defined modules
@@ -421,7 +418,7 @@ class Control(object):
 
         return mod_dict
 
-    def add(self, name):
+    def add(self, name: str):
         """Add a control variable by name.
 
         :param str name: name of the control variable
@@ -433,7 +430,7 @@ class Control(object):
             raise ControlError("Control variable already exists")
         self.__control_vars[name] = ControlVariable(name=name)
 
-    def exists(self, name):
+    def exists(self, name: str) -> bool:
         """Checks if a given control variable exists.
 
         :param str name: name of the control variable
@@ -443,7 +440,7 @@ class Control(object):
 
         return name in self.__control_vars.keys()
 
-    def get(self, name):
+    def get(self, name: str) -> ControlVariable:
         """Returns the given control variable object.
 
         :param str name: name of the control variable
@@ -458,7 +455,7 @@ class Control(object):
             return self.__control_vars[name]
         raise ValueError(f'Control variable, {name}, does not exist.')
 
-    def remove(self, name):
+    def remove(self, name: str):
         """Delete a control variable if it exists.
 
         :param str name: name of the control variable
@@ -467,7 +464,7 @@ class Control(object):
         if self.exists(name):
             del self.__control_vars[name]
 
-    def write(self, filename):
+    def write(self, filename: str):
         """Write a control file.
 
         :param str filename: name of control file to create

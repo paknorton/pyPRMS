@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import xml.etree.ElementTree as xmlET
-
 import io
 import pkgutil
+import xml.etree.ElementTree as xmlET
+from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
 from pyPRMS.constants import DATA_TYPES, VAR_DELIM
 from pyPRMS.Control import Control
@@ -19,7 +19,7 @@ class ControlFile(Control):
     # Description: Class object to handle reading and writing PRMS
     #              control files.
 
-    def __init__(self, filename):
+    def __init__(self, filename: str):
         super(ControlFile, self).__init__()
         # 1) open file
         # 2) read file contents
@@ -29,11 +29,11 @@ class ControlFile(Control):
         self.filename = filename
 
     @property
-    def filename(self):
+    def filename(self) -> str:
         return self.__filename
 
     @filename.setter
-    def filename(self, fname):
+    def filename(self, fname: str):
         self.__isloaded = False
         self.__filename = fname
         self._read()
