@@ -1,6 +1,5 @@
 
 from collections import OrderedDict
-from typing import Any,  Union
 import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Dimension import Dimension

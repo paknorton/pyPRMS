@@ -2,6 +2,7 @@ import functools
 import numpy as np
 import pandas as pd
 from collections import namedtuple, OrderedDict
+from typing import Any,  Union, List
 import xml.etree.ElementTree as xmlET
 
 # from pyPRMS.Exceptions_custom import ConcatError
@@ -66,7 +67,7 @@ class Parameter(object):
         self.maximum = maximum
         self.default = default
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Pretty-print string representation of the parameter information.
 
         :return: Parameter information
@@ -103,7 +104,7 @@ class Parameter(object):
         return outstr
 
     @property
-    def as_dataframe(self):
+    def as_dataframe(self) -> pd.DataFrame:
         """Returns the parameter data as a pandas DataFrame."""
 
         if len(self.data.shape) == 2:
@@ -117,19 +118,19 @@ class Parameter(object):
         return df
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Returns the parameter name."""
         return self.__name
 
     @property
-    def datatype(self):
+    def datatype(self) -> int:
         """Returns the datatype of the parameter.
 
         :rtype: int"""
         return self.__datatype
 
     @datatype.setter
-    def datatype(self, dtype):
+    def datatype(self, dtype: int):
         """Sets the datatype for the parameter.
 
         :param int dtype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
@@ -146,7 +147,7 @@ class Parameter(object):
             raise TypeError(f'Invalid datatype, {dtype}, specified for parameter')
 
     @property
-    def units(self):
+    def units(self) -> str:
         """Returns the parameter units.
 
         :rtype: str
@@ -154,7 +155,7 @@ class Parameter(object):
         return self.__units
 
     @units.setter
-    def units(self, unitstr):
+    def units(self, unitstr: str):
         """Set the parameter units.
 
         :param str unitstr: String denoting the units for the parameter (e.g. mm)
@@ -162,7 +163,7 @@ class Parameter(object):
         self.__units = unitstr
 
     @property
-    def model(self):
+    def model(self) -> str:
         """Returns the model the parameter is used in.
 
         :rtype: str
@@ -170,7 +171,7 @@ class Parameter(object):
         return self.__model
 
     @model.setter
-    def model(self, modelstr):
+    def model(self, modelstr: str):
         """Set the model description for the parameter.
 
         :param str modelstr: String denoting the model (e.g. PRMS)
@@ -178,7 +179,7 @@ class Parameter(object):
         self.__model = modelstr
 
     @property
-    def description(self):
+    def description(self) -> str:
         """Returns the parameter description.
 
         :rtype: str
@@ -186,7 +187,7 @@ class Parameter(object):
         return self.__description
 
     @description.setter
-    def description(self, descstr):
+    def description(self, descstr: str):
         """Set the model description for the parameter.
 
         :param str descstr: Description string
@@ -194,7 +195,7 @@ class Parameter(object):
         self.__description = descstr
 
     @property
-    def help(self):
+    def help(self) -> str:
         """Returns the help information for the parameter.
 
         :rtype: str
@@ -202,7 +203,7 @@ class Parameter(object):
         return self.__help
 
     @help.setter
-    def help(self, helpstr):
+    def help(self, helpstr: str):
         """Set the help string for the parameter.
 
         :param str helpstr: Help string
@@ -210,7 +211,7 @@ class Parameter(object):
         self.__help = helpstr
 
     @property
-    def minimum(self):
+    def minimum(self) -> Union[int, float, None]:
         """Returns the minimum valid value for the parameter.
 
         :rtype: int or float or None
@@ -218,7 +219,7 @@ class Parameter(object):
         return self.__minimum
 
     @minimum.setter
-    def minimum(self, value):
+    def minimum(self, value: Union[int, float, None]):
         """Set the minimum valid value for the parameter.
 
         :param value: The minimum value
@@ -238,7 +239,7 @@ class Parameter(object):
             self.__minimum = value
 
     @property
-    def maximum(self):
+    def maximum(self) -> Union[int, float, None]:
         """Returns the maximum valid value for the parameter.
 
         :rtype: int or float or None
@@ -246,7 +247,7 @@ class Parameter(object):
         return self.__maximum
 
     @maximum.setter
-    def maximum(self, value):
+    def maximum(self, value: Union[int, float, None]):
         """Set the maximum valid value for the parameter.
 
         :param value: The maximum value
@@ -266,7 +267,7 @@ class Parameter(object):
             self.__maximum = value
 
     @property
-    def default(self):
+    def default(self) -> Union[int, float, None]:
         """Returns the default value for the parameter.
 
         :rtype: int or float or None
@@ -274,7 +275,7 @@ class Parameter(object):
         return self.__default
 
     @default.setter
-    def default(self, value):
+    def default(self, value: Union[int, float, None]):
         """Set the default value for the parameter.
 
         :param value: The default value
@@ -292,7 +293,7 @@ class Parameter(object):
             self.__default = value
 
     @property
-    def modules(self):
+    def modules(self) -> Union[List[str], None]:
         """Returns the names of the modules require the parameter.
 
         :rtype: list[str] or None
@@ -300,7 +301,7 @@ class Parameter(object):
         return self.__modules
 
     @modules.setter
-    def modules(self, modulestr):
+    def modules(self, modulestr: Union[str, List[str], None]):
         """Set the names of the modules that require the parameter.
 
         :param modulestr: Single module name or list of module names to add
@@ -315,19 +316,19 @@ class Parameter(object):
             self.__modules = None
 
     @property
-    def dimensions(self):
+    def dimensions(self) -> ParamDimensions:
         """Returns the Dimensions object associated with the parameter."""
         return self.__dimensions
 
     @property
-    def ndims(self):
+    def ndims(self) -> int:
         """Returns the number of dimensions that are defined for the parameter.
 
         :rtype: int"""
         return self.__dimensions.ndims
 
     @property
-    def data(self):
+    def data(self) -> np.ndarray:
         """Returns the data associated with the parameter.
 
         :rtype: np.ndarray
@@ -387,7 +388,7 @@ class Parameter(object):
         return OrderedDict((val, idx) for idx, val in enumerate(self.__data.tolist()))
 
     @property
-    def size(self):
+    def size(self) -> int:
         """Return the total size of the parameter for the defined dimensions"""
         arr_shp = [dd.size for dd in self.dimensions.values()]
 
@@ -395,7 +396,7 @@ class Parameter(object):
         return functools.reduce(lambda x, y: x * y, arr_shp)
 
     @property
-    def xml(self):
+    def xml(self) -> xmlET.Element:
         """Return the xml metadata for the parameter as an xml Element.
 
         :rtype: xmlET.Element
@@ -406,7 +407,7 @@ class Parameter(object):
         param_root.append(self.dimensions.xml)
         return param_root
 
-    def all_equal(self):
+    def all_equal(self) -> bool:
         if self.__data.size > 1:
             return (self.__data == self.__data[0]).all()
         return False
@@ -463,7 +464,7 @@ class Parameter(object):
     #         self.__data = np.concatenate((self.__data, data_np))
     #         # self.__data = data_np
 
-    def check(self):
+    def check(self) -> str:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) size
         and returns a message.
 
@@ -479,7 +480,7 @@ class Parameter(object):
         else:
             return f'{self.name}: BAD'
 
-    def check_values(self):
+    def check_values(self) -> bool:
         """Returns true if all data values are within the min/max values for the parameter."""
         if self.__minimum is not None and self.__maximum is not None:
             # Check both ends of the range
@@ -497,7 +498,7 @@ class Parameter(object):
         return Stats(self.__name, np.min(self.__data), np.max(self.__data),
                      np.mean(self.__data), np.median(self.__data))
 
-    def has_correct_size(self):
+    def has_correct_size(self) -> bool:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
 
         :rtype: bool"""
@@ -513,7 +514,7 @@ class Parameter(object):
         # This assumes a numpy array
         return self.data.size == total_size
 
-    def remove_by_index(self, dim_name, indices):
+    def remove_by_index(self, dim_name: str, indices):
         """Remove columns (nhru or nsegment) from data array given a list of indices"""
 
         if isinstance(indices, type(OrderedDict().values())):
@@ -568,7 +569,7 @@ class Parameter(object):
 
                     self.__data = tmp_data
 
-    def subset_by_index(self, dim_name, indices):
+    def subset_by_index(self, dim_name: str, indices):
         """Reduce columns (nhru or nsegment) from data array given a list of indices"""
 
         if isinstance(indices, type(OrderedDict().values())):
@@ -583,7 +584,7 @@ class Parameter(object):
         # self.__data = np.take(self.__data, indices, axis=0)
         # self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
 
-    def tolist(self):
+    def tolist(self) -> list:
         """Returns the parameter data as a list.
 
         :returns: Parameter data
@@ -594,7 +595,7 @@ class Parameter(object):
         # Return a list of the data
         return self.__data.ravel(order='F').tolist()
 
-    def toparamdb(self):
+    def toparamdb(self) -> str:
         """Outputs parameter data in the paramDb csv format.
 
         :rtype: str
@@ -635,7 +636,7 @@ class Parameter(object):
                  'data': self.tolist()}
         return param
 
-    def unique(self):
+    def unique(self) -> np.ndarray:
         """Create array of unique values from the parameter data.
 
         :returns: Array of unique values

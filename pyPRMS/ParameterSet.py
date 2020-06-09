@@ -6,6 +6,7 @@ import sys
 # noinspection PyUnresolvedReferences
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
+from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
@@ -38,7 +39,7 @@ class ParameterSet(object):
         self.verbose = verbose
 
     @property
-    def available_parameters(self):
+    def available_parameters(self) -> List[str]:
         """Get a list of parameter names in the ParameterSet.
 
         :returns: list of parameter names
@@ -48,7 +49,7 @@ class ParameterSet(object):
         return list(self.parameters.keys())
 
     @property
-    def dimensions(self):
+    def dimensions(self) -> Dimensions:
         """Get dimensions object.
 
         :returns: dimensions object
@@ -58,7 +59,7 @@ class ParameterSet(object):
         return self.__dimensions
 
     @property
-    def master_parameters(self):
+    def master_parameters(self) -> ValidParams:
         """Get master parameters.
 
         :returns: master parameters object
@@ -68,7 +69,7 @@ class ParameterSet(object):
         return self.__master_params
 
     @property
-    def parameters(self):
+    def parameters(self) -> Parameters:
         """Get Parameters object.
 
         :returns: Parameters object
@@ -78,7 +79,7 @@ class ParameterSet(object):
         return self.__parameters
 
     @property
-    def xml_global_dimensions(self):
+    def xml_global_dimensions(self) -> xmlET.Element:
         """Get XML element tree of the dimensions used by all parameters.
 
         :returns: element tree of dimensions
@@ -99,7 +100,7 @@ class ParameterSet(object):
         return dims_xml
 
     @property
-    def xml_global_parameters(self):
+    def xml_global_parameters(self) -> xmlET.Element:
         """Get XML element tree of the parameters.
 
         :returns: element tree of parameters
@@ -175,7 +176,7 @@ class ParameterSet(object):
                 except ValueError:
                     print(f'ERROR: Parameter, {kk}, is not a valid PRMS parameter')
 
-    def expand_parameter(self, name):
+    def expand_parameter(self, name: str):
         """Expand an existing parameter.
 
         Expands (e.g. reshape) a parameter, broadcasting existing value(s) into
@@ -272,7 +273,7 @@ class ParameterSet(object):
             if self.__dimensions.exists('ngw'):
                 self.__dimensions['ngw'].size -= len(hrus)
 
-    def write_parameters_xml(self, output_dir):
+    def write_parameters_xml(self, output_dir: str):
         """Write global parameters.xml file.
 
         :param str output_dir: output path for parameters.xml file
@@ -283,7 +284,7 @@ class ParameterSet(object):
         with open(f'{output_dir}/{PARAMETERS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
-    def write_dimensions_xml(self, output_dir):
+    def write_dimensions_xml(self, output_dir: str):
         """Write global dimensions.xml file.
 
         :param str output_dir: output path for dimensions.xml file
@@ -294,7 +295,7 @@ class ParameterSet(object):
         with open(f'{output_dir}/{DIMENSIONS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
-    def write_netcdf(self, filename):
+    def write_netcdf(self, filename: str):
         """Write parameters to a netcdf format file.
 
         :param str filename: full path for output file
@@ -417,7 +418,7 @@ class ParameterSet(object):
         # Close the netcdf file
         nc_hdl.close()
 
-    def write_paramdb(self, output_dir):
+    def write_paramdb(self, output_dir: str):
         """Write all parameters using the paramDb output format.
 
         :param str output_dir: output path for paramDb files
@@ -455,7 +456,7 @@ class ParameterSet(object):
             #     # ff.write(xmlstr.encode('utf-8'))
             #     ff.write(xmlstr)
 
-    def write_parameter_file(self, filename, header=None, prms_version=6):
+    def write_parameter_file(self, filename: str, header=None, prms_version=5):
         """Write a parameter file.
 
         :param str filename: name of parameter file

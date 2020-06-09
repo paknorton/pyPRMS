@@ -6,6 +6,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
+from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 import matplotlib.pyplot as plt
 # import matplotlib.colors as colors
 import matplotlib as mpl
@@ -50,7 +51,7 @@ class Parameters(object):
         return self.get(item)
 
     @cached_property
-    def hru_to_seg(self):
+    def hru_to_seg(self) -> OrderedDictType[int, int]:
         self.__hru_to_seg = OrderedDict()
 
         hru_segment = self.__parameters['hru_segment_nhm'].tolist()
@@ -62,7 +63,7 @@ class Parameters(object):
         return self.__hru_to_seg
 
     @property
-    def parameters(self):
+    def parameters(self) -> OrderedDictType[str, Parameter]:
         """Returns an ordered dictionary of parameter objects.
 
         :rtype: collections.OrderedDict[str, Parameter]
@@ -71,14 +72,14 @@ class Parameters(object):
         return self.__parameters
 
     @property
-    def poi_to_seg(self):
+    def poi_to_seg(self) -> Dict[str, int]:
         """Returns a dictionary mapping poi_id to poi_seg"""
 
         return dict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data))
 
     @cached_property
-    def seg_to_hru(self):
+    def seg_to_hru(self) -> OrderedDictType[int, int]:
         self.__seg_to_hru = OrderedDict()
 
         hru_segment = self.__parameters['hru_segment_nhm'].tolist()
@@ -165,7 +166,7 @@ class Parameters(object):
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
                     print('  WARNING: snarea_curve has more entries than needed by hru_deplcrv')
 
-    def exists(self, name):
+    def exists(self, name) -> bool:
         """Checks if a given parameter name exists.
 
         :param str name: Name of the parameter
@@ -175,7 +176,7 @@ class Parameters(object):
 
         return name in self.parameters.keys()
 
-    def get(self, name):
+    def get(self, name: str) -> Parameter:
         """Returns the given parameter object.
 
         :param str name: The name of the parameter
@@ -189,7 +190,7 @@ class Parameters(object):
         # TODO: This shouldn't be a value error
         raise ValueError(f'Parameter, {name}, does not exist.')
 
-    def get_dataframe(self, name):
+    def get_dataframe(self, name: str) -> pd.DataFrame:
         """Returns a pandas DataFrame for a parameter.
 
         If the parameter dimensions includes either nhrus or nsegment then the
@@ -241,7 +242,7 @@ class Parameters(object):
             return param_data
         raise ValueError(f'Parameter, {name}, has no associated data')
 
-    def get_subset(self, name, global_ids):
+    def get_subset(self, name: str, global_ids: List[int]) -> pd.DataFrame:
         """Returns a subset for a parameter based on the global_ids (e.g. nhm)"""
         param = self.__parameters[name]
         dim_set = set(param.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw', 'nsegment'})
@@ -265,7 +266,7 @@ class Parameters(object):
         else:
             return param.data[tuple(nhm_idx0), ]
 
-    def plot(self, name, output_dir=None, **kwargs):
+    def plot(self, name: str, output_dir=None, **kwargs):
         '''
         Plot a parameter
         '''
@@ -446,7 +447,7 @@ class Parameters(object):
     #             dag_streamnet.nodes[yy]['fillcolor'] = 'orange'
     #         print(xx)
 
-    def remove(self, name):
+    def remove(self, name: Union[str, List[str]]):
         """Delete one or more parameters if they exist.
 
         :param name: parameter or list of parameters to remove
@@ -550,7 +551,7 @@ class Parameters(object):
             # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
             # new_deplcrv = pp['hru_deplcrv'].data.tolist()
 
-    def shapefile_segments(self, filename, layer_name=None, shape_key=None):
+    def shapefile_segments(self, filename: str, layer_name=None, shape_key=None):
         '''Read a shapefile or geodatabase that corresponds to stream segments
         '''
 
@@ -561,7 +562,7 @@ class Parameters(object):
             self.__seg_poly.crs = 'EPSG:5070'
         self.__seg_shape_key = shape_key
 
-    def shapefile_hrus(self, filename, layer_name=None, shape_key=None):
+    def shapefile_hrus(self, filename: str, layer_name=None, shape_key=None):
         '''Read a shapefile or geodatabase that corresponds to HRUs
         '''
 
@@ -572,7 +573,7 @@ class Parameters(object):
             self.__hru_poly.crs = 'EPSG:5070'
         self.__hru_shape_key = shape_key
 
-    def stream_network(self, tosegment, seg_id):
+    def stream_network(self, tosegment: str, seg_id: str) -> Union[nx.DiGraph, None]:
         if self.exists(tosegment) and self.exists(seg_id):
             seg = self.__parameters.get(seg_id).tolist()
             toseg = self.__parameters.get(tosegment).tolist()
