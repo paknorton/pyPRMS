@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import netCDF4 as nc
 from collections import OrderedDict
+from typing import Union, OrderedDict as OrderedDictType
 
 from pyPRMS.prms_helpers import dparse
 from pyPRMS.constants import REGIONS
@@ -45,6 +46,7 @@ class CbhAscii(object):
         # self.__indices = [str(kk) for kk in indices]
         self.__indices = indices    # OrdereDict: nhm_ids -> local_ids
 
+        self.__data = None
         self.__stdate = st_date
         self.__endate = en_date
         self.__nhm_hrus = nhm_hrus
@@ -117,7 +119,7 @@ class CbhAscii(object):
         self.__data['minute'] = 0
         self.__data['second'] = 0
 
-    def read_ascii_file(self, filename, columns=None):
+    def read_ascii_file(self, filename: str, columns=None) -> pd.DataFrame:
         """Reads a single CBH file.
 
         :param str filename: name of the CBH file
@@ -137,7 +139,7 @@ class CbhAscii(object):
                              index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
         return df
 
-    def check_region(self, region):
+    def check_region(self, region: str) -> Union[OrderedDictType[int, int], None]:
         if self.__indices is not None:
             # Get the range of nhm_ids for the region
             rvals = self.__mapping[region]
@@ -155,7 +157,7 @@ class CbhAscii(object):
             return idx_retrieve
         return None
 
-    def read_cbh_multifile(self, var=None):
+    def read_cbh_multifile(self, var=None) -> Union[pd.DataFrame, None]:
         """Read cbh data from multiple csv files"""
 
         if var is None:
@@ -180,13 +182,13 @@ class CbhAscii(object):
             if len(idx_retrieve) > 0:
                 # The current region contains HRUs in the model subset
                 # Read in the data for those HRUs
-                cbh_file = '{}/{}_{}.cbh.gz'.format(self.__src_path, rr, var)
+                cbh_file = f'{self.__src_path}/{rr}_{var}.cbh.gz'
 
-                print('\tLoad {} HRUs from {}'.format(len(idx_retrieve), rr))
+                print(f'\tLoad {len(idx_retrieve)} HRUs from {rr}')
 
                 if not os.path.isfile(cbh_file):
                     # Missing data file for this variable and region
-                    raise IOError('Required CBH file, {}, is missing.'.format(cbh_file))
+                    raise IOError(f'Required CBH file, {cbh_file}, is missing.')
 
                 # df = self.read_ascii_file(cbh_file, columns=load_cols)
 
@@ -224,11 +226,11 @@ class CbhAscii(object):
                     self.__dataframe = self.__dataframe.join(df, how='left')
         return self.__dataframe
 
-    def get_var(self, var):
+    def get_var(self, var: str) -> Union[pd.DataFrame, None]:
         data = self.read_cbh_multifile(var=var)
         return data
 
-    def write_ascii(self, pathname=None, fileprefix=None, vars=None):
+    def write_ascii(self, pathname=None, fileprefix=None, variables=None):
         # For out_order the first six columns contain the time information and
         # are always output for the cbh files
         out_order = [kk for kk in self.__nhm_hrus]
@@ -236,10 +238,10 @@ class CbhAscii(object):
             out_order.insert(0, cc)
 
         var_list = []
-        if vars is None:
+        if variables is None:
             var_list = CBH_VARNAMES
-        elif isinstance(list, vars):
-            var_list = vars
+        elif isinstance(list, variables):
+            var_list = variables
 
         for cvar in var_list:
             data = self.get_var(var=cvar)
@@ -254,23 +256,23 @@ class CbhAscii(object):
 
             # Output ASCII CBH files
             if fileprefix is None:
-                outfile = '{}.cbh'.format(cvar)
+                outfile = f'{cvar}.cbh'
             else:
-                outfile = '{}_{}.cbh'.format(fileprefix, cvar)
+                outfile = f'{fileprefix}_{cvar}.cbh'
 
             if pathname is not None:
-                outfile = '{}/{}'.format(pathname, outfile)
+                outfile = f'{pathname}/{outfile}'
 
             out_cbh = open(outfile, 'w')
             out_cbh.write('Written by Bandit\n')
-            out_cbh.write('{} {}\n'.format(cvar, len(self.__nhm_hrus)))
+            out_cbh.write(f'{cvar} {len(self.__nhm_hrus)}\n')
             out_cbh.write('########################################\n')
 
             data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.3f',
                         sep=' ', index=False, header=False, encoding=None, chunksize=50)
             out_cbh.close()
 
-    def write_netcdf(self, filename=None, vars=None):
+    def write_netcdf(self, filename=None, variables=None):
         """Write CBH to netcdf format file"""
 
         # NetCDF-related variables
@@ -291,10 +293,10 @@ class CbhAscii(object):
         hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
 
         var_list = []
-        if vars is None:
+        if variables is None:
             var_list = CBH_VARNAMES
-        elif isinstance(list, vars):
-            var_list = vars
+        elif isinstance(list, variables):
+            var_list = variables
 
         for cvar in var_list:
             varo = nco.createVariable(cvar, 'f4', ('time', 'hru'), fill_value=nc.default_fillvals['f4'], zlib=True)

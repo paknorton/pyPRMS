@@ -2,6 +2,8 @@ import pandas as pd
 import netCDF4 as nc
 import xarray as xr
 
+# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
+
 CBH_VARNAMES = ['prcp', 'tmin', 'tmax']
 CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]
 
@@ -48,7 +50,7 @@ class CbhNetcdf(object):
             print('ERROR: write the code for all HRUs')
             exit()
 
-    def get_var(self, var):
+    def get_var(self, var: str):
         if self.__stdate is not None and self.__endate is not None:
             # print(var, type(var))
             # print(self.__stdate, type(self.__stdate))
@@ -57,14 +59,15 @@ class CbhNetcdf(object):
             try:
                 data = self.__dataset[var].loc[self.__stdate:self.__endate, self.__nhm_hrus].to_pandas()
             except IndexError:
-                print(f'ERROR: Indices (time, hruid) were used to subset {var} which expects indices ({" ".join(map(str, self.__dataset[var].coords))})')
+                print(f'ERROR: Indices (time, hruid) were used to subset {var} which expects' +
+                      f'indices ({" ".join(map(str, self.__dataset[var].coords))})')
                 raise
         else:
             data = self.__dataset[var].loc[:, self.__nhm_hrus].to_pandas()
 
         return data
 
-    def write_ascii(self, pathname=None, fileprefix=None, vars=None):
+    def write_ascii(self, pathname=None, fileprefix=None, variables=None):
         # For out_order the first six columns contain the time information and
         # are always output for the cbh files
         out_order = [kk for kk in self.__nhm_hrus]
@@ -72,10 +75,10 @@ class CbhNetcdf(object):
             out_order.insert(0, cc)
 
         var_list = []
-        if vars is None:
+        if variables is None:
             var_list = self.__dataset.data_vars
-        elif isinstance(vars, list):
-            var_list = vars
+        elif isinstance(variables, list):
+            var_list = variables
 
         for cvar in var_list:
             if cvar in self.__dataset.data_vars:
@@ -91,16 +94,16 @@ class CbhNetcdf(object):
 
                 # Output ASCII CBH files
                 if fileprefix is None:
-                    outfile = '{}.cbh'.format(cvar)
+                    outfile = f'{cvar}.cbh'
                 else:
-                    outfile = '{}_{}.cbh'.format(fileprefix, cvar)
+                    outfile = f'{fileprefix}_{cvar}.cbh'
 
                 if pathname is not None:
-                    outfile = '{}/{}'.format(pathname, outfile)
+                    outfile = f'{pathname}/{outfile}'
 
                 out_cbh = open(outfile, 'w')
                 out_cbh.write('Written by Bandit\n')
-                out_cbh.write('{} {}\n'.format(cvar, len(self.__nhm_hrus)))
+                out_cbh.write(f'{cvar} {len(self.__nhm_hrus)}\n')
                 out_cbh.write('########################################\n')
                 # data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.3f',
                 data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.2f',
@@ -109,7 +112,7 @@ class CbhNetcdf(object):
             else:
                 print(f'WARNING: {cvar} does not exist in source CBH files..skipping')
 
-    def write_netcdf(self, filename=None, vars=None):
+    def write_netcdf(self, filename=None, variables=None):
         """Write CBH to netcdf format file"""
 
         # NetCDF-related variables
@@ -131,10 +134,10 @@ class CbhNetcdf(object):
         hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
 
         var_list = []
-        if vars is None:
+        if variables is None:
             var_list = self.__dataset.data_vars
-        elif isinstance(list, vars):
-            var_list = vars
+        elif isinstance(list, variables):
+            var_list = variables
 
         for cvar in var_list:
             varo = nco.createVariable(cvar, 'f4', ('time', 'hru'), fill_value=nc.default_fillvals['f4'], zlib=True)
