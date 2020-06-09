@@ -1,5 +1,6 @@
 
 from collections import OrderedDict
+from typing import Any,  Union
 import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Dimension import Dimension
@@ -43,7 +44,7 @@ class Dimensions(object):
         return self.__dimensions
 
     @property
-    def ndims(self):
+    def ndims(self) -> int:
         """Get number of dimensions.
 
         :returns: number of dimensions
@@ -72,7 +73,7 @@ class Dimensions(object):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name, size=0):
+    def add(self, name: str, size: int = 0):
         """Add a new dimension.
 
         :param str name: name of the dimension
@@ -94,7 +95,7 @@ class Dimensions(object):
         #     # TODO: Should this raise an error?
         #     print('Dimension {} already exists...skipping add name'.format(name))
 
-    def add_from_xml(self, filename):
+    def add_from_xml(self, filename: str):
         """Add one or more dimensions from an xml file.
 
         :param str filename: name of xml file to read
@@ -125,7 +126,7 @@ class Dimensions(object):
                     # NOTE: This will always try to grow a dimension if it already exists!
                     self.__dimensions[name].size += size
 
-    def exists(self, name):
+    def exists(self, name: str) -> bool:
         """Check if dimension exists.
 
         :param str name: name of the dimension
@@ -135,7 +136,7 @@ class Dimensions(object):
 
         return name in self.dimensions.keys()
 
-    def get(self, name):
+    def get(self, name: str) -> Dimension:
         """Get dimension.
 
         :param str name: name of the dimension
@@ -150,7 +151,7 @@ class Dimensions(object):
             return self.__dimensions[name]
         raise ValueError(f'Dimension, {name}, does not exist.')
 
-    def remove(self, name):
+    def remove(self, name: str):
         """Remove dimension.
 
         :param str name: dimension name
@@ -201,7 +202,7 @@ class ParamDimensions(Dimensions):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name, size=0):
+    def add(self, name: str, size: int = 0):
         """Add a new dimension.
 
         :param str name: name of the dimension
@@ -213,7 +214,7 @@ class ParamDimensions(Dimensions):
             raise ValueError('Number of dimensions greater than 2 is not supported')
         super().add(name, size)
 
-    def add_from_xml(self, filename):
+    def add_from_xml(self, filename: str):
         """Add one or more dimensions from an xml file.
 
         Add or grow dimensions from XML information. This version also checks dimension position.
@@ -251,7 +252,7 @@ class ParamDimensions(Dimensions):
                         self.dimensions[name].size += size
 
     # noinspection PyUnresolvedReferences
-    def get_dimsize_by_index(self, index):
+    def get_dimsize_by_index(self, index: int) -> int:
         """Return size of dimension at the given index.
 
         :param int index: The 0-based position of the dimension.
@@ -269,7 +270,7 @@ class ParamDimensions(Dimensions):
                 return list(self.dimensions.items())[index][1].size
         raise ValueError(f'Parameter has no dimension at index {index}')
 
-    def get_position(self, name):
+    def get_position(self, name: str) -> int:
         """Get 0-based index position of a dimension.
 
         :param str name: name of the dimension

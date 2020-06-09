@@ -2,7 +2,7 @@
 from pyPRMS.constants import DIMENSION_NAMES
 
 
-def _valid_dimension_name(name):
+def _valid_dimension_name(name: str):
     """Check if given dimension name is valid for PRMS.
 
     :param str name: dimension name
@@ -36,7 +36,7 @@ class Dimension(object):
         self.description = description
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Name of the dimension.
 
         :returns: Name of the dimension
@@ -46,7 +46,7 @@ class Dimension(object):
         return self.__name
 
     @name.setter
-    def name(self, name):
+    def name(self, name: str):
         """Sets the name of the dimension.
 
         :param str name: Name of the dimension
@@ -60,7 +60,7 @@ class Dimension(object):
             raise ValueError(f'Dimension name, {name}, is not a valid PRMS dimension name')
 
     @property
-    def size(self):
+    def size(self) -> int:
         """Size of the dimension.
 
         :returns: size of the dimension
@@ -70,7 +70,7 @@ class Dimension(object):
         return self.__size
 
     @size.setter
-    def size(self, value):
+    def size(self, value: int):
         """Set the size of the dimension.
 
         :param int value: size of the dimension
@@ -95,7 +95,7 @@ class Dimension(object):
             print(f'ERROR: Dimension, {self.__name}, size={self.__size}, but size {value} was requested')
 
     @property
-    def description(self):
+    def description(self) -> str:
         """Description for the dimension.
 
         :returns: description for the dimension
@@ -105,7 +105,7 @@ class Dimension(object):
         return self.__description
 
     @description.setter
-    def description(self, descstr):
+    def description(self, descstr: str):
         """Set the description of the dimension.
 
         :param str descstr: description string
