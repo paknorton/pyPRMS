@@ -1,6 +1,8 @@
 import io
 import pkgutil
 import xml.etree.ElementTree as xmlET
+from typing import Sequence, Set
+
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.constants import NHM_DATATYPES
@@ -41,7 +43,7 @@ class ValidParams(Parameters):
         self.__isloaded = True
 
     @property
-    def filename(self):
+    def filename(self) -> str:
         """Get XML filename.
 
         Returned filename is None if reading from the library-internal XML file.
@@ -53,7 +55,7 @@ class ValidParams(Parameters):
         return self.__filename
 
     @filename.setter
-    def filename(self, filename=None):
+    def filename(self, filename: str = None):
         """Set the XML file name.
 
         If no filename is specified an library-internal XML file is read.
@@ -75,7 +77,7 @@ class ValidParams(Parameters):
         self._read()
         self.__isloaded = True
 
-    def get_params_for_modules(self, modules):
+    def get_params_for_modules(self, modules: Sequence[str]) -> Set[str]:
         """Get list of unique parameters required for a given list of modules.
 
         :param list[str] modules: list of PRMS modules
