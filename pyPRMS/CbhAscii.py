@@ -287,6 +287,8 @@ class CbhAscii(object):
         timeo = nco.createVariable('time', 'f4', ('time'))
         timeo.calendar = 'standard'
         # timeo.bounds = 'time_bnds'
+
+        # FIXME: Days since needs to be set to the starting date of the model pull
         timeo.units = 'days since 1980-01-01 00:00:00'
 
         hruo = nco.createVariable('hru', 'i4', ('hru'))

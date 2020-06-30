@@ -116,8 +116,9 @@ class CbhNetcdf(object):
         """Write CBH to netcdf format file"""
 
         # NetCDF-related variables
-        var_desc = {'tmax': 'Maximum Temperature', 'tmin': 'Minimum temperature', 'prcp': 'Precipitation'}
-        var_units = {'tmax': 'C', 'tmin': 'C', 'prcp': 'inches'}
+        var_desc = {'tmax': 'Maximum Temperature', 'tmin': 'Minimum temperature',
+                    'prcp': 'Precipitation', 'rhavg': 'Mean relative humidity'}
+        var_units = {'tmax': 'C', 'tmin': 'C', 'prcp': 'inches', 'rhavg': 'percent'}
 
         # Create a netCDF file for the CBH data
         nco = nc.Dataset(filename, 'w', clobber=True)
@@ -128,6 +129,8 @@ class CbhNetcdf(object):
         timeo = nco.createVariable('time', 'f4', ('time'))
         timeo.calendar = 'standard'
         # timeo.bounds = 'time_bnds'
+
+        # FIXME: Days since needs to be set to the starting date of the model pull
         timeo.units = 'days since 1980-01-01 00:00:00'
 
         hruo = nco.createVariable('hru', 'i4', ('hru'))
