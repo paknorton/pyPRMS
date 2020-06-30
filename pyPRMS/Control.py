@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 
+import io
+import pkgutil
+import xml.etree.ElementTree as xmlET
+
 import numpy as np
 from collections import OrderedDict
-from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Sequence
+from typing import Union, Dict, List, OrderedDict as OrderedDictType, Sequence
 
 from pyPRMS.ControlVariable import ControlVariable
 from pyPRMS.Exceptions_custom import ControlError
 from pyPRMS.constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, \
-                             DATA_TYPES, VAR_DELIM
+                             VAR_DELIM
 
 
 class Control(object):
@@ -26,6 +30,51 @@ class Control(object):
         # Container to hold dicionary of ControlVariables
         self.__control_vars = OrderedDict()
         self.__header = None
+
+        # First read control.xml from the library
+        # This makes sure any missing variables from the control file
+        # end up with default values
+        xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', 'xml/control.xml').decode('utf-8'))
+        xml_tree = xmlET.parse(xml_fh)
+        xml_root = xml_tree.getroot()
+
+        for elem in xml_root.findall('control_param'):
+            name = elem.attrib.get('name')
+            datatype = int(elem.find('type').text)
+
+            self.add(name)
+            self.get(name).datatype = datatype
+
+            if name in ['start_time', 'end_time']:
+                # Hack to handle PRMS weird approach to dates
+                dt = elem.find('default').text.split('-')
+                if len(dt) < 6:
+                    # pad short date with zeros for hms
+                    dt.extend(['0' for _ in range(6 - len(dt))])
+                self.get(name).default = dt
+            else:
+                # print('{}: {} {}'.format(name, type(elem.find('default').text), elem.find('default').text))
+                self.get(name).default = elem.find('default').text
+
+            self.get(name).description = elem.find('desc').text
+
+            if elem.find('force_default') is not None:
+                self.get(name).force_default = elem.find('force_default').text
+
+            outvals = {}
+            for cvals in elem.findall('./values'):
+                self.get(name).value_repr = cvals.attrib.get('type')
+
+                for cv in cvals.findall('./value'):
+                    outvals[cv.attrib.get('name')] = []
+
+                    for xx in cv.text.split(','):
+                        outvals[cv.attrib.get('name')].append(xx)
+            self.get(name).valid_values = outvals
+
+    def __getitem__(self, item):
+        """Provide key lookup of control variables"""
+        return self.get(item)
 
     @property
     def control_variables(self) -> OrderedDictType[str, ControlVariable]:

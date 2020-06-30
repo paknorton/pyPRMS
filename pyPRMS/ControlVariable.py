@@ -87,25 +87,6 @@ class ControlVariable(object):
             print(f'WARNING: Datatype, {dtype}, is not valid.')
 
     @property
-    def force_default(self) -> bool:
-        """Get logical value which indicates whether the default value for a
-        control variable should always be used instead of the current value.
-
-        :rtype: bool
-        """
-
-        return self.__force_default
-
-    @force_default.setter
-    def force_default(self, value: Union[bool, int]):
-        """Set (or unset) forced use of default value.
-
-        :param bool value: new force_default value
-        """
-
-        self.__force_default = bool(value)
-
-    @property
     def default(self) -> Union[int, float, str, None]:
         """Get default value for control variable.
 
@@ -140,6 +121,25 @@ class ControlVariable(object):
             raise TypeError(err_txt)
 
         self.__default = np.array(value)
+
+    @property
+    def force_default(self) -> bool:
+        """Get logical value which indicates whether the default value for a
+        control variable should always be used instead of the current value.
+
+        :rtype: bool
+        """
+
+        return self.__force_default
+
+    @force_default.setter
+    def force_default(self, value: Union[bool, int]):
+        """Set (or unset) forced use of default value.
+
+        :param bool value: new force_default value
+        """
+
+        self.__force_default = bool(value)
 
     @property
     def name(self) -> str:
