@@ -43,7 +43,12 @@ class CbhNetcdf(object):
         if self.__nhm_hrus:
             # print('\t\tOpen dataset')
             try:
-                self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hruid': 1040}, combine='by_coords')
+                self.__dataset = xr.open_mfdataset(self.__src_path,
+                                                   chunks={'hruid': 1040}, combine='by_coords',
+                                                   decode_cf=True)
+                # NOTE: With a multi-file dataset the time attributes 'units' and
+                #       'calendar' are lost.
+                #       see https://github.com/pydata/xarray/issues/2436
             except ValueError:
                 self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040}, combine='by_coords')
         else:
@@ -112,7 +117,7 @@ class CbhNetcdf(object):
             else:
                 print(f'WARNING: {cvar} does not exist in source CBH files..skipping')
 
-    def write_netcdf(self, filename=None, variables=None):
+    def write_netcdf_old(self, filename=None, variables=None):
         """Write CBH to netcdf format file"""
 
         # NetCDF-related variables
@@ -157,6 +162,67 @@ class CbhNetcdf(object):
         timeo[:] = nc.date2num(pd.to_datetime(self.__dataset['time'].loc[self.__stdate:self.__endate].values).tolist(),
                                units='days since 1980-01-01 00:00:00',
                                calendar='standard')
+
+        for cvar in var_list:
+            data = self.get_var(var=cvar)
+
+            # Write the CBH values
+            nco.variables[cvar][:, :] = data.values
+
+        nco.close()
+
+    def write_netcdf(self, filename=None, variables=None):
+        """Write CBH to netcdf format file"""
+
+        # Create a netCDF file for the CBH data
+        nco = nc.Dataset(filename, 'w', clobber=True)
+        # nco.createDimension('hru', len(self.__dataset['hru'].loc[self.__nhm_hrus]))
+        nco.createDimension('hruid', len(self.__nhm_hrus))
+        nco.createDimension('time', None)
+
+        reference_time = self.__stdate.strftime('%Y-%m-%d %H:%M:%S')
+        cal_type = 'standard'
+
+        # Create the variables
+        timeo = nco.createVariable('time', 'f4', ('time'))
+        timeo.long_name = 'time'
+        timeo.standard_name = 'time'
+        timeo.calendar = cal_type
+        timeo.units = f'days since {reference_time}'
+
+        hruo = nco.createVariable('hruid', 'i4', ('hruid'))
+        hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
+        hruo.cf_role = 'timeseries_id'
+
+        var_list = []
+        if variables is None:
+            var_list = self.__dataset.data_vars
+        elif isinstance(variables, list):
+            var_list = variables
+
+        for cvar in var_list:
+            cxry = self.__dataset[cvar]
+            varo = nco.createVariable(cvar, cxry.encoding['dtype'], cxry.dims,
+                                      fill_value=cxry.attrs['fill_value'],
+                                      zlib=True)
+            varo.long_name = cxry.attrs['long_name']
+            varo.units = cxry.attrs['units']
+
+            if 'standard_name' in cxry.attrs:
+                varo.standard_name = cxry.attrs['standard_name']
+
+        nco.setncattr('Description', 'Climate by HRU')
+        # nco.setncattr('Bandit_version', __version__)
+        # nco.setncattr('NHM_version', nhmparamdb_revision)
+
+        # Write the HRU ids
+        hruo[:] = self.__dataset['hruid'].loc[self.__nhm_hrus].values
+        hruo[:] = self.__nhm_hrus
+
+        # Write time information
+        timeo[:] = nc.date2num(pd.to_datetime(self.__dataset['time'].loc[self.__stdate:self.__endate].values).tolist(),
+                               units=f'days since {reference_time}',
+                               calendar=cal_type)
 
         for cvar in var_list:
             data = self.get_var(var=cvar)
