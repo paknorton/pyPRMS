@@ -11,7 +11,6 @@ from pyPRMS.Dimensions import ParamDimensions
 
 
 class Parameter(object):
-
     """Container for a single Parameter object.
 
     A parameter has a name, datatype, optional units, one or more dimensions, and

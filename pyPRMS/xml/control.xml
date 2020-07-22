@@ -561,11 +561,11 @@
         <numvals>1</numvals>
         <desc>Switch to specify whether or not the Statistics Variables File is generated (0=no; 1=statvar text format; 2=CSV format)</desc>
     </control_param>
-    <control_param name="stream_temp_flag">
+    <control_param name="stream_temp_flag" version="5.1.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Flag to specify whether to simulate stream temperature; strmflow_module must be set to muskingum, muksingum_mann, strmflow_in_out, or muskingum_lake.</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -1068,5 +1068,25 @@
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which output is written to Statistics Variables File</desc>
+    </control_param>
+    <control_param name="soilzone_aet_flag" version="5.1.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to specify soil-water evapotranspiration (ET) computation method. Either it's based on unsatisfied potential ET (PET) and for GSFLOW or GSFLOW5 modes replenish the upper zone of capillary reservoir using the fraction of the upper zone of the capillary reservoir (as was done in previous versions) or it's based on PET when specified equal to 1 and replenish by first filling the lower zone and then the upper zone to their maximum water-holding capactities; set to 0 for downward compatibility of old models, though it is recommended setting to 1 for new models.</desc>
+        <values type="method">
+            <value name="0">Compute soil-water ET based on unsatisfied ET and old upper zone replenishment method</value>
+            <value name="1">Compute based on PET and new replenishment method</value>
+        </values>
+    </control_param>
+    <control_param name="snarea_curve_flag" version="5.1.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to specify snow depletion curve calculation method.</desc>
+        <values type="method">
+            <value name="0">Specify snow depletion curves with parameters hru_deplcrv and snarea_curve</value>
+            <value name="1">Compute using parameters snarea_a, snarea_b, snarea_c, and snarea_d</value>
+        </values>
     </control_param>
 </control>

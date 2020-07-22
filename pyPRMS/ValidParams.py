@@ -33,7 +33,7 @@ class ValidParams(Parameters):
         if filename:
             self.__xml_tree = xmlET.parse(self.__filename)
         else:
-            # Use the package file, parameters.xml, by default
+            # Use the pyPRMS package file, parameters.xml, by default.
             xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', 'xml/parameters.xml').decode('utf-8'))
             self.__xml_tree = xmlET.parse(xml_fh)
 

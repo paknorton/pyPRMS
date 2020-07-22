@@ -1,5 +1,5 @@
 
-# NOTE: cached_property is not available in version < 3.8
+# NOTE: cached_property is not available in python version < 3.8
 from functools import cached_property
 import geopandas
 import networkx as nx
@@ -52,6 +52,11 @@ class Parameters(object):
 
     @cached_property
     def hru_to_seg(self) -> OrderedDictType[int, int]:
+        """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs
+
+        :rtype: collections.OrderedDict[int, int]
+        """
+
         self.__hru_to_seg = OrderedDict()
 
         hru_segment = self.__parameters['hru_segment_nhm'].tolist()
@@ -80,6 +85,11 @@ class Parameters(object):
 
     @cached_property
     def seg_to_hru(self) -> OrderedDictType[int, int]:
+        """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs
+
+        :rtype: collections.OrderedDict[int, int]
+        """
+
         self.__seg_to_hru = OrderedDict()
 
         hru_segment = self.__parameters['hru_segment_nhm'].tolist()
@@ -99,7 +109,7 @@ class Parameters(object):
         :param str name: A valid PRMS parameter name
         :param int datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
         :param str units: Option units string for the parameter
-        :param str model: <<FILL IN LATER>>
+        :param str model: Name of model parameter is valid for
         :param str description: Description of the parameter
         :param str help: Help text for the parameter
         :param modules: List of modules that require the parameter
@@ -167,7 +177,7 @@ class Parameters(object):
                     print('  WARNING: snarea_curve has more entries than needed by hru_deplcrv')
 
     def exists(self, name) -> bool:
-        """Checks if a given parameter name exists.
+        """Checks if a parameter name exists.
 
         :param str name: Name of the parameter
         :returns: True if parameter exists, otherwise False
@@ -177,7 +187,7 @@ class Parameters(object):
         return name in self.parameters.keys()
 
     def get(self, name: str) -> Parameter:
-        """Returns the given parameter object.
+        """Returns a parameter object.
 
         :param str name: The name of the parameter
         :returns: Parameter object
@@ -202,45 +212,46 @@ class Parameters(object):
         :rtype: pd.DataFrame
         """
 
-        if self.exists(name):
-            cparam = self.__parameters[name]
-            param_data = cparam.as_dataframe
+        if not self.exists(name):
+            raise ValueError(f'Parameter, {name}, has no associated data')
 
-            if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
-                if name != 'nhm_id':
-                    try:
-                        param_id = self.__parameters['nhm_id'].as_dataframe
+        cparam = self.__parameters[name]
+        param_data = cparam.as_dataframe
 
-                        # Create a DataFrame of the parameter
-                        param_data = param_data.merge(param_id, left_index=True, right_index=True)
-                        param_data.set_index('nhm_id', inplace=True)
-                    except KeyError:
-                        # If there is no nhm_id parameter then just return the
-                        # requested parameter by itself
-                        param_data.rename(index={k: k + 1 for k in param_data.index},
-                                          inplace=True)
-                        param_data.index.name = 'hru'
-                else:
-                    param_data = self.__parameters['nhm_id'].as_dataframe
-            elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
+        if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
+            if name != 'nhm_id':
                 try:
-                    param_id = self.__parameters['nhm_seg'].as_dataframe
+                    param_id = self.__parameters['nhm_id'].as_dataframe
 
                     # Create a DataFrame of the parameter
                     param_data = param_data.merge(param_id, left_index=True, right_index=True)
-                    param_data.set_index('nhm_seg', inplace=True)
+                    param_data.set_index('nhm_id', inplace=True)
                 except KeyError:
-                    param_data.rename(index={k: k + 1 for k in param_data.index}, inplace=True)
-                    param_data.index.name = 'seg'
-            elif name == 'snarea_curve':
-                # Special handling for snarea_curve parameter
-                param_data = pd.DataFrame(cparam.as_dataframe.values.reshape((-1, 11)))
-                param_data.rename(columns={k: k+1 for k in param_data.columns},
-                                  index={k: k+1 for k in param_data.index},
-                                  inplace=True)
-                param_data.index.name = 'curve_index'
-            return param_data
-        raise ValueError(f'Parameter, {name}, has no associated data')
+                    # If there is no nhm_id parameter then just return the
+                    # requested parameter by itself
+                    param_data.rename(index={k: k + 1 for k in param_data.index},
+                                      inplace=True)
+                    param_data.index.name = 'hru'
+            else:
+                param_data = self.__parameters['nhm_id'].as_dataframe
+        elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
+            try:
+                param_id = self.__parameters['nhm_seg'].as_dataframe
+
+                # Create a DataFrame of the parameter
+                param_data = param_data.merge(param_id, left_index=True, right_index=True)
+                param_data.set_index('nhm_seg', inplace=True)
+            except KeyError:
+                param_data.rename(index={k: k + 1 for k in param_data.index}, inplace=True)
+                param_data.index.name = 'seg'
+        elif name == 'snarea_curve':
+            # Special handling for snarea_curve parameter
+            param_data = pd.DataFrame(cparam.as_dataframe.values.reshape((-1, 11)))
+            param_data.rename(columns={k: k+1 for k in param_data.columns},
+                              index={k: k+1 for k in param_data.index},
+                              inplace=True)
+            param_data.index.name = 'curve_index'
+        return param_data
 
     def get_subset(self, name: str, global_ids: List[int]) -> pd.DataFrame:
         """Returns a subset for a parameter based on the global_ids (e.g. nhm)"""
@@ -267,9 +278,15 @@ class Parameters(object):
             return param.data[tuple(nhm_idx0), ]
 
     def plot(self, name: str, output_dir=None, **kwargs):
-        '''
-        Plot a parameter
-        '''
+        """Plot a parameter.
+
+        Plots either to the screen or an output directory.
+
+        :param name: Name of parameter to plot
+        :type name: str
+        :param output_dir: Directory to write plot to (None for write to screen only)
+        :type output_dir: str or None
+        """
 
         is_monthly = False
         time_index = None
@@ -336,7 +353,8 @@ class Parameters(object):
                         for tt in range(1, 12):
                             print(f'    Index: {tt}')
                             param_data = self.get_dataframe(name).iloc[:, tt].to_frame(name=name)
-                            df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True, how='left')
+                            df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True,
+                                                          how='left')
 
                             if is_monthly:
                                 ax.set_title(f'Variable: {name},  Month: {tt+1}')
@@ -363,7 +381,8 @@ class Parameters(object):
                     crs_proj = get_projection(self.__seg_poly)
 
                     print('Writing first plot')
-                    df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key, right_index=True, how='left')
+                    df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key, right_index=True,
+                                                      how='left')
 
                     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
 
@@ -382,13 +401,14 @@ class Parameters(object):
                     plt.title('Variable: {}'.format(name))
 
                     if self.__hru_poly is not None:
-                        hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry,
-                                                           **dict(kwargs, cmap=cmap, norm=norm, linewidth=0.5, alpha=.7))
+                        hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry, **dict(kwargs, cmap=cmap,
+                                                                                                   norm=norm,
+                                                                                                   linewidth=0.5,
+                                                                                                   alpha=0.7))
 
                     col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
                                                **dict(kwargs, cmap=cmap, norm=norm))
-                                               # colors='blue',
-                                               # colormap=cmap, norm=norm, alpha=1.0, linewidth=3.0)
+
                     if output_dir is not None:
                         plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
                 else:
@@ -465,7 +485,11 @@ class Parameters(object):
                 del self.__parameters[name]
 
     def remove_by_global_id(self, hrus=None, segs=None):
-        """Removes data-by-id (nhm_seg, nhm_id) from all parameters"""
+        """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
+
+        :param hrus: National HRU ids
+        :param segs: 
+        """
 
         if segs is not None:
             pass
@@ -552,8 +576,8 @@ class Parameters(object):
             # new_deplcrv = pp['hru_deplcrv'].data.tolist()
 
     def shapefile_segments(self, filename: str, layer_name=None, shape_key=None):
-        '''Read a shapefile or geodatabase that corresponds to stream segments
-        '''
+        """Read a shapefile or geodatabase that corresponds to stream segments
+        """
 
         self.__seg_poly = geopandas.read_file(filename, layer=layer_name)
 
@@ -563,8 +587,8 @@ class Parameters(object):
         self.__seg_shape_key = shape_key
 
     def shapefile_hrus(self, filename: str, layer_name=None, shape_key=None):
-        '''Read a shapefile or geodatabase that corresponds to HRUs
-        '''
+        """Read a shapefile or geodatabase that corresponds to HRUs
+        """
 
         self.__hru_poly = geopandas.read_file(filename, layer=layer_name)
 

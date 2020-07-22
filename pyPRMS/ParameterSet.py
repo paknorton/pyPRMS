@@ -32,6 +32,7 @@ class ParameterSet(object):
         self.__parameters = Parameters()
         self.__dimensions = Dimensions()
 
+        # TODO: 2020-06-12 PAN shouldn't this be part of the Parameters class?
         self.__master_params = None
         if verify:
             self.__master_params = ValidParams()
