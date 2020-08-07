@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import datetime
+# import datetime
 from collections import OrderedDict
 
 import colorful as cf
@@ -12,7 +12,7 @@ import re
 import sys
 from io import StringIO
 
-from urllib.request import urlopen, Request
+from urllib.request import urlopen   # , Request
 from urllib.error import HTTPError
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
@@ -46,6 +46,7 @@ def read_csv_pairs(filename1, filename2, dtype):
             data[lh.split(',')[1]] = int(rh.split(',')[1])
     if dtype == 'float':
         for lh, rh in zip(it, it2):
+            # This is also converting acres to square miles
             data[int(lh.split(',')[1])] = float(rh.split(',')[1]) * 0.0015625
 
     return data
@@ -101,7 +102,8 @@ def nwis_site_param_cd(poi_id):
 
 def nwis_site_fields():
     # Retrieve a single station and pull out the field names and data types
-    stn_url = f'{base_url}/site/?format=rdb&sites=01646500&siteOutput=expanded&siteStatus=active&parameterCd=00060&siteType=ST'
+    stn_url = f'{base_url}/site/?format=rdb&sites=01646500&siteOutput=expanded&siteStatus=active&' + \
+             'parameterCd=00060&siteType=ST'
 
     response = urlopen(stn_url)
     encoding = response.info().get_param('charset', failobj='utf8')
@@ -110,7 +112,7 @@ def nwis_site_fields():
     # Strip the comment lines and field length lines from the result
     streamgage_site_page = t1.sub('', streamgage_site_page, 0)
 
-    nwis_dtypes = t2.findall(streamgage_site_page)[0].strip('\n').split('\t')
+    # nwis_dtypes = t2.findall(streamgage_site_page)[0].strip('\n').split('\t')
     nwis_fields = StringIO(streamgage_site_page).getvalue().split('\n')[0].split('\t')
 
     nwis_final = {}
@@ -136,10 +138,12 @@ def nwis_site_simple_retrieve():
     # Start with an empty dataframe
     nwis_sites = pd.DataFrame(columns=include_cols)
 
-    for region in range(19):
-        # region = '01'
-        print(f'Region {region+1:02}')
-        stn_url = f'{base_url}/site/?format=rdb&huc={region+1:02}&siteOutput=expanded&siteStatus=all&parameterCd=00060&siteType=ST'
+    for region in range(1, 19):
+        sys.stdout.write(f'\r  Region: {region:02}')
+        sys.stdout.flush()
+
+        stn_url = f'{base_url}/site/?format=rdb&huc={region:02}&siteOutput=expanded&' + \
+                  'siteStatus=all&parameterCd=00060&siteType=ST&hasDataTypeCd=dv'
 
         response = urlopen(stn_url)
         encoding = response.info().get_param('charset', failobj='utf8')
@@ -154,11 +158,21 @@ def nwis_site_simple_retrieve():
 
         nwis_sites = nwis_sites.append(df, ignore_index=True)
 
-    nwis_sites.set_index('site_no', inplace=True)
+    field_map = {'agency_cd': 'poi_agency',
+                 'site_no': 'poi_id',
+                 'station_nm': 'poi_name',
+                 'dec_lat_va': 'latitude',
+                 'dec_long_va': 'longitude',
+                 'alt_va': 'elevation',
+                 'drain_area_va': 'drainage_area',
+                 'contrib_drain_area_va': 'drainage_area_contrib'}
+
+    nwis_sites.rename(columns=field_map, inplace=True)
+    nwis_sites.set_index('poi_id', inplace=True)
     return nwis_sites
 
 
-def nwis_load_site_por_info():
+def nwis_load_site_por_info(filename):
     col_names = ['agency_cd', 'site_no', 'station_nm', 'site_tp_cd', 'dec_lat_va', 'dec_long_va',
                  'coord_acy_cd', 'dec_coord_datum_cd', 'alt_va', 'alt_acy_va', 'alt_datum_cd', 'huc_cd',
                  'data_type_cd', 'parm_cd', 'stat_cd', 'ts_id', 'loc_web_ds', 'medium_grp_cd',
@@ -169,14 +183,14 @@ def nwis_load_site_por_info():
                  np.str_, np.int, np.str_, np.str_, np.str_, np.int]
     cols = dict(zip(col_names, col_types))
 
-    nwis_sites_exp = pd.read_csv('/Users/pnorton/Projects/National_Hydrology_Model/datasets/streamflow/nwis_sites_por.tab',
-                                 sep='\t', dtype=cols, index_col=0)
+    nwis_sites_exp = pd.read_csv(filename, sep='\t', dtype=cols, index_col=0)
     return nwis_sites_exp
 
 
 def has_multiple_timeseries(df, poi_id, param_cd, stat_cd):
+    # Checks if a station has multiple timeseries for a given station, paramcd, and statcd
     return df[(df['site_no'] == poi_id) & (df['parm_cd'] == param_cd) &
-              (df['stat_cd'] == stat_cd) & (df['loc_web_ds'].notnull())].shape[0] > 1
+              (df['stat_cd'] == stat_cd)].shape[0] > 1
 
 
 def has_param_statistic(df, poi_id, param_cd, stat_cd):
@@ -204,7 +218,6 @@ def nwis_load_daily_statistics(src_dir):
         # region = '01'
         sys.stdout.write(f'\rRegion: {region+1:02}')
         sys.stdout.flush()
-        # print(f'Region {region+1:02}')
 
         # Read the rdb file into a dataframe
         df = pd.read_csv(f'{src_dir}/conus_daily_HUC_{region+1:02}_obs.tab', sep='\t', dtype=cols)
@@ -235,14 +248,25 @@ def main():
     cf.use_256_ansi_colors()
     # colorama.init()
 
+    # poi_agency created from GFv1.1 using:
+    # ogr2ogr -f CSV poi_agency.csv -lco SEPARATOR=TAB GFv1.1.gdb
+    #         -dialect sqlite -sql "select GNIS_Name,Type_Gage,Type_Ref,Gage_Source,poi_segment_v1_1
+    #                               from POIs_v1_1 where not Type_Gage = '0'"
+
     # The poi_agency fields are: GNIS_Name,Type_Gage,Type_Ref,Gage_Source,poi_segment_v1_1
-    workdir = '/Users/pnorton/Projects/National_Hydrology_Model/Trans-boundary_HRUs/GIS'
-    gf_poi_filename = f'{workdir}/poi_agency.csv'
+    base_dir = '/Users/pnorton/Projects/National_Hydrology_Model'
+    gf_dir = f'{base_dir}/Trans-boundary_HRUs/GIS'
+    gf_poi_filename = f'{gf_dir}/poi_agency.csv'
 
-    paramdb_dir = '/Users/pnorton/Projects/National_Hydrology_Model/datasets/paramdb_v11/paramdb_v11_gridmet_CONUS'
+    hydat_sites_filename = f'{base_dir}/datasets/HYDAT/hydat_sites.tab'
 
-    v1_pdb_src = '/Users/pnorton/Projects/National_Hydrology_Model/Trans-boundary_HRUs/v1_paramdb'
-    tb_pdb_src = '/Users/pnorton/Projects/National_Hydrology_Model/Trans-boundary_HRUs/tbparamdb'
+    paramdb_dir = f'{base_dir}/datasets/paramdb_v11/paramdb_v11_gridmet_CONUS'
+
+    # Version 1.0 parameter database
+    v1_pdb_src = f'{base_dir}/Trans-boundary_HRUs/v1_paramdb'
+
+    # GF transboundary (pre-NHM v1.1) parameter database
+    tb_pdb_src = f'{base_dir}/Trans-boundary_HRUs/tbparamdb'
 
     reasons = {'multi': 'POI has multiple Q-columns',
                'noda': 'POI segment has no HRUs connected to it and no upstream connected segments (DA=0)',
@@ -254,6 +278,7 @@ def main():
                'sitetype': 'POI has a non-streamflow site type'}
     reject_log = {}
 
+    # Get the seg_cum_area from NHM v1.1 parameter database
     seg_cum_area = read_csv_pairs(f'{paramdb_dir}/nhm_seg.csv', f'{paramdb_dir}/seg_cum_area.csv', 'float')
 
     # Get the POI station IDs and segment from the paramdb version 1.1
@@ -264,7 +289,7 @@ def main():
     rejected_pdb_gone = ['01180000', '06175520', '06354490', '12113347', '12143700',
                          '12157250', '12158010', '12158040', '12202300', '12202420']
 
-    rejected_pdb_multiQ = ['05051500']
+    rejected_pdb_multi_q = ['05051500']
 
     rejected_pdb_zero = []
     for xx, yy in pdb_pois.items():
@@ -274,7 +299,7 @@ def main():
     print(f'NHM paramdb v1.1 counts')
     print(f'  No branches: {len(rejected_pdb_gone)}')
     print(f'  Segment=0: {len(rejected_pdb_zero)}')
-    print(f'  Multiple-Q cols: {len(rejected_pdb_multiQ)}')
+    print(f'  Multiple-Q cols: {len(rejected_pdb_multi_q)}')
 
     # Remove rejected POIs in pdb_pois
     for xx in rejected_pdb_zero:
@@ -285,20 +310,21 @@ def main():
         reject_log[xx] = reasons['del']
         del pdb_pois[xx]
 
-    for xx in rejected_pdb_multiQ:
+    for xx in rejected_pdb_multi_q:
         reject_log[xx] = reasons['multi']
         del pdb_pois[xx]
 
     # These are additional POIs that need to be manually added to accepted list
-    addl_pois = {'04095380': 10024,
-                 '06023100': 28828,
-                 '06024020': 28894,
-                 '06027600': 28980,
-                 '06036805': 28650,
-                 '06204070': 29526,
-                 '06287800': 31545,
-                 '06288400': 31537,
-                 '06307990': 31461}
+    # (until the GF POIs_v1_1 is updated)
+    # 2020-07-27 PAN: Removed 04095380 because the POI already has streamgage 04095300
+    # addl_pois = {'06023100': 28828,
+    #              '06024020': 28894,
+    #              '06027600': 28980,
+    #              '06036805': 28650,
+    #              '06204070': 29526,
+    #              '06287800': 31545,
+    #              '06288400': 31537,
+    #              '06307990': 31461}
 
     # --------------------------------------------------------------------------
     # Load the version 1.0 POI station IDs and segments
@@ -310,51 +336,40 @@ def main():
     poi_info(tb_pdb_pois, 'TB_v1.1')
 
     # Build ordered dictionary of geospatial fabric POIs
-    # key->gage_id, value->gage_seg
-    fhdl = open(gf_poi_filename, 'r')
-    rawdata = fhdl.read().splitlines()
-    fhdl.close()
-    it = iter(rawdata)
-    next(it)
+    col_names = ['GNIS_Name', 'Type_Gage', 'Type_Ref', 'Gage_Source', 'poi_segment_v1_1']
+    col_types = [np.str_, np.str_, np.str_, np.str_, np.int]
 
-    gf_pois = OrderedDict()
+    cols = dict(zip(col_names, col_types))
 
-    for row in it:
-        flds = row.strip().split(',')
-        gage_id = flds[1]
-        gage_seg = int(flds[4])
+    df_poi = pd.read_csv(gf_poi_filename, sep='\t', dtype=cols, index_col=1)
 
-        gf_pois[gage_id] = gage_seg
+    gf_pois = df_poi.loc[:, 'poi_segment_v1_1'].to_dict()
     poi_info(gf_pois, 'gf_v1.1')
 
     print(f'GF v1.1')
     print(f'  Number of original POIs: {len(gf_pois)}')
-    print(f'  Number of Additional POIs: {len(addl_pois)}')
+    # print(f'  Number of Additional POIs: {len(addl_pois)}')
 
-    for xx, yy in addl_pois.items():
-        gf_pois[xx] = yy
+    # for xx, yy in addl_pois.items():
+    #     gf_pois[xx] = yy
 
     print(f'  Total number of POIs: {len(gf_pois)}')
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Check consistency of geospatial fabric POIs and if they're in the paramdb v1.1
-    fhdl = open(gf_poi_filename, 'r')
+    gf_pois_srcs = df_poi.loc[:, 'Gage_Source'].to_dict()
 
     all_gages = []
     ec_gages = []
+    bad_ec_gages = []
 
-    print('='*60)
-    for row in fhdl:
-        flds = row.strip().split(',')
-        gage_id = flds[1]
-        gage_src = flds[3]
-
+    for gage_id, gage_src in gf_pois_srcs.items():
         if gage_id in pdb_pois:
             if gage_src != 'EC':
                 if gage_src == '0':
                     print(f'{gage_id} in PARAMDB but has no gage_src')
                 try:
-                    gage_id_int = int(gage_id)
+                    _ = int(gage_id)
     #                 print(f'{gage_id} in PARAMDB ({gage_src})')
 
                     if len(gage_id) > 15:
@@ -365,7 +380,7 @@ def main():
                     # print(Fore.RED + f'{gage_id} incorrectly sourced to {gage_src}' + Style.RESET_ALL)
 
                     if gage_id != 'Type_Gage':
-                        ec_gages.append(gage_id)
+                        bad_ec_gages.append(gage_id)
             elif gage_src == 'EC':
                 if len(gage_id) > 7:
                     print_error(f'{gage_id} incorrectly sourced to {gage_src}')
@@ -376,7 +391,6 @@ def main():
         else:
             # print(f'{gage_id} not included in paramdb ({gage_src})')
             pass
-    fhdl.close()
 
     # print('-'*60)
     # print(f'Number of GF POIs: {len(all_gages)}')
@@ -394,7 +408,8 @@ def main():
     #         mis_v11_cnt += 1
     #     else:
     #         if nhm_seg != gf_pois[nhm_poi]:
-    #             print(f'{nhm_poi} v11:{nhm_seg}, GF:{gf_pois[nhm_poi]}, v10:{v1_pdb_pois.get(nhm_poi)}, tb:{tb_pdb_pois.get(nhm_poi)}')
+    #             print(f'{nhm_poi} v11:{nhm_seg}, GF:{gf_pois[nhm_poi]}, ' +
+    #                   f'v10:{v1_pdb_pois.get(nhm_poi)}, tb:{tb_pdb_pois.get(nhm_poi)}')
     #             mis_cnt += 1
     #
     # print('-'*60)
@@ -412,30 +427,31 @@ def main():
     # nwis_sites = nwis_site_simple_retrieve()
 
     # Load simple site information from file
-    col_names = ['poi_id', 'poi_agency', 'poi_name', 'latitude', 'longitude',
-                 'dec_coord_datum_cd', 'elevation', 'alt_datum_cd', 'huc_cd',
-                 'drainage_area', 'drainage_area_contrib']
-    col_types = [np.str_, np.str_, np.str_, np.float, np.float,
-                 np.str_, np.float, np.str_, np.str_,
-                 np.float, np.float]
-    cols = dict(zip(col_names, col_types))
+    # col_names = ['poi_id', 'poi_agency', 'poi_name', 'latitude', 'longitude',
+    #              'dec_coord_datum_cd', 'elevation', 'alt_datum_cd', 'huc_cd',
+    #              'drainage_area', 'drainage_area_contrib']
+    # col_types = [np.str_, np.str_, np.str_, np.float, np.float,
+    #              np.str_, np.float, np.str_, np.str_,
+    #              np.float, np.float]
+    # cols = dict(zip(col_names, col_types))
 
-    nwis_sites = pd.read_csv('/Users/pnorton/Projects/National_Hydrology_Model/datasets/streamflow/nwis_sites_simple.tab',
-                             sep='\t', dtype=cols)
-    nwis_sites.set_index('poi_id', inplace=True)
+    # nwis_sites = pd.read_csv(f'{base_dir}/datasets/streamflow/nwis_sites_simple.tab',
+    #                          sep='\t', dtype=cols)
+    # nwis_sites.set_index('poi_id', inplace=True)
 
+    nwis_sites = nwis_site_simple_retrieve()
     site_list = nwis_sites.index.tolist()
 
     # ==========================================================================
     # ==========================================================================
     # Load POR information
-    nwis_sites_por = nwis_load_site_por_info()
+    nwis_sites_por = nwis_load_site_por_info(f'{base_dir}/datasets/streamflow/nwis_sites_por.tab')
 
     # ==========================================================================
     # ==========================================================================
     print('='*60)
     print('Load NWIS mean daily statistics')
-    daily_src = '/Users/pnorton/Projects/National_Hydrology_Model/datasets/streamflow'
+    daily_src = f'{base_dir}/datasets/streamflow'
 
     nwis_daily = nwis_load_daily_statistics(daily_src)
 
@@ -451,7 +467,7 @@ def main():
     # nwis_daily = nwis_daily[~nwis_daily['site_no'].isin(nwis_multiple)]
 
     # NOTE: The line below was also stripping out sites that use loc_web_ds for
-    #       comments or informationbut only had a single entry for the site
+    #       comments or information but only had a single entry for the site
     # nwis_daily = nwis_daily[~nwis_daily['loc_web_ds'].notnull()]
     # print(f'nwis_daily rows: {nwis_daily.shape[0]}')
 
@@ -459,8 +475,21 @@ def main():
 
     # NOTE: will have to figure out how to get the sum of days by site later
     # nwis_cnt = nwis_daily.groupby(['site_no'])['count_nu'].sum()
-    nwis_cnt = nwis_daily.groupby(['site_no'])['loc_web_ds'].nunique()
+    nwis_cnt = nwis_daily.groupby(['site_no'])['loc_web_ds'].nunique(dropna=False)
     nwis_cnt = nwis_cnt[nwis_cnt < 2]
+
+    # ==========================================================================
+    # ==========================================================================
+    # Load the HYDAT site information
+    col_names = ['poi_id', 'poi_agency', 'poi_name', 'latitude', 'longitude',
+                 'drainage_area', 'drainage_area_contrib']
+    col_types = [np.str_, np.str_, np.str_, np.float, np.float,
+                 np.float, np.float]
+    cols = dict(zip(col_names, col_types))
+
+    hydat_sites = pd.read_csv(hydat_sites_filename, sep='\t', dtype=cols)
+    hydat_sites.set_index('poi_id', inplace=True)
+    # hydat_site_list = hydat_sites.index.tolist()
 
     # ==========================================================================
     # Check if GF POIs exist in paramdb and if the NWIS site has discharge information
@@ -471,12 +500,11 @@ def main():
                      'SP': [],
                      'ST-TS': []}
     rejected_bad = []
-    rejected_noDA = []
-    rejected_noQ = []
+    rejected_no_da = []
+    rejected_no_q = []
     rejected_por = []
     rejected_multi = []
     accepted_pois = []
-    rejected_log = {}
 
     print('-'*60)
     for poi, seg in gf_pois.items():
@@ -486,18 +514,17 @@ def main():
                 not_in_site_list.append(poi)
 
                 if has_multiple_timeseries(nwis_sites_por, poi, '00060', '00003'):
-                    # TODO: NOT included in final list
+                    # ACTION: NOT included in final list
                     rejected_multi.append(poi)
                     reject_log[poi] = reasons['multi']
-
-                    print_error(f'{poi} not in NWIS streamflow site list, has multiple timeseries **********')
+                    print_error(f'{poi} not in NWIS streamflow site list, has multiple timeseries *********1')
                 else:
                     if has_param_statistic(nwis_sites_por, poi, '00060', '00003'):
                         date_rng = get_date_range(nwis_sites_por, poi, '00060', '00003')
                         site_type = nwis_site_type(poi)
 
                         if poi in pdb_pois:
-                            # TODO: NOT included in final list
+                            # ACTION: NOT included in final list
                             if site_type != 'ST':
                                 rejected_type[site_type].append(poi)
                                 reject_log[poi] = f'{reasons["sitetype"]} ({site_type})'
@@ -505,9 +532,10 @@ def main():
                                 rejected_por.append(poi)
                                 reject_log[poi] = f'{reasons["por"]} ({date_rng})'
 
-                            print_warning(f'{poi} IS in paramdb, NOT in streamflow site list, HAS discharge information, {site_type}, {date_rng}')
+                            print_warning(f'{poi} IS in paramdb, NOT in streamflow site list, ' +
+                                          f'HAS discharge information, {site_type}, {date_rng}')
                         else:
-                            # TODO: NOT included in final list
+                            # ACTION: NOT included in final list
                             if site_type != 'ST':
                                 rejected_type[site_type].append(poi)
                                 reject_log[poi] = f'{reasons["sitetype"]} ({site_type})'
@@ -515,54 +543,59 @@ def main():
                                 rejected_por.append(poi)
                                 reject_log[poi] = f'{reasons["por"]} ({date_rng})'
 
-                            print_warning(f'{poi} NOT in paramdb, NOT in streamflow site list, HAS discharge information, {site_type}, {date_rng}')
+                            print_warning(f'{poi} NOT in paramdb, NOT in streamflow site list, ' +
+                                          f'HAS discharge information, {site_type}, {date_rng}')
                     else:
                         if poi in pdb_pois:
-                            # TODO: NOT included in final list
+                            # ACTION: NOT included in final list
                             site_type = nwis_site_type(poi)
 
                             if site_type != 'ST':
                                 rejected_type[site_type].append(poi)
                                 reject_log[poi] = f'{reasons["sitetype"]} ({site_type})'
                             else:
-                                rejected_noQ.append(poi)
+                                rejected_no_q.append(poi)
                                 reject_log[poi] = reasons['nodis']
 
                             if site_type == 'LK':
                                 lake_site_cnt += 1
 
-                            print_error(f'{poi} IS in paramdb, NOT in streamflow site list, does NOT have discharge information, type: {site_type}')
+                            print_error(f'{poi} IS in paramdb, NOT in streamflow site list, ' +
+                                        f'does NOT have discharge information, type: {site_type}')
                         else:
-                            # TODO: NOT included in final list
+                            # ACTION: NOT included in final list
                             site_type = nwis_site_type(poi)
 
                             if site_type != 'ST':
                                 rejected_type[site_type].append(poi)
                                 reject_log[poi] = f'{reasons["sitetype"]} ({site_type})'
                             else:
-                                rejected_noQ.append(poi)
+                                rejected_no_q.append(poi)
                                 reject_log[poi] = reasons['nodis']
 
                             if site_type == 'LK':
                                 lake_site_cnt += 1
                             else:
-                                print_error(f'{poi} NOT in paramdb, NOT in streamflow site list, does NOT have discharge, type: {site_type}')
+                                print_error(f'{poi} NOT in paramdb, NOT in streamflow site list, ' +
+                                            f'does NOT have discharge, type: {site_type}')
                         # print(Fore.RED + f'{poi}' + Style.RESET_ALL + ' does not have discharge information')
             except HTTPError:
-                # TODO: NOT included in final list
+                # ACTION: NOT included in final list
                 rejected_bad.append(poi)
                 reject_log[poi] = reasons['bad']
                 print_error(f'*************************** HTTPError on {poi}')
             except ValueError:
                 # HYDAT
                 if seg_cum_area[seg] == 0.0:
-                    # TODO: NOT included in final list
-                    rejected_noDA.append(poi)
+                    # ACTION: NOT included in final list
+                    # This really shouldn't happen with the canandian segments
+                    rejected_no_da.append(poi)
                     reject_log[poi] = f'{reasons["noda"]} (seg={seg})'
                     print_error(f'{poi} for segment {seg} has not connected HRUs')
                 else:
-                    # TODO: INCLUDED in final list
-                    accepted_pois.append(poi)
+                    # ACTION: INCLUDED in final list
+                    if poi not in bad_ec_gages:
+                        accepted_pois.append(poi)
                 # pass
         else:
             # POIs that ARE in the streamflow site list
@@ -570,13 +603,19 @@ def main():
                 # It's in the list of NWIS streamflow sites; show number of obs
                 # print(f'{poi}: has {nwis_cnt[poi]} observations')
                 _ = nwis_cnt[poi]
-                if seg_cum_area[seg] == 0.0:
-                    # TODO: NOT included in final list
-                    rejected_noDA.append(poi)
+
+                if has_multiple_timeseries(nwis_sites_por, poi, '00060', '00003'):
+                    # ACTION: NOT included in final list
+                    rejected_multi.append(poi)
+                    reject_log[poi] = reasons['multi']
+                    print_error(f'{poi} IS in streamflow site list, has multiple timeseries *********2')
+                elif seg_cum_area[seg] == 0.0:
+                    # ACTION: NOT included in final list
+                    rejected_no_da.append(poi)
                     reject_log[poi] = f'{reasons["noda"]} (seg={seg})'
                     print_error(f'{poi} for segment {seg} has no U/S segments and no connected HRUs')
                 else:
-                    # TODO: INCLUDED in final list
+                    # ACTION: INCLUDED in final list
                     accepted_pois.append(poi)
             except KeyError:
                 if poi not in site_list:
@@ -584,40 +623,46 @@ def main():
                     exit()
 
                 if has_multiple_timeseries(nwis_sites_por, poi, '00060', '00003'):
-                    # TODO: NOT included in final list
+                    # ACTION: NOT included in final list
                     rejected_multi.append(poi)
                     reject_log[poi] = reasons['multi']
-                    print_error(f'{poi} IS in streamflow site list, has multiple timeseries **********')
+                    print_error(f'{poi} IS in streamflow site list, has multiple timeseries *********3')
 
                 elif poi in pdb_pois:
                     if has_param_statistic(nwis_sites_por, poi, '00060', '00003'):
-                        # TODO: NOT included in final list
+                        # ACTION: NOT included in final list
                         date_rng = get_date_range(nwis_sites_por, poi, '00060', '00003')
-                        site_type = nwis_site_type(poi)
+                        # site_type = nwis_site_type(poi)
 
                         rejected_por.append(poi)
                         reject_log[poi] = f'{reasons["por"]} ({date_rng})'
-                        print_warning(f'{poi} IS in paramdb, IS in streamflow site list, NOT in daily statistics file, HAS discharge information, {date_rng}')
+                        print_warning(f'{poi} IS in paramdb, IS in streamflow site list, ' +
+                                      f'NOT in daily statistics file, HAS discharge information, {date_rng}')
                     else:
-                        # TODO: NOT included in final list
-                        rejected_noQ.append(poi)
+                        # ACTION: NOT included in final list
+                        rejected_no_q.append(poi)
                         reject_log[poi] = reasons['nodis']
-                        print_error(f'{poi} IS in paramdb, IS in streamflow site list, NOT in daily statistics file, does NOT have discharge information')
+                        print_error(f'{poi} IS in paramdb, IS in streamflow site list, ' +
+                                    'NOT in daily statistics file, does NOT have discharge information')
                     # print(f'WARNING: {poi} not in daily statistics')
                 else:
                     if has_param_statistic(nwis_sites_por, poi, '00060', '00003'):
-                        # TODO: NOT included in final list
+                        # ACTION: NOT included in final list
                         date_rng = get_date_range(nwis_sites_por, poi, '00060', '00003')
-                        site_type = nwis_site_type(poi)
+                        # site_type = nwis_site_type(poi)
 
                         rejected_por.append(poi)
                         reject_log[poi] = f'{reasons["por"]} ({date_rng})'
-                        print_warning(f'{poi} NOT in paramdb, IS in streamflow site list, NOT in daily statistics file, HAS discharge information, {date_rng}')
+                        print_warning(f'{poi} NOT in paramdb, IS in streamflow site list, ' +
+                                      'NOT in daily statistics file, ' +
+                                      f'HAS discharge information, {date_rng}')
                     else:
-                        # TODO: NOT included in final list
-                        rejected_noQ.append(poi)
+                        # ACTION: NOT included in final list
+                        rejected_no_q.append(poi)
                         reject_log[poi] = reasons['nodis']
-                        print_error(f'{poi} NOT in paramdb, IS in streamflow site list, NOT in daily statistics file, does NOT have discharge information')
+                        print_error(f'{poi} NOT in paramdb, IS in streamflow site list, ' +
+                                    'NOT in daily statistics file, ' +
+                                    'does NOT have discharge information')
 
     print('~'*60)
     print(f'Number of GF v1.1 POIs not in NWIS streamflow site list: {len(not_in_site_list)}')
@@ -631,11 +676,11 @@ def main():
         print(f'  {type_labels[xx]} ({xx}): {len(yy)}')
 
     print('\nNumber of rejected POIs')
-    print(f'  No discharge: {len(rejected_noQ)}')
+    print(f'  No discharge: {len(rejected_no_q)}')
     print(f'  Incomplete/Outside POR: {len(rejected_por)}')
     print(f'  Multiple Q-cols: {len(rejected_multi)}')
     print(f'  Bad site_no: {len(rejected_bad)}')
-    print(f'  No U/S segments or connected HRUs: {len(rejected_noDA)}')
+    print(f'  No U/S segments or connected HRUs: {len(rejected_no_da)}')
 
     print(f'\nNumber of accepted POIs: {len(accepted_pois)}')
     print('='*60)
@@ -677,6 +722,7 @@ def main():
 
         sca = seg_cum_area[gf_pois[pp]]
         poi_type = 0
+
         try:
             nwis_da = nwis_sites.loc[pp]['drainage_area']
 
@@ -689,8 +735,17 @@ def main():
                 # Model DA to NWIS DA ratio is within +/- 5%
                 poi_type = 1
         except KeyError:
-            nwis_da = 0.0
-            da_perc = 0.0
+            hydat_da = hydat_sites.loc[pp]['drainage_area']
+
+            if sca < hydat_da:
+                da_perc = sca / hydat_da
+            else:
+                da_perc = hydat_da / sca
+
+            if da_perc >= 0.95:
+                # Model DA to NWIS DA ratio is within +/- 5%
+                poi_type = 1
+            nwis_da = hydat_da
 
         poi_type_cnt[poi_type] += 1
 
