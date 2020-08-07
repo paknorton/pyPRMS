@@ -131,14 +131,14 @@ class CbhNetcdf(object):
         nco.createDimension('hru', len(self.__nhm_hrus))
         nco.createDimension('time', None)
 
-        timeo = nco.createVariable('time', 'f4', ('time'))
+        timeo = nco.createVariable('time', 'f4', 'time')
         timeo.calendar = 'standard'
         # timeo.bounds = 'time_bnds'
 
         # FIXME: Days since needs to be set to the starting date of the model pull
         timeo.units = 'days since 1980-01-01 00:00:00'
 
-        hruo = nco.createVariable('hru', 'i4', ('hru'))
+        hruo = nco.createVariable('hru', 'i4', 'hru')
         hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
 
         var_list = []
@@ -184,13 +184,13 @@ class CbhNetcdf(object):
         cal_type = 'standard'
 
         # Create the variables
-        timeo = nco.createVariable('time', 'f4', ('time'))
+        timeo = nco.createVariable('time', 'f4', 'time')
         timeo.long_name = 'time'
         timeo.standard_name = 'time'
         timeo.calendar = cal_type
         timeo.units = f'days since {reference_time}'
 
-        hruo = nco.createVariable('hruid', 'i4', ('hruid'))
+        hruo = nco.createVariable('hruid', 'i4', 'hruid')
         hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
         hruo.cf_role = 'timeseries_id'
 
