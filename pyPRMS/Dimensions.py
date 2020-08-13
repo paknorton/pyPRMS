@@ -210,9 +210,10 @@ class ParamDimensions(Dimensions):
         """
 
         # Restrict number of dimensions for parameters
-        if self.ndims == 2:
-            raise ValueError('Number of dimensions greater than 2 is not supported')
         super().add(name, size)
+
+        if self.ndims > 2:
+            raise ValueError('Number of dimensions greater than 2 is not supported')
 
     def add_from_xml(self, filename: str):
         """Add one or more dimensions from an xml file.
