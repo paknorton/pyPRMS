@@ -25,7 +25,7 @@ class ControlFile(Control):
         # 2) read file contents
 
         self.__isloaded = False
-        self.__filename = filename
+        self.__filename = None
         self.filename = filename
 
     @property
