@@ -416,6 +416,20 @@ class Parameters(object):
             else:
                 print('Non-plottable parameter')
 
+    def update_element(self, name, id1, value):
+        # NOTE: id1 is either an nhm_id or nhm_seg (both are 1-based)
+        cparam = self.get(name)
+
+        if cparam.is_hru_param():
+            # Lookup index for nhm_id
+            idx0 = self.get('nhm_id')._value_index(id1)
+
+            if len(idx0) > 1:
+                raise ValueError(f'nhm_id values should be unique')
+            else:
+                cparam.update_element(idx0, value)
+        # TODO: Add handling for other dimensions
+
     # def plot_stream_network(self):
     #     # Build the stream network
     #     num_outlets = 0
