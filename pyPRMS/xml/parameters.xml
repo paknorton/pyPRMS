@@ -1278,6 +1278,7 @@
         <maximum>1.0E7</maximum>
         <default>0.0</default>
         <modules>
+            <module>strmflow_in_out</module>
             <module>muskingum</module>
             <module>muskingum_lake</module>
             <module>muskingum_mann</module>
@@ -2546,7 +2547,9 @@
         <modules>
             <module>routing</module>
             <module>streamflow</module>
+            <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2565,6 +2568,7 @@
         <modules>
             <module>routing</module>
             <module>streamflow</module>
+            <module>strmflow_in_out</module>
             <module>muskingum</module>
         </modules>
         <dimensions>
@@ -2584,7 +2588,9 @@
         <modules>
             <module>routing</module>
             <module>streamflow</module>
+            <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
