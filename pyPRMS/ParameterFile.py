@@ -109,6 +109,8 @@ class ParameterFile(ParameterSet):
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Lastly process the parameters
+        bounded_parameters = []
+
         for line in it:
             if line == VAR_DELIM:
                 continue
@@ -118,6 +120,10 @@ class ParameterFile(ParameterSet):
             try:
                 if self.master_parameters is not None:
                     self.parameters.add(varname, info=self.master_parameters[varname])
+
+                    if self.master_parameters[varname].minimum == 'bounded':
+                        # The min and max of bounded parameter values will be adjusted later
+                        bounded_parameters.append(varname)
                 else:
                     self.parameters.add(varname)
             except ParameterError:
@@ -192,5 +198,8 @@ class ParameterFile(ParameterSet):
                 else:
                     # Convert the values to the correct datatype
                     self.parameters.get(varname).data = vals
+
+        for pp in bounded_parameters:
+            self._adjust_bounded(pp)
 
         self.__isloaded = True
