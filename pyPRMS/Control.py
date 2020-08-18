@@ -151,9 +151,13 @@ class Control(object):
                 if xx == 'precip_module':
                     if self.get(xx).values == 'climate_hru':
                         mod_dict[xx] = 'precipitation_hru'
+                    else:
+                        mod_dict[xx] = self.get(xx).values
                 elif xx == 'temp_module':
                     if self.get(xx).values == 'climate_hru':
                         mod_dict[xx] = 'temperature_hru'
+                    else:
+                        mod_dict[xx] = self.get(xx).values
                 else:
                     mod_dict[xx] = self.get(xx).values
 
