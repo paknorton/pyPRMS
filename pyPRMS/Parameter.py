@@ -55,6 +55,8 @@ class Parameter(object):
         self.__dimensions = ParamDimensions()
         self.__data = None  # array
 
+        self.__modified = False
+
         # Use setters for most internal variables
         self.datatype = datatype
         self.units = units
@@ -162,6 +164,10 @@ class Parameter(object):
         self.__units = unitstr
 
     @property
+    def modified(self) -> bool:
+        return self.__modified
+
+    @property
     def model(self) -> str:
         """Returns the model the parameter is used in.
 
@@ -210,7 +216,7 @@ class Parameter(object):
         self.__help = helpstr
 
     @property
-    def minimum(self) -> Union[int, float, None]:
+    def minimum(self) -> Union[int, float, str, None]:
         """Returns the minimum valid value for the parameter.
 
         :rtype: int or float or None
@@ -218,7 +224,7 @@ class Parameter(object):
         return self.__minimum
 
     @minimum.setter
-    def minimum(self, value: Union[int, float, None]):
+    def minimum(self, value: Union[int, float, str, None]):
         """Set the minimum valid value for the parameter.
 
         :param value: The minimum value
@@ -238,7 +244,7 @@ class Parameter(object):
             self.__minimum = value
 
     @property
-    def maximum(self) -> Union[int, float, None]:
+    def maximum(self) -> Union[int, float, str, None]:
         """Returns the maximum valid value for the parameter.
 
         :rtype: int or float or None
@@ -246,7 +252,7 @@ class Parameter(object):
         return self.__maximum
 
     @maximum.setter
-    def maximum(self, value: Union[int, float, None]):
+    def maximum(self, value: Union[int, float, str, None]):
         """Set the maximum valid value for the parameter.
 
         :param value: The maximum value
@@ -332,6 +338,8 @@ class Parameter(object):
 
         :rtype: np.ndarray
         """
+
+        # TODO: Best way to prevent modification of data elements?
         if self.__data is not None:
             return self.__data
         raise ValueError(f'Parameter, {self.__name}, has no data')
@@ -379,7 +387,15 @@ class Parameter(object):
                       f'doesn\'t match old ({self.ndims})'
             raise IndexError(err_txt)
 
-        self.__data = data_np
+        if self.__data is None:
+            self.__data = data_np
+        elif np.array_equal(self.__data, data_np):
+            pass
+            # print(f'{self.__name}: updated value is equal to the old value')
+        else:
+            # Pre-existing data has been modified
+            self.__data = data_np
+            self.__modified = True
 
     @property
     def index_map(self):
@@ -410,6 +426,28 @@ class Parameter(object):
         if self.__data.size > 1:
             return (self.__data == self.__data[0]).all()
         return False
+
+    def update_element(self, index, value):
+        # NOTE: index is zero-based
+        # Update a single element or single row (e.g. nhru x nmonth) in the
+        # parameter data array.
+        if np.array_equal(self.__data, value):
+            pass
+            # print(f'{self.__name}: updated value is equal to the old value')
+        else:
+            self.__data[index] = value
+            self.__modified = True
+
+    def _value_index(self, value):
+        # NOTE: returned indices are zero-based
+        # Returns a list of indices where the data elements match value
+        return np.where(self.__data == value)[0]
+
+    def is_hru_param(self):
+        return set(self.__dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'})
+
+    def is_seg_param(self):
+        return set(self.__dimensions.keys()).intersection({'nsegment'})
 
     # def concat(self, data_in):
     #     """Takes a list of parameter data and concatenates it to the end of the existing parameter data.
