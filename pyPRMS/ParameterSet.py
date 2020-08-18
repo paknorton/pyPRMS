@@ -315,8 +315,8 @@ class ParameterSet(object):
         # hruo = nco.createVariable('hru', 'i4', ('hru'))
         for vv in self.parameters.values():
             curr_datatype = NETCDF_DATATYPES[vv.datatype]
-            # print(vv.name, curr_datatype)
-            sys.stdout.flush()
+            print(vv.name, curr_datatype)
+            # sys.stdout.flush()
 
             if curr_datatype != 'S1':
                 try:
@@ -550,3 +550,14 @@ class ParameterSet(object):
                     outfile.write(f'{vv.name}\n')
 
         outfile.close()
+
+    def _adjust_bounded(self, name):
+        cparam = self.parameters.get(name)
+
+        if cparam.minimum == 'bounded':
+            cparam.minimum = 0
+
+            try:
+                cparam.maximum = self.dimensions.get(cparam.maximum).size
+            except ValueError:
+                print(f'{name}: Bounded upper maximum, {cparam.maximum}, dimension does not exist')
