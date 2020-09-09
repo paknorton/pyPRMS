@@ -366,12 +366,17 @@ class Parameter(object):
             data_np = data_in.to_numpy()
 
         if data_np.size == self.size:
-            # The incoming size matches the epected size for the parameter
+            # The incoming size matches the expected size for the parameter
             if data_np.ndim < self.ndims:
-                # Assume data_np is 1D, parameter is 2D; there are no scalars
-                # order higher dimension possibilities.
-                data_np = data_np.reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
+                # A numpy scalar (size=1, ndim=0) should not be reshaped
+
+                if data_np.ndim != 0:
+                    # Assume data_np is 1D, parameter is 2D; there are no scalars
+                    # order higher dimension possibilities.
+                    data_np = data_np.reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
             elif data_np.ndim == self.ndims:
+                # TODO: If dealing with 2D incoming data should make sure that
+                #       the shape is correct compared to declared dimensions.
                 pass
             else:
                 raise ValueError(f'{self.__name}, source data ndim, {data_np.ndim} > parameter ndim, {self.ndims}')
