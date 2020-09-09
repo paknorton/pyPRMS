@@ -203,6 +203,9 @@ class ParameterSet(object):
                     print(f'Parameter, {name}, already has the maximum number of dimensions')
                     print('    current: ', list(self.__parameters[name].dimensions.keys()))
                     print('  requested: ', list(new_dims.keys()))
+
+                    # TODO: Write special case where hru_deplcrv is dimensioned nhru, but
+                    #       the number of snarea_curve entries is less than nhru * 11.
                 else:
                     # 4) call reshape for the parameter
                     self.__parameters[name].reshape(new_dims)
@@ -560,4 +563,5 @@ class ParameterSet(object):
             try:
                 cparam.maximum = self.dimensions.get(cparam.maximum).size
             except ValueError:
-                print(f'{name}: Bounded upper maximum, {cparam.maximum}, dimension does not exist')
+                if self.verbose:
+                    print(f'{name}: Bounded upper maximum, {cparam.maximum}, dimension does not exist')
