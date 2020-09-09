@@ -277,7 +277,7 @@ class Parameters(object):
         else:
             return param.data[tuple(nhm_idx0), ]
 
-    def plot(self, name: str, output_dir=None, **kwargs):
+    def plot(self, name: str, output_dir=None, use_drange=False, **kwargs):
         """Plot a parameter.
 
         Plots either to the screen or an output directory.
@@ -311,7 +311,7 @@ class Parameters(object):
                 # This takes care of multipolygons that are in the NHM geodatabase/shapefile
                 geoms_exploded = self.__hru_poly.explode().reset_index(level=1, drop=True)
 
-                print('Writing first plot')
+                # print('Writing first plot')
                 df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True, how='left')
 
                 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
@@ -321,12 +321,18 @@ class Parameters(object):
                 ax.gridlines()
                 ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
 
-                if name == 'jh_coef':
-                    cmap, norm = set_colormap(name, param_data, min_val=-0.05,
-                                              max_val=0.05, **kwargs)
+                if not use_drange:
+                    if name == 'jh_coef':
+                        cmap, norm = set_colormap(name, param_data, min_val=-0.05,
+                                                  max_val=0.05, **kwargs)
+                    else:
+                        cmap, norm = set_colormap(name, param_data, min_val=cparam.minimum,
+                                                  max_val=cparam.maximum, **kwargs)
                 else:
-                    cmap, norm = set_colormap(name, param_data, min_val=cparam.minimum,
-                                              max_val=cparam.maximum, **kwargs)
+                    # Use the min and max of the actual data values
+                    lim = max(abs(cparam.data.min()), abs(cparam.data.max()))
+                    cmap, norm = set_colormap(name, param_data, min_val=-lim,
+                                              max_val=lim, **kwargs)
 
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                 mapper.set_array(df_mrg[name])
@@ -351,7 +357,7 @@ class Parameters(object):
                         plt.savefig(f'{output_dir}/{name}_{time_index+1:02}.png', dpi=150, bbox_inches='tight')
 
                         for tt in range(1, 12):
-                            print(f'    Index: {tt}')
+                            # print(f'    Index: {tt}')
                             param_data = self.get_dataframe(name).iloc[:, tt].to_frame(name=name)
                             df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True,
                                                           how='left')
@@ -380,7 +386,7 @@ class Parameters(object):
 
                     crs_proj = get_projection(self.__seg_poly)
 
-                    print('Writing first plot')
+                    # print('Writing first plot')
                     df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key, right_index=True,
                                                       how='left')
 
