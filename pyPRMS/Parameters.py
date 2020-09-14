@@ -397,7 +397,13 @@ class Parameters(object):
                     ax.gridlines()
                     ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
 
-                    cmap, norm = set_colormap(name, param_data, **kwargs)
+                    if not use_drange:
+                        cmap, norm = set_colormap(name, param_data, **kwargs)
+                    else:
+                        # Use the min and max of the actual data values
+                        lim = max(abs(cparam.data.min()), abs(cparam.data.max()))
+                        cmap, norm = set_colormap(name, param_data, min_val=-lim,
+                                                  max_val=lim, **kwargs)
 
                     if kwargs.get('vary_color', True):
                         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -434,6 +440,15 @@ class Parameters(object):
                 raise ValueError(f'nhm_id values should be unique')
             else:
                 cparam.update_element(idx0, value)
+        elif cparam.is_seg_param():
+            # Lookup index for nhm_seg
+            idx0 = self.get('nhm_seg')._value_index(id1)
+
+            if len(idx0) > 1:
+                raise ValueError(f'nhm_seg values should be unique')
+            else:
+                cparam.update_element(idx0, value)
+
         # TODO: Add handling for other dimensions
 
     # def plot_stream_network(self):
