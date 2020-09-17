@@ -4934,6 +4934,97 @@
             </dimension>
         </dimensions>
     </variable>
+    <variable name="seg_tave_air" version="5.1.0">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Area-weighted average air temperature for each segment from HRUs contributing flow to the segment</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="seg_tave_lat" version="5.1.0">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Lateral flow temperature</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="seg_tave_gw" version="5.1.0">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Groundwater temperature</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="seg_tave_sroff" version="5.1.0">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Surface runoff temperature</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="seg_tave_ss" version="5.1.0">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Subsurface temperature</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="seg_tave_water" version="5.1.0">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Computed daily mean stream temperature for each segment</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="seg_tave_upstream" version="5.1.0">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Temperature of streamflow entering each segment</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
     <variable name="seg_width">
         <type>F</type>
         <units>meters</units>
