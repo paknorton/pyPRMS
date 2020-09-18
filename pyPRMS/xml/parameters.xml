@@ -2509,6 +2509,7 @@
             <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2529,6 +2530,7 @@
             <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2570,6 +2572,7 @@
             <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2611,6 +2614,7 @@
             <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2631,6 +2635,7 @@
             <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2650,7 +2655,7 @@
             <module>routing</module>
             <module>streamflow</module>
             <module>muskingum</module>
-            <module>muksingum_mann</module>
+            <module>muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
