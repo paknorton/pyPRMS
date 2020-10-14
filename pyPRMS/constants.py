@@ -62,7 +62,7 @@ REGIONS = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
            'r10L', 'r10U', 'r11', 'r12', 'r13', 'r14', 'r15', 'r16', 'r17', 'r18']
 PARAMETERS_XML = 'parameters.xml'
 DIMENSIONS_XML = 'dimensions.xml'
-NETCDF_DATATYPES = {1: 'i4', 2: 'f4', 3: 'f4', 4: 'S1'}
+NETCDF_DATATYPES = {1: 'i4', 2: 'f4', 3: 'f8', 4: 'S1'}
 NHM_DATATYPES = {'I': 1, 'F': 2, 'D': 3, 'S': 4}
 PARNAME_DATATYPES = {'long': 1, 'float': 2, 'double': 3, 'string': 4}
 DATATYPE_TO_DTYPE = {1: np.int, 2: np.float, 3: np.float, 4: np.str_}
