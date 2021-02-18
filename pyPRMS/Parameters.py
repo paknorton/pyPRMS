@@ -6,7 +6,8 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
-from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
+# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
+from typing import Union, Dict, List, OrderedDict as OrderedDictType
 import matplotlib.pyplot as plt
 # import matplotlib.colors as colors
 import matplotlib as mpl
@@ -387,8 +388,8 @@ class Parameters(object):
                     crs_proj = get_projection(self.__seg_poly)
 
                     # print('Writing first plot')
-                    df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key, right_index=True,
-                                                      how='left')
+                    df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key,
+                                                      right_index=True, how='left')
 
                     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
 

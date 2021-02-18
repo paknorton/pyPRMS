@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-import datetime
+# import datetime
 import glob
 # import netCDF4
 import os

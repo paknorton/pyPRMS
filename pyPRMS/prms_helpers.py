@@ -2,7 +2,8 @@
 
 import calendar
 from datetime import datetime
-from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Sequence
+# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Sequence
+from typing import Union, Sequence
 
 import decimal
 import xml.etree.ElementTree as xmlET

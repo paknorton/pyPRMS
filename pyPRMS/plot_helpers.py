@@ -4,7 +4,7 @@ import cartopy.crs as ccrs
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-from matplotlib.colors import Normalize, LogNorm, PowerNorm
+from matplotlib.colors import Normalize     # , LogNorm, PowerNorm
 from matplotlib.collections import LineCollection, PatchCollection
 # import geopandas
 

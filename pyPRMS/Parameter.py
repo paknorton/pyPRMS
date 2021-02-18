@@ -2,7 +2,8 @@ import functools
 import numpy as np
 import pandas as pd
 from collections import namedtuple, OrderedDict
-from typing import Any,  Union, List
+# from typing import Any,  Union, List
+from typing import Union, List
 import xml.etree.ElementTree as xmlET
 
 # from pyPRMS.Exceptions_custom import ConcatError

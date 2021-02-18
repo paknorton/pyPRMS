@@ -6,7 +6,8 @@ import sys
 # noinspection PyUnresolvedReferences
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
-from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
+# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
+from typing import List
 
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
