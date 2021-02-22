@@ -2,6 +2,7 @@
 # import numpy as np
 import os
 import pandas as pd
+from typing import Optional
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
 
 from pyPRMS.constants import DATATYPE_TO_DTYPE
@@ -12,11 +13,15 @@ from pyPRMS.constants import PARAMETERS_XML, DIMENSIONS_XML
 
 
 class ParamDb(ParameterSet):
-    def __init__(self, paramdb_dir: str, verbose=False, verify=True):
+    def __init__(self, paramdb_dir: str,
+                 verbose: Optional[bool] = False,
+                 verify: Optional[bool] = True):
         """Initialize ParamDb object.
         This object handles the monolithic parameter database.
 
-        :param str paramdb_dir: path the ParamDb directory
+        :param paramdb_dir: Path the ParamDb directory
+        :param verbose: Output additional debug information
+        :param verify: Whether to load the master parameters (default=True)
         """
 
         super(ParamDb, self).__init__(verbose=verbose, verify=verify)

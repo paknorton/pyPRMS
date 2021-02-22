@@ -1,6 +1,6 @@
 
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
-from typing import List, Set
+from typing import List, Optional, Set
 
 from pyPRMS.Exceptions_custom import ParameterError
 from pyPRMS.ParameterSet import ParameterSet
@@ -11,12 +11,14 @@ class ParameterFile(ParameterSet):
 
     """Class to handle reading PRMS parameter file format."""
 
-    def __init__(self, filename, verbose=False, verify=True):
+    def __init__(self, filename: str,
+                 verbose: Optional[bool] = False,
+                 verify: Optional[bool] = True):
         """Create the ParameterFile object.
 
-        :param str filename: name of parameter file
-        :param bool verbose: output debugging information
-        :param bool verify: whether to load the master parameters (default=True)
+        :param filename: name of parameter file
+        :param verbose: output debugging information
+        :param verify: whether to load the master parameters (default=True)
         """
 
         super(ParameterFile, self).__init__(verbose=verbose, verify=verify)
@@ -34,7 +36,6 @@ class ParameterFile(ParameterSet):
         """Get parameter filename.
 
         :returns: name of parameter file
-        :rtype: str
         """
 
         return self.__filename
@@ -43,7 +44,7 @@ class ParameterFile(ParameterSet):
     def filename(self, name: str):
         """Set the name of the parameter file.
 
-        :param str name: name of parameter file
+        :param name: name of parameter file
         """
 
         self.__isloaded = False
@@ -57,7 +58,6 @@ class ParameterFile(ParameterSet):
         """Get the headers from the parameter file.
 
         :returns: list of headers from parameter file
-        :rtype: list[str]
         """
 
         return self.__header
@@ -67,7 +67,6 @@ class ParameterFile(ParameterSet):
         """Get list of parameters that had more than one entry in the parameter file.
 
         :returns: list of parameters
-        :rtype: set[str]
         """
 
         return self.__updated_parameters

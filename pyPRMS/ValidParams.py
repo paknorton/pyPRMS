@@ -1,7 +1,7 @@
 import io
 import pkgutil
 import xml.etree.ElementTree as xmlET
-from typing import Sequence, Set
+from typing import Optional, Sequence, Set, Union
 
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Exceptions_custom import ParameterError
@@ -15,15 +15,14 @@ class ValidParams(Parameters):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04
 
-    def __init__(self, filename=None):
+    def __init__(self, filename: Optional[str] = None):
         """Create ValidParams object.
 
         Read an XML file of parameters to use as a master of valid PRMS
         parameters. If no filename is specified an internal library XML file
         is read.
 
-        :param filename: name of XML parameter file
-        :type filename: str or None
+        :param filename: Name of XML parameter file
         """
 
         super(ValidParams, self).__init__()
@@ -43,13 +42,12 @@ class ValidParams(Parameters):
         self.__isloaded = True
 
     @property
-    def filename(self) -> str:
+    def filename(self) -> Union[str, None]:
         """Get XML filename.
 
         Returned filename is None if reading from the library-internal XML file.
 
-        :returns: name of XML file
-        :rtype: str or None
+        :returns: Name of XML file
         """
 
         return self.__filename
@@ -61,7 +59,6 @@ class ValidParams(Parameters):
         If no filename is specified an library-internal XML file is read.
 
         :param filename: name of XML parameter file
-        :type filename: str or None
         """
 
         self.__filename = filename
@@ -80,10 +77,9 @@ class ValidParams(Parameters):
     def get_params_for_modules(self, modules: Sequence[str]) -> Set[str]:
         """Get list of unique parameters required for a given list of modules.
 
-        :param list[str] modules: list of PRMS modules
+        :param modules: List of PRMS modules
 
-        :returns: set of parameter names
-        :rtype: set[str]
+        :returns: Set of parameter names
         """
 
         params_by_module = []

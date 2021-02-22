@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from typing import Union, Dict, List, Sequence
+from typing import Dict, List, Optional, Sequence, Union
 
 from pyPRMS.constants import DATA_TYPES
 
 
 class ControlVariable(object):
-
     """
     Class object for a single control variable.
     """
@@ -15,9 +14,20 @@ class ControlVariable(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-18
 
-    def __init__(self, name=None, datatype=None, default=None, description=None,
-                 valid_values=None, value_repr=None):
+    def __init__(self, name: Optional[str] = None,
+                 datatype: Optional[int] = None,
+                 default: Optional[Union[int, float, str]] = None,
+                 description: Optional[str] = None,
+                 valid_values: Optional[Union[int, float, str]] = None,
+                 value_repr: Optional[str] = None):
         """Initialize a control variable object.
+
+        :param name: Name of control variable
+        :param datatype: The datatype of the control variable
+        :param default: The default value
+        :param description: The description of the control variable
+        :param valid_values: The valid values
+        :param value_repr: What do the valid values represent (e.g. flag, parameter, etc)
         """
 
         self.__name = name
@@ -49,8 +59,7 @@ class ControlVariable(object):
         """Get list of control variable names which are associated with this
         control variable.
 
-        :returns: associated control variables
-        :rtype: list[str]
+        :returns: Associated control variables
         """
 
         assoc_vals = []
@@ -69,7 +78,6 @@ class ControlVariable(object):
         """Get the datatype of the control variable.
 
         :returns: datatype
-        :rtype: int
         """
 
         return self.__datatype
@@ -78,7 +86,7 @@ class ControlVariable(object):
     def datatype(self, dtype: int):
         """Sets the datatype of the control variable.
 
-        :param int dtype: The datatype for the control variable (1-Integer, 2-Float, 3-Double, 4-String)
+        :param dtype: The datatype for the control variable (1-Integer, 2-Float, 3-Double, 4-String)
         """
 
         if dtype in DATA_TYPES:
@@ -91,7 +99,6 @@ class ControlVariable(object):
         """Get default value for control variable.
 
         :returns: current default value
-        :rtype: int or float or str
         """
 
         if self.__default is not None:
@@ -106,8 +113,7 @@ class ControlVariable(object):
     def default(self, value: Union[int, float, str]):
         """Set the default value for the control variable.
 
-        :param value: new default value
-        :type value: int or float or str
+        :param value: The default value
         """
 
         # Convert datatype first
@@ -127,7 +133,6 @@ class ControlVariable(object):
         """Get logical value which indicates whether the default value for a
         control variable should always be used instead of the current value.
 
-        :rtype: bool
         """
 
         return self.__force_default
@@ -136,7 +141,7 @@ class ControlVariable(object):
     def force_default(self, value: Union[bool, int]):
         """Set (or unset) forced use of default value.
 
-        :param bool value: new force_default value
+        :param value: new force_default value
         """
 
         self.__force_default = bool(value)
@@ -145,8 +150,7 @@ class ControlVariable(object):
     def name(self) -> str:
         """Returns the name of the control variable.
 
-        :returns: name of control variable
-        :rtype: str
+        :returns: Name of control variable
         """
 
         return self.__name
@@ -155,8 +159,7 @@ class ControlVariable(object):
     def size(self) -> int:
         """Get the number of values for the control variable.
 
-        :returns: number of values
-        :rtype: int
+        :returns: Number of values
         """
 
         if self.__values is not None:
@@ -170,8 +173,7 @@ class ControlVariable(object):
     def valid_values(self) -> Dict:
         """Get the values that are valid for the control variable.
 
-        :returns: valid values for the control variable
-        :rtype: dict
+        :returns: Valid values for the control variable
         """
 
         return self.__valid_values
@@ -180,7 +182,7 @@ class ControlVariable(object):
     def valid_values(self, data: Dict):
         """Set the values that are valid for the control variable.
 
-        :param dict data: valid values for the control variable
+        :param data: Valid values for the control variable
         """
 
         if isinstance(data, dict):
@@ -192,8 +194,7 @@ class ControlVariable(object):
 
         A control variable value can represent a flag, interval, or parameter.
 
-        :returns: control variable representation value
-        :rtype: str
+        :returns: Control variable representation value
         """
 
         return self.__value_repr
@@ -202,8 +203,7 @@ class ControlVariable(object):
     def value_repr(self, data: Union[str, None]):
         """Set the control variable representation.
 
-        :param data: representation value
-        :type data: str or None
+        :param data: Representation value
         """
 
         self.__value_repr = data
@@ -215,8 +215,7 @@ class ControlVariable(object):
         If force_default is True then the default value is returned regardless
         of what the value is set to; otherwise, current value is returned.
 
-        :returns: value(s) of control variable
-        :rtype: list[int or str] or int or float or str
+        :returns: Value(s) of control variable
         """
 
         if self.__values is not None:
@@ -233,8 +232,7 @@ class ControlVariable(object):
     def values(self, data: Union[Sequence[str], str]):
         """Set the values for the control variable.
 
-        :param data: new value(s)
-        :type data: list[str] or str
+        :param data: New value(s)
         """
 
         # Convert datatype first
@@ -250,14 +248,12 @@ class ControlVariable(object):
         self.__values = np.array(data)
 
     @staticmethod
-    def __str_to_float(data):
+    def __str_to_float(data: Union[List[str], str]) -> List[float]:
         """Convert strings to a floats.
 
         :param data: value(s)
-        :type data: list[str] or str
 
-        :returns: array of floats
-        :rtype: list[float]
+        :returns: Array of floats
         """
 
         # Convert provide list of data to float
@@ -270,14 +266,12 @@ class ControlVariable(object):
                 print(ve)
 
     @staticmethod
-    def __str_to_int(data):
+    def __str_to_int(data: Union[List[str], str]) -> List[int]:
         """Converts strings to integers.
 
         :param data: value(s)
-        :type data: list[str] or str
 
         :returns: array of integers
-        :rtype: list[int]
         """
 
         if isinstance(data, str):
@@ -290,14 +284,12 @@ class ControlVariable(object):
                 print(ve)
 
     @staticmethod
-    def __str_to_str(data):
+    def __str_to_str(data: Union[List[str], str]) -> List[str]:
         """Null op for string-to-string conversion.
 
         :param data: value(s)
-        :type data: list[str] or str
 
         :returns: unmodified array of data
-        :rtype: list[str]
         """
 
         # nop for list of strings

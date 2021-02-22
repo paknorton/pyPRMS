@@ -1,6 +1,6 @@
 
 from collections import OrderedDict
-from typing import Dict, OrderedDict as OrderedDictType
+from typing import Dict, Optional, OrderedDict as OrderedDictType
 import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Dimension import Dimension
@@ -8,11 +8,13 @@ from pyPRMS.prms_helpers import read_xml
 
 
 class Dimensions(object):
-
     """Container of Dimension objects."""
 
-    def __init__(self, verbose=False):
-        """Create ordered dictionary to contain Dimension objects."""
+    def __init__(self, verbose: Optional[bool] = False):
+        """Create ordered dictionary to contain Dimension objects.
+
+        :param verbose: Output additional debug information
+        """
         self.__dimensions = OrderedDict()
         self.__verbose = verbose
 
@@ -38,17 +40,14 @@ class Dimensions(object):
         """Get ordered dictionary of Dimension objects.
 
         :returns: OrderedDict of Dimension objects
-        :rtype: collections.OrderedDict[str, Dimension]
         """
-
         return self.__dimensions
 
     @property
     def ndims(self) -> int:
         """Get number of dimensions.
 
-        :returns: number of dimensions
-        :rtype: int
+        :returns: Number of dimensions
         """
 
         return len(self.__dimensions)
@@ -58,7 +57,6 @@ class Dimensions(object):
         """Get xml element for the dimensions.
 
         :returns: XML element for the dimensions
-        :rtype: xmlET.Element
         """
 
         # <dimensions>
@@ -76,8 +74,8 @@ class Dimensions(object):
     def add(self, name: str, size: int = 0):
         """Add a new dimension.
 
-        :param str name: name of the dimension
-        :param int size: size of the dimension
+        :param name: Name of the dimension
+        :param size: Size of the dimension
         """
 
         # This method adds a dimension if it doesn't exist
@@ -98,7 +96,7 @@ class Dimensions(object):
     def add_from_xml(self, filename: str):
         """Add one or more dimensions from an xml file.
 
-        :param str filename: name of xml file to read
+        :param filename: Name of xml file to read
         """
 
         # Add dimensions and grow dimension sizes from xml information for a parameter
@@ -129,9 +127,8 @@ class Dimensions(object):
     def exists(self, name: str) -> bool:
         """Check if dimension exists.
 
-        :param str name: name of the dimension
+        :param name: Name of the dimension
         :returns: True if dimension exists, otherwise False
-        :rtype: bool
         """
 
         return name in self.dimensions.keys()
@@ -139,10 +136,9 @@ class Dimensions(object):
     def get(self, name: str) -> Dimension:
         """Get dimension.
 
-        :param str name: name of the dimension
+        :param name: Name of the dimension
 
         :returns: dimension
-        :rtype: Dimension
 
         :raises ValueError: if dimension does not exist
         """
@@ -154,7 +150,7 @@ class Dimensions(object):
     def remove(self, name: str):
         """Remove dimension.
 
-        :param str name: dimension name
+        :param name: Dimension name
         """
 
         if self.exists(name):
@@ -164,7 +160,6 @@ class Dimensions(object):
         """Get data structure of Dimensions data for serialization.
 
         :returns: dictionary of dimension names and sizes
-        :rtype: dict
         """
 
         dims = {}
@@ -184,7 +179,6 @@ class ParamDimensions(Dimensions):
         """Get xml for the dimensions.
 
         :returns: XML element of the dimensions
-        :rtype: xmlET.Element
         """
 
         # <dimensions>
@@ -205,8 +199,8 @@ class ParamDimensions(Dimensions):
     def add(self, name: str, size: int = 0):
         """Add a new dimension.
 
-        :param str name: name of the dimension
-        :param int size: size of the dimension
+        :param name: Name of the dimension
+        :param size: Size of the dimension
         """
 
         # Restrict number of dimensions for parameters
@@ -220,7 +214,7 @@ class ParamDimensions(Dimensions):
 
         Add or grow dimensions from XML information. This version also checks dimension position.
 
-        :param str filename: name of the xml file
+        :param filename: Name of the xml file
 
         :raises ValueError: if existing dimension position is altered
         """
@@ -256,9 +250,9 @@ class ParamDimensions(Dimensions):
     def get_dimsize_by_index(self, index: int) -> int:
         """Return size of dimension at the given index.
 
-        :param int index: The 0-based position of the dimension.
+        :param index: The 0-based position of the dimension.
         :returns: Size of the dimension.
-        :rtype: int
+
         :raises ValueError: if index is greater than number dimensions for the parameter
         """
 
@@ -274,10 +268,9 @@ class ParamDimensions(Dimensions):
     def get_position(self, name: str) -> int:
         """Get 0-based index position of a dimension.
 
-        :param str name: name of the dimension
+        :param name: name of the dimension
 
-        :returns: index position of dimension
-        :rtype: int
+        :returns: Zero-based Index position of dimension
         """
 
         # TODO: method name should be index() ??
@@ -287,7 +280,6 @@ class ParamDimensions(Dimensions):
         """Get dictionary structure of the dimensions.
 
         :returns: dictionary of Dimensions names, sizes, and positions
-        :rtype: dict
         """
 
         ldims = super(ParamDimensions, self).tostructure()

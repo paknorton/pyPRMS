@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-from __future__ import (absolute_import, division,
-                        print_function)
+# from __future__ import (absolute_import, division, print_function)
 # , unicode_literals)
-from future.utils import iteritems
+# from future.utils import iteritems
 
 # from builtins import (
 #     bytes, dict, int, list, object, range, str,
@@ -17,10 +16,9 @@ from future.utils import iteritems
 # from functools import reduce
 # import calendar
 # import glob
-import re
-# import numpy as np
-import pandas as pd
-import datetime
+# import re
+# import pandas as pd
+# import datetime
 # import os
 # import sys
 
@@ -39,7 +37,7 @@ import datetime
 # shall the fact of distribution constitute any such warranty, and no
 # responsibility is assumed by the USGS in connection therewith.
 
-__version__ = '0.5'
+# __version__ = '0.5'
 
 
 # def dparse(*dstr):
@@ -65,111 +63,111 @@ __version__ = '0.5'
 # #     return dt
 
 
-def create_default_range_file(in_filename, out_filename):
-    """Get the default parameter ranges from a file which is the result of running
-       'prms -print'"""
-
-    # Create parameter default ranges file from from PRMS -print results
-    try:
-        infile = open(in_filename, 'r')
-    except IOError as err:
-        print("Unable to open file\n", err)
-        return False
-    else:
-        rawdata = infile.read().splitlines()
-        infile.close()
-
-        it = iter(rawdata)
-
-        for line in it:
-            if line == '--------------- PARAMETERS ---------------':
-                break
-        param_dict = {}
-
-        for line in it:
-            flds = line.split(':')
-
-            if len(flds) < 2:
-                continue
-
-            key = flds[0].strip()
-            val = flds[1].strip()
-
-            if key == 'Name':
-                cparam = val
-                param_dict[cparam] = {}
-            else:
-                param_dict[cparam][key] = val
-
-        try:
-            outfile = open(out_filename, 'w')
-        except IOError as err:
-            print("Unable to write file\n", err)
-            return False
-        else:
-            outfile.write('parameter max min\n')
-
-            for (kk, vv) in iteritems(param_dict):
-                outfile.write('%s %f %f\n' % (kk, float(vv['Max']), float(vv['Min'])))
-
-            outfile.close()
-        return True
-
-
-def to_datetime(date_str):
-    """Takes a date string of the form 'YYYY-MM-DD HH:mm:ss' (and variations thereof)
-       and converts it to a datetime"""
-    return datetime.datetime(*[int(x) for x in re.split('-| |:', date_str)])
-
-
-def to_prms_datetime(date):
-    """Takes a datetime object and converts it to a string of form
-       YYYY,MM,DD,HH,mm,ss"""
-    return date.strftime('%Y,%m,%d,%H,%M,%S')
-
-
-def read_cbh(filename, sep=' ', missing_val=[-99.0, -999.0]):
-    """Read a CBH file"""
-
-    if not isinstance(missing_val, list):
-        missing_val = [missing_val]
-
-    infile = open(filename, 'r')
-    fheader = ''
-
-    for ii in range(0, 3):
-        line = infile.readline()
-
-        if line[0:4] in ['prcp', 'tmax', 'tmin']:
-            # Change the number of HRUs included to one
-            # numhru = int(line[5:])
-            fheader += line[0:5] + ' 1\n'
-        else:
-            fheader += line
-
-    df1 = pd.read_csv(infile, sep=sep, na_values=missing_val, skipinitialspace=True, header=None,
-                      date_parser=dparse, parse_dates={'thedate': [0, 1, 2, 3, 4, 5]}, index_col='thedate')
-    infile.close()
-
-    # Renumber/rename columns to reflect HRU number
-    df1.rename(columns=lambda x: df1.columns.get_loc(x) + 1, inplace=True)
-    return df1
-
-
-def read_gdp(filename, missing_val=[255.]):
-    """Read files that were created from Geodata Portal jobs"""
-
-    # TODO: Extend this function to handle the metadata on lines 0 and 2
-
-    if not isinstance(missing_val, list):
-        missing_val = [missing_val]
-
-    gdp_data = pd.read_csv(filename, na_values=missing_val, header=0, skiprows=[0, 2])
-
-    gdp_data.rename(columns={gdp_data.columns[0]: 'thedate'}, inplace=True)
-    gdp_data['thedate'] = pd.to_datetime(gdp_data['thedate'])
-    gdp_data.set_index('thedate', inplace=True)
-    return gdp_data
+# def create_default_range_file(in_filename, out_filename):
+#     """Get the default parameter ranges from a file which is the result of running
+#        'prms -print'"""
+#
+#     # Create parameter default ranges file from from PRMS -print results
+#     try:
+#         infile = open(in_filename, 'r')
+#     except IOError as err:
+#         print("Unable to open file\n", err)
+#         return False
+#     else:
+#         rawdata = infile.read().splitlines()
+#         infile.close()
+#
+#         it = iter(rawdata)
+#
+#         for line in it:
+#             if line == '--------------- PARAMETERS ---------------':
+#                 break
+#         param_dict = {}
+#
+#         for line in it:
+#             flds = line.split(':')
+#
+#             if len(flds) < 2:
+#                 continue
+#
+#             key = flds[0].strip()
+#             val = flds[1].strip()
+#
+#             if key == 'Name':
+#                 cparam = val
+#                 param_dict[cparam] = {}
+#             else:
+#                 param_dict[cparam][key] = val
+#
+#         try:
+#             outfile = open(out_filename, 'w')
+#         except IOError as err:
+#             print("Unable to write file\n", err)
+#             return False
+#         else:
+#             outfile.write('parameter max min\n')
+#
+#             for (kk, vv) in iteritems(param_dict):
+#                 outfile.write('%s %f %f\n' % (kk, float(vv['Max']), float(vv['Min'])))
+#
+#             outfile.close()
+#         return True
+#
+#
+# def to_datetime(date_str):
+#     """Takes a date string of the form 'YYYY-MM-DD HH:mm:ss' (and variations thereof)
+#        and converts it to a datetime"""
+#     return datetime.datetime(*[int(x) for x in re.split('-| |:', date_str)])
+#
+#
+# def to_prms_datetime(date):
+#     """Takes a datetime object and converts it to a string of form
+#        YYYY,MM,DD,HH,mm,ss"""
+#     return date.strftime('%Y,%m,%d,%H,%M,%S')
+#
+#
+# def read_cbh(filename, sep=' ', missing_val=[-99.0, -999.0]):
+#     """Read a CBH file"""
+#
+#     if not isinstance(missing_val, list):
+#         missing_val = [missing_val]
+#
+#     infile = open(filename, 'r')
+#     fheader = ''
+#
+#     for ii in range(0, 3):
+#         line = infile.readline()
+#
+#         if line[0:4] in ['prcp', 'tmax', 'tmin']:
+#             # Change the number of HRUs included to one
+#             # numhru = int(line[5:])
+#             fheader += line[0:5] + ' 1\n'
+#         else:
+#             fheader += line
+#
+#     df1 = pd.read_csv(infile, sep=sep, na_values=missing_val, skipinitialspace=True, header=None,
+#                       date_parser=dparse, parse_dates={'thedate': [0, 1, 2, 3, 4, 5]}, index_col='thedate')
+#     infile.close()
+#
+#     # Renumber/rename columns to reflect HRU number
+#     df1.rename(columns=lambda x: df1.columns.get_loc(x) + 1, inplace=True)
+#     return df1
+#
+#
+# def read_gdp(filename, missing_val=[255.]):
+#     """Read files that were created from Geodata Portal jobs"""
+#
+#     # TODO: Extend this function to handle the metadata on lines 0 and 2
+#
+#     if not isinstance(missing_val, list):
+#         missing_val = [missing_val]
+#
+#     gdp_data = pd.read_csv(filename, na_values=missing_val, header=0, skiprows=[0, 2])
+#
+#     gdp_data.rename(columns={gdp_data.columns[0]: 'thedate'}, inplace=True)
+#     gdp_data['thedate'] = pd.to_datetime(gdp_data['thedate'])
+#     gdp_data.set_index('thedate', inplace=True)
+#     return gdp_data
 
 # def write_params_by_module(param_dict, filename):
 #     """Write an input parameter db dictionary generated by build_input_param_db() to a .csv file"""

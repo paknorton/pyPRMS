@@ -1,6 +1,9 @@
+import datetime
 import pandas as pd
 import netCDF4 as nc
 import xarray as xr
+
+from typing import List, Optional
 
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
@@ -9,6 +12,8 @@ CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]
 
 
 class CbhNetcdf(object):
+    """Climate-By-HRU (CBH) files in netCDF format"""
+
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-30
     # Description: Class for working with individual cbh files
@@ -22,11 +27,20 @@ class CbhNetcdf(object):
     #    prcp is never negative
     #    any missing data/missing date is filled with (?? avg of bracketing dates??)
     #
-    # I think it would be better if this code worked with the original GDP files and
+    # I think it might be better if this code worked with the original GDP files and
     # took care of those corrections itself. This would provide a more seamless workflow
     # from GDP to PRMS. At this point I'm not taking this on though -- for a future revision.
 
-    def __init__(self, src_path=None, st_date=None, en_date=None, nhm_hrus=None):
+    def __init__(self, src_path: Optional[str] = None,
+                 st_date: Optional[datetime.datetime] = None,
+                 en_date: Optional[datetime.datetime] = None,
+                 nhm_hrus: Optional[List[int]] = None):
+        """
+        :param src_path: Full path to netCDF file
+        :param st_date: The starting date for restricting CBH results
+        :param en_date: The ending date for restricting CBH results
+        :param nhm_hrus: List of NHM HRU IDs to extract from CBH
+        """
         self.__src_path = src_path
         self.__stdate = st_date
         self.__endate = en_date
@@ -38,7 +52,8 @@ class CbhNetcdf(object):
         self.read_netcdf()
 
     def read_netcdf(self):
-        """Read CBH files stored in netCDF format"""
+        """Read CBH files stored in netCDF format
+        """
 
         if self.__nhm_hrus:
             # print('\t\tOpen dataset')
@@ -55,7 +70,14 @@ class CbhNetcdf(object):
             print('ERROR: write the code for all HRUs')
             exit()
 
-    def get_var(self, var: str):
+    def get_var(self, var: str) -> pd.DataFrame:
+        """
+        Get a variable from the netCDF file
+
+        :param var: Name of the variable
+
+        :return: Data for the variable
+        """
         if self.__stdate is not None and self.__endate is not None:
             # print(var, type(var))
             # print(self.__stdate, type(self.__stdate))
@@ -72,7 +94,15 @@ class CbhNetcdf(object):
 
         return data
 
-    def write_ascii(self, pathname=None, fileprefix=None, variables=None):
+    def write_ascii(self, pathname: Optional[str] = None,
+                    fileprefix: Optional[str] = None,
+                    variables: Optional[List[str]] = None):
+        """Write CBH data for variables to ASCII formatted file(s).
+
+        :param pathname: Path to write files
+        :param fileprefix: Filename prefix
+        :param variables: CBH variable(s) to write to file(s). If None then all variables in netCDF file are output.
+        """
         # For out_order the first six columns contain the time information and
         # are always output for the cbh files
         out_order = [kk for kk in self.__nhm_hrus]
@@ -117,8 +147,10 @@ class CbhNetcdf(object):
             else:
                 print(f'WARNING: {cvar} does not exist in source CBH files..skipping')
 
-    def write_netcdf_old(self, filename=None, variables=None):
-        """Write CBH to netcdf format file"""
+    def write_netcdf_old(self, filename: str = None,
+                         variables: Optional[List[str]] = None):
+        """Write CBH to netcdf format file
+        """
 
         # NetCDF-related variables
         var_desc = {'tmax': 'Maximum Temperature', 'tmin': 'Minimum temperature',
@@ -171,8 +203,13 @@ class CbhNetcdf(object):
 
         nco.close()
 
-    def write_netcdf(self, filename=None, variables=None):
-        """Write CBH to netcdf format file"""
+    def write_netcdf(self, filename: str = None,
+                     variables: Optional[List[str]] = None):
+        """Write CBH to netcdf format file
+
+        :param filename: NetCDF filename to write
+        :param variables: List of CBH variables to write
+        """
 
         # Create a netCDF file for the CBH data
         nco = nc.Dataset(filename, 'w', clobber=True)

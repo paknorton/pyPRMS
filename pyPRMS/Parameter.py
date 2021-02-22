@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from collections import namedtuple, OrderedDict
 # from typing import Any,  Union, List
-from typing import Union, List
+from typing import Optional, Union, List
 import xml.etree.ElementTree as xmlET
 
 # from pyPRMS.Exceptions_custom import ConcatError
@@ -19,24 +19,28 @@ class Parameter(object):
     """
 
     # Container for a single parameter
-    def __init__(self, name=None, datatype=None, units=None, model=None, description=None,
-                 help=None, modules=None, minimum=None, maximum=None, default=None):
-        """Initialize the Parameter object.
+    def __init__(self, name: Optional[str] = None,
+                 datatype: Optional[int] = None,
+                 units: Optional[str] = None,
+                 model: Optional[str] = None,
+                 description: Optional[str] = None,
+                 help: Optional[str] = None,
+                 modules: Optional[Union[str, List[str]]] = None,
+                 minimum: Optional[Union[int, float]] = None,
+                 maximum: Optional[Union[int, float]] = None,
+                 default: Optional[Union[int, float]] = None):
 
-        :param str name: A valid PRMS parameter name
-        :param int datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
-        :param str units: Option units string for the parameter
-        :param str model: <<FILL IN LATER>>
-        :param str description: Description of the parameter
-        :param str help: Help text for the parameter
+        """
+        :param name: A valid PRMS parameter name
+        :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
+        :param units: Option units string for the parameter
+        :param model: <<FILL IN LATER>>
+        :param description: Description of the parameter
+        :param help: Help text for the parameter
         :param modules: List of modules that require the parameter
-        :type modules: list[str] or None
         :param minimum: Minimum value allowed in the parameter data
-        :type minimum: int or float or None
         :param maximum: Maximum value allowed in the parameter data
-        :type maximum: int or float or None
         :param default: Default value used for parameter data
-        :type default: int or float or None
         """
 
         # Set the parameter name
@@ -73,7 +77,6 @@ class Parameter(object):
         """Pretty-print string representation of the parameter information.
 
         :return: Parameter information
-        :rtype: str
         """
         out_text = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndescription: {}\nhelp: {}\n'
         outstr = out_text.format(self.name, self.datatype, self.units, self.ndims, self.description,
@@ -127,15 +130,14 @@ class Parameter(object):
     @property
     def datatype(self) -> int:
         """Returns the datatype of the parameter.
-
-        :rtype: int"""
+        """
         return self.__datatype
 
     @datatype.setter
     def datatype(self, dtype: int):
         """Sets the datatype for the parameter.
 
-        :param int dtype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
+        :param dtype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
         """
 
         # TODO: Should this be able to handle both string (e.g. 'I') and integer datatypes?
@@ -151,8 +153,6 @@ class Parameter(object):
     @property
     def units(self) -> str:
         """Returns the parameter units.
-
-        :rtype: str
         """
         return self.__units
 
@@ -160,7 +160,7 @@ class Parameter(object):
     def units(self, unitstr: str):
         """Set the parameter units.
 
-        :param str unitstr: String denoting the units for the parameter (e.g. mm)
+        :param unitstr: String denoting the units for the parameter (e.g. mm)
         """
         self.__units = unitstr
 
@@ -171,8 +171,6 @@ class Parameter(object):
     @property
     def model(self) -> str:
         """Returns the model the parameter is used in.
-
-        :rtype: str
         """
         return self.__model
 
@@ -180,15 +178,13 @@ class Parameter(object):
     def model(self, modelstr: str):
         """Set the model description for the parameter.
 
-        :param str modelstr: String denoting the model (e.g. PRMS)
+        :param modelstr: String denoting the model (e.g. PRMS)
         """
         self.__model = modelstr
 
     @property
     def description(self) -> str:
         """Returns the parameter description.
-
-        :rtype: str
         """
         return self.__description
 
@@ -196,15 +192,13 @@ class Parameter(object):
     def description(self, descstr: str):
         """Set the model description for the parameter.
 
-        :param str descstr: Description string
+        :param descstr: Description string
         """
         self.__description = descstr
 
     @property
     def help(self) -> str:
         """Returns the help information for the parameter.
-
-        :rtype: str
         """
         return self.__help
 
@@ -212,15 +206,13 @@ class Parameter(object):
     def help(self, helpstr: str):
         """Set the help string for the parameter.
 
-        :param str helpstr: Help string
+        :param helpstr: Help string
         """
         self.__help = helpstr
 
     @property
     def minimum(self) -> Union[int, float, str, None]:
         """Returns the minimum valid value for the parameter.
-
-        :rtype: int or float or None
         """
         return self.__minimum
 
@@ -229,7 +221,6 @@ class Parameter(object):
         """Set the minimum valid value for the parameter.
 
         :param value: The minimum value
-        :type value: int or float or None
         """
         if self.__datatype is None or value is None:
             self.__minimum = value
@@ -247,8 +238,6 @@ class Parameter(object):
     @property
     def maximum(self) -> Union[int, float, str, None]:
         """Returns the maximum valid value for the parameter.
-
-        :rtype: int or float or None
         """
         return self.__maximum
 
@@ -257,7 +246,6 @@ class Parameter(object):
         """Set the maximum valid value for the parameter.
 
         :param value: The maximum value
-        :type value: int or float or None
         """
         if self.__datatype is None or value is None:
             self.__maximum = value
@@ -275,8 +263,7 @@ class Parameter(object):
     @property
     def default(self) -> Union[int, float, None]:
         """Returns the default value for the parameter.
-
-        :rtype: int or float or None
+        :return: Default values defined for parameter
         """
         return self.__default
 
@@ -285,7 +272,6 @@ class Parameter(object):
         """Set the default value for the parameter.
 
         :param value: The default value
-        :type value: int or float or None
         """
         # TODO: 2020-04-30 PAN: This should check if given value is between
         #                       min and max valid values (if set)
@@ -301,8 +287,6 @@ class Parameter(object):
     @property
     def modules(self) -> Union[List[str], None]:
         """Returns the names of the modules require the parameter.
-
-        :rtype: list[str] or None
         """
         return self.__modules
 
@@ -311,7 +295,6 @@ class Parameter(object):
         """Set the names of the modules that require the parameter.
 
         :param modulestr: Single module name or list of module names to add
-        :type modulestr: list[str] or str or None
         """
         if modulestr is not None:
             if isinstance(modulestr, list):
@@ -329,15 +312,12 @@ class Parameter(object):
     @property
     def ndims(self) -> int:
         """Returns the number of dimensions that are defined for the parameter.
-
-        :rtype: int"""
+        """
         return self.__dimensions.ndims
 
     @property
     def data(self) -> np.ndarray:
         """Returns the data associated with the parameter.
-
-        :rtype: np.ndarray
         """
 
         # TODO: Best way to prevent modification of data elements?
@@ -346,10 +326,10 @@ class Parameter(object):
         raise ValueError(f'Parameter, {self.__name}, has no data')
 
     @data.setter
-    def data(self, data_in):
+    def data(self, data_in: list):
         """Sets the data for the parameter.
 
-        :param list data_in: A list containing the parameter data
+        :param data_in: A list containing the parameter data
         :raises TypeError: if the datatype for the parameter is invalid
         :raises ValueError: if the number of dimensions for the parameter is greater than 2
         """
@@ -419,8 +399,6 @@ class Parameter(object):
     @property
     def xml(self) -> xmlET.Element:
         """Return the xml metadata for the parameter as an xml Element.
-
-        :rtype: xmlET.Element
         """
         param_root = xmlET.Element('parameter')
         param_root.set('name', self.name)
@@ -510,8 +488,6 @@ class Parameter(object):
     def check(self) -> str:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) size
         and returns a message.
-
-        :rtype: str
         """
 
         # TODO: check that values are between min and max values
@@ -543,8 +519,7 @@ class Parameter(object):
 
     def has_correct_size(self) -> bool:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
-
-        :rtype: bool"""
+        """
 
         # Check a variable to see if the number of values it has is
         # consistent with the given dimensions
@@ -557,8 +532,11 @@ class Parameter(object):
         # This assumes a numpy array
         return self.data.size == total_size
 
-    def remove_by_index(self, dim_name: str, indices):
-        """Remove columns (nhru or nsegment) from data array given a list of indices"""
+    def remove_by_index(self, dim_name: str, indices: List[int]):
+        """Remove columns (nhru or nsegment) from data array given a list of indices
+
+        :param dim_name: Name of dimension to reduce
+        :param indices: List of indices to remove"""
 
         if isinstance(indices, type(OrderedDict().values())):
             indices = list(indices)
@@ -631,7 +609,6 @@ class Parameter(object):
         """Returns the parameter data as a list.
 
         :returns: Parameter data
-        :rtype: list
         """
 
         # TODO: is this correct for snarea_curve?
@@ -640,8 +617,6 @@ class Parameter(object):
 
     def toparamdb(self) -> str:
         """Outputs parameter data in the paramDb csv format.
-
-        :rtype: str
         """
 
         outstr = '$id,{}\n'.format(self.name)
@@ -683,18 +658,16 @@ class Parameter(object):
         """Create array of unique values from the parameter data.
 
         :returns: Array of unique values
-        :rtype: np.ndarray
         """
         return np.unique(self.__data)
 
     @staticmethod
-    def __str_to_float(data):
+    def __str_to_float(data: List[str]) -> List[float]:
         """Convert strings to a floats.
 
-        :param list[str] data: list of data
+        :param data: list of data
 
         :returns: array of floats
-        :rtype: list[float]
         """
 
         # Convert provide list of data to float
@@ -705,13 +678,12 @@ class Parameter(object):
         #     print(ve)
 
     @staticmethod
-    def __str_to_int(data):
+    def __str_to_int(data: List[str]) -> List[int]:
         """Converts strings to integers.
 
-        :param list[str] data: list of data
+        :param data: list of data
 
         :returns: array of integers
-        :rtype: list[int]
         """
 
         # Convert list of data to integer
@@ -723,20 +695,19 @@ class Parameter(object):
             return [int(vv) for vv in tmp]
 
     @staticmethod
-    def __str_to_str(data):
+    def __str_to_str(data: List[str]) -> List[str]:
         """Null op for string-to-string conversion.
 
-        :param list[str] data: list of data
+        :param data: list of data
 
         :returns: unmodified array of data
-        :rtype: list[str]
         """
 
         # nop for list of strings
         # 2019-05-22 PAN: For python 3 force string type to byte
         #                 otherwise they are treated as unicode
         #                 which breaks the write_netcdf() routine.
-        # 2019-06-26 PAN: Removed the encode because it broken writing the ASCII
+        # 2019-06-26 PAN: Removed the encode because it broke writing the ASCII
         #                 parameter files. Instead the conversion to ascii is
         #                 handled in the write_netcdf routine of ParameterSet
         # data = [dd.encode() for dd in data]

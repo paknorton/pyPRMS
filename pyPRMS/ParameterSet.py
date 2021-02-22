@@ -7,7 +7,7 @@ import sys
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
-from typing import List
+from typing import List, Optional, Set, Union
 
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
@@ -23,11 +23,12 @@ class ParameterSet(object):
     Container for a Parameters object and a Dimensions object.
     """
 
-    def __init__(self, verbose=False, verify=True):
+    def __init__(self, verbose: Optional[bool] = False,
+                 verify: Optional[bool] = True):
         """Create a new ParameterSet.
 
-        :param bool verbose: output debugging information
-        :param bool verify: whether to load the master parameters (default=True)
+        :param verbose: output debugging information
+        :param verify: whether to load the master parameters (default=True)
         """
 
         self.__parameters = Parameters()
@@ -45,7 +46,6 @@ class ParameterSet(object):
         """Get a list of parameter names in the ParameterSet.
 
         :returns: list of parameter names
-        :rtype: list[str]
         """
 
         return list(self.parameters.keys())
@@ -54,8 +54,7 @@ class ParameterSet(object):
     def dimensions(self) -> Dimensions:
         """Get dimensions object.
 
-        :returns: dimensions object
-        :rtype: Dimensions
+        :returns: Dimensions object
         """
 
         return self.__dimensions
@@ -64,8 +63,7 @@ class ParameterSet(object):
     def master_parameters(self) -> ValidParams:
         """Get master parameters.
 
-        :returns: master parameters object
-        :rtype: ValidParams
+        :returns: ValidParams object
         """
 
         return self.__master_params
@@ -75,7 +73,6 @@ class ParameterSet(object):
         """Get Parameters object.
 
         :returns: Parameters object
-        :rtype: Parameters
         """
 
         return self.__parameters
@@ -85,7 +82,6 @@ class ParameterSet(object):
         """Get XML element tree of the dimensions used by all parameters.
 
         :returns: element tree of dimensions
-        :rtype: xmlET.Element
         """
 
         dims_xml = xmlET.Element('dimensions')
@@ -106,7 +102,6 @@ class ParameterSet(object):
         """Get XML element tree of the parameters.
 
         :returns: element tree of parameters
-        :rtype: xmlET.Element
         """
 
         inv_map = {vv: kk for kk, vv in NHM_DATATYPES.items()}
@@ -185,7 +180,7 @@ class ParameterSet(object):
         new shape specified by master parameters. The hru_deplcrv parameter has
         special handling to also update the snarea_curve parameter.
 
-        :param str name: name of parameter
+        :param name: name of parameter
         """
 
         if self.__master_params is not None:
@@ -234,20 +229,21 @@ class ParameterSet(object):
     def reduce_by_modules(self, control=None):
         """Reduce the ParameterSet to the parameters required by the modules
         defined in a control file.
+
+        :param control: Control file object
         """
 
         if self.__master_params is not None:
             pset = self.master_parameters.get_params_for_modules(modules=control.modules.values())
             self.reduce_parameters(required_params=pset)
 
-    def reduce_parameters(self, required_params=None):
+    def reduce_parameters(self, required_params: Optional[Union[Set, List]] = None):
         """Remove parameters that are not needed.
 
         Given a set of required parameters removes parameters that are not
         listed.
 
         :param required_params: list or set of required parameters names
-        :type required_params: list or set
 
         :raises TypeError: if required_params is not a set or list
         """
@@ -262,8 +258,13 @@ class ParameterSet(object):
         for rparam in remove_list:
             self.parameters.remove(rparam)
 
-    def remove_by_global_id(self, hrus=None, segs=None):
-        """Removes data-by-id (nhm_seg, nhm_id) from all parameters"""
+    def remove_by_global_id(self, hrus: Optional[List] = None,
+                            segs: Optional[List] = None):
+        """Removes data-by-id (nhm_seg, nhm_id) from all parameters
+
+        :param hrus: List of HRU IDs to remove
+        :param segs: List of segment IDs to remove
+        """
         self.__parameters.remove_by_global_id(hrus=hrus, segs=segs)
 
         # Adjust the global dimensions
@@ -281,7 +282,7 @@ class ParameterSet(object):
     def write_parameters_xml(self, output_dir: str):
         """Write global parameters.xml file.
 
-        :param str output_dir: output path for parameters.xml file
+        :param output_dir: output path for parameters.xml file
         """
 
         # Write the global parameters xml file
@@ -292,7 +293,7 @@ class ParameterSet(object):
     def write_dimensions_xml(self, output_dir: str):
         """Write global dimensions.xml file.
 
-        :param str output_dir: output path for dimensions.xml file
+        :param output_dir: output path for dimensions.xml file
         """
 
         # Write the global dimensions xml file
@@ -303,7 +304,7 @@ class ParameterSet(object):
     def write_netcdf(self, filename: str):
         """Write parameters to a netcdf format file.
 
-        :param str filename: full path for output file
+        :param filename: full path for output file
         """
 
         # Create the netcdf file
@@ -426,7 +427,7 @@ class ParameterSet(object):
     def write_paramdb(self, output_dir: str):
         """Write all parameters using the paramDb output format.
 
-        :param str output_dir: output path for paramDb files
+        :param output_dir: output path for paramDb files
         """
 
         # check for / create output directory
@@ -461,12 +462,14 @@ class ParameterSet(object):
             #     # ff.write(xmlstr.encode('utf-8'))
             #     ff.write(xmlstr)
 
-    def write_parameter_file(self, filename: str, header=None, prms_version=5):
+    def write_parameter_file(self, filename: str,
+                             header: Optional[List[str]] = None,
+                             prms_version: Optional[int] = 5):
         """Write a parameter file.
 
-        :param str filename: name of parameter file
-        :param list[str] header: list of header lines
-        :param int prms_version: Output either version 5 or 5 parameter files
+        :param filename: name of parameter file
+        :param header: list of header lines
+        :param prms_version: Output either version 5 or 5 parameter files
         """
 
         # Write the parameters out to a file

@@ -1,4 +1,6 @@
 
+from typing import Optional, Union, List
+
 from pyPRMS.constants import DIMENSION_NAMES
 
 
@@ -14,18 +16,18 @@ def _valid_dimension_name(name: str):
 
 
 class Dimension(object):
-
     """Defines a single dimension."""
 
-    def __init__(self, name=None, size=0, description=None):
+    def __init__(self, name: Optional[str] = None,
+                 size: Optional[int] = 0,
+                 description: Optional[str] = None):
         """Create a new dimension object.
 
         A dimension has a name and a size associated with it.
 
-        :param str name: The name of the dimension
-        :param int size: The size of the dimension
+        :param name: The name of the dimension
+        :param size: The size of the dimension
         :param description: Description of the dimension
-        :type description: str or None
         """
 
         self.__name = None
@@ -40,7 +42,6 @@ class Dimension(object):
         """Name of the dimension.
 
         :returns: Name of the dimension
-        :rtype: str
         """
 
         return self.__name
@@ -49,7 +50,7 @@ class Dimension(object):
     def name(self, name: str):
         """Sets the name of the dimension.
 
-        :param str name: Name of the dimension
+        :param name: Name of the dimension
         :raises ValueError: if dimension name is not a valid PRMS dimension
         """
 
@@ -63,8 +64,7 @@ class Dimension(object):
     def size(self) -> int:
         """Size of the dimension.
 
-        :returns: size of the dimension
-        :rtype: int
+        :returns: Size of the dimension
         """
 
         return self.__size
@@ -73,7 +73,7 @@ class Dimension(object):
     def size(self, value: int):
         """Set the size of the dimension.
 
-        :param int value: size of the dimension
+        :param value: Size of the dimension
         :raises ValueError: if dimension size in not a positive integer
         """
         if isinstance(value, str):
@@ -98,8 +98,7 @@ class Dimension(object):
     def description(self) -> str:
         """Description for the dimension.
 
-        :returns: description for the dimension
-        :rtype: str
+        :returns: Description for the dimension
         """
 
         return self.__description
@@ -108,7 +107,7 @@ class Dimension(object):
     def description(self, descstr: str):
         """Set the description of the dimension.
 
-        :param str descstr: description string
+        :param descstr: Description string
         """
 
         self.__description = descstr
@@ -116,13 +115,12 @@ class Dimension(object):
     def __repr__(self) -> str:
         return 'Dimension(name={}, size={!r})'.format(self.name, self.size)
 
-    def __iadd__(self, other):
+    def __iadd__(self, other: int):
         """Add a number to dimension size.
 
-        :param int other: integer value
+        :param other: Integer value
 
-        :returns: dimension size
-        :rtype: int
+        :returns: Dimension size
 
         :raises ValueError: if type of parameter is not an integer
         """
@@ -134,13 +132,12 @@ class Dimension(object):
         self.size += other
         return self
 
-    def __isub__(self, other):
+    def __isub__(self, other: int):
         """Subtracts integer from dimension size.
 
-        :param int other: integer value
+        :param other: Integer value
 
-        :returns: dimension size
-        :rtype: int
+        :returns: Dimension size
 
         :raises ValueError: if type of parameter is not an integer
         :raises ValeuError: if parameter is not a positive integer

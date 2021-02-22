@@ -16,10 +16,9 @@ def dparse(*dstr: Union[Sequence[str], Sequence[int]]) -> datetime:
     If only a year is provided the returned datetime will be for the last day of the year (e.g. 12-31).
     If only a year and a month is provided the returned datetime will be for the last day of the given month.
 
-    :param list[str] dstr: year, month, day; or year, month; or year
+    :param dstr: year, month, day; or year, month; or year
 
-    :returns: datetime
-    :rtype: datetime
+    :returns: datetime object
     """
 
     dint = [int(x) for x in dstr]
@@ -44,13 +43,12 @@ def dparse(*dstr: Union[Sequence[str], Sequence[int]]) -> datetime:
 #     return dt
 
 
-def read_xml(filename: str):
+def read_xml(filename: str) -> xmlET.Element:
     """Returns the root of the xml tree for a given file.
 
-    :param str filename: XML filename
+    :param filename: XML filename
 
-    :returns: root of the xml tree
-    :rtype: xmlET.ElementTree
+    :returns: Root of the xml tree
     """
 
     # Open and parse an xml file and return the root of the tree
@@ -58,13 +56,12 @@ def read_xml(filename: str):
     return xml_tree.getroot()
 
 
-def float_to_str(f: float):
+def float_to_str(f: float) -> str:
     """Convert the given float to a string, without resorting to scientific notation.
 
-    :param float f: number
+    :param f: Number
 
-    :returns: string representation of the float
-    :rtype: str
+    :returns: String representation of the float
     """
 
     # From: https://stackoverflow.com/questions/38847690/convert-float-to-string-without-scientific-notation-and-false-precision

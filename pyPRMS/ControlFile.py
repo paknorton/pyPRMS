@@ -30,10 +30,20 @@ class ControlFile(Control):
 
     @property
     def filename(self) -> str:
+        """Get control filename.
+
+        :returns: Name of control file
+        """
+
         return self.__filename
 
     @filename.setter
     def filename(self, fname: str):
+        """Set the name of the control file.
+
+        :param name: Name of the control file
+        """
+
         self.__isloaded = False
         self.__filename = fname
         self._read()

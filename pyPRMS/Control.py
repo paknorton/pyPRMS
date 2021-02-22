@@ -15,7 +15,6 @@ from pyPRMS.constants import ctl_order, ctl_variable_modules, ctl_implicit_modul
 
 
 class Control(object):
-
     """
     Class object for a collection of control variables.
     """
@@ -81,7 +80,6 @@ class Control(object):
         """Get control variable objects.
 
         :returns: control variable objects
-        :rtype: collections.OrderedDict[str, ControlVariable]
         """
 
         return self.__control_vars
@@ -90,8 +88,7 @@ class Control(object):
     def dynamic_parameters(self) -> List[str]:
         """Get parameter names that have the dynamic flag set.
 
-        :returns: list of parameter names
-        :rtype: list[str]
+        :returns: List of parameter names
         """
 
         dyn_params = []
@@ -108,7 +105,6 @@ class Control(object):
         """Indicates if any dynamic parameters have been requested.
 
         :returns: True if dynamic parameters are required
-        :rtype: bool
         """
         return len(self.dynamic_parameters) > 0
 
@@ -118,7 +114,7 @@ class Control(object):
 
         This is typically taken from the first two lines of a control file.
 
-        :returns: header information
+        :returns: Header information
         """
 
         return self.__header
@@ -127,8 +123,7 @@ class Control(object):
     def header(self, info: Union[Sequence[str], str]):
         """Set the header information.
 
-        :param info: header line(s)
-        :type info: list[str] or str
+        :param info: Header line(s)
         """
 
         if isinstance(info, list):
@@ -140,8 +135,7 @@ class Control(object):
     def modules(self) -> Dict[str, str]:
         """Get the modules defined in the control file.
 
-        :returns: defined modules
-        :rtype: dict[str, str]
+        :returns: Defined modules
         """
 
         mod_dict = {}
@@ -171,7 +165,7 @@ class Control(object):
     def add(self, name: str):
         """Add a control variable by name.
 
-        :param str name: name of the control variable
+        :param name: Name of the control variable
 
         :raises ControlError: if control variable already exists
         """
@@ -183,7 +177,7 @@ class Control(object):
     def exists(self, name: str) -> bool:
         """Checks if a given control variable exists.
 
-        :param str name: name of the control variable
+        :param name: Name of the control variable
         :returns: True if control variable exists otherwise False
         :rtype: bool
         """
@@ -193,10 +187,9 @@ class Control(object):
     def get(self, name: str) -> ControlVariable:
         """Returns the given control variable object.
 
-        :param str name: name of the control variable
+        :param name: Name of the control variable
 
-        :returns: control variable object
-        :rtype: ControlVariable
+        :returns: Control variable object
 
         :raises ValueError: if control variable does not exist
         """
@@ -208,7 +201,7 @@ class Control(object):
     def remove(self, name: str):
         """Delete a control variable if it exists.
 
-        :param str name: name of the control variable
+        :param name: Name of the control variable
         """
 
         if self.exists(name):
@@ -217,7 +210,7 @@ class Control(object):
     def write(self, filename: str):
         """Write a control file.
 
-        :param str filename: name of control file to create
+        :param filename: Name of control file to create
         """
 
         outfile = open(filename, 'w')

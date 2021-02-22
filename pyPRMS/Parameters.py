@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
-from typing import Union, Dict, List, OrderedDict as OrderedDictType
+from typing import Optional, Union, Dict, List, OrderedDict as OrderedDictType
 import matplotlib.pyplot as plt
 # import matplotlib.colors as colors
 import matplotlib as mpl
@@ -54,8 +54,6 @@ class Parameters(object):
     @cached_property
     def hru_to_seg(self) -> OrderedDictType[int, int]:
         """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs
-
-        :rtype: collections.OrderedDict[int, int]
         """
 
         self.__hru_to_seg = OrderedDict()
@@ -71,8 +69,6 @@ class Parameters(object):
     @property
     def parameters(self) -> OrderedDictType[str, Parameter]:
         """Returns an ordered dictionary of parameter objects.
-
-        :rtype: collections.OrderedDict[str, Parameter]
         """
 
         return self.__parameters
@@ -87,8 +83,6 @@ class Parameters(object):
     @cached_property
     def seg_to_hru(self) -> OrderedDictType[int, int]:
         """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs
-
-        :rtype: collections.OrderedDict[int, int]
         """
 
         self.__seg_to_hru = OrderedDict()
@@ -102,9 +96,21 @@ class Parameters(object):
             self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
         return self.__seg_to_hru
 
-    def add(self, name, datatype=None, units=None, model=None, description=None,
-            help=None, modules=None, minimum=None, maximum=None, default=None,
-            info=None):
+    # def add(self, name, datatype=None, units=None, model=None, description=None,
+    #         help=None, modules=None, minimum=None, maximum=None, default=None,
+    #         info=None):
+    def add(self, name: Optional[str] = None,
+            datatype: Optional[int] = None,
+            units: Optional[str] = None,
+            model: Optional[str] = None,
+            description: Optional[str] = None,
+            help: Optional[str] = None,
+            modules: Optional[Union[str, List[str]]] = None,
+            minimum: Optional[Union[int, float]] = None,
+            maximum: Optional[Union[int, float]] = None,
+            default: Optional[Union[int, float]] = None,
+            info: Optional[Parameter] = None):
+
         """Add a new parameter by name.
 
         :param str name: A valid PRMS parameter name
@@ -190,9 +196,8 @@ class Parameters(object):
     def get(self, name: str) -> Parameter:
         """Returns a parameter object.
 
-        :param str name: The name of the parameter
+        :param name: The name of the parameter
         :returns: Parameter object
-        :rtype: Parameter
         """
 
         # Return the given parameter
@@ -208,9 +213,8 @@ class Parameters(object):
         respective national ids are included, if they exist, as the index in the
         returned dataframe.
 
-        :param str name: The name of the parameter
+        :param name: The name of the parameter
         :returns: Pandas DataFrame of the parameter data
-        :rtype: pd.DataFrame
         """
 
         if not self.exists(name):
@@ -255,7 +259,12 @@ class Parameters(object):
         return param_data
 
     def get_subset(self, name: str, global_ids: List[int]) -> pd.DataFrame:
-        """Returns a subset for a parameter based on the global_ids (e.g. nhm)"""
+        """Returns a subset for a parameter based on the global_ids (e.g. nhm)
+        :param name: Name of the parameter
+        :param global_ids: List of global IDs to extract
+
+        :return: Dataframe of extracted values
+        """
         param = self.__parameters[name]
         dim_set = set(param.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw', 'nsegment'})
         id_index_map = {}
@@ -284,9 +293,7 @@ class Parameters(object):
         Plots either to the screen or an output directory.
 
         :param name: Name of parameter to plot
-        :type name: str
         :param output_dir: Directory to write plot to (None for write to screen only)
-        :type output_dir: str or None
         """
 
         is_monthly = False
@@ -507,7 +514,6 @@ class Parameters(object):
         """Delete one or more parameters if they exist.
 
         :param name: parameter or list of parameters to remove
-        :type name: str or list[str]
         """
 
         if isinstance(name, list):
@@ -524,7 +530,7 @@ class Parameters(object):
         """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
 
         :param hrus: National HRU ids
-        :param segs: 
+        :param segs: National segment ids
         """
 
         if segs is not None:

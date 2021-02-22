@@ -1,9 +1,10 @@
+import datetime
 import os
 import numpy as np
 import pandas as pd
 import netCDF4 as nc
 from collections import OrderedDict
-from typing import Union, OrderedDict as OrderedDictType
+from typing import List, Union, Optional, OrderedDict as OrderedDictType
 
 from pyPRMS.prms_helpers import dparse
 from pyPRMS.constants import REGIONS
@@ -37,7 +38,12 @@ class CbhAscii(object):
     # took care of those corrections itself. This would provide a more seamless workflow
     # from GDP to PRMS. At this point I'm not taking this on though -- for a future revision.
 
-    def __init__(self, src_path=None, st_date=None, en_date=None, indices=None, nhm_hrus=None, mapping=None):
+    def __init__(self, src_path: Optional[str] = None,
+                 st_date: Optional[datetime.datetime] = None,
+                 en_date: Optional[datetime.datetime] = None,
+                 indices=None,
+                 nhm_hrus=None,
+                 mapping=None):
         """Create CbhAscii object.
         """
 
