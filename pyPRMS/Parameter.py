@@ -505,6 +505,8 @@ class Parameter(object):
             # Check both ends of the range
             if not(isinstance(self.__minimum, str) or isinstance(self.__maximum, str)):
                 return (self.__data >= self.__minimum).all() and (self.__data <= self.__maximum).all()
+            elif self.__minimum == 'bounded':
+                return (self.__data >= self.__default).all()
         return True
 
     def stats(self):

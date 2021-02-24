@@ -1,6 +1,7 @@
 
 # NOTE: cached_property is not available in python version < 3.8
 from functools import cached_property
+import gc
 import geopandas
 import networkx as nx
 import numpy as np
@@ -165,11 +166,20 @@ class Parameters(object):
         for pk in sorted(list(self.__parameters.keys())):
             pp = self.__parameters[pk]
 
-            print(pp.check())
+            # print(pp.check())
+            if pp.has_correct_size():
+                print(f'{pk}: Size OK')
+            else:
+                print(f'{pk}: Incorrect number of values for dimensions.')
 
             if not pp.check_values():
-                print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
-                      f'the valid range of ({pp.minimum}, {pp.maximum})')
+                if not(isinstance(pp.minimum, str) or isinstance(pp.maximum, str)):
+                    print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
+                          f'the valid range of ({pp.minimum}, {pp.maximum})')
+                elif pp.minimum == 'bounded':
+                    # TODO: Handling bounded parameters needs improvement
+                    print(f'    WARNING: Bounded parameter value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
+                          f'the valid range of ({pp.default}, {pp.maximum})')
 
             if pp.all_equal():
                 if pp.data.ndim == 2:
@@ -287,13 +297,14 @@ class Parameters(object):
         else:
             return param.data[tuple(nhm_idx0), ]
 
-    def plot(self, name: str, output_dir=None, use_drange=False, **kwargs):
+    def plot(self, name: str, output_dir: Optional[str] = None, use_drange: Optional[bool] = False, **kwargs):
         """Plot a parameter.
 
         Plots either to the screen or an output directory.
 
         :param name: Name of parameter to plot
         :param output_dir: Directory to write plot to (None for write to screen only)
+        :param use_drange: True uses actual data for limits; False (default) uses defined limits
         """
 
         is_monthly = False
@@ -362,9 +373,11 @@ class Parameters(object):
 
                 if output_dir is not None:
                     if is_monthly:
+                        # First month
                         plt.savefig(f'{output_dir}/{name}_{time_index+1:02}.png', dpi=150, bbox_inches='tight')
 
                         for tt in range(1, 12):
+                            # Months 2 through 12
                             # print(f'    Index: {tt}')
                             param_data = self.get_dataframe(name).iloc[:, tt].to_frame(name=name)
                             df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True,
@@ -378,6 +391,11 @@ class Parameters(object):
                             plt.savefig(f'{output_dir}/{name}_{tt+1:02}.png', dpi=150, bbox_inches='tight')
                     else:
                         plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
+
+                    # Close the figure so we don't chew up memory
+                    fig.clf()
+                    plt.close()
+                    gc.collect()
             elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
                 # Plot segment parameters
                 # Get extent information
@@ -431,6 +449,7 @@ class Parameters(object):
 
                     if output_dir is not None:
                         plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
+                        plt.close(fig)
                 else:
                     print('No segment shapefile is loaded; skipping')
             else:
