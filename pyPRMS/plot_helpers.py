@@ -180,7 +180,8 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
         cmap = lscm.from_list('mycm', cmap)
     else:
         if the_var == 'hru_deplcrv':
-            cmap = plt.cm.get_cmap(name=cmap, lut=param_data.max().max())
+            num_col = abs(param_data.max().max() - param_data.min().min()) + 1
+            cmap = plt.cm.get_cmap(name=cmap, lut=num_col)
         else:
             cmap = plt.get_cmap(cmap)
     # missing_color = '#ff00cb'   # pink/magenta
@@ -211,7 +212,8 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
 
     if the_var == 'hru_deplcrv':
         bnds = np.arange(param_data.min().min(), param_data.max().max()+2) - 0.5
-        norm = colors.BoundaryNorm(boundaries=bnds, ncolors=param_data.max().max())
+        num_col = abs(param_data.max().max() - param_data.min().min()) + 1
+        norm = colors.BoundaryNorm(boundaries=bnds, ncolors=num_col)
 
     return cmap, norm
 
