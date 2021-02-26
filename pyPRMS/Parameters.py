@@ -297,14 +297,15 @@ class Parameters(object):
         else:
             return param.data[tuple(nhm_idx0), ]
 
-    def plot(self, name: str, output_dir: Optional[str] = None, use_drange: Optional[bool] = False, **kwargs):
+    def plot(self, name: str, output_dir: Optional[str] = None,
+             limits: Optional[Union[str, List[float]]] = 'valid', **kwargs):
         """Plot a parameter.
 
         Plots either to the screen or an output directory.
 
         :param name: Name of parameter to plot
         :param output_dir: Directory to write plot to (None for write to screen only)
-        :param use_drange: True uses actual data for limits; False (default) uses defined limits
+        :param limits: Limits to use for colorbar. One of 'valid', 'centered', 'absolute', or list of floats. Default is 'valid'.
         """
 
         is_monthly = False
@@ -313,17 +314,47 @@ class Parameters(object):
         if self.exists(name):
             cparam = self.__parameters[name]
 
+            if set(cparam.dimensions.keys()).intersection({'nmonths'}):
+                # Need 12 monthly plots of parameter
+                is_monthly = True
+                time_index = 0  # starting time index
+                param_data = self.get_dataframe(name).iloc[:, time_index].to_frame(name=name)
+            else:
+                param_data = self.get_dataframe(name).iloc[:]
+
+            if isinstance(limits, str):
+                if limits == 'valid':
+                    # Use the defined valid range of possible values
+                    if cparam.minimum == 'bounded':
+                        # Parameters with bounded values need to always use the actual range of values
+                        drange = [cparam.data.min().min(), cparam.data.max().max()]
+                    elif name == 'jh_coef':
+                        drange = [-0.05, 0.05]
+                    else:
+                        drange = [cparam.minimum, cparam.maximum]
+                elif limits == 'centered':
+                    # Use the maximum range of the actual data values
+                    lim = max(abs(cparam.data.min().min()), abs(cparam.data.max().max()))
+                    drange = [-lim, lim]
+                elif limits == 'absolute':
+                    # Use the min and max of the data values
+                    drange = [cparam.data.min().min(), cparam.data.max().max()]
+                else:
+                    raise ValueError('String argument for limits must be "valid", "centered", or "absolute"')
+            elif isinstance(limits, (list, tuple)):
+                if len(limits) != 2:
+                    raise ValueError('When a list is used for plotting limits it should have 2 values (min, max)')
+
+                drange = [min(limits), max(limits)]
+            else:
+                raise TypeError('Argument, limits, must be string or a list[min,max]')
+
+            cmap, norm = set_colormap(name, param_data, min_val=drange[0],
+                                      max_val=drange[1], **kwargs)
+
             if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
                 # Get extent information
                 minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
-
-                if set(cparam.dimensions.keys()).intersection({'nmonths'}):
-                    # Need 12 monthly plots of parameter
-                    is_monthly = True
-                    time_index = 0  # starting time index
-                    param_data = self.get_dataframe(name).iloc[:, time_index].to_frame(name=name)
-                else:
-                    param_data = self.get_dataframe(name).iloc[:]
 
                 crs_proj = get_projection(self.__hru_poly)
 
@@ -340,24 +371,12 @@ class Parameters(object):
                 ax.gridlines()
                 ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
 
-                if not use_drange:
-                    if name == 'jh_coef':
-                        cmap, norm = set_colormap(name, param_data, min_val=-0.05,
-                                                  max_val=0.05, **kwargs)
-                    else:
-                        cmap, norm = set_colormap(name, param_data, min_val=cparam.minimum,
-                                                  max_val=cparam.maximum, **kwargs)
-                else:
-                    # Use the min and max of the actual data values
-                    lim = max(abs(cparam.data.min()), abs(cparam.data.max()))
-                    cmap, norm = set_colormap(name, param_data, min_val=-lim,
-                                              max_val=lim, **kwargs)
-
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                 mapper.set_array(df_mrg[name])
 
                 if name == 'hru_deplcrv':
-                    tck_arr = np.arange(param_data.min().min(), param_data.max().max()+1)
+                    # tck_arr = np.arange(param_data.min().min(), param_data.max().max()+1)
+                    tck_arr = np.arange(drange[0], drange[1]+1)
                     cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label='Curve index')
                     cb.ax.tick_params(length=0)
                 else:
@@ -408,7 +427,7 @@ class Parameters(object):
 
                     seg_geoms_exploded = self.__seg_poly.explode().reset_index(level=1, drop=True)
 
-                    param_data = self.get_dataframe(name).iloc[:]
+                    # param_data = self.get_dataframe(name).iloc[:]
 
                     crs_proj = get_projection(self.__seg_poly)
 
@@ -422,14 +441,6 @@ class Parameters(object):
                     ax.coastlines()
                     ax.gridlines()
                     ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
-
-                    if not use_drange:
-                        cmap, norm = set_colormap(name, param_data, **kwargs)
-                    else:
-                        # Use the min and max of the actual data values
-                        lim = max(abs(cparam.data.min()), abs(cparam.data.max()))
-                        cmap, norm = set_colormap(name, param_data, min_val=-lim,
-                                                  max_val=lim, **kwargs)
 
                     if kwargs.get('vary_color', True):
                         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -449,7 +460,11 @@ class Parameters(object):
 
                     if output_dir is not None:
                         plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
-                        plt.close(fig)
+
+                        # Close the figure so we don't chew up memory
+                        fig.clf()
+                        plt.close()
+                        gc.collect()
                 else:
                     print('No segment shapefile is loaded; skipping')
             else:

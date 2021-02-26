@@ -179,11 +179,14 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
         lscm = mpl.colors.LinearSegmentedColormap
         cmap = lscm.from_list('mycm', cmap)
     else:
-        if the_var == 'hru_deplcrv':
-            num_col = abs(param_data.max().max() - param_data.min().min()) + 1
-            cmap = plt.cm.get_cmap(name=cmap, lut=num_col)
-        else:
-            cmap = plt.get_cmap(cmap)
+        cmap = plt.get_cmap(cmap)
+        # if the_var == 'hru_deplcrv':
+        #     num_col = abs(param_data.max().max() - param_data.min().min()) + 1
+        #     cmap = plt.cm.get_cmap(name=cmap, lut=num_col)
+        # else:
+        #     cmap = plt.get_cmap(cmap)
+
+
     # missing_color = '#ff00cb'   # pink/magenta
 
     # Get the min and max values for the variable
@@ -211,8 +214,11 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
         norm = Normalize(vmin=min_val, vmax=max_val)
 
     if the_var == 'hru_deplcrv':
-        bnds = np.arange(param_data.min().min(), param_data.max().max()+2) - 0.5
-        num_col = abs(param_data.max().max() - param_data.min().min()) + 1
+        # Adjust the boundaries; useful for qualitative colormaps
+        # bnds = np.arange(param_data.min().min(), param_data.max().max()+2) - 0.5
+        # num_col = abs(param_data.max().max() - param_data.min().min()) + 1
+        bnds = np.arange(min_val, max_val+2) - 0.5
+        num_col = abs(max_val - min_val) + 1
         norm = colors.BoundaryNorm(boundaries=bnds, ncolors=num_col)
 
     return cmap, norm
