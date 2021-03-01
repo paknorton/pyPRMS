@@ -122,7 +122,7 @@ class ParameterFile(ParameterSet):
                     self.parameters.add(varname, info=self.master_parameters[varname])
 
                     if self.master_parameters[varname].minimum == 'bounded':
-                        # The min and max of bounded parameter values will be adjusted later
+                        # TODO: The min and max of bounded parameter values will be adjusted later
                         bounded_parameters.append(varname)
                 else:
                     self.parameters.add(varname)

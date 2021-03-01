@@ -107,29 +107,24 @@ class Parameters(object):
             description: Optional[str] = None,
             help: Optional[str] = None,
             modules: Optional[Union[str, List[str]]] = None,
-            minimum: Optional[Union[int, float]] = None,
-            maximum: Optional[Union[int, float]] = None,
-            default: Optional[Union[int, float]] = None,
+            minimum: Optional[Union[int, float, str]] = None,
+            maximum: Optional[Union[int, float, str]] = None,
+            default: Optional[Union[int, float, str]] = None,
             info: Optional[Parameter] = None):
 
         """Add a new parameter by name.
 
-        :param str name: A valid PRMS parameter name
-        :param int datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
-        :param str units: Option units string for the parameter
-        :param str model: Name of model parameter is valid for
-        :param str description: Description of the parameter
-        :param str help: Help text for the parameter
+        :param name: A valid PRMS parameter name
+        :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
+        :param units: Option units string for the parameter
+        :param model: Name of model parameter is valid for
+        :param description: Description of the parameter
+        :param help: Help text for the parameter
         :param modules: List of modules that require the parameter
-        :type modules: list[str] or None
         :param minimum: Minimum value allowed in the parameter data
-        :type minimum: int or float or None
         :param maximum: Maximum value allowed in the parameter data
-        :type maximum: int or float or None
         :param default: Default value used for parameter data
-        :type default: int or float or None
         :param info: Parameter object containing the metadata information for the parameter
-        :type info: Parameter
 
         :raises ParameterError: if parameter already exists or name is None
         """
