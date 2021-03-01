@@ -631,7 +631,7 @@ class Parameter(object):
                 # Float and double types have to be formatted specially so
                 # they aren't written in exponential notation or with
                 # extraneous zeroes
-                tmp = f'{dd:<20f}'.rstrip('0 ')
+                tmp = f'{dd:<20.7f}'.rstrip('0 ')
                 if tmp[-1] == '.':
                     tmp += '0'
                 outstr += f'{ii+1},{tmp}\n'
