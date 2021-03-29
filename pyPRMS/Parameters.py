@@ -293,7 +293,8 @@ class Parameters(object):
             return param.data[tuple(nhm_idx0), ]
 
     def plot(self, name: str, output_dir: Optional[str] = None,
-             limits: Optional[Union[str, List[float]]] = 'valid', **kwargs):
+             limits: Optional[Union[str, List[float]]] = 'valid',
+             mask_defaults: Optional[str] = None, **kwargs):
         """Plot a parameter.
 
         Plots either to the screen or an output directory.
@@ -301,6 +302,7 @@ class Parameters(object):
         :param name: Name of parameter to plot
         :param output_dir: Directory to write plot to (None for write to screen only)
         :param limits: Limits to use for colorbar. One of 'valid', 'centered', 'absolute', or list of floats. Default is 'valid'.
+        :param mask_defaults: Color for defaults values
         """
 
         is_monthly = False
@@ -316,6 +318,9 @@ class Parameters(object):
                 param_data = self.get_dataframe(name).iloc[:, time_index].to_frame(name=name)
             else:
                 param_data = self.get_dataframe(name).iloc[:]
+
+            if mask_defaults is not None:
+                param_data = param_data.mask(param_data == cparam.default)
 
             if isinstance(limits, str):
                 if limits == 'valid':
@@ -346,6 +351,9 @@ class Parameters(object):
 
             cmap, norm = set_colormap(name, param_data, min_val=drange[0],
                                       max_val=drange[1], **kwargs)
+
+            if mask_defaults is not None:
+                cmap.set_bad(mask_defaults, 0.7)
 
             if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
                 # Get extent information
@@ -385,6 +393,14 @@ class Parameters(object):
                 col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
                                               **dict(kwargs, cmap=cmap, norm=norm))
 
+                if mask_defaults is not None:
+                    plt.annotate(f'NOTE: Default values ({cparam.default}) are masked', xy=(0.5, 0.01),
+                                 xycoords='axes fraction', fontsize=12, fontweight='bold',
+                                 bbox=dict(facecolor=mask_defaults, alpha=1.0))
+
+                    # plt.text(x, y, 'Barcelona',fontsize=12,fontweight='bold', ha='left',
+                    #          va='center',color='k', bbox=dict(facecolor='b', alpha=0.2))
+
                 if output_dir is not None:
                     if is_monthly:
                         # First month
@@ -394,6 +410,10 @@ class Parameters(object):
                             # Months 2 through 12
                             # print(f'    Index: {tt}')
                             param_data = self.get_dataframe(name).iloc[:, tt].to_frame(name=name)
+
+                            if mask_defaults is not None:
+                                param_data = param_data.mask(param_data == cparam.default)
+
                             df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True,
                                                           how='left')
 
@@ -453,6 +473,11 @@ class Parameters(object):
                     col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
                                                **dict(kwargs, cmap=cmap, norm=norm))
 
+                    if mask_defaults is not None:
+                        plt.annotate(f'NOTE: Default values ({cparam.default}) are masked', xy=(0.5, 0.01),
+                                     xycoords='axes fraction', fontsize=12, fontweight='bold',
+                                     bbox=dict(facecolor=mask_defaults, alpha=1.0))
+
                     if output_dir is not None:
                         plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
 
@@ -465,7 +490,15 @@ class Parameters(object):
             else:
                 print('Non-plottable parameter')
 
-    def update_element(self, name, id1, value):
+    def update_element(self, name: str, id1: int, value: Union[int, float, List[int], List[float]]):
+        """Update single value or row of values (e.g. nhru by nmonths) for a
+        given nhm_id or nhm_seg.
+
+        :param name: Name of parameter to update
+        :param id1: scalar nhm_id or nhm_seg
+        :param value: The updated value(s)
+        """
+
         # NOTE: id1 is either an nhm_id or nhm_seg (both are 1-based)
         cparam = self.get(name)
 

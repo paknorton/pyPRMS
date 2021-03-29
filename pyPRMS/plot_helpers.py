@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import copy
 import cartopy.crs as ccrs
 
 import matplotlib.pyplot as plt
@@ -34,7 +35,10 @@ def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_widt
 
     if vary_width:
         lwidths = ((values / values.max()).to_numpy() + 0.01) * linewidth
-        lines = LineCollection(lines, linewidths=lwidths, colors=colors, alpha=alpha)
+        if vary_color:
+            lines = LineCollection(lines, linewidths=lwidths, cmap=cmap, norm=norm, alpha=alpha)
+        else:
+            lines = LineCollection(lines, linewidths=lwidths, colors=colors, alpha=alpha)
     elif vary_color:
         lines = LineCollection(lines, linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm)
 
@@ -174,12 +178,14 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
         else:
             cmap = 'brg'
 
+    # cmap = copy.copy(mpl.cm.get_cmap("nipy_spectral"))
+
     # Create the colormap if a list of names is given, otherwise use the given colormap
     if isinstance(cmap, (list, tuple)):
         lscm = mpl.colors.LinearSegmentedColormap
         cmap = lscm.from_list('mycm', cmap)
     else:
-        cmap = plt.get_cmap(cmap)
+        cmap = copy.copy(plt.get_cmap(cmap))
         # if the_var == 'hru_deplcrv':
         #     num_col = abs(param_data.max().max() - param_data.min().min()) + 1
         #     cmap = plt.cm.get_cmap(name=cmap, lut=num_col)
@@ -206,12 +212,12 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
     #     else:
     #         norm = Normalize(vmin=0.0, vmax=max_val)
     # else:
-    if the_var in ['tmax_hru', 'tmin_hru', 'tmax', 'tmin']:
-        norm = Normalize(vmin=-max_val, vmax=max_val)
-    elif the_var in ['tmax_cbh_adj', 'tmin_cbh_adj', 'tmax_allsnow', 'jh_coef']:
-        norm = Normalize(vmin=-max_val, vmax=max_val)
-    else:
-        norm = Normalize(vmin=min_val, vmax=max_val)
+    # if the_var in ['tmax_hru', 'tmin_hru', 'tmax', 'tmin']:
+    #     norm = Normalize(vmin=-max_val, vmax=max_val)
+    # elif the_var in ['tmax_cbh_adj', 'tmin_cbh_adj', 'tmax_allsnow', 'jh_coef']:
+    #     norm = Normalize(vmin=-max_val, vmax=max_val)
+    # else:
+    norm = Normalize(vmin=min_val, vmax=max_val)
 
     if the_var == 'hru_deplcrv':
         # Adjust the boundaries; useful for qualitative colormaps
