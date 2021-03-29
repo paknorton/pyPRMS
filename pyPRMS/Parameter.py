@@ -411,21 +411,39 @@ class Parameter(object):
             return (self.__data == self.__data[0]).all()
         return False
 
-    def update_element(self, index, value):
+    def update_element(self, index: int, value: Union[int, float, List[int], List[float]]):
+        """Update single value or row of values (e.g. nhru by nmonths) for a
+        given zero-based index in the parameter data array.
+
+        :param index: scalar, zero-based array index
+        :param value: The updated value(s)
+        """
+
         # NOTE: index is zero-based
         # Update a single element or single row (e.g. nhru x nmonth) in the
         # parameter data array.
-        if np.array_equal(self.__data, value):
+        if np.array_equal(self.__data[index], value):
             pass
             # print(f'{self.__name}: updated value is equal to the old value')
         else:
             self.__data[index] = value
             self.__modified = True
 
-    def _value_index(self, value):
-        # NOTE: returned indices are zero-based
-        # Returns a list of indices where the data elements match value
-        return np.where(self.__data == value)[0]
+    def _value_index(self, value: Union[int, float, str]) -> Union[np.ndarray, None]:
+        """Given a scalar value return the indices where there is a match.
+
+        :param value: The value to find in the parameter data array
+
+        :returns: Array of zero-based indices matching the given value
+        """
+
+        if self.ndims > 1:
+            # TODO: 2021-03-24 PAN - add support for 2D arrays
+            print(f'{self.name}: _value_index() does not support 2D arrays yet')
+            return None
+        else:
+            # Returns a list of indices where the data elements match value
+            return np.where(self.__data == value)[0]
 
     def is_hru_param(self):
         return set(self.__dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'})
