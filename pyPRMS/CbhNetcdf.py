@@ -34,12 +34,14 @@ class CbhNetcdf(object):
     def __init__(self, src_path: Optional[str] = None,
                  st_date: Optional[datetime.datetime] = None,
                  en_date: Optional[datetime.datetime] = None,
-                 nhm_hrus: Optional[List[int]] = None):
+                 nhm_hrus: Optional[List[int]] = None,
+                 thredds: Optional[bool] = False):
         """
         :param src_path: Full path to netCDF file
         :param st_date: The starting date for restricting CBH results
         :param en_date: The ending date for restricting CBH results
         :param nhm_hrus: List of NHM HRU IDs to extract from CBH
+        :param thredds: If true pull CBH data from THREDDS server (testing only)
         """
         self.__src_path = src_path
         self.__stdate = st_date
@@ -48,6 +50,7 @@ class CbhNetcdf(object):
         self.__date_range = None
         self.__dataset = None
         self.__final_outorder = None
+        self.__thredds = thredds
 
         self.read_netcdf()
 
@@ -57,15 +60,51 @@ class CbhNetcdf(object):
 
         if self.__nhm_hrus:
             # print('\t\tOpen dataset')
-            try:
-                self.__dataset = xr.open_mfdataset(self.__src_path,
-                                                   chunks={'hruid': 1040}, combine='by_coords',
-                                                   decode_cf=True)
-                # NOTE: With a multi-file dataset the time attributes 'units' and
-                #       'calendar' are lost.
-                #       see https://github.com/pydata/xarray/issues/2436
-            except ValueError:
-                self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040}, combine='by_coords')
+
+            if self.__thredds:
+                thredds_server = 'http://gdp-netcdfdev.cr.usgs.gov:8080'
+                # thredds_server = 'http://localhost:8080'
+                base_opendap = f'{thredds_server}/thredds/dodsC/NHM_CBH_GM/files'
+
+                # base_url is used to get a list of files for a product
+                # Until xarray supports ncml parsing the list of files will have to be manually built
+                base_url = f'{thredds_server}/thredds/catalog/NHM_CBH_GM/files/catalog.html'
+
+                full_file_list = pd.read_html(base_url, skiprows=1)[0]['Files']
+
+                # Only include files ending in .nc (sometimes the .ncml files are included and we don't want those)
+                flist = full_file_list[full_file_list.str.match('.*nc$')].tolist()
+                flist.sort()
+
+                # Create list of file URLs
+                xfiles = [f'{base_opendap}/{xx}' for xx in flist]
+
+                try:
+                    # self.__dataset = xr.open_mfdataset(self.__src_path,
+                    #                                    chunks={'hruid': 1040}, combine='by_coords',
+                    #                                    decode_cf=True)
+                    # NOTE: With a multi-file dataset the time attributes 'units' and
+                    #       'calendar' are lost.
+                    #       see https://github.com/pydata/xarray/issues/2436
+
+                    # Open the remote multi-file dataset
+                    self.__dataset = xr.open_mfdataset(xfiles, chunks={'hruid': 1040}, combine='by_coords',
+                                                       decode_cf=True, engine='netcdf4')
+                except ValueError:
+                    # self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040}, combine='by_coords')
+                    self.__dataset = xr.open_mfdataset(xfiles, chunks={'hru': 1040}, combine='by_coords',
+                                                       decode_cf=True, engine='netcdf4')
+            else:
+                try:
+                    self.__dataset = xr.open_mfdataset(self.__src_path,
+                                                       chunks={'hruid': 1040}, combine='by_coords',
+                                                       decode_cf=True, engine='netcdf4')
+                    # NOTE: With a multi-file dataset the time attributes 'units' and
+                    #       'calendar' are lost.
+                    #       see https://github.com/pydata/xarray/issues/2436
+                except ValueError:
+                    self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040}, combine='by_coords',
+                                                       decode_cf=True, engine='netcdf4')
         else:
             print('ERROR: write the code for all HRUs')
             exit()
@@ -90,6 +129,7 @@ class CbhNetcdf(object):
                       f'indices ({" ".join(map(str, self.__dataset[var].coords))})')
                 raise
         else:
+            print('DEBUG: no dates supplied')
             data = self.__dataset[var].loc[:, self.__nhm_hrus].to_pandas()
 
         return data
