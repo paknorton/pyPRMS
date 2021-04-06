@@ -1,6 +1,11 @@
 
-# NOTE: cached_property is not available in python version < 3.8
-from functools import cached_property
+
+try:
+    # NOTE: cached_property is not available in python version < 3.8
+    from functools import cached_property
+except ImportError:
+    pass
+
 import gc
 import geopandas
 import networkx as nx
@@ -8,7 +13,13 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
-from typing import Optional, Union, Dict, List, OrderedDict as OrderedDictType
+
+try:
+    from typing import Optional, Union, Dict, List, OrderedDict as OrderedDictType
+except ImportError:
+    # pre-python 3.7.2
+    from typing import Optional, Union, Dict, List, MutableMapping as OrderedDictType
+
 import matplotlib.pyplot as plt
 # import matplotlib.colors as colors
 import matplotlib as mpl
@@ -52,20 +63,36 @@ class Parameters(object):
 
         return self.get(item)
 
-    @cached_property
-    def hru_to_seg(self) -> OrderedDictType[int, int]:
-        """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs
-        """
+    try:
+        @cached_property
+        def hru_to_seg(self) -> OrderedDictType[int, int]:
+            """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs
+            """
 
-        self.__hru_to_seg = OrderedDict()
+            self.__hru_to_seg = OrderedDict()
 
-        hru_segment = self.__parameters['hru_segment_nhm'].tolist()
-        nhm_id = self.__parameters['nhm_id'].tolist()
+            hru_segment = self.__parameters['hru_segment_nhm'].tolist()
+            nhm_id = self.__parameters['nhm_id'].tolist()
 
-        for ii, vv in enumerate(hru_segment):
-            # keys are 1-based, values in arrays are 1-based
-            self.__hru_to_seg[nhm_id[ii]] = vv
-        return self.__hru_to_seg
+            for ii, vv in enumerate(hru_segment):
+                # keys are 1-based, values in arrays are 1-based
+                self.__hru_to_seg[nhm_id[ii]] = vv
+            return self.__hru_to_seg
+    except NameError:
+        # Python pre-3.8 does not have the cache_property decorator
+        def hru_to_seg(self) -> OrderedDictType[int, int]:
+            """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs
+            """
+
+            self.__hru_to_seg = OrderedDict()
+
+            hru_segment = self.__parameters['hru_segment_nhm'].tolist()
+            nhm_id = self.__parameters['nhm_id'].tolist()
+
+            for ii, vv in enumerate(hru_segment):
+                # keys are 1-based, values in arrays are 1-based
+                self.__hru_to_seg[nhm_id[ii]] = vv
+            return self.__hru_to_seg
 
     @property
     def parameters(self) -> OrderedDictType[str, Parameter]:
@@ -81,21 +108,37 @@ class Parameters(object):
         return dict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data))
 
-    @cached_property
-    def seg_to_hru(self) -> OrderedDictType[int, int]:
-        """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs
-        """
+    try:
+        @cached_property
+        def seg_to_hru(self) -> OrderedDictType[int, int]:
+            """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs
+            """
 
-        self.__seg_to_hru = OrderedDict()
+            self.__seg_to_hru = OrderedDict()
 
-        hru_segment = self.__parameters['hru_segment_nhm'].tolist()
-        nhm_id = self.__parameters['nhm_id'].tolist()
+            hru_segment = self.__parameters['hru_segment_nhm'].tolist()
+            nhm_id = self.__parameters['nhm_id'].tolist()
 
-        for ii, vv in enumerate(hru_segment):
-            # keys are 1-based, values in arrays are 1-based
-            # Non-routed HRUs have a seg key = zero
-            self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
-        return self.__seg_to_hru
+            for ii, vv in enumerate(hru_segment):
+                # keys are 1-based, values in arrays are 1-based
+                # Non-routed HRUs have a seg key = zero
+                self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
+            return self.__seg_to_hru
+    except NameError:
+        def seg_to_hru(self) -> OrderedDictType[int, int]:
+            """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs
+            """
+
+            self.__seg_to_hru = OrderedDict()
+
+            hru_segment = self.__parameters['hru_segment_nhm'].tolist()
+            nhm_id = self.__parameters['nhm_id'].tolist()
+
+            for ii, vv in enumerate(hru_segment):
+                # keys are 1-based, values in arrays are 1-based
+                # Non-routed HRUs have a seg key = zero
+                self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
+            return self.__seg_to_hru
 
     # def add(self, name, datatype=None, units=None, model=None, description=None,
     #         help=None, modules=None, minimum=None, maximum=None, default=None,

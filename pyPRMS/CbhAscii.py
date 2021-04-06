@@ -4,7 +4,13 @@ import numpy as np
 import pandas as pd
 import netCDF4 as nc
 from collections import OrderedDict
-from typing import List, Union, Optional, OrderedDict as OrderedDictType
+
+try:
+    from typing import List, Union, Optional, OrderedDict as OrderedDictType
+except ImportError:
+    # pre-python 3.7.2
+    from typing import List, Union, Optional, MutableMapping as OrderedDictType
+
 
 from pyPRMS.prms_helpers import dparse
 from pyPRMS.constants import REGIONS

@@ -1,6 +1,12 @@
 
 from collections import OrderedDict
-from typing import Dict, Optional, OrderedDict as OrderedDictType
+
+try:
+    from typing import Dict, Optional, OrderedDict as OrderedDictType
+except ImportError:
+    # pre-python 3.7.2
+    from typing import Dict, Optional, MutableMapping as OrderedDictType
+
 import xml.etree.ElementTree as xmlET
 
 from pyPRMS.Dimension import Dimension

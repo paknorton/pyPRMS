@@ -6,7 +6,12 @@ import xml.etree.ElementTree as xmlET
 
 import numpy as np
 from collections import OrderedDict
-from typing import Union, Dict, List, OrderedDict as OrderedDictType, Sequence
+
+try:
+    from typing import Union, Dict, List, OrderedDict as OrderedDictType, Sequence
+except ImportError:
+    # pre-python 3.7.2
+    from typing import Union, Dict, List, MutableMapping as OrderedDictType, Sequence
 
 from pyPRMS.ControlVariable import ControlVariable
 from pyPRMS.Exceptions_custom import ControlError
