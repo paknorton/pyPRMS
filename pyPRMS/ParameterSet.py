@@ -41,6 +41,8 @@ class ParameterSet(object):
 
         self.verbose = verbose
 
+        self.__ctl_obj = None
+
     @property
     def available_parameters(self) -> List[str]:
         """Get a list of parameter names in the ParameterSet.
@@ -49,6 +51,15 @@ class ParameterSet(object):
         """
 
         return list(self.parameters.keys())
+
+    @property
+    def control(self):
+        return self.__ctl_obj
+
+    @control.setter
+    def control(self, ctl_obj):
+        # Set the control object
+        self.__ctl_obj = ctl_obj
 
     @property
     def dimensions(self) -> Dimensions:
@@ -226,15 +237,29 @@ class ParameterSet(object):
                         if self.verbose:
                             print('hru_deplcrv and snarea_curve have been expanded/updated')
 
-    def reduce_by_modules(self, control=None):
+    def extract_upstream(self, outlet_segs=(), cutoff_segs=(), noroute_hrus=()):
+        """Extract upstream watershed
+
+        Extracts the watershed (segments and HRUs) upstream of a given stream segment
+        """
+
+        dag_ds = self.parameters.stream_network()
+
+        dag_ds_subset = self.parameters._get_upstream_subset(dag_ds, cutoff_segs, outlet_segs)
+
+        seg_to_hru = self.parameters.seg_to_hru
+        hru_to_seg = self.parameters.hru_to_seg
+
+
+    def reduce_by_modules(self):
         """Reduce the ParameterSet to the parameters required by the modules
         defined in a control file.
 
-        :param control: Control file object
+        #:param control: Control file object
         """
 
-        if self.__master_params is not None:
-            pset = self.master_parameters.get_params_for_modules(modules=control.modules.values())
+        if self.__master_params is not None and self.__ctl_obj is not None:
+            pset = self.master_parameters.get_params_for_modules(modules=self.__ctl_obj.modules.values())
             self.reduce_parameters(required_params=pset)
 
     def reduce_parameters(self, required_params: Optional[Union[Set, List]] = None):
@@ -248,6 +273,37 @@ class ParameterSet(object):
         :raises TypeError: if required_params is not a set or list
         """
 
+        # WARNING: 2019-04-23 PAN
+        #          Very hacky way to remove parameters that shouldn't always get
+        #          included. Need to figure out a better way.
+        check_list = ['basin_solsta', 'gvr_hru_id', 'hru_solsta',
+                      'humidity_percent', 'irr_type', 'obsout_segment',
+                      'rad_conv', 'rain_code', 'hru_lon']
+
+        for xx in check_list:
+            if xx in required_params:
+                if xx in ['basin_solsta', 'hru_solsta', 'rad_conv']:
+                    if not self.dimensions.exists('nsol'):
+                        required_params.remove(xx)
+                    elif self.dimensions.get('nsol') == 0:
+                        required_params.remove(xx)
+                elif xx == 'humidity_percent':
+                    if not self.dimensions.exists('nhumid'):
+                        required_params.remove(xx)
+                    elif self.dimensions.get('nhumid') == 0:
+                        required_params.remove(xx)
+                elif xx == 'irr_type':
+                    if not self.dimensions.exists('nwateruse'):
+                        required_params.remove(xx)
+                    elif self.dimensions.get('nwateruse') == 0:
+                        required_params.remove(xx)
+                elif xx == 'gvr_hru_id':
+                    if self.__ctl_obj.get('mapOutON_OFF').values == 0:
+                        required_params.remove(xx)
+                elif xx in ['hru_lat', 'hru_lon', ]:
+                    if not self.parameters.exists(xx):
+                        required_params.remove(xx)
+
         if isinstance(required_params, set):
             remove_list = set(self.parameters.keys()).difference(required_params)
         elif isinstance(required_params, list):
@@ -257,6 +313,7 @@ class ParameterSet(object):
 
         for rparam in remove_list:
             self.parameters.remove(rparam)
+
 
     def remove_by_global_id(self, hrus: Optional[List] = None,
                             segs: Optional[List] = None):
@@ -278,6 +335,23 @@ class ParameterSet(object):
                 self.__dimensions['nssr'].size -= len(hrus)
             if self.__dimensions.exists('ngw'):
                 self.__dimensions['ngw'].size -= len(hrus)
+
+
+    def remove_poi(self, poi):
+        """Remove POIs by gage_id"""
+
+        # Remove matching pois from poi-related parameters
+        self.__parameters.remove_poi(poi=poi)
+
+        # Adjust the global npoigages dimension to new size
+        if self.__parameters.exists('poi_gage_id'):
+            self.__dimensions['npoigages'].size = self.__parameters['poi_gage_id'].size
+            self.__dimensions['nobs'].size = self.__parameters['poi_gage_id'].size
+        else:
+            # All POIs were removed
+            self.__dimensions['npoigages'].size = 0
+            self.__dimensions['nobs'].size = 0
+
 
     def write_parameters_xml(self, output_dir: str):
         """Write global parameters.xml file.

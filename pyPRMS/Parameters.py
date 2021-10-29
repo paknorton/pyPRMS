@@ -105,8 +105,15 @@ class Parameters(object):
     def poi_to_seg(self) -> Dict[str, int]:
         """Returns a dictionary mapping poi_id to poi_seg"""
 
-        return dict(zip(self.__parameters['poi_gage_id'].data,
+        return OrderedDict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data))
+
+    @property
+    def poi_to_seg0(self):
+        """Returns a dictionary mapping poi_id to zero-based poi_seg"""
+
+        return OrderedDict(zip(self.__parameters['poi_gage_id'].data,
+                        self.__parameters['poi_gage_segment'].data - 1))
 
     try:
         @cached_property
@@ -140,9 +147,6 @@ class Parameters(object):
                 self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
             return self.__seg_to_hru
 
-    # def add(self, name, datatype=None, units=None, model=None, description=None,
-    #         help=None, modules=None, minimum=None, maximum=None, default=None,
-    #         info=None):
     def add(self, name: Optional[str] = None,
             datatype: Optional[int] = None,
             units: Optional[str] = None,
@@ -533,88 +537,6 @@ class Parameters(object):
             else:
                 print('Non-plottable parameter')
 
-    def update_element(self, name: str, id1: int, value: Union[int, float, List[int], List[float]]):
-        """Update single value or row of values (e.g. nhru by nmonths) for a
-        given nhm_id or nhm_seg.
-
-        :param name: Name of parameter to update
-        :param id1: scalar nhm_id or nhm_seg
-        :param value: The updated value(s)
-        """
-
-        # NOTE: id1 is either an nhm_id or nhm_seg (both are 1-based)
-        cparam = self.get(name)
-
-        if cparam.is_hru_param():
-            # Lookup index for nhm_id
-            idx0 = self.get('nhm_id')._value_index(id1)
-
-            if len(idx0) > 1:
-                raise ValueError(f'nhm_id values should be unique')
-            else:
-                cparam.update_element(idx0, value)
-        elif cparam.is_seg_param():
-            # Lookup index for nhm_seg
-            idx0 = self.get('nhm_seg')._value_index(id1)
-
-            if len(idx0) > 1:
-                raise ValueError(f'nhm_seg values should be unique')
-            else:
-                cparam.update_element(idx0, value)
-
-        # TODO: Add handling for other dimensions
-
-    # def plot_stream_network(self):
-    #     # Build the stream network
-    #     num_outlets = 0
-    #     include_hrus = False
-    #
-    #     dag_streamnet = nx.DiGraph()
-    #
-    #     for ii, vv in enumerate(tosegment_nhm):
-    #         if vv == 0 or vv not in nhm_seg:
-    #             dag_streamnet.add_node(nhm_seg[ii], style='filled', fontcolor='white', fillcolor='blue')
-    #             dag_streamnet.add_node(vv, style='filled', fontcolor='white', fillcolor='grey')
-    #             dag_streamnet.add_edge(nhm_seg[ii], vv)
-    #
-    #             num_outlets += 1
-    #         else:
-    #             dag_streamnet.add_edge(nhm_seg[ii], tosegment_nhm[ii])
-    #             if nhm_seg[ii] > 56460:
-    #                 # NOTE: This will only work correctly prior to renumbering the NHM segments
-    #                 dag_streamnet.nodes[nhm_seg[ii]]['fillcolor'] = 'deeppink'
-    #                 dag_streamnet.nodes[nhm_seg[ii]]['style'] = 'filled'
-    #
-    #         if ii + 1 in poi:
-    #             dag_streamnet.nodes[nhm_seg[ii]]['shape'] = 'box'
-    #             dag_streamnet.nodes[nhm_seg[ii]]['label'] = '{}\n POI: {}'.format(nhm_seg[ii], poi[ii + 1])
-    #
-    #     if include_hrus:
-    #         # Add the HRUs
-    #         nr_cnt = 0
-    #
-    #         for ii, vv in enumerate(hru_segment_nhm):
-    #             hru_node = 'H_{}'.format(nhm_id[ii])
-    #
-    #             dag_streamnet.add_node(hru_node, style='filled', fillcolor='yellow')
-    #
-    #             if vv == 0:
-    #                 nr_cnt += 1
-    #                 strm_node = 'NR_{}'.format(nr_cnt)
-    #
-    #                 dag_streamnet.add_node(strm_node, fontcolor='white', style='filled', fillcolor='red')
-    #                 dag_streamnet.add_edge(hru_node, strm_node)
-    #             else:
-    #                 dag_streamnet.add_edge(hru_node, vv)
-    #
-    #     # Output any cycles/loops
-    #     # Also update attributes for nodes which are part of a cycle
-    #     for xx in nx.simple_cycles(dag_streamnet):
-    #         for yy in xx:
-    #             dag_streamnet.nodes[yy]['style'] = 'filled'
-    #             dag_streamnet.nodes[yy]['fillcolor'] = 'orange'
-    #         print(xx)
-
     def remove(self, name: Union[str, List[str]]):
         """Delete one or more parameters if they exist.
 
@@ -630,6 +552,30 @@ class Parameters(object):
         else:
             if self.exists(name):
                 del self.__parameters[name]
+
+
+    def remove_poi(self, poi):
+        """Remove POIs by gage_id"""
+
+        # First get array of poi_gage_id indices matching the specified POI IDs
+        poi_ids = self.get('poi_gage_id').data
+        sorter = np.argsort(poi_ids)
+        poi_del_indices = sorter[np.searchsorted(poi_ids, poi, sorter=sorter)]
+
+        poi_parameters = ['poi_gage_id', 'poi_gage_segment', 'poi_type']
+
+        # print(f'POIs to delete: {poi}')
+        # print(f'Current POIs: {poi_ids}')
+        # print(f'Size of poi_del_indices: {poi_del_indices.size}')
+        if self.get('poi_gage_id').dimensions.get('npoigages').size == poi_del_indices.size:
+            # We're trying to remove all the POIs
+            for pp in poi_parameters:
+                self.remove(pp)
+        else:
+            # Remove the matching poi gage entries from each of the poi-related parameters
+            for pp in poi_parameters:
+                self.get(pp).remove_by_index('npoigages', poi_del_indices)
+
 
     def remove_by_global_id(self, hrus=None, segs=None):
         """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
@@ -744,7 +690,19 @@ class Parameters(object):
             self.__hru_poly.crs = 'EPSG:5070'
         self.__hru_shape_key = shape_key
 
-    def stream_network(self, tosegment: str, seg_id: str) -> Union[nx.DiGraph, None]:
+    def stream_network(self, tosegment: Optional[str] = 'tosegment_nhm',
+                       seg_id: Optional[str] = 'nhm_seg') -> Union[nx.DiGraph, None]:
+        """
+        Create Directed, Acyclic Graph (DAG) of stream network
+
+        :param tosegment:
+        :type tosegment:
+        :param seg_id:
+        :type seg_id:
+        :return:
+        :rtype:
+        """
+
         if self.exists(tosegment) and self.exists(seg_id):
             seg = self.__parameters.get(seg_id).tolist()
             toseg = self.__parameters.get(tosegment).tolist()
@@ -759,6 +717,106 @@ class Parameters(object):
 
             return dag_ds
         return None
+
+    def update_element(self, name: str, id1: int, value: Union[int, float, List[int], List[float]]):
+        """Update single value or row of values (e.g. nhru by nmonths) for a
+        given nhm_id or nhm_seg.
+
+        :param name: Name of parameter to update
+        :param id1: scalar nhm_id or nhm_seg
+        :param value: The updated value(s)
+        """
+
+        # NOTE: id1 is either an nhm_id or nhm_seg (both are 1-based)
+        cparam = self.get(name)
+
+        if cparam.is_hru_param():
+            # Lookup index for nhm_id
+            idx0 = self.get('nhm_id')._value_index(id1)
+
+            if len(idx0) > 1:
+                raise ValueError(f'nhm_id values should be unique')
+            else:
+                cparam.update_element(idx0, value)
+        elif cparam.is_seg_param():
+            # Lookup index for nhm_seg
+            idx0 = self.get('nhm_seg')._value_index(id1)
+
+            if len(idx0) > 1:
+                raise ValueError(f'nhm_seg values should be unique')
+            else:
+                cparam.update_element(idx0, value)
+
+        # TODO: Add handling for other dimensions
+
+    @staticmethod
+    def _get_upstream_subset(dag_ds, cutoff_segs, outlet_segs):
+        # Create the upstream graph
+        dag_us = dag_ds.reverse()
+        # bandit_helper_log.debug('Number of NHM upstream nodes: {}'.format(dag_us.number_of_nodes()))
+        # bandit_helper_log.debug('Number of NHM upstream edges: {}'.format(dag_us.number_of_edges()))
+
+        # Trim the u/s graph to remove segments above the u/s cutoff segments
+        try:
+            for xx in cutoff_segs:
+                try:
+                    dag_us.remove_nodes_from(nx.dfs_predecessors(dag_us, xx))
+
+                    # Also remove the cutoff segment itself
+                    dag_us.remove_node(xx)
+                except KeyError:
+                    print('WARNING: nhm_segment {} does not exist in stream network'.format(xx))
+        except TypeError:
+            # bandit_helper_log.error('\nSelected cutoffs should at least be an empty list instead of NoneType.')
+            exit(200)
+
+        # bandit_helper_log.debug('Number of NHM upstream nodes (trimmed): {}'.format(dag_us.number_of_nodes()))
+        # bandit_helper_log.debug('Number of NHM upstream edges (trimmed): {}'.format(dag_us.number_of_edges()))
+
+        # =======================================
+        # Given a d/s segment (dsmost_seg) create a subset of u/s segments
+
+        # Get all unique segments u/s of the starting segment
+        uniq_seg_us = set()
+        if outlet_segs:
+            for xx in outlet_segs:
+                try:
+                    pred = nx.dfs_predecessors(dag_us, xx)
+                    uniq_seg_us = uniq_seg_us.union(set(pred.keys()).union(set(pred.values())))
+                except KeyError:
+                    # bandit_helper_log.error('KeyError: Segment {} does not exist in stream network'.format(xx))
+                    print(f'\nKeyError: Segment {xx} does not exist in stream network')
+
+            # Get a subgraph in the dag_ds graph and return the edges
+            dag_ds_subset = dag_ds.subgraph(uniq_seg_us).copy()
+
+            # 2018-02-13 PAN: It is possible to have outlets specified which are not truly
+            #                 outlets in the most conservative sense (e.g. a point where
+            #                 the stream network exits the study area). This occurs when
+            #                 doing headwater extractions where all segments for a headwater
+            #                 are specified in the configuration file. Instead of creating
+            #                 output edges for all specified 'outlets' the set difference
+            #                 between the specified outlets and nodes in the graph subset
+            #                 which have no edges is performed first to reduce the number of
+            #                 outlets to the 'true' outlets of the system.
+            node_outlets = [ee[0] for ee in dag_ds_subset.edges()]
+            true_outlets = set(outlet_segs).difference(set(node_outlets))
+            # bandit_helper_log.debug('node_outlets: {}'.format(','.join(map(str, node_outlets))))
+            # bandit_helper_log.debug('true_outlets: {}'.format(','.join(map(str, true_outlets))))
+
+            # Add the downstream segments that exit the subgraph
+            for xx in true_outlets:
+                nhm_outlet = list(dag_ds.neighbors(xx))[0]
+                dag_ds_subset.add_node(nhm_outlet, style='filled', fontcolor='white', fillcolor='grey')
+                dag_ds_subset.add_edge(xx, nhm_outlet)
+                dag_ds_subset.nodes[xx]['style'] = 'filled'
+                dag_ds_subset.nodes[xx]['fontcolor'] = 'white'
+                dag_ds_subset.nodes[xx]['fillcolor'] = 'blue'
+        else:
+            # No outlets specified so pull the CONUS
+            dag_ds_subset = dag_ds
+
+        return dag_ds_subset
 
     # def replace_values(self, varname, newvals, newdims=None):
     #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
