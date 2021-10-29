@@ -3,6 +3,7 @@
 import argparse
 import os
 
+from pyPRMS.ParamDb import ParamDb
 from pyPRMS.ParamDbRegion import ParamDbRegion
 from pyPRMS.ParameterFile import ParameterFile
 
@@ -13,6 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description='Convert parameter files to different formats')
     parser.add_argument('--src', help='Source file or directory')
     parser.add_argument('--dst', help='Destination file or directory')
+    parser.add_argument('--byregion', help='paramdb in region format', action='store_true')
 
     args = parser.parse_args()
 
@@ -40,7 +42,10 @@ def main():
     if os.path.isdir(args.src):
         # If a directory is provided for the source we assume it is a
         # paramdb format.
-        params = ParamDbRegion(args.src)
+        if args.byregion:
+            params = ParamDbRegion(args.src)
+        else:
+            params = ParamDb(args.src)
     elif os.path.isfile(args.src):
         # A parameter file in either classic format or netcdf format
         if os.path.splitext(args.src)[1] == '.param':
