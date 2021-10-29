@@ -8,6 +8,8 @@ from typing import Union, Sequence
 import decimal
 import xml.etree.ElementTree as xmlET
 
+import pandas as pd
+
 
 def dparse(*dstr: Union[Sequence[str], Sequence[int]]) -> datetime:
     """Convert date string to datetime.
@@ -31,7 +33,8 @@ def dparse(*dstr: Union[Sequence[str], Sequence[int]]) -> datetime:
         dint.append(12)
         dint.append(calendar.monthrange(*dint)[1])
 
-    return datetime(*dint)
+    return pd.to_datetime('-'.join([str(d) for d in dint]))
+    # return datetime(*dint)
 
 # def dparse(yr, mo, dy, hr, minute, sec):
 #     # Date parser for working with the date format from PRMS files
