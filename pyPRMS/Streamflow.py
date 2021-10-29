@@ -235,10 +235,12 @@ class Streamflow(object):
 
         # Use pandas to read the data in from the remainder of the file
         # We use a custom date parser to convert the date information to a datetime
+        # sep='\s+', header=None, skiprows=2, parse_dates={'time': [0, 1, 2]},
+        #              index_col='time'
         self.__rawdata = pd.read_csv(self.filename, skiprows=self.__headercount, sep=r"\s+",
                                      header=None, names=thecols,
                                      parse_dates={'thedate': ['year', 'month', 'day', 'hour', 'min', 'sec']},
-                                     date_parser=dparse, index_col='thedate')
+                                     index_col='thedate')
 
         # Convert the missing data (-999.0) to NaNs
         self.__rawdata.replace(to_replace=self.__missing, value=np.nan, inplace=True)
