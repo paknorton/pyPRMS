@@ -235,6 +235,8 @@ class ControlVariable(object):
         :param data: New value(s)
         """
 
+        # TODO: 2021-09-23 PAN In the case of array variables (e.g. start_time),
+        #       check that the new array length is the same as the old array length
         # Convert datatype first
         datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
                          3: self.__str_to_float, 4: self.__str_to_str}
