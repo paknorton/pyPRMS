@@ -4,7 +4,7 @@ from typing import Optional, Union, List
 from pyPRMS.constants import DIMENSION_NAMES
 
 
-def _valid_dimension_name(name: str):
+def _valid_dimension_name(name: str) -> bool:
     """Check if given dimension name is valid for PRMS.
 
     :param str name: dimension name
@@ -17,10 +17,16 @@ def _valid_dimension_name(name: str):
 
 class Dimension(object):
     """Defines a single dimension."""
+    __name: str = ''
+    __size: int = 0
+    # __description: Optional[str] = None
 
-    def __init__(self, name: Optional[str] = None,
-                 size: Optional[int] = 0,
-                 description: Optional[str] = None):
+    # def __init__(self, name: Optional[str],
+    #              description: Optional[str],
+    #              size: Optional[int] = 0):
+    def __init__(self, name: str,
+                 size: int=0,
+                 description: Optional[str]=''):
         """Create a new dimension object.
 
         A dimension has a name and a size associated with it.
@@ -30,12 +36,11 @@ class Dimension(object):
         :param description: Description of the dimension
         """
 
-        self.__name = None
-        self.__size = None
-        self.__description = None
         self.name = name
         self.size = size
-        self.description = description
+
+        if description is not None:
+            self.description = description
 
     @property
     def name(self) -> str:
@@ -57,7 +62,7 @@ class Dimension(object):
         if _valid_dimension_name(name):
             self.__name = name
         else:
-            # TODO: Should this raise an error?
+            # TODO: Should this always raise an error?
             raise ValueError(f'Dimension name, {name}, is not a valid PRMS dimension name')
 
     @property
@@ -83,8 +88,10 @@ class Dimension(object):
             raise ValueError('Dimension size must be a positive integer')
 
         if self.__name == 'one':
+            assert value == 1, 'Dimension, one, must have size=1'
             self.__size = 1
         elif self.__name == 'nmonths':
+            assert value == 12, 'Dimension, nmonths, must have size=12'
             self.__size = 12
         elif self.__name == 'ndays':
             self.__size = 366

@@ -2,10 +2,10 @@
 from collections import OrderedDict
 
 try:
-    from typing import Dict, Optional, OrderedDict as OrderedDictType
+    from typing import cast, Dict, Optional, OrderedDict as OrderedDictType
 except ImportError:
     # pre-python 3.7.2
-    from typing import Dict, Optional, MutableMapping as OrderedDictType
+    from typing import cast, Dict, Optional, MutableMapping as OrderedDictType   # type: ignore
 
 import xml.etree.ElementTree as xmlET
 
@@ -15,14 +15,20 @@ from pyPRMS.prms_helpers import read_xml
 
 class Dimensions(object):
     """Container of Dimension objects."""
+    __dimensions: OrderedDictType
+    # __verbose: bool
+    # __verify: bool
 
-    def __init__(self, verbose: Optional[bool] = False):
+    def __init__(self, verbose: Optional[bool] = False,
+                 verify: Optional[bool] = True):
         """Create ordered dictionary to contain Dimension objects.
 
         :param verbose: Output additional debug information
+        :param verify: Enforce valid dimension names (default=True)
         """
         self.__dimensions = OrderedDict()
         self.__verbose = verbose
+        self.__verify = verify
 
     def __str__(self):
         outstr = ''
@@ -77,7 +83,7 @@ class Dimensions(object):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name: str, size: int = 0):
+    def add(self, name: str, size: int=0):
         """Add a new dimension.
 
         :param name: Name of the dimension
@@ -91,7 +97,7 @@ class Dimensions(object):
             try:
                 self.__dimensions[name] = Dimension(name=name, size=size)
             except ValueError as err:
-                if self.__verbose:
+                if self.__verify:
                     print(err)
                 else:
                     pass
@@ -117,8 +123,10 @@ class Dimensions(object):
         #       1) read all dimensions in the correct 'position'-dictated order into a list
         #       2) add dimensions in list to the dimensions ordereddict
         for cdim in xml_root.findall('./dimensions/dimension'):
-            name = cdim.get('name')
-            size = int(cdim.get('size'))
+            name = cast(str, cdim.get('name'))
+            size = cast(int, cdim.get('size'))
+            # name = cdim.get('name')
+            # size = int(cdim.get('size'))
 
             if name not in self.__dimensions:
                 try:
@@ -232,9 +240,12 @@ class ParamDimensions(Dimensions):
         xml_root = read_xml(filename)
 
         for cdim in xml_root.findall('./dimensions/dimension'):
-            name = cdim.get('name')
-            size = int(cdim.get('size'))
-            pos = int(cdim.get('position')) - 1
+            name = cast(str, cdim.get('name'))
+            size = cast(int, cdim.get('size'))
+            pos = cast(int, cdim.get('position')) - 1
+            # name = cdim.get('name')
+            # size = int(cdim.get('size'))
+            # pos = int(cdim.get('position')) - 1
 
             if name not in self.dimensions:
                 try:
@@ -263,12 +274,7 @@ class ParamDimensions(Dimensions):
         """
 
         if index < len(self.dimensions.items()):
-            try:
-                # Python 2.7.x
-                return self.dimensions.items()[index][1].size
-            except TypeError:
-                # Python 3.x
-                return list(self.dimensions.items())[index][1].size
+            return list(self.dimensions.items())[index][1].size
         raise ValueError(f'Parameter has no dimension at index {index}')
 
     def get_position(self, name: str) -> int:
