@@ -20,15 +20,15 @@ class Parameter(object):
     # Container for a single parameter
     # TODO: 2021-12-03 PAN - The arguments should not all be optional
     def __init__(self, name: Optional[str],
-                 datatype: Optional[int],
-                 units: Optional[str],
-                 model: Optional[str],
-                 description: Optional[str],
-                 help: Optional[str],
-                 modules: Optional[Union[str, List[str]]],
-                 minimum: Optional[Union[int, float, str]],
-                 maximum: Optional[Union[int, float]],
-                 default: Optional[Union[int, float]]):
+                 datatype: Optional[int]=None,
+                 units: Optional[str]=None,
+                 model: Optional[str]=None,
+                 description: Optional[str]=None,
+                 help: Optional[str]=None,
+                 modules: Optional[Union[str, List[str]]]=None,
+                 minimum: Optional[Union[int, float, str]]=None,
+                 maximum: Optional[Union[int, float, str]]=None,
+                 default: Optional[Union[int, float, str]]=None):
         """
         :param name: A valid PRMS parameter name
         :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
@@ -51,10 +51,10 @@ class Parameter(object):
         self.__model = ''
         self.__description = ''
         self.__help = ''
-        self.__modules = None
-        self.__minimum = None
-        self.__maximum = None
-        self.__default = None
+        self.__modules: Optional[List[str]] = None
+        self.__minimum: Optional[Union[int, float, str]] = None
+        self.__maximum: Optional[Union[int, float, str]] = None
+        self.__default: Optional[Union[int, float, str]] = None
 
         self.__dimensions = ParamDimensions()
         self.__data: Optional[np.ndarray] = None  # array
@@ -261,14 +261,14 @@ class Parameter(object):
             self.__maximum = value
 
     @property
-    def default(self) -> Union[int, float, None]:
+    def default(self) -> Union[int, float, str, None]:
         """Returns the default value for the parameter.
         :return: Default values defined for parameter
         """
         return self.__default
 
     @default.setter
-    def default(self, value: Union[int, float, None]):
+    def default(self, value: Union[int, float, str, None]):
         """Set the default value for the parameter.
 
         :param value: The default value
@@ -533,7 +533,7 @@ class Parameter(object):
             if self.__minimum is not None and self.__maximum is not None:
                 # Check both ends of the range
                 if not(isinstance(self.__minimum, str) or isinstance(self.__maximum, str)):
-                    return (self.__data >= self.__minimum).all() and (self.__data <= self.__maximum).all()
+                    return bool((self.__data >= self.__minimum).all() and (self.__data <= self.__maximum).all())
                 elif self.__minimum == 'bounded':
                     return bool((self.__data >= self.__default).all())
             return True
