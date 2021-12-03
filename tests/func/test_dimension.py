@@ -3,13 +3,13 @@ import pytest
 from pyPRMS.Dimension import Dimension
 
 
-class TestDimension():
+class TestDimension:
     """Tests related to the Dimension class"""
 
-    def test_create_default_dimension_raises(self):
-        """A Dimension object with all defaults should raise ValueError"""
-        with pytest.raises(ValueError):
-            Dimension()
+    # def test_create_default_dimension_raises(self):
+    #     """A Dimension object with all defaults should raise ValueError"""
+    #     with pytest.raises(ValueError):
+    #         Dimension()
 
     def test_create_invalid_dimension_raises(self):
         """A Dimension object with an invalid name raises ValueError"""
@@ -45,24 +45,27 @@ class TestDimension():
                                                          ('nmonths', 11, 12),
                                                          ('ndays', 360, 366)])
     def test_create_dimension_fixed_size_specified(self, name, size, actual_size):
-        """Certains dimensions should have a fixed size regardless of
-        any specified size"""
+        """Certains dimensions should have a fixed size and generate an error
+        when created with the wrong size"""
 
         # Instantiation with default size
-        adim = Dimension(name=name, size=size)
-        assert adim.size == actual_size
+        with pytest.raises(ValueError):
+            Dimension(name=name, size=size)
 
-    @pytest.mark.parametrize('name, size, actual_size', [('one', 10, 1),
-                                                         ('nmonths', 11, 12),
-                                                         ('ndays', 360, 366)])
+        # assert adim.size == actual_size
+
+    @pytest.mark.parametrize('name, size, actual_size', [('one', 1, 1),
+                                                         ('nmonths', 12, 12),
+                                                         ('ndays', 366, 366)])
     def test_grow_dimension_size_fixed(self, name, size, actual_size):
         """Dimensions with fixed sizes should not be able to grow in size"""
         # Instantiation with default size
         adim = Dimension(name=name, size=size)
 
         # Try adding to the size
-        adim += 10
-        assert adim.size == actual_size
+        with pytest.raises(ValueError):
+            adim += 10
+        # assert adim.size == actual_size
 
     def test_grow_dimension_size(self):
         """Non-fixed dimensions should be able to grow in size"""

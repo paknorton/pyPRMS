@@ -88,12 +88,18 @@ class Dimension(object):
             raise ValueError('Dimension size must be a positive integer')
 
         if self.__name == 'one':
-            assert value == 1, 'Dimension, one, must have size=1'
+            if value != 1:
+                raise ValueError('Dimension named "one" must have size=1')
+            # assert value == 1, 'Dimension, one, must have size=1'
             self.__size = 1
         elif self.__name == 'nmonths':
-            assert value == 12, 'Dimension, nmonths, must have size=12'
+            if value != 12:
+                raise ValueError('Dimension named "nmonths" must have size=12')
+            # assert value == 12, 'Dimension, nmonths, must have size=12'
             self.__size = 12
         elif self.__name == 'ndays':
+            if value != 366:
+                raise ValueError('Dimension named "ndays" must have size=366')
             self.__size = 366
         else:
             self.__size = value
