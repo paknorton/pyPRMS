@@ -7,10 +7,10 @@ except ImportError:
     pass
 
 import gc
-import geopandas
-import networkx as nx
+import geopandas    # type: ignore
+import networkx as nx   # type: ignore
 import numpy as np
-import pandas as pd
+import pandas as pd     # type: ignore
 from collections import OrderedDict
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
@@ -18,11 +18,11 @@ try:
     from typing import Optional, Union, Dict, List, OrderedDict as OrderedDictType
 except ImportError:
     # pre-python 3.7.2
-    from typing import Optional, Union, Dict, List, MutableMapping as OrderedDictType
+    from typing import Optional, Union, Dict, List, MutableMapping as OrderedDictType   # type: ignore
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt     # type: ignore
 # import matplotlib.colors as colors
-import matplotlib as mpl
+import matplotlib as mpl        # type: ignore
 
 from pyPRMS.Parameter import Parameter
 from pyPRMS.plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection
@@ -352,7 +352,7 @@ class Parameters(object):
         :param mask_defaults: Color for defaults values
         """
 
-        is_monthly = False
+        # is_monthly = False
         time_index = None
 
         if self.exists(name):
@@ -360,7 +360,7 @@ class Parameters(object):
 
             if set(cparam.dimensions.keys()).intersection({'nmonths'}):
                 # Need 12 monthly plots of parameter
-                is_monthly = True
+                # is_monthly = True
                 time_index = 0  # starting time index
                 param_data = self.get_dataframe(name).iloc[:, time_index].to_frame(name=name)
             else:
@@ -432,7 +432,8 @@ class Parameters(object):
                 else:
                     plt.colorbar(mapper, shrink=0.6, label=cparam.units)
 
-                if is_monthly:
+                # if is_monthly:
+                if time_index is not None:
                     plt.title(f'Variable: {name},  Month: {time_index+1}')
                 else:
                     plt.title(f'Variable: {name}')
@@ -449,7 +450,8 @@ class Parameters(object):
                     #          va='center',color='k', bbox=dict(facecolor='b', alpha=0.2))
 
                 if output_dir is not None:
-                    if is_monthly:
+                    # if is_monthly:
+                    if time_index is not None:
                         # First month
                         plt.savefig(f'{output_dir}/{name}_{time_index+1:02}.png', dpi=150, bbox_inches='tight')
 
@@ -464,8 +466,9 @@ class Parameters(object):
                             df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True,
                                                           how='left')
 
-                            if is_monthly:
-                                ax.set_title(f'Variable: {name},  Month: {tt+1}')
+                            # if is_monthly:
+                            # if time_index is not None:
+                            ax.set_title(f'Variable: {name},  Month: {tt+1}')
 
                             col.set_array(df_mrg[name])
                             # fig
@@ -734,18 +737,24 @@ class Parameters(object):
             # Lookup index for nhm_id
             idx0 = self.get('nhm_id')._value_index(id1)
 
+            if idx0 is None:
+                raise TypeError(f'nhm_id _value_index returned NoneType instead of ndarray')
+
             if len(idx0) > 1:
                 raise ValueError(f'nhm_id values should be unique')
             else:
-                cparam.update_element(idx0, value)
+                cparam.update_element(idx0[0], value)
         elif cparam.is_seg_param():
             # Lookup index for nhm_seg
             idx0 = self.get('nhm_seg')._value_index(id1)
 
+            if idx0 is None:
+                raise TypeError(f'nhm_seg _value_index returned NoneType instead of ndarray')
+
             if len(idx0) > 1:
                 raise ValueError(f'nhm_seg values should be unique')
             else:
-                cparam.update_element(idx0, value)
+                cparam.update_element(idx0[0], value)
 
         # TODO: Add handling for other dimensions
 
