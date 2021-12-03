@@ -17,10 +17,11 @@ class TestEmptyDimensions():
         """Default dimensions object should have no dimensions"""
         assert dims_obj.ndims == 0
 
-    @pytest.mark.parametrize('name, size, actual_size', [('one', 10, 1),
-                                                         ('nmonths', 11, 12),
-                                                         ('ndays', 360, 366)])
+    @pytest.mark.parametrize('name, size, actual_size', [('one', 1, 1),
+                                                         ('nmonths', 12, 12),
+                                                         ('ndays', 366, 366)])
     def test_dimensions_add_fixed_dimension(self, dims_obj, name, size, actual_size):
+        """Adding fixed dimensions"""
         dims_obj.add(name=name, size=size)
         assert dims_obj[name].size == actual_size
 
