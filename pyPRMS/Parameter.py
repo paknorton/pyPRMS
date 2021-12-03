@@ -1,9 +1,8 @@
 import functools
 import numpy as np
-import pandas as pd
+import pandas as pd     # type: ignore
 from collections import namedtuple, OrderedDict
-# from typing import Any,  Union, List
-from typing import Optional, Union, List
+from typing import cast, Optional, Union, List
 import xml.etree.ElementTree as xmlET
 
 # from pyPRMS.Exceptions_custom import ConcatError
@@ -19,17 +18,17 @@ class Parameter(object):
     """
 
     # Container for a single parameter
-    def __init__(self, name: Optional[str] = None,
-                 datatype: Optional[int] = None,
-                 units: Optional[str] = None,
-                 model: Optional[str] = None,
-                 description: Optional[str] = None,
-                 help: Optional[str] = None,
-                 modules: Optional[Union[str, List[str]]] = None,
-                 minimum: Optional[Union[int, float]] = None,
-                 maximum: Optional[Union[int, float]] = None,
-                 default: Optional[Union[int, float]] = None):
-
+    # TODO: 2021-12-03 PAN - The arguments should not all be optional
+    def __init__(self, name: Optional[str],
+                 datatype: Optional[int],
+                 units: Optional[str],
+                 model: Optional[str],
+                 description: Optional[str],
+                 help: Optional[str],
+                 modules: Optional[Union[str, List[str]]],
+                 minimum: Optional[Union[int, float, str]],
+                 maximum: Optional[Union[int, float]],
+                 default: Optional[Union[int, float]]):
         """
         :param name: A valid PRMS parameter name
         :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
@@ -47,31 +46,32 @@ class Parameter(object):
         self.__name = name
 
         # Initialize internal variables
-        self.__datatype = None
-        self.__units = None
-        self.__model = None
-        self.__description = None
-        self.__help = None
+        # self.__datatype = None
+        self.__units = ''
+        self.__model = ''
+        self.__description = ''
+        self.__help = ''
         self.__modules = None
         self.__minimum = None
         self.__maximum = None
         self.__default = None
 
         self.__dimensions = ParamDimensions()
-        self.__data = None  # array
+        self.__data: Optional[np.ndarray] = None  # array
 
         self.__modified = False
 
         # Use setters for most internal variables
-        self.datatype = datatype
-        self.units = units
-        self.model = model
-        self.description = description
-        self.help = help
-        self.modules = modules
-        self.minimum = minimum
-        self.maximum = maximum
-        self.default = default
+        self.datatype = datatype    # type: ignore
+        self.units = units  # type: ignore
+        self.model = model  # type: ignore
+        self.description = description  # type: ignore
+        self.help = help    # type: ignore
+        self.modules = modules  # type: ignore
+        self.minimum = minimum  # type: ignore
+        self.maximum = maximum  # type: ignore
+        self.default = default  # type: ignore
+
 
     def __str__(self) -> str:
         """Pretty-print string representation of the parameter information.
@@ -123,7 +123,7 @@ class Parameter(object):
         return df
 
     @property
-    def name(self) -> str:
+    def name(self) -> Optional[str]:
         """Returns the parameter name."""
         return self.__name
 
@@ -231,7 +231,7 @@ class Parameter(object):
                 self.__minimum = int(value)
             except ValueError:
                 # This happens with 'bounded' parameters
-                self.__minimum = value
+                self.__minimum = str(value)
         else:
             self.__minimum = value
 
@@ -326,7 +326,7 @@ class Parameter(object):
         raise ValueError(f'Parameter, {self.__name}, has no data')
 
     @data.setter
-    def data(self, data_in: list):
+    def data(self, data_in: Union[list, np.ndarray, pd.Series]):
         """Sets the data for the parameter.
 
         :param data_in: A list containing the parameter data
@@ -337,7 +337,7 @@ class Parameter(object):
         if not self.ndims:
             raise ValueError(f'No dimensions have been defined for {self.name}; unable to append data')
 
-        data_np = None
+        data_np: Union[np.ndarray, None] = None
 
         if isinstance(data_in, list):
             data_np = np.array(data_in, dtype=DATATYPE_TO_DTYPE[self.datatype])
@@ -345,6 +345,10 @@ class Parameter(object):
             data_np = data_in
         elif isinstance(data_in, pd.Series):
             data_np = data_in.to_numpy()
+        else:
+            raise TypeError('Right-hand variable not of type list, ndarray, or Pandas Series')
+
+        assert data_np is not None
 
         if data_np.size == self.size:
             # The incoming size matches the expected size for the parameter
@@ -369,7 +373,7 @@ class Parameter(object):
                   f'values; using first value only.')
             data_np = np.array(data_np[0], ndmin=1)
         else:
-            err_txt = f'{self.name}: Number of dimensions for new data ({data_in.ndim}) ' + \
+            err_txt = f'{self.name}: Number of dimensions for new data ({data_np.ndim}) ' + \
                       f'doesn\'t match old ({self.ndims})'
             raise IndexError(err_txt)
 
@@ -401,15 +405,18 @@ class Parameter(object):
         """Return the xml metadata for the parameter as an xml Element.
         """
         param_root = xmlET.Element('parameter')
-        param_root.set('name', self.name)
+        param_root.set('name', cast(str, self.name))
         param_root.set('version', 'ver')
         param_root.append(self.dimensions.xml)
         return param_root
 
     def all_equal(self) -> bool:
-        if self.__data.size > 1:
-            return (self.__data == self.__data[0]).all()
-        return False
+        if self.__data is not None:
+            if self.__data.size > 1:
+                return (self.__data == self.__data[0]).all()
+            return False
+        else:
+            raise TypeError('Parameter data is not initialized')
 
     def update_element(self, index: int, value: Union[int, float, List[int], List[float]]):
         """Update single value or row of values (e.g. nhru by nmonths) for a
@@ -422,12 +429,15 @@ class Parameter(object):
         # NOTE: index is zero-based
         # Update a single element or single row (e.g. nhru x nmonth) in the
         # parameter data array.
-        if np.array_equal(self.__data[index], value):
-            pass
-            # print(f'{self.__name}: updated value is equal to the old value')
+        if self.__data is not None:
+            if np.array_equal(self.__data[index], value):
+                pass
+                # print(f'{self.__name}: updated value is equal to the old value')
+            else:
+                self.__data[index] = value
+                self.__modified = True
         else:
-            self.__data[index] = value
-            self.__modified = True
+            raise TypeError('Parameter data is not initialized')
 
     def _value_index(self, value: Union[int, float, str]) -> Union[np.ndarray, None]:
         """Given a scalar value return the indices where there is a match.
@@ -519,13 +529,16 @@ class Parameter(object):
 
     def check_values(self) -> bool:
         """Returns true if all data values are within the min/max values for the parameter."""
-        if self.__minimum is not None and self.__maximum is not None:
-            # Check both ends of the range
-            if not(isinstance(self.__minimum, str) or isinstance(self.__maximum, str)):
-                return (self.__data >= self.__minimum).all() and (self.__data <= self.__maximum).all()
-            elif self.__minimum == 'bounded':
-                return (self.__data >= self.__default).all()
-        return True
+        if self.__data is not None:
+            if self.__minimum is not None and self.__maximum is not None:
+                # Check both ends of the range
+                if not(isinstance(self.__minimum, str) or isinstance(self.__maximum, str)):
+                    return (self.__data >= self.__minimum).all() and (self.__data <= self.__maximum).all()
+                elif self.__minimum == 'bounded':
+                    return bool((self.__data >= self.__default).all())
+            return True
+        else:
+            raise TypeError('Parameter data is not initialized')
 
     def stats(self):
         """Returns basic statistics on parameter values"""
@@ -561,12 +574,16 @@ class Parameter(object):
         if isinstance(indices, type(OrderedDict().values())):
             indices = list(indices)
 
-        if self.__data.size == 1:
-            print(f'{self.name}: Cannot reduce array of size one')
-            return
+        if self.__data is not None:
+            if self.__data.size == 1:
+                print(f'{self.name}: Cannot reduce array of size one')
+                return
 
-        self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
-        self.dimensions[dim_name].size = self.__data.shape[self.dimensions.get_position(dim_name)]
+            self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
+            assert self.__data is not None  # Needed so mypy doesn't fail on next line
+            self.dimensions[dim_name].size = self.__data.shape[self.dimensions.get_position(dim_name)]
+        else:
+            raise TypeError('Parameter data is not initialized')
 
     def reshape(self, new_dims):
         """Reshape a parameter, broadcasting existing values as necessary.
@@ -616,14 +633,18 @@ class Parameter(object):
         if isinstance(indices, type(OrderedDict().values())):
             indices = list(indices)
 
-        if self.__data.size == 1:
-            print(f'{self.name}: Cannot reduce array of size one')
-            return
+        if self.__data is not None:
+            if self.__data.size == 1:
+                print(f'{self.name}: Cannot reduce array of size one')
+                return
 
-        self.__data = self.__data[indices]
-        self.dimensions[dim_name].size = self.__data.shape[self.dimensions.get_position(dim_name)]
-        # self.__data = np.take(self.__data, indices, axis=0)
-        # self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
+            self.__data = self.__data[indices]
+            assert self.__data is not None  # Needed so mypy doesn't fail on next line
+            self.dimensions[dim_name].size = self.__data.shape[self.dimensions.get_position(dim_name)]
+            # self.__data = np.take(self.__data, indices, axis=0)
+            # self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
+        else:
+            raise TypeError('Parameter data is not initialized')
 
     def tolist(self) -> list:
         """Returns the parameter data as a list.
@@ -633,30 +654,36 @@ class Parameter(object):
 
         # TODO: is this correct for snarea_curve?
         # Return a list of the data
-        return self.__data.ravel(order='F').tolist()
+        if self.__data is not None:
+            return self.__data.ravel(order='F').tolist()
+        else:
+            raise TypeError('Parameter data is not initialized')
 
     def toparamdb(self) -> str:
         """Outputs parameter data in the paramDb csv format.
         """
 
-        outstr = '$id,{}\n'.format(self.name)
+        if self.__data is not None:
+            outstr = '$id,{}\n'.format(self.name)
 
-        ii = 0
-        # Do not use self.tolist() here because it causes minor changes
-        # to the values for floats.
-        for dd in self.__data.ravel(order='F'):
-            if self.datatype in [2, 3]:
-                # Float and double types have to be formatted specially so
-                # they aren't written in exponential notation or with
-                # extraneous zeroes
-                tmp = f'{dd:<20.7f}'.rstrip('0 ')
-                if tmp[-1] == '.':
-                    tmp += '0'
-                outstr += f'{ii+1},{tmp}\n'
-            else:
-                outstr += f'{ii+1},{dd}\n'
-            ii += 1
-        return outstr
+            ii = 0
+            # Do not use self.tolist() here because it causes minor changes
+            # to the values for floats.
+            for dd in self.__data.ravel(order='F'):
+                if self.datatype in [2, 3]:
+                    # Float and double types have to be formatted specially so
+                    # they aren't written in exponential notation or with
+                    # extraneous zeroes
+                    tmp = f'{dd:<20.7f}'.rstrip('0 ')
+                    if tmp[-1] == '.':
+                        tmp += '0'
+                    outstr += f'{ii+1},{tmp}\n'
+                else:
+                    outstr += f'{ii+1},{dd}\n'
+                ii += 1
+            return outstr
+        else:
+            raise TypeError('Parameter data is not initialized')
 
     def tostructure(self):
         """Returns a dictionary structure of the parameter.
