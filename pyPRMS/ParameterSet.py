@@ -1,5 +1,5 @@
 
-import netCDF4 as nc
+import netCDF4 as nc    # type: ignore
 import numpy as np
 import os
 import sys
@@ -7,8 +7,9 @@ import sys
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
-from typing import List, Optional, Set, Union
+from typing import cast, Dict, List, Optional, Sequence, Set, Union
 
+from pyPRMS.Control import Control
 from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
 from pyPRMS.ValidParams import ValidParams
@@ -35,13 +36,13 @@ class ParameterSet(object):
         self.__dimensions = Dimensions()
 
         # TODO: 2020-06-12 PAN shouldn't this be part of the Parameters class?
-        self.__master_params = None
+        self.__master_params: Optional[ValidParams] = None
         if verify:
             self.__master_params = ValidParams()
 
         self.verbose = verbose
 
-        self.__ctl_obj = None
+        self.__ctl_obj: Optional[Control] = None
 
     @property
     def available_parameters(self) -> List[str]:
@@ -53,11 +54,11 @@ class ParameterSet(object):
         return list(self.parameters.keys())
 
     @property
-    def control(self):
+    def control(self) -> Optional[Control]:
         return self.__ctl_obj
 
     @control.setter
-    def control(self, ctl_obj):
+    def control(self, ctl_obj: Control) -> None:
         # Set the control object
         self.__ctl_obj = ctl_obj
 
@@ -71,7 +72,7 @@ class ParameterSet(object):
         return self.__dimensions
 
     @property
-    def master_parameters(self) -> ValidParams:
+    def master_parameters(self) -> Optional[ValidParams]:
         """Get master parameters.
 
         :returns: ValidParams object
@@ -169,7 +170,7 @@ class ParameterSet(object):
 
         assert False, 'ParameterSet._read() must be defined by child class'
 
-    def degenerate_parameters(self):
+    def degenerate_parameters(self) -> None:
         """List parameters that have fewer dimensions than specified in the master parameters."""
 
         if self.__master_params is not None:
@@ -184,7 +185,7 @@ class ParameterSet(object):
                 except ValueError:
                     print(f'ERROR: Parameter, {kk}, is not a valid PRMS parameter')
 
-    def expand_parameter(self, name: str):
+    def expand_parameter(self, name: str) -> None:
         """Expand an existing parameter.
 
         Expands (e.g. reshape) a parameter, broadcasting existing value(s) into
@@ -237,7 +238,7 @@ class ParameterSet(object):
                         if self.verbose:
                             print('hru_deplcrv and snarea_curve have been expanded/updated')
 
-    def extract_upstream(self, outlet_segs=(), cutoff_segs=(), noroute_hrus=()):
+    def extract_upstream(self, outlet_segs: Sequence=(), cutoff_segs: Sequence=(), noroute_hrus: Sequence=()) -> None:
         """Extract upstream watershed
 
         Extracts the watershed (segments and HRUs) upstream of a given stream segment
@@ -251,18 +252,23 @@ class ParameterSet(object):
         hru_to_seg = self.parameters.hru_to_seg
 
 
-    def reduce_by_modules(self):
+    def reduce_by_modules(self) -> None:
         """Reduce the ParameterSet to the parameters required by the modules
         defined in a control file.
 
         #:param control: Control file object
         """
+        if self.__ctl_obj is None:
+            raise TypeError('Control file is set to None')
 
-        if self.__master_params is not None and self.__ctl_obj is not None:
-            pset = self.master_parameters.get_params_for_modules(modules=self.__ctl_obj.modules.values())
-            self.reduce_parameters(required_params=pset)
+        if self.master_parameters is None:
+            raise TypeError('Master parameter object is not initialized')
 
-    def reduce_parameters(self, required_params: Optional[Union[Set, List]] = None):
+        # if self.__master_params is not None and self.__ctl_obj is not None:
+        pset = self.master_parameters.get_params_for_modules(modules=list(self.__ctl_obj.modules.values()))
+        self.reduce_parameters(required_params=pset)
+
+    def reduce_parameters(self, required_params: Union[Set, List]) -> None:
         """Remove parameters that are not needed.
 
         Given a set of required parameters removes parameters that are not
@@ -298,8 +304,9 @@ class ParameterSet(object):
                     elif self.dimensions.get('nwateruse') == 0:
                         required_params.remove(xx)
                 elif xx == 'gvr_hru_id':
-                    if self.__ctl_obj.get('mapOutON_OFF').values == 0:
-                        required_params.remove(xx)
+                    if self.__ctl_obj is not None:
+                        if self.__ctl_obj.get('mapOutON_OFF').values == 0:
+                            required_params.remove(xx)
                 elif xx in ['hru_lat', 'hru_lon', ]:
                     if not self.parameters.exists(xx):
                         required_params.remove(xx)
@@ -316,7 +323,7 @@ class ParameterSet(object):
 
 
     def remove_by_global_id(self, hrus: Optional[List] = None,
-                            segs: Optional[List] = None):
+                            segs: Optional[List] = None) -> None:
         """Removes data-by-id (nhm_seg, nhm_id) from all parameters
 
         :param hrus: List of HRU IDs to remove
@@ -337,7 +344,7 @@ class ParameterSet(object):
                 self.__dimensions['ngw'].size -= len(hrus)
 
 
-    def remove_poi(self, poi):
+    def remove_poi(self, poi: str) -> None:
         """Remove POIs by gage_id"""
 
         # Remove matching pois from poi-related parameters
@@ -353,7 +360,7 @@ class ParameterSet(object):
             self.__dimensions['nobs'].size = 0
 
 
-    def write_parameters_xml(self, output_dir: str):
+    def write_parameters_xml(self, output_dir: str) -> None:
         """Write global parameters.xml file.
 
         :param output_dir: output path for parameters.xml file
@@ -364,7 +371,7 @@ class ParameterSet(object):
         with open(f'{output_dir}/{PARAMETERS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
-    def write_dimensions_xml(self, output_dir: str):
+    def write_dimensions_xml(self, output_dir: str) -> None:
         """Write global dimensions.xml file.
 
         :param output_dir: output path for dimensions.xml file
@@ -375,7 +382,7 @@ class ParameterSet(object):
         with open(f'{output_dir}/{DIMENSIONS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
-    def write_netcdf(self, filename: str):
+    def write_netcdf(self, filename: str) -> None:
         """Write parameters to a netcdf format file.
 
         :param filename: full path for output file
@@ -498,7 +505,7 @@ class ParameterSet(object):
         # Close the netcdf file
         nc_hdl.close()
 
-    def write_paramdb(self, output_dir: str):
+    def write_paramdb(self, output_dir: str) -> None:
         """Write all parameters using the paramDb output format.
 
         :param output_dir: output path for paramDb files
@@ -538,7 +545,7 @@ class ParameterSet(object):
 
     def write_parameter_file(self, filename: str,
                              header: Optional[List[str]] = None,
-                             prms_version: Optional[int] = 5):
+                             prms_version: Optional[int] = 5) -> None:
         """Write a parameter file.
 
         :param filename: name of parameter file
@@ -632,14 +639,15 @@ class ParameterSet(object):
 
         outfile.close()
 
-    def _adjust_bounded(self, name):
+    def _adjust_bounded(self, name: str) -> None:
         cparam = self.parameters.get(name)
 
         if cparam.minimum == 'bounded':
             cparam.minimum = 0
 
             try:
-                cparam.maximum = self.dimensions.get(cparam.maximum).size
+                # For bounded parameters the maximum attribute has the name of another dimension
+                cparam.maximum = self.dimensions.get(cast(str, cparam.maximum)).size
             except ValueError:
                 if self.verbose:
                     print(f'{name}: Bounded upper maximum, {cparam.maximum}, dimension does not exist')

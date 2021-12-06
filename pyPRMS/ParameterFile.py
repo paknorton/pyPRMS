@@ -23,11 +23,11 @@ class ParameterFile(ParameterSet):
 
         super(ParameterFile, self).__init__(verbose=verbose, verify=verify)
 
-        self.__filename = None
-        self.__header = None
+        # self.__filename = None
+        # self.__header = None
 
         self.__isloaded = False
-        self.__updated_parameters = set()
+        self.__updated_parameters: Set[str] = set()
         self.__verbose = verbose
         self.filename = filename
 
@@ -41,7 +41,7 @@ class ParameterFile(ParameterSet):
         return self.__filename
 
     @filename.setter
-    def filename(self, name: str):
+    def filename(self, name: str) -> None:
         """Set the name of the parameter file.
 
         :param name: name of parameter file
@@ -49,7 +49,7 @@ class ParameterFile(ParameterSet):
 
         self.__isloaded = False
         self.__filename = name
-        self.__header = []  # Initialize the list of file headers
+        self.__header: List[str] = []  # Initialize the list of file headers
 
         self._read()
 
@@ -71,7 +71,7 @@ class ParameterFile(ParameterSet):
 
         return self.__updated_parameters
 
-    def _read(self):
+    def _read(self) -> None:
         """Read parameter file.
         """
 
@@ -197,7 +197,8 @@ class ParameterFile(ParameterSet):
                     self.parameters.remove(varname)
                 else:
                     # Convert the values to the correct datatype
-                    self.parameters.get(varname).data = vals
+                    # Ignore the type until https://github.com/python/mypy/issues/3004 is fixed
+                    self.parameters.get(varname).data = vals    # type: ignore
 
         for pp in bounded_parameters:
             self._adjust_bounded(pp)
