@@ -1,8 +1,8 @@
 
 # import numpy as np
 import os
-import pandas as pd
-from typing import Optional
+import pandas as pd     # type: ignore
+from typing import cast, Optional
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
 
 from pyPRMS.constants import DATATYPE_TO_DTYPE
@@ -31,7 +31,7 @@ class ParamDb(ParameterSet):
         # Read the parameters from the parameter database
         self._read()
 
-    def _read(self):
+    def _read(self) -> None:
         """Read a paramDb file.
         """
 
@@ -46,11 +46,11 @@ class ParamDb(ParameterSet):
 
         # Populate the global dimensions from the xml file
         for xml_dim in dimens_root.findall('dimension'):
-            self.dimensions.add(name=xml_dim.attrib.get('name'), size=xml_dim.find('size').text)
+            self.dimensions.add(name=cast(str, xml_dim.attrib.get('name')), size=cast(int, xml_dim.find('size').text))
 
         # Populate parameterSet with all available parameter names
         for param in params_root.findall('parameter'):
-            xml_param_name = param.attrib.get('name')
+            xml_param_name = cast(str, param.attrib.get('name'))
             curr_file = f'{self.__paramdb_dir}/{xml_param_name}.csv'
 
             if self.parameters.exists(xml_param_name):
@@ -72,13 +72,12 @@ class ParamDb(ParameterSet):
 
                 # Add dimensions from the global dimensions for current parameter
                 for cdim in param.findall('./dimensions/dimension'):
-                    dim_name = cdim.attrib.get('name')
+                    dim_name = cast(str, cdim.attrib.get('name'))
                     self.parameters.get(xml_param_name).dimensions.add(name=dim_name,
-                                                                       size=self.dimensions.get(dim_name).size)
+                                                                       size=cast(int, self.dimensions.get(dim_name).size))
 
                 tmp_data = pd.read_csv(curr_file, skiprows=0, usecols=[1],
-                                       dtype={1: DATATYPE_TO_DTYPE[self.parameters.get(xml_param_name).datatype]},
-                                       squeeze=True)
+                                       dtype={1: DATATYPE_TO_DTYPE[self.parameters.get(xml_param_name).datatype]}).squeeze('columns')
 
                 self.parameters.get(xml_param_name).data = tmp_data
 
