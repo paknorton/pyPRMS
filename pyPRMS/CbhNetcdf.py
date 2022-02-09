@@ -62,8 +62,8 @@ class CbhNetcdf(object):
             # print('\t\tOpen dataset')
 
             if self.__thredds:
-                thredds_server = 'http://gdp-netcdfdev.cr.usgs.gov:8080'
-                # thredds_server = 'http://localhost:8080'
+                # thredds_server = 'http://gdp-netcdfdev.cr.usgs.gov:8080'
+                thredds_server = 'http://localhost:8080'
                 base_opendap = f'{thredds_server}/thredds/dodsC/NHM_CBH_GM/files'
 
                 # base_url is used to get a list of files for a product
@@ -279,8 +279,14 @@ class CbhNetcdf(object):
 
         for cvar in var_list:
             cxry = self.__dataset[cvar]
+
+            try:
+                cfill = cxry.attrs['fill_value']
+            except KeyError:
+                cfill = cxry.attrs['_FillValue']
+
             varo = nco.createVariable(cvar, cxry.encoding['dtype'], cxry.dims,
-                                      fill_value=cxry.attrs['fill_value'],
+                                      fill_value=cfill,
                                       zlib=True)
             varo.long_name = cxry.attrs['long_name']
             varo.units = cxry.attrs['units']
