@@ -281,9 +281,10 @@ class CbhNetcdf(object):
             cxry = self.__dataset[cvar]
 
             try:
+                # This was older xarray behavior
                 cfill = cxry.attrs['fill_value']
             except KeyError:
-                cfill = cxry.attrs['_FillValue']
+                cfill = cxry.encoding['_FillValue']
 
             varo = nco.createVariable(cvar, cxry.encoding['dtype'], cxry.dims,
                                       fill_value=cfill,
