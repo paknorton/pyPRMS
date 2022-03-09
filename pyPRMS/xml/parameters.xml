@@ -4157,7 +4157,6 @@
         <maximum>200000.0</maximum>
         <default>1000.0</default>
         <modules>
-            <module>strmflow</module>
             <module>muskingum_mann</module>
             <module>mizuroute</module>
             <module>stream_temp</module>
@@ -4177,7 +4176,6 @@
         <maximum>2.0</maximum>
         <default>0.0001</default>
         <modules>
-            <module>strmflow</module>
             <module>muskingum_mann</module>
             <module>mizuroute</module>
             <module>stream_temp</module>
@@ -5072,6 +5070,7 @@
         <dimensions>
             <dimension name="one">
                 <position>1</position>
+                <default>1</default>
             </dimension>
         </dimensions>
     </parameter>
