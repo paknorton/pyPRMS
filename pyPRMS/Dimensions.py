@@ -2,7 +2,7 @@
 from collections import OrderedDict
 
 try:
-    from typing import cast, Dict, Optional, OrderedDict as OrderedDictType
+    from typing import cast, Dict, Optional, OrderedDict as OrderedDictType, Union
 except ImportError:
     # pre-python 3.7.2
     from typing import cast, Dict, Optional, MutableMapping as OrderedDictType   # type: ignore
@@ -83,7 +83,7 @@ class Dimensions(object):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name: str, size: int=0):
+    def add(self, name: str, size: int) -> None:
         """Add a new dimension.
 
         :param name: Name of the dimension
