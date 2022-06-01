@@ -1,7 +1,4 @@
 
-# import numpy as np
-# import os
-# import pandas as pd
 import xarray as xr
 from typing import Optional
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
@@ -35,7 +32,7 @@ class ParameterNetCDF(ParameterSet):
         # Read the parameters from the parameter database
         self._read()
 
-    def _read(self):
+    def _read(self) -> None:
         """Read a paramDb file.
         """
 
