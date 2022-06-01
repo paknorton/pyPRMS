@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, List, Optional, Sequence, Union
 
 from pyPRMS.constants import DATA_TYPES
-
+from pyPRMS.Exceptions_custom import ControlError
 
 class ControlVariable(object):
     """
@@ -14,11 +14,11 @@ class ControlVariable(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-18
 
-    def __init__(self, name: Optional[str] = None,
+    def __init__(self, name: Optional[str],
                  datatype: Optional[int] = None,
                  default: Optional[Union[int, float, str]] = None,
                  description: Optional[str] = None,
-                 valid_values: Optional[Union[int, float, str]] = None,
+                 valid_values: Optional[Dict] = None,
                  value_repr: Optional[str] = None):
         """Initialize a control variable object.
 
@@ -63,13 +63,15 @@ class ControlVariable(object):
         """
 
         assoc_vals = []
-        if self.size > 1:
-            for xx in self.values:
-                for vv in self.__valid_values[xx]:
+        if self.__valid_values is not None:
+            # if self.size > 1:
+            if isinstance(self.values, np.ndarray):
+                for xx in self.values:
+                    for vv in self.__valid_values[xx]:
+                        assoc_vals.append(vv)
+            else:
+                for vv in self.__valid_values[str(self.values)]:
                     assoc_vals.append(vv)
-        else:
-            for vv in self.__valid_values[str(self.values)]:
-                assoc_vals.append(vv)
 
         return assoc_vals
 
@@ -209,7 +211,7 @@ class ControlVariable(object):
         self.__value_repr = data
 
     @property
-    def values(self) -> Union[List[str], List[int], int, float, str]:
+    def values(self) -> Union[np.ndarray, int, float, str]:
         """Get the values for the control variable.
 
         If force_default is True then the default value is returned regardless
@@ -221,6 +223,8 @@ class ControlVariable(object):
         if self.__values is not None:
             if self.__force_default:
                 return self.default
+            elif self.__values.size == 0:
+                raise ControlError(f'Control variable, {self.__name}, has invalid data')
             elif self.__values.size > 1:
                 return self.__values
             else:
