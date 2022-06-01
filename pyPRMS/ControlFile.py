@@ -5,6 +5,7 @@
 # import xml.etree.ElementTree as xmlET
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
+from typing import Optional
 from pyPRMS.constants import DATA_TYPES, VAR_DELIM
 from pyPRMS.Control import Control
 from pyPRMS.Exceptions_custom import ControlError
@@ -19,14 +20,16 @@ class ControlFile(Control):
     # Description: Class object to handle reading and writing PRMS
     #              control files.
 
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, verbose: Optional[bool] = False):
         super(ControlFile, self).__init__()
         # 1) open file
         # 2) read file contents
 
+        self.__verbose = verbose
         self.__isloaded = False
         self.__filename = None
         self.filename = filename
+
 
     @property
     def filename(self) -> str:
@@ -54,6 +57,9 @@ class ControlFile(Control):
         Reads the contents of a control file into the class.
         """
 
+        if self.__verbose:
+            chk_vars = []
+
         self.__isloaded = False
 
         header_tmp = []
@@ -73,6 +79,11 @@ class ControlFile(Control):
                 # We're dealing with a control parameter/variable
                 # We're in a parameter section
                 varname = line.split(' ')[0]
+
+                if self.__verbose:
+                    if varname in chk_vars:
+                        print(f'WARNING: {varname} already exists')
+                    chk_vars.append(varname)
 
                 numval = int(next(it))  # number of values for this variable
                 valuetype = int(next(it))  # Variable type (1 - integer, 2 - float, 4 - character)
