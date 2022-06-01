@@ -3973,8 +3973,8 @@
         <units>radians</units>
         <desc>Azimuth angle of each segment, measured clockwise from north</desc>
         <help>Azimuth angle of each segment, measured clockwise from north</help>
-        <minimum>0.0</minimum>
-        <maximum>6.28296</maximum>
+        <minimum>-1.570796</minimum>
+        <maximum>1.570796</maximum>
         <default>0.0</default>
         <modules>
             <module>stream_temp</module>
@@ -3991,7 +3991,7 @@
         <desc>Initial groundwater temperature</desc>
         <help>Initial temperature of groundwater entering each segment; recommended value equal to long-term average air temperature</help>
         <minimum>0.0</minimum>
-        <maximum>45.</maximum>
+        <maximum>45.0</maximum>
         <default>1.0</default>
         <modules>
             <module>stream_temp</module>
@@ -4460,12 +4460,12 @@
     </parameter>
     <parameter name="width_alpha">
         <type>F</type>
-        <units>unknown</units>
+        <units>meters</units>
         <desc>Alpha coefficient in power function for width calculation</desc>
         <help>Alpha coefficient in power function for width calculation</help>
         <minimum>0.0001</minimum>
-        <maximum>2.0</maximum>
-        <default>0.015</default>
+        <maximum>1000.0</maximum>
+        <default>1.0</default>
         <modules>
             <module>stream_temp</module>
         </modules>
