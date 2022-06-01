@@ -678,7 +678,7 @@
         <desc>Pathname of the time series of pre-processed values used to set values of cov_type for each HRU</desc>
     </control_param>
     <control_param name="csv_output_file">
-        <default>none</default>
+        <default>prms_summary.csv</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of CSV output file</desc>
@@ -925,12 +925,6 @@
         <type>4</type>
         <numvals>1</numvals>
         <desc>Module name for surface-runoff/infiltration computation method (srunoff_carea or srunoff_smidx)</desc>
-    </control_param>
-    <control_param name="stats_output_file">
-        <default>stats.out</default>
-        <type>4</type>
-        <numvals>1</numvals>
-        <desc>none</desc>
     </control_param>
     <control_param name="stat_var_file">
         <default>statvar.out</default>
