@@ -404,6 +404,17 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="method">
+            <value name="1">Scientific notation with four significant digits</value>
+            <value name="2">Two decimal places</value>
+            <value name="3">Three decimal places</value>
+            <value name="4">Four decimal places</value>
+            <value name="5">Five decimal places</value>
+        </values>
+        <related_variables>
+            <variable name="nhruOutVars"/>
+            <variable name="nhruOutON_OFF"/>
+        </related_variables>
     </control_param>
     <control_param name="nhruOut_freq" deprecated="6.0">
         <default>1</default>
@@ -421,6 +432,29 @@
         <related_variables>
             <variable name="nhruOutVars"/>
             <variable name="nhruOutON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="outputSelectDatesON_OFF" version="5.2" deprecated="6.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Switch to indicate if nhru_summary output files are generated for a specified set of dates</desc>
+        <values type="flag">
+            <value name="0">No, output time series on basis of nhruOut_freq</value>
+            <value name="1">Yes, specify dates in file specified by selectDatesFileName</value>
+        </values>
+        <related_variables>
+            <variable name="nhruOutVars"/>
+            <variable name="nhruOutON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="selectDatesFileName" version="5.2" deprecated="6.0">
+        <default>selectDates.in</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>File that contains the set of dates to output values of nhru_summary output files in chronological order with dates specified as YEAR MONTH DAY with space(s) and/or comma separating YEAR and MONTH and MONTH and DAY (e.g. 1959 09 01)</desc>
+        <related_variables>
+            <variable name="outputSelectDatesON_OFF"/>
         </related_variables>
     </control_param>
     <control_param name="nmapOutVars">
@@ -450,6 +484,17 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="method">
+            <value name="1">Scientific notation with four significant digits</value>
+            <value name="2">Two decimal places</value>
+            <value name="3">Three decimal places</value>
+            <value name="4">Four decimal places</value>
+            <value name="5">Five decimal places</value>
+        </values>
+        <related_variables>
+            <variable name="nsegmentOutVars"/>
+            <variable name="nsegmentOutON_OFF"/>
+        </related_variables>
     </control_param>
     <control_param name="nsegmentOut_freq" version="5.0" deprecated="6.0">
         <default>1</default>
@@ -496,6 +541,17 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>none</desc>
+        <values type="method">
+            <value name="1">Scientific notation with four significant digits</value>
+            <value name="2">Two decimal places</value>
+            <value name="3">Three decimal places</value>
+            <value name="4">Four decimal places</value>
+            <value name="5">Five decimal places</value>
+        </values>
+        <related_variables>
+            <variable name="nsubOutVars"/>
+            <variable name="nsubOutON_OFF"/>
+        </related_variables>
     </control_param>
     <control_param name="nsubOut_freq" version="5.0">
         <default>1</default>
@@ -1134,4 +1190,98 @@
             <value name="1">On</value>
         </values>
     </control_param>
+    <control_param name="albedo_cbh_flag" version="5.2.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to specify whether to input snowpack albedo from a CBH file</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="albedo_day" version="5.2.0">
+        <default>albedo.day</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>Pathname of the CBH file of pre-processed snowpack albedo input data for each HRU to specify variable albedo_hru (units: decimal fraction)</desc>
+    </control_param>
+    <control_param name="cloud_cover_cbh_flag" version="5.2.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to specify whether to input snowpack albedo from a CBH file</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="cloud_cover_day" version="5.2.0">
+        <default>cloudcover.day</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>Pathname of the CBH file of pre-processed snowpack albedo input data for each HRU to specify variable albedo_hru (units: decimal fraction)</desc>
+    </control_param>
+    <control_param name="humidity_cbh_flag" version="5.2.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to specify whether to input humidity from a CBH file</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="snow_cloudcover_flag" version="5.2.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to indicate if approximation of cloud cover for snowpack computations is computed using HRU-dimensioned variables</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="windspeed_cbh_flag" version="5.2.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to specify whether to input windspeed from a CBH file</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="frozen_flag" version="5.2">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to indicate if continuous frozen ground index simulation is computed</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="glacier_flag" version="5.2">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to indicate if glacier simulation is computed</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="mbInit_flag" version="5.2">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to indicate initial mass balance of glaciers</desc>
+        <values type="method">
+            <value name="0">No optimization</value>
+            <value name="1">Use first year of climate data</value>
+            <value name="2">Constant mass balance gradient above and below equilibrium line altitude (ELA)</value>
+        </values>
+    </control_param>
+
 </control>
