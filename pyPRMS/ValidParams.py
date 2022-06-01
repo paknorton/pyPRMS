@@ -29,7 +29,7 @@ class ValidParams(Parameters):
 
         self.__filename = filename
 
-        if filename:
+        if filename is not None:
             self.__xml_tree = xmlET.parse(self.__filename)
         else:
             # Use the pyPRMS package file, parameters.xml, by default.
