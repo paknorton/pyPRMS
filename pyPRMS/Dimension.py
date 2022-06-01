@@ -75,7 +75,7 @@ class Dimension(object):
         return self.__size
 
     @size.setter
-    def size(self, value: int):
+    def size(self, value: Union[int, str]) -> None:
         """Set the size of the dimension.
 
         :param value: Size of the dimension
