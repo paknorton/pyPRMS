@@ -11,7 +11,7 @@ try:
     from typing import Union, Dict, List, OrderedDict as OrderedDictType, Sequence
 except ImportError:
     # pre-python 3.7.2
-    from typing import Union, Dict, List, MutableMapping as OrderedDictType, Sequence
+    from typing import Union, Dict, List, MutableMapping as OrderedDictType, Sequence   # type: ignore
 
 from pyPRMS.ControlVariable import ControlVariable
 from pyPRMS.Exceptions_custom import ControlError
@@ -43,7 +43,13 @@ class Control(object):
         xml_root = xml_tree.getroot()
 
         for elem in xml_root.findall('control_param'):
+            version = elem.attrib.get('version')
             name = elem.attrib.get('name')
+
+            if version == '6.0':
+                # For now just skip PRMS6-specific control variables
+                continue
+
             datatype = int(elem.find('type').text)
 
             self.add(name)
@@ -237,7 +243,6 @@ class Control(object):
             else:
                 continue
 
-            # print(kk)
             outfile.write(f'{VAR_DELIM}\n')
             outfile.write(f'{kk}\n')
 
