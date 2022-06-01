@@ -66,7 +66,7 @@ class Parameters(object):
     try:
         @cached_property
         def hru_to_seg(self) -> OrderedDictType[int, int]:
-            """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs
+            """Returns an ordered dictionary mapping NHM HRU IDs to HRU NHM segment IDs
             """
 
             self.__hru_to_seg = OrderedDict()
@@ -409,7 +409,7 @@ class Parameters(object):
                 crs_proj = get_projection(self.__hru_poly)
 
                 # This takes care of multipolygons that are in the NHM geodatabase/shapefile
-                geoms_exploded = self.__hru_poly.explode().reset_index(level=1, drop=True)
+                geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
 
                 # print('Writing first plot')
                 df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True, how='left')
