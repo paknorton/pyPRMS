@@ -215,13 +215,19 @@ class Parameters(object):
                 print(f'{pk}: Incorrect number of values for dimensions.')
 
             if not pp.check_values():
+                pp_stats = pp.stats()
+
                 if not(isinstance(pp.minimum, str) or isinstance(pp.maximum, str)):
-                    print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
+                    print(f'    WARNING: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
                           f'the valid range of ({pp.minimum}, {pp.maximum})')
+                    # print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
+                    #       f'the valid range of ({pp.minimum}, {pp.maximum})')
                 elif pp.minimum == 'bounded':
                     # TODO: Handling bounded parameters needs improvement
-                    print(f'    WARNING: Bounded parameter value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
+                    print(f'    WARNING: Bounded parameter value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
                           f'the valid range of ({pp.default}, {pp.maximum})')
+                    # print(f'    WARNING: Bounded parameter value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
+                    #       f'the valid range of ({pp.default}, {pp.maximum})')
 
             if pp.all_equal():
                 if pp.data.ndim == 2:
@@ -424,10 +430,18 @@ class Parameters(object):
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                 mapper.set_array(df_mrg[name])
 
+                # TODO: 2022-06-17 PAN - Categorical variables require entry in two places.
+                #       The first place is here for labelling and the second place is in
+                #       plot_helpers.py for adjusting the color boundaries. Need to figure out
+                #       a more consistent/better way to do this.
                 if name == 'hru_deplcrv':
                     # tck_arr = np.arange(param_data.min().min(), param_data.max().max()+1)
                     tck_arr = np.arange(drange[0], drange[1]+1)
                     cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label='Curve index')
+                    cb.ax.tick_params(length=0)
+                elif name == 'soil_type':
+                    tck_arr = np.arange(drange[0], drange[1]+1)
+                    cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label=name)
                     cb.ax.tick_params(length=0)
                 else:
                     plt.colorbar(mapper, shrink=0.6, label=cparam.units)
@@ -442,7 +456,7 @@ class Parameters(object):
                                               **dict(kwargs, cmap=cmap, norm=norm))
 
                 if mask_defaults is not None:
-                    plt.annotate(f'NOTE: Default values ({cparam.default}) are masked', xy=(0.5, 0.01),
+                    plt.annotate(f'NOTE: Values = {cparam.default} are masked', xy=(0.5, 0.01),
                                  xycoords='axes fraction', fontsize=12, fontweight='bold',
                                  bbox=dict(facecolor=mask_defaults, alpha=1.0))
 
@@ -514,17 +528,19 @@ class Parameters(object):
 
                     plt.title('Variable: {}'.format(name))
 
-                    if self.__hru_poly is not None:
-                        hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry, **dict(kwargs, cmap=cmap,
-                                                                                                   norm=norm,
-                                                                                                   linewidth=0.5,
-                                                                                                   alpha=0.7))
+                    # TODO: 2022-06-16 PAN - figure out best way to optionally include HRUs in
+                    #       segment plots
+                    # if self.__hru_poly is not None:
+                    #     hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry, **dict(kwargs, cmap=cmap,
+                    #                                                                                norm=norm,
+                    #                                                                                linewidth=0.5,
+                    #                                                                                alpha=0.7))
 
                     col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
                                                **dict(kwargs, cmap=cmap, norm=norm))
 
                     if mask_defaults is not None:
-                        plt.annotate(f'NOTE: Default values ({cparam.default}) are masked', xy=(0.5, 0.01),
+                        plt.annotate(f'NOTE: Values = {cparam.default} are masked', xy=(0.5, 0.01),
                                      xycoords='axes fraction', fontsize=12, fontweight='bold',
                                      bbox=dict(facecolor=mask_defaults, alpha=1.0))
 
