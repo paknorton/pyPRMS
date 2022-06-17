@@ -24,6 +24,7 @@ import numpy as np
 def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_width=False, vary_color=True, colors=None,
                          alpha=1.0, linewidth=1.0, **kwargs):
     """ Plot a collection of line geometries """
+
     lines = []
     for geom in geoms:
         a = np.asarray(geom.coords)
@@ -65,9 +66,10 @@ def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, faceco
 
         patches.append(Polygon(a))
 
-    patches = PatchCollection(patches, facecolor=facecolor, linewidth=linewidth, edgecolor=edgecolor,
-                              alpha=alpha, cmap=cmap, norm=norm)
-
+    # patches = PatchCollection(patches, facecolor=facecolor, linewidth=linewidth, edgecolor=edgecolor,
+    #                           alpha=alpha, cmap=cmap, norm=norm)
+    patches = PatchCollection(patches, match_original=False,
+                              edgecolor='face', linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm, **kwargs)
     if values is not None:
         patches.set_array(values)
         # patches.set_cmap(cmap)
@@ -219,7 +221,11 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
     # else:
     norm = Normalize(vmin=min_val, vmax=max_val)
 
-    if the_var == 'hru_deplcrv':
+    # TODO: 2022-06-17 PAN - Categorical variables require entry in two places.
+    #       The first place is here for adjusting color boundaries and the second place is in
+    #       Parameters.py for the labelling. Need to figure out a more consistent/better
+    #       way to do this.
+    if the_var in ['hru_deplcrv', 'soil_type']:
         # Adjust the boundaries; useful for qualitative colormaps
         # bnds = np.arange(param_data.min().min(), param_data.max().max()+2) - 0.5
         # num_col = abs(param_data.max().max() - param_data.min().min()) + 1
