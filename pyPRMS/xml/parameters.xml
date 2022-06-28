@@ -3584,7 +3584,7 @@
         <type>F</type>
         <units>decimal fraction</units>
         <desc>HRU slope</desc>
-        <help>Slope of each HRU, specified as change in vertical length divided by change in horizontal length</help>
+        <help>Slope of each HRU, specified as the change in vertical length divided by the change in horizontal length</help>
         <minimum>0.0</minimum>
         <maximum>10.0</maximum>
         <default>0.0</default>
