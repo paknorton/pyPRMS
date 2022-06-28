@@ -15,7 +15,7 @@ from collections import OrderedDict
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
 try:
-    from typing import Optional, Union, Dict, List, OrderedDict as OrderedDictType
+    from typing import Optional, Union, Dict, List, Tuple, OrderedDict as OrderedDictType
 except ImportError:
     # pre-python 3.7.2
     from typing import Optional, Union, Dict, List, MutableMapping as OrderedDictType   # type: ignore
@@ -346,7 +346,7 @@ class Parameters(object):
             return param.data[tuple(nhm_idx0), ]
 
     def plot(self, name: str, output_dir: Optional[str] = None,
-             limits: Optional[Union[str, List[float]]] = 'valid',
+             limits: Optional[Union[str, List[float], Tuple[float, float]]] = 'valid',
              mask_defaults: Optional[str] = None, **kwargs):
         """Plot a parameter.
 
