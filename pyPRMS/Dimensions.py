@@ -16,12 +16,10 @@ from pyPRMS.prms_helpers import read_xml
 class Dimensions(object):
     """Container of Dimension objects."""
     __dimensions: OrderedDictType
-    # __verbose: bool
-    # __verify: bool
 
     def __init__(self, verbose: Optional[bool] = False,
                  verify: Optional[bool] = True):
-        """Create ordered dictionary to contain Dimension objects.
+        """Create ordered dictionary containing Dimension objects.
 
         :param verbose: Output additional debug information
         :param verify: Enforce valid dimension names (default=True)
@@ -30,7 +28,12 @@ class Dimensions(object):
         self.__verbose = verbose
         self.__verify = verify
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Pretty-print dimensions.
+
+        :returns: Pretty-print string of dimensions
+        """
+
         outstr = ''
         if len(self.__dimensions) == 0:
             outstr = '<empty>'
@@ -39,12 +42,22 @@ class Dimensions(object):
                 outstr += f'{kk}: {vv}\n'
         return outstr
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> str:
+        """Get named dimension.
+
+        :param name: name of dimensions
+        :returns: dimension object
+        """
+
         # print('ATTR: {}'.format(name))
         return getattr(self.__dimensions, name)
 
-    def __getitem__(self, item):
-        """Get named dimension."""
+    def __getitem__(self, item: str) -> Dimension:
+        """Get named dimension.
+
+        :param item: name of dimension
+        :returns: Dimension object
+        """
         return self.__dimensions[item]
 
     @property
@@ -83,8 +96,8 @@ class Dimensions(object):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name: str, size: int) -> None:
-        """Add a new dimension.
+    def add(self, name: str, size: int):
+        """Add a new Dimension object.
 
         :param name: Name of the dimension
         :param size: Size of the dimension
@@ -152,7 +165,7 @@ class Dimensions(object):
 
         :param name: Name of the dimension
 
-        :returns: dimension
+        :returns: Dimension object
 
         :raises ValueError: if dimension does not exist
         """
@@ -162,9 +175,9 @@ class Dimensions(object):
         raise ValueError(f'Dimension, {name}, does not exist.')
 
     def remove(self, name: str):
-        """Remove dimension.
+        """Remove Dimension object.
 
-        :param name: Dimension name
+        :param name: name of dimension to remove
         """
 
         if self.exists(name):
@@ -211,7 +224,7 @@ class ParamDimensions(Dimensions):
         return dims_xml
 
     def add(self, name: str, size: int = 0):
-        """Add a new dimension.
+        """Add a new Dimension object.
 
         :param name: Name of the dimension
         :param size: Size of the dimension
@@ -267,8 +280,8 @@ class ParamDimensions(Dimensions):
     def get_dimsize_by_index(self, index: int) -> int:
         """Return size of dimension at the given index.
 
-        :param index: The 0-based position of the dimension.
-        :returns: Size of the dimension.
+        :param index: The 0-based position of the dimension
+        :returns: Size of the dimension
 
         :raises ValueError: if index is greater than number dimensions for the parameter
         """

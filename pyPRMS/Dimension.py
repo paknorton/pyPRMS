@@ -9,7 +9,6 @@ def _valid_dimension_name(name: str) -> bool:
 
     :param str name: dimension name
     :returns: True if dimension name is valid otherwise False
-    :rtype: bool
     """
 
     return name in DIMENSION_NAMES
@@ -17,6 +16,7 @@ def _valid_dimension_name(name: str) -> bool:
 
 class Dimension(object):
     """Defines a single dimension."""
+
     __name: str = ''
     __size: int = 0
     # __description: Optional[str] = None
@@ -75,11 +75,11 @@ class Dimension(object):
         return self.__size
 
     @size.setter
-    def size(self, value: Union[int, str]) -> None:
+    def size(self, value: Union[int, str]):
         """Set the size of the dimension.
 
         :param value: Size of the dimension
-        :raises ValueError: if dimension size in not a positive integer
+        :raises ValueError: if dimension size is not a positive integer
         """
         if isinstance(value, str):
             value = int(value)
@@ -126,6 +126,10 @@ class Dimension(object):
         self.__description = descstr
 
     def __repr__(self) -> str:
+        """String respresentation of dimension.
+
+        :returns: string with name and size of dimension
+        """
         return 'Dimension(name={}, size={!r})'.format(self.name, self.size)
 
     def __iadd__(self, other: int):
@@ -138,7 +142,7 @@ class Dimension(object):
         :raises ValueError: if type of parameter is not an integer
         """
 
-        # augment in-place addition so the instance plus a number results
+        # Augment in-place addition so the instance plus a number results
         # in a change to self.__size
         if not isinstance(other, int):
             raise ValueError('Dimension size type must be an integer')
@@ -156,7 +160,7 @@ class Dimension(object):
         :raises ValeuError: if parameter is not a positive integer
         """
 
-        # augment in-place addition so the instance minus a number results
+        # Augment in-place addition so the instance minus a number results
         # in a change to self.__size
         if not isinstance(other, int):
             raise ValueError('Dimension size type must be an integer')
