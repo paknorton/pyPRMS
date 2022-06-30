@@ -28,7 +28,7 @@ class CbhAscii(object):
     # Create date: 2019-04
 
     # This class assumes it is dealing with regional cbh files (not a CONUS-level NHM file)
-    # TODO: As currently written type of data (e.g. tmax, tmin, prcp) is ignored.
+    # TODO: As currently written the type of data (e.g. tmax, tmin, prcp) is ignored.
     # TODO: Verify that given data type size matches number of columns
 
     # 2016-12-20 PAN:
@@ -39,18 +39,21 @@ class CbhAscii(object):
     #    tmax is never less than tmin
     #    prcp is never negative
     #    any missing data/missing date is filled with (?? avg of bracketing dates??)
-    #
-    # I think it would be better if this code worked with the original GDP files and
-    # took care of those corrections itself. This would provide a more seamless workflow
-    # from GDP to PRMS. At this point I'm not taking this on though -- for a future revision.
 
     def __init__(self, src_path: Optional[str] = None,
                  st_date: Optional[datetime.datetime] = None,
                  en_date: Optional[datetime.datetime] = None,
-                 indices=None,
-                 nhm_hrus=None,
-                 mapping=None):
+                 indices: Optional[OrderedDictType] = None,
+                 nhm_hrus: Optional[List] = None,
+                 mapping: Optional[Dict] = None):
         """Create CbhAscii object.
+
+        :param src_path: path to by-region CBH ASCII source files
+        :param st_date: start date for extraction
+        :param en_date: end date for extraction
+        :param indices: ordered dictionary of nhm_id, local_id pairs
+        :param nhm_hrus: list NHM HRUs to extract
+        :param mapping: dictionary mapping regions to nhm_id ranges
         """
 
         self.__src_path = src_path
@@ -131,12 +134,14 @@ class CbhAscii(object):
         self.__data['minute'] = 0
         self.__data['second'] = 0
 
-    def read_ascii_file(self, filename: str, columns=None) -> pd.DataFrame:
+    def read_ascii_file(self, filename: str,
+                        columns: Optional[List] = None) -> pd.DataFrame:
         """Reads a single CBH file.
 
-        :param str filename: name of the CBH file
+        :param filename: name of the CBH file
         :param columns: columns to read
-        :type columns: None or """
+        :returns: dataframe of CBH variable
+        """
         # Columns 0-5 always represent date/time information
         if columns is not None:
             df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
@@ -152,6 +157,11 @@ class CbhAscii(object):
         return df
 
     def check_region(self, region: str) -> Union[OrderedDictType[int, int], None]:
+        """Get the range of nhm_id values for selected region.
+
+        :param region: HUC2 region number (1 to 18)
+        :returns: dictionary of local_id, nhm_id pairs
+        """
         if self.__indices is not None:
             # Get the range of nhm_ids for the region
             rvals = self.__mapping[region]
@@ -169,8 +179,12 @@ class CbhAscii(object):
             return idx_retrieve
         return None
 
-    def read_cbh_multifile(self, var=None) -> Union[pd.DataFrame, None]:
-        """Read cbh data from multiple csv files"""
+    def read_cbh_multifile(self, var: Optional[str] = None) -> Union[pd.DataFrame, None]:
+        """Read cbh data from multiple csv files.
+
+        :param var: name of variable to read
+        :returns: dataframe of extracted variable
+        """
 
         if var is None:
             raise ValueError('Variable name (var) must be provided')
@@ -239,10 +253,28 @@ class CbhAscii(object):
         return self.__dataframe
 
     def get_var(self, var: str) -> Union[pd.DataFrame, None]:
+        """Get CBH variable.
+
+        :param var: name of CBH variable
+        :returns: dataframe of CBH variable values
+        """
+
         data = self.read_cbh_multifile(var=var)
         return data
 
-    def write_ascii(self, pathname=None, fileprefix=None, variables=None):
+    def write_ascii(self, pathname: Optional[str] = None,
+                    fileprefix: Optional[str] = None,
+                    variables: Optional[List[str]] = None):
+        """Write ASCII CBH file for selected variable.
+
+        By default CBH filenames are saved in the current working directory and
+        are named for the selected variable with an extension of .cbh
+
+        :param pathname: path to save files to
+        :param fileprefix: prefix to add to CBH output filename
+        :param variables: variables to write to CBH files
+        """
+
         # For out_order the first six columns contain the time information and
         # are always output for the cbh files
         out_order = [kk for kk in self.__nhm_hrus]
@@ -284,8 +316,13 @@ class CbhAscii(object):
                         sep=' ', index=False, header=False, encoding=None, chunksize=50)
             out_cbh.close()
 
-    def write_netcdf(self, filename=None, variables=None):
-        """Write CBH to netcdf format file"""
+    def write_netcdf(self, filename: str,
+                     variables: Optional[List[str]] = None):
+        """Write CBH to netcdf format file
+
+        :param filename: name of netCDF output file
+        :param variables: list of variables to write to output file
+        """
 
         # NetCDF-related variables
         var_desc = {'tmax': 'Maximum Temperature', 'tmin': 'Minimum temperature', 'prcp': 'Precipitation'}

@@ -7,34 +7,19 @@ from typing import List, Optional
 
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
+__author__ = 'Parker Norton (pnorton@usgs.gov)'
+
 CBH_VARNAMES = ['prcp', 'tmin', 'tmax']
 CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]
 
 
 class CbhNetcdf(object):
-    """Climate-By-HRU (CBH) files in netCDF format"""
+    """Climate-By-HRU (CBH) files in netCDF format."""
 
-    # Author: Parker Norton (pnorton@usgs.gov)
-    # Create date: 2019-04-30
-    # Description: Class for working with individual cbh files
-
-    # 2016-12-20 PAN:
-    # As written this works with CBH files that were created with
-    # java class gov.usgs.mows.GCMtoPRMS.GDPtoCBH
-    # This program creates the CBH files in the format needed by PRMS
-    # and also verifies the correctness of the data including:
-    #    tmax is never less than tmin
-    #    prcp is never negative
-    #    any missing data/missing date is filled with (?? avg of bracketing dates??)
-    #
-    # I think it might be better if this code worked with the original GDP files and
-    # took care of those corrections itself. This would provide a more seamless workflow
-    # from GDP to PRMS. At this point I'm not taking this on though -- for a future revision.
-
-    def __init__(self, src_path: Optional[str] = None,
+    def __init__(self, src_path: str,
+                 nhm_hrus: List[int],
                  st_date: Optional[datetime.datetime] = None,
                  en_date: Optional[datetime.datetime] = None,
-                 nhm_hrus: Optional[List[int]] = None,
                  thredds: Optional[bool] = False):
         """
         :param src_path: Full path to netCDF file
@@ -55,12 +40,11 @@ class CbhNetcdf(object):
         self.read_netcdf()
 
     def read_netcdf(self):
-        """Read CBH files stored in netCDF format
+        """Read CBH files stored in netCDF format.
         """
 
         if self.__nhm_hrus:
             # print('\t\tOpen dataset')
-
             if self.__thredds:
                 # thredds_server = 'http://gdp-netcdfdev.cr.usgs.gov:8080'
                 thredds_server = 'http://localhost:8080'
@@ -111,11 +95,10 @@ class CbhNetcdf(object):
 
     def get_var(self, var: str) -> pd.DataFrame:
         """
-        Get a variable from the netCDF file
+        Get a variable from the netCDF file.
 
         :param var: Name of the variable
-
-        :return: Data for the variable
+        :returns: dataframe of variable values
         """
         if self.__stdate is not None and self.__endate is not None:
             # print(var, type(var))
@@ -139,8 +122,11 @@ class CbhNetcdf(object):
                     variables: Optional[List[str]] = None):
         """Write CBH data for variables to ASCII formatted file(s).
 
+        By default CBH filenames are saved in the current working directory and
+        are named for the selected variable with an extension of .cbh
+
         :param pathname: Path to write files
-        :param fileprefix: Filename prefix
+        :param fileprefix: prefix to add to CBH output filename
         :param variables: CBH variable(s) to write to file(s). If None then all variables in netCDF file are output.
         """
         # For out_order the first six columns contain the time information and
@@ -245,10 +231,10 @@ class CbhNetcdf(object):
 
     def write_netcdf(self, filename: str = None,
                      variables: Optional[List[str]] = None):
-        """Write CBH to netcdf format file
+        """Write CBH to netCDF format file.
 
-        :param filename: NetCDF filename to write
-        :param variables: List of CBH variables to write
+        :param filename: name of netCDF output file
+        :param variables: list of CBH variables to write
         """
 
         # Create a netCDF file for the CBH data
