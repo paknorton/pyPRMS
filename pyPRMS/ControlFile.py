@@ -15,6 +15,7 @@ class ControlFile(Control):
     """
     Class which handles the processing of PRMS control files.
     """
+
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-18
     # Description: Class object to handle reading and writing PRMS
@@ -22,8 +23,6 @@ class ControlFile(Control):
 
     def __init__(self, filename: str, verbose: Optional[bool] = False):
         super(ControlFile, self).__init__()
-        # 1) open file
-        # 2) read file contents
 
         self.__verbose = verbose
         self.__isloaded = False
@@ -37,14 +36,13 @@ class ControlFile(Control):
 
         :returns: Name of control file
         """
-
         return self.__filename
 
     @filename.setter
-    def filename(self, fname: str):
-        """Set the name of the control file.
+    def filename(self, filename: str):
+        """Set the name of the control file and read it in.
 
-        :param name: Name of the control file
+        :param filename: Name of the control file
         """
 
         self.__isloaded = False
@@ -52,7 +50,7 @@ class ControlFile(Control):
         self._read()
 
     def _read(self):
-        """Load a control file.
+        """Read contents of control file.
 
         Reads the contents of a control file into the class.
         """

@@ -82,8 +82,12 @@ class Control(object):
                         outvals[cv.attrib.get('name')].append(xx)
             self.get(name).valid_values = outvals
 
-    def __getitem__(self, item):
-        """Provide key lookup of control variables"""
+    def __getitem__(self, item: str) -> Union[int, float, str, List]:
+        """Lookup control variables by key.
+
+        :param item: name of control file variable
+        :returns: value of control file variable
+        """
         return self.get(item)
 
     @property
@@ -92,14 +96,13 @@ class Control(object):
 
         :returns: control variable objects
         """
-
         return self.__control_vars
 
     @property
     def dynamic_parameters(self) -> List[str]:
         """Get parameter names that have the dynamic flag set.
 
-        :returns: List of parameter names
+        :returns: list of parameter names
         """
 
         dyn_params = []
@@ -125,16 +128,15 @@ class Control(object):
 
         This is typically taken from the first two lines of a control file.
 
-        :returns: Header information
+        :returns: Header information from control file
         """
-
         return self.__header
 
     @header.setter
     def header(self, info: Union[Sequence[str], str]):
         """Set the header information.
 
-        :param info: Header line(s)
+        :param info: list or string of header line(s)
         """
 
         if isinstance(info, list):
@@ -146,7 +148,7 @@ class Control(object):
     def modules(self) -> Dict[str, str]:
         """Get the modules defined in the control file.
 
-        :returns: Defined modules
+        :returns: dictionary of control variable, module name pairs
         """
 
         mod_dict = {}
@@ -186,20 +188,17 @@ class Control(object):
         self.__control_vars[name] = ControlVariable(name=name)
 
     def exists(self, name: str) -> bool:
-        """Checks if a given control variable exists.
+        """Checks if control variable exists.
 
         :param name: Name of the control variable
         :returns: True if control variable exists otherwise False
-        :rtype: bool
         """
-
         return name in self.__control_vars.keys()
 
     def get(self, name: str) -> ControlVariable:
         """Returns the given control variable object.
 
         :param name: Name of the control variable
-
         :returns: Control variable object
 
         :raises ValueError: if control variable does not exist

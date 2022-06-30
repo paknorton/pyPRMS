@@ -79,9 +79,8 @@ class ControlVariable(object):
     def datatype(self) -> int:
         """Get the datatype of the control variable.
 
-        :returns: datatype
+        :returns: datatype of control variable
         """
-
         return self.__datatype
 
     @datatype.setter
@@ -136,7 +135,6 @@ class ControlVariable(object):
         control variable should always be used instead of the current value.
 
         """
-
         return self.__force_default
 
     @force_default.setter
@@ -145,7 +143,6 @@ class ControlVariable(object):
 
         :param value: new force_default value
         """
-
         self.__force_default = bool(value)
 
     @property
@@ -205,9 +202,10 @@ class ControlVariable(object):
     def value_repr(self, data: Union[str, None]):
         """Set the control variable representation.
 
+        A control variable value can represent a flag, interval, or parameter.
+
         :param data: Representation value
         """
-
         self.__value_repr = data
 
     @property
@@ -234,9 +232,9 @@ class ControlVariable(object):
 
     @values.setter
     def values(self, data: Union[Sequence[str], str]):
-        """Set the values for the control variable.
+        """Set the value(s) for the control variable.
 
-        :param data: New value(s)
+        :param data: list or string of value(s)
         """
 
         # TODO: 2021-09-23 PAN In the case of array variables (e.g. start_time),
@@ -255,9 +253,9 @@ class ControlVariable(object):
 
     @staticmethod
     def __str_to_float(data: Union[List[str], str]) -> List[float]:
-        """Convert strings to a floats.
+        """Convert strings to floats.
 
-        :param data: value(s)
+        :param data: data value(s)
 
         :returns: Array of floats
         """
@@ -275,7 +273,7 @@ class ControlVariable(object):
     def __str_to_int(data: Union[List[str], str]) -> List[int]:
         """Converts strings to integers.
 
-        :param data: value(s)
+        :param data: data value(s)
 
         :returns: array of integers
         """
@@ -293,7 +291,7 @@ class ControlVariable(object):
     def __str_to_str(data: Union[List[str], str]) -> List[str]:
         """Null op for string-to-string conversion.
 
-        :param data: value(s)
+        :param data: data value(s)
 
         :returns: unmodified array of data
         """
@@ -302,7 +300,5 @@ class ControlVariable(object):
         if isinstance(data, str):
             data = [data]
 
-        # 2019-05-22 PAN: For python 3 force string type to byte
-        #                 otherwise they are treated as unicode
         return data
-        # return [dd.encode() for dd in data]
+
