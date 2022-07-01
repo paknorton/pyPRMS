@@ -46,7 +46,7 @@ class ControlFile(Control):
         """
 
         self.__isloaded = False
-        self.__filename = fname
+        self.__filename = filename
         self._read()
 
     def _read(self):

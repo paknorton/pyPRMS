@@ -2,7 +2,7 @@ import functools
 import numpy as np
 import pandas as pd     # type: ignore
 from collections import namedtuple, OrderedDict
-from typing import cast, Optional, Union, List
+from typing import cast, NamedTuple, Optional, Union, List
 import xml.etree.ElementTree as xmlET
 
 # from pyPRMS.Exceptions_custom import ConcatError
@@ -19,7 +19,7 @@ class Parameter(object):
 
     # Container for a single parameter
     # TODO: 2021-12-03 PAN - The arguments should not all be optional
-    def __init__(self, name: Optional[str],
+    def __init__(self, name: str,
                  datatype: Optional[int]=None,
                  units: Optional[str]=None,
                  model: Optional[str]=None,
@@ -30,10 +30,12 @@ class Parameter(object):
                  maximum: Optional[Union[int, float, str]]=None,
                  default: Optional[Union[int, float, str]]=None):
         """
+        Initialize a parameter object.
+
         :param name: A valid PRMS parameter name
         :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
-        :param units: Option units string for the parameter
-        :param model: <<FILL IN LATER>>
+        :param units: Optional units string for the parameter
+        :param model: Model string for parameter
         :param description: Description of the parameter
         :param help: Help text for the parameter
         :param modules: List of modules that require the parameter
@@ -76,7 +78,7 @@ class Parameter(object):
     def __str__(self) -> str:
         """Pretty-print string representation of the parameter information.
 
-        :return: Parameter information
+        :return: Pretty-print string of arameter information
         """
         out_text = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndescription: {}\nhelp: {}\n'
         outstr = out_text.format(self.name, self.datatype, self.units, self.ndims, self.description,
@@ -110,7 +112,10 @@ class Parameter(object):
 
     @property
     def as_dataframe(self) -> pd.DataFrame:
-        """Returns the parameter data as a pandas DataFrame."""
+        """Returns the parameter data as a pandas DataFrame.
+
+        :returns: dataframe of parameter data
+        """
 
         if len(self.data.shape) == 2:
             df = pd.DataFrame(self.data)
@@ -123,13 +128,18 @@ class Parameter(object):
         return df
 
     @property
-    def name(self) -> Optional[str]:
-        """Returns the parameter name."""
+    def name(self) -> str:
+        """Returns the parameter name.
+
+        :returns: parameter name
+        """
         return self.__name
 
     @property
     def datatype(self) -> int:
         """Returns the datatype of the parameter.
+
+        :returns: datatype of the parameter data
         """
         return self.__datatype
 
@@ -153,6 +163,8 @@ class Parameter(object):
     @property
     def units(self) -> str:
         """Returns the parameter units.
+
+        :returns: units for the parameter
         """
         return self.__units
 
@@ -166,11 +178,17 @@ class Parameter(object):
 
     @property
     def modified(self) -> bool:
+        """Logical denoting whether parameter data has been modified.
+
+        :returns: True is parameter data was modified
+        """
         return self.__modified
 
     @property
     def model(self) -> str:
         """Returns the model the parameter is used in.
+
+        :returns: model string
         """
         return self.__model
 
@@ -185,6 +203,8 @@ class Parameter(object):
     @property
     def description(self) -> str:
         """Returns the parameter description.
+
+        :returns: parameter description
         """
         return self.__description
 
@@ -199,6 +219,8 @@ class Parameter(object):
     @property
     def help(self) -> str:
         """Returns the help information for the parameter.
+
+        :returns: parameter help information
         """
         return self.__help
 
@@ -213,6 +235,8 @@ class Parameter(object):
     @property
     def minimum(self) -> Union[int, float, str, None]:
         """Returns the minimum valid value for the parameter.
+
+        :returns: minimum valid data value
         """
         return self.__minimum
 
@@ -220,7 +244,7 @@ class Parameter(object):
     def minimum(self, value: Union[int, float, str, None]):
         """Set the minimum valid value for the parameter.
 
-        :param value: The minimum value
+        :param value: The minimum valid value
         """
         if self.__datatype is None or value is None:
             self.__minimum = value
@@ -238,6 +262,8 @@ class Parameter(object):
     @property
     def maximum(self) -> Union[int, float, str, None]:
         """Returns the maximum valid value for the parameter.
+
+        :returns: maximum valid data value
         """
         return self.__maximum
 
@@ -245,7 +271,7 @@ class Parameter(object):
     def maximum(self, value: Union[int, float, str, None]):
         """Set the maximum valid value for the parameter.
 
-        :param value: The maximum value
+        :param value: The maximum valid value
         """
         if self.__datatype is None or value is None:
             self.__maximum = value
@@ -263,7 +289,8 @@ class Parameter(object):
     @property
     def default(self) -> Union[int, float, str, None]:
         """Returns the default value for the parameter.
-        :return: Default values defined for parameter
+
+        :returns: Default value defined for the parameter
         """
         return self.__default
 
@@ -271,7 +298,7 @@ class Parameter(object):
     def default(self, value: Union[int, float, str, None]):
         """Set the default value for the parameter.
 
-        :param value: The default value
+        :param value: default value for the parameter
         """
         # TODO: 2020-04-30 PAN: This should check if given value is between
         #                       min and max valid values (if set)
@@ -286,7 +313,9 @@ class Parameter(object):
 
     @property
     def modules(self) -> Union[List[str], None]:
-        """Returns the names of the modules require the parameter.
+        """Returns the names of the PRMS modules that require the parameter.
+
+        :returns: names of PRMS modules that require the parameter
         """
         return self.__modules
 
@@ -306,18 +335,24 @@ class Parameter(object):
 
     @property
     def dimensions(self) -> ParamDimensions:
-        """Returns the Dimensions object associated with the parameter."""
+        """Returns the Dimensions object associated with the parameter.
+
+        :returns: Dimensions object for the parameter"""
         return self.__dimensions
 
     @property
     def ndims(self) -> int:
         """Returns the number of dimensions that are defined for the parameter.
+
+        :returns: numbers of parameter dimensions
         """
         return self.__dimensions.ndims
 
     @property
     def data(self) -> np.ndarray:
         """Returns the data associated with the parameter.
+
+        :returns: parameter data
         """
 
         # TODO: Best way to prevent modification of data elements?
@@ -388,13 +423,18 @@ class Parameter(object):
             self.__modified = True
 
     @property
-    def index_map(self):
-        """Returns an ordered dictionary which maps data values to index position"""
+    def index_map(self) -> OrderedDict:
+        """Returns an ordered dictionary which maps data values to index position.
+
+        :returns: dictionary mapping data values to index position
+        """
         return OrderedDict((val, idx) for idx, val in enumerate(self.__data.tolist()))
 
     @property
     def size(self) -> int:
-        """Return the total size of the parameter for the defined dimensions"""
+        """Return the total size of the parameter for the defined dimensions.
+
+        :returns total size of parameter dimensions"""
         arr_shp = [dd.size for dd in self.dimensions.values()]
 
         # Compute the total size of the parameter
@@ -403,6 +443,8 @@ class Parameter(object):
     @property
     def xml(self) -> xmlET.Element:
         """Return the xml metadata for the parameter as an xml Element.
+
+        :returns: xml element of parameter metadata
         """
         param_root = xmlET.Element('parameter')
         param_root.set('name', cast(str, self.name))
@@ -411,6 +453,10 @@ class Parameter(object):
         return param_root
 
     def all_equal(self) -> bool:
+        """Check if all values for parameter are equal.
+
+        :returns true if all values are equal
+        """
         if self.__data is not None:
             if self.__data.size > 1:
                 return (self.__data == self.__data[0]).all()
@@ -423,7 +469,7 @@ class Parameter(object):
         given zero-based index in the parameter data array.
 
         :param index: scalar, zero-based array index
-        :param value: The updated value(s)
+        :param value: updated value(s)
         """
 
         # NOTE: index is zero-based
@@ -455,10 +501,17 @@ class Parameter(object):
             # Returns a list of indices where the data elements match value
             return np.where(self.__data == value)[0]
 
-    def is_hru_param(self):
+    def is_hru_param(self) -> bool:
+        """Test if parameter is dimensioned by HRU.
+
+        :returns: true if parameter is dimensioned by nhru, ngw, or nssr
+        """
         return set(self.__dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'})
 
     def is_seg_param(self):
+        """Test if parameter is dimensioned by nsegment.
+
+        :returns: true if parameter is dimensioned by nsegment"""
         return set(self.__dimensions.keys()).intersection({'nsegment'})
 
     # def concat(self, data_in):
@@ -516,6 +569,8 @@ class Parameter(object):
     def check(self) -> str:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) size
         and returns a message.
+
+        :returns: OK for valid data size, BAD for invalid data size
         """
 
         # TODO: check that values are between min and max values
@@ -528,7 +583,10 @@ class Parameter(object):
             return f'{self.name}: BAD'
 
     def check_values(self) -> bool:
-        """Returns true if all data values are within the min/max values for the parameter."""
+        """Returns true if all data values are within the min/max values for the parameter.
+
+        :returns: true when all values are within the valid min/max range for the parameter
+        """
         if self.__data is not None:
             if self.__minimum is not None and self.__maximum is not None:
                 # Check both ends of the range
@@ -540,8 +598,10 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
-    def stats(self):
-        """Returns basic statistics on parameter values"""
+    def stats(self) -> NamedTuple:
+        """Returns basic statistics on parameter values.
+
+        :returns: NamedTuple containing min, max, mean, and median of parameter values"""
         Stats = namedtuple('Stats', ['name', 'min', 'max', 'mean', 'median'])
 
         if self.__name in ['poi_gage_id']:
@@ -552,10 +612,9 @@ class Parameter(object):
 
     def has_correct_size(self) -> bool:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
-        """
 
-        # Check a variable to see if the number of values it has is
-        # consistent with the given dimensions
+        :returns: true if size of parameter data matches declared size of dimensions
+        """
 
         # Get the defined size for each dimension used by the variable
         total_size = 1
@@ -566,7 +625,7 @@ class Parameter(object):
         return self.data.size == total_size
 
     def remove_by_index(self, dim_name: str, indices: List[int]):
-        """Remove columns (nhru or nsegment) from data array given a list of indices
+        """Remove columns (nhru or nsegment) from data array given a list of indices.
 
         :param dim_name: Name of dimension to reduce
         :param indices: List of indices to remove"""
@@ -585,10 +644,10 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
-    def reshape(self, new_dims):
+    def reshape(self, new_dims: OrderedDict):
         """Reshape a parameter, broadcasting existing values as necessary.
 
-        :param collections.OrderedDict new_dims: Dimension names and sizes that will be used to reshape the parameter data
+        :param new_dims: Dimension names and sizes that will be used to reshape the parameter data
         """
 
         if self.dimensions.ndims == 1:
@@ -628,7 +687,10 @@ class Parameter(object):
                     self.__data = tmp_data
 
     def subset_by_index(self, dim_name: str, indices):
-        """Reduce columns (nhru or nsegment) from data array given a list of indices"""
+        """Reduce columns (nhru or nsegment) from data array given a list of indices.
+
+        :param dim_name: name of dimension
+        :param indices: indices of HRUs or segments to extract"""
 
         if isinstance(indices, type(OrderedDict().values())):
             indices = list(indices)
@@ -661,6 +723,8 @@ class Parameter(object):
 
     def toparamdb(self) -> str:
         """Outputs parameter data in the paramDb csv format.
+
+        :returns: parameter data in the paramDb CSV format
         """
 
         if self.__data is not None:
@@ -685,13 +749,12 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
-    def tostructure(self):
+    def tostructure(self) -> dict:
         """Returns a dictionary structure of the parameter.
 
         This is typically used for serializing parameters.
 
         :returns: dictionary structure of the parameter
-        :rtype: dict
         """
 
         # Return all information about this parameter in the following form

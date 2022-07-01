@@ -1,13 +1,9 @@
 
 import xarray as xr
 from typing import Optional
-# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
 
-# from pyPRMS.constants import DATATYPE_TO_DTYPE
-# from pyPRMS.prms_helpers import read_xml
 from pyPRMS.ParameterSet import ParameterSet
-# from pyPRMS.constants import NHM_DATATYPES
-# from pyPRMS.constants import PARAMETERS_XML, DIMENSIONS_XML
+
 
 NCF_TO_NHM_TYPES = {'int32': 1, 'float32': 2, 'float64': 3, '|S1': 4}
 
@@ -32,7 +28,7 @@ class ParameterNetCDF(ParameterSet):
         # Read the parameters from the parameter database
         self._read()
 
-    def _read(self) -> None:
+    def _read(self):
         """Read a paramDb file.
         """
 

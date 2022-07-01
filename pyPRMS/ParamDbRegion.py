@@ -21,7 +21,9 @@ class ParamDbRegion(ParameterSet):
     def __init__(self, paramdb_dir: str, verbose=False, verify=True):
         """Initialize NhmParamDb object.
 
-        :param str paramdb_dir: path the NHMparamDb directory
+        :param paramdb_dir: path to the by-region NHMparamDb directory
+        :param verbose: Output additional debug information
+        :param verify: Whether to load the master parameters (default=True)
         """
 
         super(ParamDbRegion, self).__init__(verbose=verbose, verify=verify)
@@ -61,8 +63,7 @@ class ParamDbRegion(ParameterSet):
     def hru_nhm_to_local(self) -> Dict[int, int]:
         """Get the dictionary which maps NHM HRU ids to local HRU ids.
 
-        :returns: dictionary of NHM to regional HRU ids
-        :rtype: dict
+        :returns: dictionary of NHM to local HRU ids
         """
 
         return self.__nhm_to_reg_hru
@@ -82,7 +83,6 @@ class ParamDbRegion(ParameterSet):
         """Get the warnings that occurred when the parameter database was read.
 
         :returns: list of warnings
-        :rtype: list[str]
         """
 
         return self.__warnings
@@ -101,7 +101,7 @@ class ParamDbRegion(ParameterSet):
                     self.dimensions.add(name=dd.name, size=dd.size)
 
     def _create_seg_maps(self):
-        """Create mapping dictionaries NHM-to-regional segments IDs (and vice-versa).
+        """Create mapping dictionaries of NHM-to-regional segments IDs (and vice-versa).
         """
         name = 'nhm_seg'
         self.__reg_to_nhm_seg = {}
@@ -161,6 +161,7 @@ class ParamDbRegion(ParameterSet):
     def _data_it(filename: str) -> Iterator:
         """Get iterator to a parameter db file.
 
+        :param filename: name of file
         :returns: iterator
         """
 
@@ -299,7 +300,11 @@ class ParamDbRegion(ParameterSet):
         # self.parameters['hru_segment'].data = self.parameters['hru_segment_nhm'].data
 
     def _set_parameter_dimension_size(self, name: str):
-        # Set dimensions size for entire NHM for parameter
+        """Set dimensions size for entire NHM for a parameter.
+
+        :param name: name of parameter
+        """
+
         for rr in REGIONS:
             # Read parameter information
             cdir = f'{self.__paramdb_dir}/{name}/{rr}'
@@ -308,7 +313,12 @@ class ParamDbRegion(ParameterSet):
             self.parameters.get(name).dimensions.add_from_xml(f'{cdir}/{name}.xml')
 
     def _get_parameter_dimension_names(self, name: str) -> Set[str]:
-        """Returns a set of dimension names for a parameter"""
+        """Returns a set of dimension names for a parameter.
+
+        :param name: name of parameter
+        :returns: set of dimension names
+        """
+
         dtmp = []
         for rr in REGIONS:
             cdir = f'{self.__paramdb_dir}/{name}/{rr}'

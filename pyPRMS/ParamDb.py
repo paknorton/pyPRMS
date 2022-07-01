@@ -17,9 +17,10 @@ class ParamDb(ParameterSet):
                  verbose: Optional[bool] = False,
                  verify: Optional[bool] = True):
         """Initialize ParamDb object.
+
         This object handles the monolithic parameter database.
 
-        :param paramdb_dir: Path the ParamDb directory
+        :param paramdb_dir: Path to the ParamDb directory
         :param verbose: Output additional debug information
         :param verify: Whether to load the master parameters (default=True)
         """
@@ -31,8 +32,8 @@ class ParamDb(ParameterSet):
         # Read the parameters from the parameter database
         self._read()
 
-    def _read(self) -> None:
-        """Read a paramDb file.
+    def _read(self):
+        """Read a parameter database.
         """
 
         # Get the parameters available from the parameter database

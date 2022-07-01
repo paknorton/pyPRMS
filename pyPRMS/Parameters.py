@@ -66,7 +66,9 @@ class Parameters(object):
     try:
         @cached_property
         def hru_to_seg(self) -> OrderedDictType[int, int]:
-            """Returns an ordered dictionary mapping NHM HRU IDs to HRU NHM segment IDs
+            """Returns an ordered dictionary mapping NHM HRU IDs to HRU NHM segment IDs.
+
+            :returns: dictionary mapping nhm_id to hru_segment_nhm
             """
 
             self.__hru_to_seg = OrderedDict()
@@ -81,7 +83,9 @@ class Parameters(object):
     except NameError:
         # Python pre-3.8 does not have the cache_property decorator
         def hru_to_seg(self) -> OrderedDictType[int, int]:
-            """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs
+            """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs.
+
+            :returns: dictionary mapping nhm_id to hru_segment_nhm
             """
 
             self.__hru_to_seg = OrderedDict()
@@ -97,20 +101,26 @@ class Parameters(object):
     @property
     def parameters(self) -> OrderedDictType[str, Parameter]:
         """Returns an ordered dictionary of parameter objects.
+
+        :returns: dictionary of Parameter objects
         """
 
         return self.__parameters
 
     @property
     def poi_to_seg(self) -> Dict[str, int]:
-        """Returns a dictionary mapping poi_id to poi_seg"""
+        """Returns a dictionary mapping poi_id to poi_seg.
+
+        :returns: dictionary mapping poi_id to poi_seg"""
 
         return OrderedDict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data))
 
     @property
     def poi_to_seg0(self):
-        """Returns a dictionary mapping poi_id to zero-based poi_seg"""
+        """Returns a dictionary mapping poi_id to zero-based poi_seg.
+
+        :returns: dictionary mapping poi_id to zero-based poi_seg"""
 
         return OrderedDict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data - 1))
@@ -118,7 +128,9 @@ class Parameters(object):
     try:
         @cached_property
         def seg_to_hru(self) -> OrderedDictType[int, int]:
-            """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs
+            """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs.
+
+            :returns: dictionary mapping hru_segment_nhm to nhm_id
             """
 
             self.__seg_to_hru = OrderedDict()
@@ -133,7 +145,9 @@ class Parameters(object):
             return self.__seg_to_hru
     except NameError:
         def seg_to_hru(self) -> OrderedDictType[int, int]:
-            """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs
+            """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs.
+
+            :returns: dictionary mapping hru_segment_nhm to nhm_id
             """
 
             self.__seg_to_hru = OrderedDict()
@@ -246,9 +260,7 @@ class Parameters(object):
 
         :param str name: Name of the parameter
         :returns: True if parameter exists, otherwise False
-        :rtype: bool
         """
-
         return name in self.parameters.keys()
 
     def get(self, name: str) -> Parameter:
@@ -317,11 +329,11 @@ class Parameters(object):
         return param_data
 
     def get_subset(self, name: str, global_ids: List[int]) -> pd.DataFrame:
-        """Returns a subset for a parameter based on the global_ids (e.g. nhm)
+        """Returns a subset for a parameter based on the global_ids (e.g. nhm).
+
         :param name: Name of the parameter
         :param global_ids: List of global IDs to extract
-
-        :return: Dataframe of extracted values
+        :returns: Dataframe of extracted values
         """
         param = self.__parameters[name]
         dim_set = set(param.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw', 'nsegment'})
@@ -345,9 +357,11 @@ class Parameters(object):
         else:
             return param.data[tuple(nhm_idx0), ]
 
-    def plot(self, name: str, output_dir: Optional[str] = None,
+    def plot(self, name: str,
+             output_dir: Optional[str] = None,
              limits: Optional[Union[str, List[float], Tuple[float, float]]] = 'valid',
-             mask_defaults: Optional[str] = None, **kwargs):
+             mask_defaults: Optional[str] = None,
+             **kwargs):
         """Plot a parameter.
 
         Plots either to the screen or an output directory.
@@ -573,8 +587,11 @@ class Parameters(object):
                 del self.__parameters[name]
 
 
-    def remove_poi(self, poi):
-        """Remove POIs by gage_id"""
+    def remove_poi(self, poi: str):
+        """Remove POIs by gage_id.
+
+        :param poi: POI id to remove
+        """
 
         # First get array of poi_gage_id indices matching the specified POI IDs
         poi_ids = self.get('poi_gage_id').data
@@ -596,11 +613,12 @@ class Parameters(object):
                 self.get(pp).remove_by_index('npoigages', poi_del_indices)
 
 
-    def remove_by_global_id(self, hrus=None, segs=None):
+    def remove_by_global_id(self, hrus: Optional[List] = None,
+                            segs: Optional[List] = None):
         """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
 
-        :param hrus: National HRU ids
-        :param segs: National segment ids
+        :param hrus: list of national HRU ids
+        :param segs: list of national segment ids
         """
 
         if segs is not None:
@@ -687,8 +705,14 @@ class Parameters(object):
             # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
             # new_deplcrv = pp['hru_deplcrv'].data.tolist()
 
-    def shapefile_segments(self, filename: str, layer_name=None, shape_key=None):
-        """Read a shapefile or geodatabase that corresponds to stream segments
+    def shapefile_segments(self, filename: str,
+                           layer_name: Optional[str] = None,
+                           shape_key: Optional[str] = None):
+        """Read a shapefile or geodatabase that corresponds to stream segments.
+
+        :param filename: name of shapefile or geodatabase
+        :param layer_name: name of layer in geodatabase
+        :param shape_key: name of attribute for key
         """
 
         self.__seg_poly = geopandas.read_file(filename, layer=layer_name)
@@ -698,8 +722,14 @@ class Parameters(object):
             self.__seg_poly.crs = 'EPSG:5070'
         self.__seg_shape_key = shape_key
 
-    def shapefile_hrus(self, filename: str, layer_name=None, shape_key=None):
-        """Read a shapefile or geodatabase that corresponds to HRUs
+    def shapefile_hrus(self, filename: str,
+                       layer_name: Optional[str] = None,
+                       shape_key: Optional[str] = None):
+        """Read a shapefile or geodatabase that corresponds to HRUs.
+
+        :param filename: name of shapefile or geodatabase
+        :param layer_name: name of layer in geodatabase
+        :param shape_key: name of attribute for key
         """
 
         self.__hru_poly = geopandas.read_file(filename, layer=layer_name)
@@ -712,14 +742,11 @@ class Parameters(object):
     def stream_network(self, tosegment: Optional[str] = 'tosegment_nhm',
                        seg_id: Optional[str] = 'nhm_seg') -> Union[nx.DiGraph, None]:
         """
-        Create Directed, Acyclic Graph (DAG) of stream network
+        Create Directed, Acyclic Graph (DAG) of stream network.
 
-        :param tosegment:
-        :type tosegment:
-        :param seg_id:
-        :type seg_id:
-        :return:
-        :rtype:
+        :param tosegment: name of parameter to use for HRU tosegment
+        :param seg_id: name of parameter to use for the segment IDs
+        :returns: directed-acyclic-graph (DAG)
         """
 
         if self.exists(tosegment) and self.exists(seg_id):
@@ -737,13 +764,15 @@ class Parameters(object):
             return dag_ds
         return None
 
-    def update_element(self, name: str, id1: int, value: Union[int, float, List[int], List[float]]):
+    def update_element(self, name: str,
+                       id1: int,
+                       value: Union[int, float, List[int], List[float]]):
         """Update single value or row of values (e.g. nhru by nmonths) for a
         given nhm_id or nhm_seg.
 
-        :param name: Name of parameter to update
+        :param name: name of parameter to update
         :param id1: scalar nhm_id or nhm_seg
-        :param value: The updated value(s)
+        :param value: new value(s)
         """
 
         # NOTE: id1 is either an nhm_id or nhm_seg (both are 1-based)
@@ -775,8 +804,17 @@ class Parameters(object):
         # TODO: Add handling for other dimensions
 
     @staticmethod
-    def _get_upstream_subset(dag_ds, cutoff_segs, outlet_segs):
-        # Create the upstream graph
+    def _get_upstream_subset(dag_ds: nx.DiGraph,
+                             cutoff_segs: List[int],
+                             outlet_segs: List[int]):
+        """Create upstream stream network bounded by downstream segment(s) and upstream cutoff(s).
+
+        :param dag_ds: stream network
+        :param cutoff_segs: list of nhm_seg IDs above which the network is truncated
+        :param outlet_segs: list of nhm_seg IDs for the downstream-most segments
+        """
+
+        # Create the upstream graph.
         dag_us = dag_ds.reverse()
         # bandit_helper_log.debug('Number of NHM upstream nodes: {}'.format(dag_us.number_of_nodes()))
         # bandit_helper_log.debug('Number of NHM upstream edges: {}'.format(dag_us.number_of_edges()))

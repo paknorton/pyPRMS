@@ -41,7 +41,7 @@ class ParameterFile(ParameterSet):
         return self.__filename
 
     @filename.setter
-    def filename(self, name: str) -> None:
+    def filename(self, name: str):
         """Set the name of the parameter file.
 
         :param name: name of parameter file
@@ -71,7 +71,7 @@ class ParameterFile(ParameterSet):
 
         return self.__updated_parameters
 
-    def _read(self) -> None:
+    def _read(self):
         """Read parameter file.
         """
 

@@ -55,11 +55,18 @@ class ParameterSet(object):
 
     @property
     def control(self) -> Optional[Control]:
+        """Get Control object
+
+        :returns: Control object
+        """
         return self.__ctl_obj
 
     @control.setter
-    def control(self, ctl_obj: Control) -> None:
-        # Set the control object
+    def control(self, ctl_obj: Control):
+        """Sets the Control object for the ParameterSet.
+
+        :param ctl_obj: Control object
+        """
         self.__ctl_obj = ctl_obj
 
     @property
@@ -68,7 +75,6 @@ class ParameterSet(object):
 
         :returns: Dimensions object
         """
-
         return self.__dimensions
 
     @property
@@ -165,13 +171,13 @@ class ParameterSet(object):
         return params_xml
 
     def _read(self):
-        """Abstract function for reading.
+        """Abstract function for reading parameters into ParameterSet.
         """
 
         assert False, 'ParameterSet._read() must be defined by child class'
 
-    def degenerate_parameters(self) -> None:
-        """List parameters that have fewer dimensions than specified in the master parameters."""
+    def degenerate_parameters(self):
+        """Print parameters that have fewer dimensions than specified in the master parameters."""
 
         if self.__master_params is not None:
             for kk, vv in self.parameters.items():
@@ -185,10 +191,10 @@ class ParameterSet(object):
                 except ValueError:
                     print(f'ERROR: Parameter, {kk}, is not a valid PRMS parameter')
 
-    def expand_parameter(self, name: str) -> None:
+    def expand_parameter(self, name: str):
         """Expand an existing parameter.
 
-        Expands (e.g. reshape) a parameter, broadcasting existing value(s) into
+        Expand (e.g. reshape) a parameter, broadcasting existing value(s) into
         new shape specified by master parameters. The hru_deplcrv parameter has
         special handling to also update the snarea_curve parameter.
 
@@ -238,10 +244,14 @@ class ParameterSet(object):
                         if self.verbose:
                             print('hru_deplcrv and snarea_curve have been expanded/updated')
 
-    def extract_upstream(self, outlet_segs: Sequence=(), cutoff_segs: Sequence=(), noroute_hrus: Sequence=()) -> None:
-        """Extract upstream watershed
+    def extract_upstream(self, outlet_segs: Sequence=(), cutoff_segs: Sequence=(), noroute_hrus: Sequence=()):
+        """Extract upstream watershed bounded by segment outlets and upstream cutoffs.
 
         Extracts the watershed (segments and HRUs) upstream of a given stream segment
+
+        :param outlet_segs: list of downstream outlet segments
+        :param cutoff_segs: list of upstream cutoff segments
+        :param noroute_hrus: list of non-routed HRUs to include
         """
 
         dag_ds = self.parameters.stream_network()
@@ -252,11 +262,9 @@ class ParameterSet(object):
         hru_to_seg = self.parameters.hru_to_seg
 
 
-    def reduce_by_modules(self) -> None:
+    def reduce_by_modules(self):
         """Reduce the ParameterSet to the parameters required by the modules
         defined in a control file.
-
-        #:param control: Control file object
         """
         if self.__ctl_obj is None:
             raise TypeError('Control file is set to None')
@@ -268,7 +276,7 @@ class ParameterSet(object):
         pset = self.master_parameters.get_params_for_modules(modules=list(self.__ctl_obj.modules.values()))
         self.reduce_parameters(required_params=pset)
 
-    def reduce_parameters(self, required_params: Union[Set, List]) -> None:
+    def reduce_parameters(self, required_params: Union[Set, List]):
         """Remove parameters that are not needed.
 
         Given a set of required parameters removes parameters that are not
@@ -323,8 +331,8 @@ class ParameterSet(object):
 
 
     def remove_by_global_id(self, hrus: Optional[List] = None,
-                            segs: Optional[List] = None) -> None:
-        """Removes data-by-id (nhm_seg, nhm_id) from all parameters
+                            segs: Optional[List] = None):
+        """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
 
         :param hrus: List of HRU IDs to remove
         :param segs: List of segment IDs to remove
@@ -344,8 +352,11 @@ class ParameterSet(object):
                 self.__dimensions['ngw'].size -= len(hrus)
 
 
-    def remove_poi(self, poi: str) -> None:
-        """Remove POIs by gage_id"""
+    def remove_poi(self, poi: str):
+        """Remove POIs by gage_id.
+
+        :param poi: point-of-interest (POI) ID
+        """
 
         # Remove matching pois from poi-related parameters
         self.__parameters.remove_poi(poi=poi)
@@ -360,7 +371,7 @@ class ParameterSet(object):
             self.__dimensions['nobs'].size = 0
 
 
-    def write_parameters_xml(self, output_dir: str) -> None:
+    def write_parameters_xml(self, output_dir: str):
         """Write global parameters.xml file.
 
         :param output_dir: output path for parameters.xml file
@@ -371,7 +382,7 @@ class ParameterSet(object):
         with open(f'{output_dir}/{PARAMETERS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
-    def write_dimensions_xml(self, output_dir: str) -> None:
+    def write_dimensions_xml(self, output_dir: str):
         """Write global dimensions.xml file.
 
         :param output_dir: output path for dimensions.xml file
@@ -382,7 +393,7 @@ class ParameterSet(object):
         with open(f'{output_dir}/{DIMENSIONS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
-    def write_netcdf(self, filename: str) -> None:
+    def write_netcdf(self, filename: str):
         """Write parameters to a netcdf format file.
 
         :param filename: full path for output file
@@ -505,7 +516,7 @@ class ParameterSet(object):
         # Close the netcdf file
         nc_hdl.close()
 
-    def write_paramdb(self, output_dir: str) -> None:
+    def write_paramdb(self, output_dir: str):
         """Write all parameters using the paramDb output format.
 
         :param output_dir: output path for paramDb files
@@ -545,7 +556,7 @@ class ParameterSet(object):
 
     def write_parameter_file(self, filename: str,
                              header: Optional[List[str]] = None,
-                             prms_version: Optional[int] = 5) -> None:
+                             prms_version: Optional[int] = 5):
         """Write a parameter file.
 
         :param filename: name of parameter file
@@ -639,7 +650,12 @@ class ParameterSet(object):
 
         outfile.close()
 
-    def _adjust_bounded(self, name: str) -> None:
+    def _adjust_bounded(self, name: str):
+        """Adjust the upper and lower values for a bounded parameter.
+
+        :param name: name of parameter
+        """
+
         cparam = self.parameters.get(name)
 
         if cparam.minimum == 'bounded':
