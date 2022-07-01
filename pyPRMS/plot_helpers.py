@@ -1,29 +1,26 @@
 #!/usr/bin/env python3
 
-import copy
-import cartopy.crs as ccrs
-
-import matplotlib.pyplot as plt
-import matplotlib.colors as colors
-from matplotlib.colors import Normalize     # , LogNorm, PowerNorm
 from matplotlib.collections import LineCollection, PatchCollection
-# import geopandas
-
+from matplotlib.colors import Normalize     # , LogNorm, PowerNorm
 from matplotlib.patches import Polygon
-import shapely
-
-import matplotlib as mpl
-
-import pyproj as prj
 from osgeo import ogr
-import numpy as np
 
-# from pyPRMS.ParamDb import ParamDb
+import cartopy.crs as ccrs
+import copy
+import geopandas
+import matplotlib as mpl
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pyproj as prj
+import shapely
 
 
 def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_width=False, vary_color=True, colors=None,
                          alpha=1.0, linewidth=1.0, **kwargs):
-    """ Plot a collection of line geometries """
+    """ Plot a collection of line geometries.
+    """
 
     lines = []
     for geom in geoms:
@@ -54,7 +51,9 @@ def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_widt
 
 def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, facecolor=None, edgecolor=None,
                             alpha=1.0, linewidth=1.0, **kwargs):
-    """ Plot a collection of Polygon geometries """
+    """ Plot a collection of Polygon geometries.
+    """
+
     # from https://stackoverflow.com/questions/33714050/geopandas-plotting-any-way-to-speed-things-up
     patches = []
 
@@ -79,7 +78,12 @@ def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, faceco
     return patches
 
 
-def get_projection(gdf):
+def get_projection(gdf: geopandas.GeoDataFrame):
+    """Get projection of geodataframe.
+
+    :param gdf: GeoDataFrame
+    """
+
     aa = {}
     for yy in gdf.crs.coordinate_operation.params:
         aa[yy.name] = yy.value
@@ -106,12 +110,17 @@ def get_projection(gdf):
     return crs_proj
 
 
-def get_extent(shapefile, layer_name=None, driver='ESRI Shapefile'):
-    # Get extent information from the national HRUs shapefile
+def get_extent(shapefile: str,
+               layer_name: Option[str] = None,
+               driver: Optional[str] = 'ESRI Shapefile'):
+    """Get the extent from a shapefile.
 
-    # Need two shapefiles 1) in projected coordinates, 2) in geographic coordinates
-    # If gdal is installed can create geographic coordinates from projected with:
-    #   ogr2ogr -t_srs epsg:4326 output_wgs84.shp input.shp
+    :param shapefile: name of shapefile or geodatabase
+    :param layer_name: name of geodatabase layer
+    :param driver: name of GDAL driver to use
+    """
+
+    # Get extent information from the national HRUs shapefile
 
     # Use gdal/ogr to get the extent information
     # Shapefile can be in projected coordinates
@@ -156,7 +165,21 @@ def get_extent(shapefile, layer_name=None, driver='ESRI Shapefile'):
     return extent_dms
 
 
-def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **kwargs):
+def set_colormap(the_var: str,
+                 param_data: pd.DataFrame,
+                 cmap: Optional[str, matplotlib.colors.LinearSegmentedColormap] = None,
+                 min_val: Optional[int, float] = None,
+                 max_val: Optional[int, float] = None,
+                 **kwargs):
+    """Set the colormap for a plot.
+
+    :param the_var: name parameter
+    :param param_data: parameter values
+    :param cmap: colormap to use
+    :param min_val: minimum value for color range
+    :param max_val: maximum value for color range
+    """
+
     # Create the colormap
     # cmap = 'BrBG' #'GnBu_r' # for snow
     # cmap = 'GnBu_r'
@@ -193,7 +216,6 @@ def set_colormap(the_var, param_data, cmap=None, min_val=None, max_val=None, **k
         #     cmap = plt.cm.get_cmap(name=cmap, lut=num_col)
         # else:
         #     cmap = plt.get_cmap(cmap)
-
 
     # missing_color = '#ff00cb'   # pink/magenta
 
