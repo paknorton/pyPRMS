@@ -1,5 +1,6 @@
 import functools
 import numpy as np
+import numpy.typing as npt   # This cannot be accessed from numpy directly
 import pandas as pd     # type: ignore
 from collections import namedtuple, OrderedDict
 from typing import Any, cast, NamedTuple, Optional, Union, List
@@ -59,7 +60,8 @@ class Parameter(object):
         self.__default: Optional[Union[int, float, str]] = None
 
         self.__dimensions = ParamDimensions()
-        self.__data: Optional[np.ndarray] = None  # array
+        self.__data: Optional[npt.NDArray] = None  # array
+        # self.__data: Optional[npt.NDArray[Union[np.int_, np.float_, np.str_]]] = None  # array
 
         self.__modified = False
 
@@ -349,7 +351,7 @@ class Parameter(object):
         return self.__dimensions.ndims
 
     @property
-    def data(self) -> np.ndarray:
+    def data(self) -> npt.NDArray:
         """Returns the data associated with the parameter.
 
         :returns: parameter data
@@ -361,7 +363,9 @@ class Parameter(object):
         raise ValueError(f'Parameter, {self.__name}, has no data')
 
     @data.setter
-    def data(self, data_in: Union[List, np.ndarray, pd.Series]):
+    def data(self, data_in: Union[List,
+                                  npt.NDArray,
+                                  pd.Series]):
         """Sets the data for the parameter.
 
         :param data_in: A list containing the parameter data
@@ -372,7 +376,7 @@ class Parameter(object):
         if not self.ndims:
             raise ValueError(f'No dimensions have been defined for {self.name}; unable to append data')
 
-        data_np: Union[np.ndarray, None] = None
+        data_np: Union[npt.NDArray, None] = None
 
         if isinstance(data_in, list):
             data_np = np.array(data_in, dtype=DATATYPE_TO_DTYPE[self.datatype])
@@ -489,7 +493,7 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
-    def _value_index(self, value: Union[int, float, str]) -> Union[np.ndarray, None]:
+    def _value_index(self, value: Union[int, float, str]) -> Union[npt.NDArray, None]:
         """Given a scalar value return the indices where there is a match.
 
         :param value: The value to find in the parameter data array
@@ -513,11 +517,11 @@ class Parameter(object):
 
         return not set(self.__dimensions.keys()).isdisjoint({'nhru', 'ngw', 'nssr'})
 
-    def is_seg_param(self):
+    def is_seg_param(self) -> bool:
         """Test if parameter is dimensioned by nsegment.
 
         :returns: true if parameter is dimensioned by nsegment"""
-        return set(self.__dimensions.keys()).intersection({'nsegment'})
+        return not set(self.__dimensions.keys()).isdisjoint({'nsegment'})
 
     # def concat(self, data_in):
     #     """Takes a list of parameter data and concatenates it to the end of the existing parameter data.
@@ -724,7 +728,7 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
-    def tolist(self) -> list:
+    def tolist(self) -> List[Union[int, float, str]]:
         """Returns the parameter data as a list.
 
         :returns: Parameter data
@@ -780,7 +784,7 @@ class Parameter(object):
                  'data': self.tolist()}
         return param
 
-    def unique(self) -> Optional[np.ndarray]:
+    def unique(self) -> Optional[npt.NDArray]:
         """Create array of unique values from the parameter data.
 
         :returns: Array of unique values
