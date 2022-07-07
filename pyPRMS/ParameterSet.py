@@ -244,7 +244,9 @@ class ParameterSet(object):
                         if self.verbose:
                             print('hru_deplcrv and snarea_curve have been expanded/updated')
 
-    def extract_upstream(self, outlet_segs: Sequence=(), cutoff_segs: Sequence=(), noroute_hrus: Sequence=()):
+    def extract_upstream(self, outlet_segs: List[int] = [],
+                         cutoff_segs: List[int] = [],
+                         noroute_hrus: List[int] = []):
         """Extract upstream watershed bounded by segment outlets and upstream cutoffs.
 
         Extracts the watershed (segments and HRUs) upstream of a given stream segment
