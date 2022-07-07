@@ -2,10 +2,10 @@
 from collections import OrderedDict
 from pathlib import Path
 # from typing import Any,  Union, Dict, Iterator, List, OrderedDict as OrderedDictType, Set
-from typing import Dict, Iterator, List, Set
+from typing import Dict, Iterator, List, Optional, Set
 
 import numpy as np
-import pandas as pd
+import pandas as pd   # type: ignore
 
 from pyPRMS.prms_helpers import read_xml
 # from pyPRMS.Exceptions_custom import ConcatError, ParameterError
@@ -16,9 +16,11 @@ from pyPRMS.constants import DATATYPE_TO_DTYPE, PARAMETERS_XML
 
 class ParamDbRegion(ParameterSet):
 
-    """ParameterSet sub-class which works with the ParamDb stored by CONUS regions."""
+    """ParameterSet subclass which works with the ParamDb stored by CONUS regions."""
 
-    def __init__(self, paramdb_dir: str, verbose=False, verify=True):
+    def __init__(self, paramdb_dir: str,
+                 verbose: Optional[bool] = False,
+                 verify: Optional[bool] = True):
         """Initialize NhmParamDb object.
 
         :param paramdb_dir: path to the by-region NHMparamDb directory
@@ -28,16 +30,17 @@ class ParamDbRegion(ParameterSet):
 
         super(ParamDbRegion, self).__init__(verbose=verbose, verify=verify)
         self.__paramdb_dir = paramdb_dir
-
         self.__verbose = verbose
-        self.__warnings = []
+
+        self.__warnings: List = []
+
         # Build mappings between national and regional ids
-        self.__reg_to_nhm_seg = {}
-        self.__nhm_to_reg_seg = {}
+        # self.__reg_to_nhm_seg = {}
+        # self.__nhm_to_reg_seg = {}
         self._create_seg_maps()
 
-        self.__nhm_to_reg_hru = {}
-        self.__nhm_reg_range_hru = {}
+        # self.__nhm_to_reg_hru = {}
+        # self.__nhm_reg_range_hru = {}
         self._create_hru_maps()
 
         # Read the parameters from the parameter database
@@ -69,7 +72,7 @@ class ParamDbRegion(ParameterSet):
         return self.__nhm_to_reg_hru
 
     @property
-    def hru_nhm_to_region(self) -> Dict[int, int]:
+    def hru_nhm_to_region(self) -> Dict[str, List[int]]:
         """Get the dictionary which maps NHM HRU ids to their respective region.
 
         :returns: dictionary of NHM HRU ids to region
@@ -104,8 +107,8 @@ class ParamDbRegion(ParameterSet):
         """Create mapping dictionaries of NHM-to-regional segments IDs (and vice-versa).
         """
         name = 'nhm_seg'
-        self.__reg_to_nhm_seg = {}
-        self.__nhm_to_reg_seg = {}
+        self.__reg_to_nhm_seg: Dict[str, Dict[int]] = {}
+        self.__nhm_to_reg_seg: Dict[int, int] = {}
 
         for rr in REGIONS:
             # Read parameter information
@@ -135,8 +138,8 @@ class ParamDbRegion(ParameterSet):
 
         name = 'nhm_id'
 
-        self.__nhm_reg_range_hru = {}
-        self.__nhm_to_reg_hru = OrderedDict()
+        self.__nhm_reg_range_hru: Dict[str, List[int]] = {}
+        self.__nhm_to_reg_hru: OrderedDict[int, int] = OrderedDict()
         # self.__nhm_to_reg_hru = {}
 
         for rr in REGIONS:
@@ -319,7 +322,7 @@ class ParamDbRegion(ParameterSet):
         :returns: set of dimension names
         """
 
-        dtmp = []
+        dtmp: List = []
         for rr in REGIONS:
             cdir = f'{self.__paramdb_dir}/{name}/{rr}'
             xml_root = read_xml(f'{cdir}/r01/{name}.xml')
