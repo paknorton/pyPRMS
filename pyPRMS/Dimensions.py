@@ -2,7 +2,7 @@
 from collections import OrderedDict
 
 try:
-    from typing import cast, Dict, Optional, OrderedDict as OrderedDictType, Union
+    from typing import Any, cast, Dict, Optional, OrderedDict as OrderedDictType, Union
 except ImportError:
     # pre-python 3.7.2
     from typing import cast, Dict, Optional, MutableMapping as OrderedDictType   # type: ignore
@@ -15,7 +15,7 @@ from pyPRMS.prms_helpers import read_xml
 
 class Dimensions(object):
     """Container of Dimension objects."""
-    __dimensions: OrderedDictType
+    __dimensions: OrderedDictType[str, Dimension]
 
     def __init__(self, verbose: Optional[bool] = False,
                  verify: Optional[bool] = True):
@@ -24,7 +24,7 @@ class Dimensions(object):
         :param verbose: Output additional debug information
         :param verify: Enforce valid dimension names (default=True)
         """
-        self.__dimensions = OrderedDict()
+        self.__dimensions: OrderedDict[str, Dimension] = OrderedDict()
         self.__verbose = verbose
         self.__verify = verify
 
@@ -42,7 +42,7 @@ class Dimensions(object):
                 outstr += f'{kk}: {vv}\n'
         return outstr
 
-    def __getattr__(self, name: str) -> str:
+    def __getattr__(self, name: str) -> Any:
         """Get named dimension.
 
         :param name: name of dimensions
