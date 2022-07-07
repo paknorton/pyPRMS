@@ -2,7 +2,7 @@ import functools
 import numpy as np
 import pandas as pd     # type: ignore
 from collections import namedtuple, OrderedDict
-from typing import cast, NamedTuple, Optional, Union, List
+from typing import Any, cast, NamedTuple, Optional, Union, List
 import xml.etree.ElementTree as xmlET
 
 # from pyPRMS.Exceptions_custom import ConcatError
@@ -361,7 +361,7 @@ class Parameter(object):
         raise ValueError(f'Parameter, {self.__name}, has no data')
 
     @data.setter
-    def data(self, data_in: Union[list, np.ndarray, pd.Series]):
+    def data(self, data_in: Union[List, np.ndarray, pd.Series]):
         """Sets the data for the parameter.
 
         :param data_in: A list containing the parameter data
@@ -423,11 +423,15 @@ class Parameter(object):
             self.__modified = True
 
     @property
-    def index_map(self) -> OrderedDict:
+    def index_map(self) -> Union[OrderedDict[Any, int], None]:
         """Returns an ordered dictionary which maps data values to index position.
 
         :returns: dictionary mapping data values to index position
         """
+
+        if self.__data is None:
+            return None
+
         return OrderedDict((val, idx) for idx, val in enumerate(self.__data.tolist()))
 
     @property
@@ -435,7 +439,7 @@ class Parameter(object):
         """Return the total size of the parameter for the defined dimensions.
 
         :returns total size of parameter dimensions"""
-        arr_shp = [dd.size for dd in self.dimensions.values()]
+        arr_shp = [dd.size for dd in self.dimensions.dimensions.values()]
 
         # Compute the total size of the parameter
         return functools.reduce(lambda x, y: x * y, arr_shp)
@@ -506,7 +510,8 @@ class Parameter(object):
 
         :returns: true if parameter is dimensioned by nhru, ngw, or nssr
         """
-        return set(self.__dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'})
+
+        return not set(self.__dimensions.keys()).isdisjoint({'nhru', 'ngw', 'nssr'})
 
     def is_seg_param(self):
         """Test if parameter is dimensioned by nsegment.
@@ -598,17 +603,24 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
-    def stats(self) -> NamedTuple:
+    def stats(self) -> Optional[NamedTuple]:
         """Returns basic statistics on parameter values.
 
-        :returns: NamedTuple containing min, max, mean, and median of parameter values"""
+        :returns: None (for strings or no data) or NamedTuple containing min, max, mean, and median of parameter values"""
         Stats = namedtuple('Stats', ['name', 'min', 'max', 'mean', 'median'])
 
-        if self.__name in ['poi_gage_id']:
-            return Stats(self.__name, '', '', '', '')
+        # if self.__name in ['poi_gage_id']:
+        #     return Stats(self.__name, '', '', '', '')
 
-        return Stats(self.__name, np.min(self.__data), np.max(self.__data),
-                     np.mean(self.__data), np.median(self.__data))
+        if self.__data is None:
+            return None
+
+        try:
+            return Stats(self.__name, np.min(self.__data), np.max(self.__data),
+                         np.mean(self.__data), np.median(self.__data))
+        except TypeError:
+            # This happens with string data
+            return None
 
     def has_correct_size(self) -> bool:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
@@ -649,6 +661,10 @@ class Parameter(object):
 
         :param new_dims: Dimension names and sizes that will be used to reshape the parameter data
         """
+
+        if self.__data is None:
+            # Reshape has no meaning if there is no data to reshape
+            return
 
         if self.dimensions.ndims == 1:
             if 'one' in self.dimensions.keys():
@@ -764,11 +780,14 @@ class Parameter(object):
                  'data': self.tolist()}
         return param
 
-    def unique(self) -> np.ndarray:
+    def unique(self) -> Optional[np.ndarray]:
         """Create array of unique values from the parameter data.
 
         :returns: Array of unique values
         """
+        if self.__data is None:
+            return None
+
         return np.unique(self.__data)
 
     @staticmethod
