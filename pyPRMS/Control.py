@@ -52,11 +52,10 @@ class Control(object):
 
             datatype = int(elem.find('type').text)
 
-            self.add(name)
-            self.get(name).datatype = datatype
+            self.add(name=name, datatype=datatype)
 
             if name in ['start_time', 'end_time']:
-                # Hack to handle PRMS weird approach to dates
+                # Hack to handle PRMS approach to dates
                 dt = elem.find('default').text.split('-')
                 if len(dt) < 6:
                     # pad short date with zeros for hms
@@ -82,11 +81,11 @@ class Control(object):
                         outvals[cv.attrib.get('name')].append(xx)
             self.get(name).valid_values = outvals
 
-    def __getitem__(self, item: str) -> Union[int, float, str, List]:
-        """Lookup control variables by key.
+    def __getitem__(self, item: str) -> ControlVariable:
+        """Get ControlVariable object for a variable.
 
         :param item: name of control file variable
-        :returns: value of control file variable
+        :returns: ControlVariable object
         """
         return self.get(item)
 
@@ -100,7 +99,7 @@ class Control(object):
 
     @property
     def dynamic_parameters(self) -> List[str]:
-        """Get parameter names that have the dynamic flag set.
+        """Get list parameter names for which a dynamic flag set.
 
         :returns: list of parameter names
         """
@@ -108,9 +107,12 @@ class Control(object):
         dyn_params = []
 
         for dv in self.__control_vars.keys():
-            if self.get(dv).value_repr == 'parameter':
-                if self.get(dv).values > 0:
-                    dyn_params.extend(self.get(dv).associated_values)
+            cvar = self.get(dv)
+
+            if cvar.value_repr == 'parameter' and (isinstance(cvar.values, int) or isinstance(cvar.values, np.int64)):
+                # dynamic parameter flags should always be integers
+                if cvar.values > 0:
+                    dyn_params.extend(cvar.associated_values)
                     # dyn_params.append(self.get(dv).associated_values)
         return dyn_params
 
@@ -159,14 +161,14 @@ class Control(object):
                     if self.get(xx).values == 'climate_hru':
                         mod_dict[xx] = 'precipitation_hru'
                     else:
-                        mod_dict[xx] = self.get(xx).values
+                        mod_dict[xx] = str(self.get(xx).values)
                 elif xx == 'temp_module':
                     if self.get(xx).values == 'climate_hru':
                         mod_dict[xx] = 'temperature_hru'
                     else:
-                        mod_dict[xx] = self.get(xx).values
+                        mod_dict[xx] = str(self.get(xx).values)
                 else:
-                    mod_dict[xx] = self.get(xx).values
+                    mod_dict[xx] = str(self.get(xx).values)
 
         # Add the modules that are implicitly included
         for xx in ctl_implicit_modules:
@@ -175,17 +177,18 @@ class Control(object):
 
         return mod_dict
 
-    def add(self, name: str):
+    def add(self, name: str, datatype: int):
         """Add a control variable by name.
 
         :param name: Name of the control variable
+        :param datatype: The datatype of the control variable
 
         :raises ControlError: if control variable already exists
         """
 
         if self.exists(name):
             raise ControlError("Control variable already exists")
-        self.__control_vars[name] = ControlVariable(name=name)
+        self.__control_vars[name] = ControlVariable(name=name, datatype=datatype)
 
     def exists(self, name: str) -> bool:
         """Checks if control variable exists.
@@ -239,27 +242,28 @@ class Control(object):
         for kk in ctl_order:
             if self.exists(kk):
                 cvar = self.get(kk)
-            else:
-                continue
 
-            outfile.write(f'{VAR_DELIM}\n')
-            outfile.write(f'{kk}\n')
+                outfile.write(f'{VAR_DELIM}\n')
+                outfile.write(f'{kk}\n')
 
-            for item in order:
-                if item == 'datatype':
-                    outfile.write(f'{cvar.size}\n')
-                    outfile.write(f'{cvar.datatype}\n')
-                if item == 'values':
-                    if cvar.size == 1:
-                        # print(type(cvar.values))
-                        if isinstance(cvar.values, np.bytes_):
-                            print("BYTES")
-                            outfile.write(f'{cvar.values.decode()}\n')
+                for item in order:
+                    if item == 'datatype':
+                        outfile.write(f'{cvar.size}\n')
+                        outfile.write(f'{cvar.datatype}\n')
+                    if item == 'values':
+                        if cvar.size == 1:
+                            # Single-values (e.g. int, float, str)
+                            # print(type(cvar.values))
+                            if isinstance(cvar.values, np.bytes_):
+                                print("BYTES")
+                                outfile.write(f'{cvar.values.decode()}\n')
+                            else:
+                                outfile.write(f'{cvar.values}\n')
                         else:
-                            outfile.write(f'{cvar.values}\n')
-                    else:
-                        for cval in cvar.values:
-                            outfile.write(f'{cval}\n')
+                            # Multiple-values
+                            if isinstance(cvar.values, np.ndarray):
+                                for cval in cvar.values:
+                                    outfile.write(f'{cval}\n')
 
         outfile.close()
 

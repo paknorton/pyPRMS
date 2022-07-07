@@ -26,7 +26,6 @@ class ControlFile(Control):
 
         self.__verbose = verbose
         self.__isloaded = False
-        self.__filename = None
         self.filename = filename
 
 

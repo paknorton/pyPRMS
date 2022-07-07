@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Callable, Dict, List, Optional, Sequence, Union
 
 from pyPRMS.constants import DATA_TYPES
 from pyPRMS.Exceptions_custom import ControlError
@@ -14,8 +14,8 @@ class ControlVariable(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-18
 
-    def __init__(self, name: Optional[str],
-                 datatype: Optional[int] = None,
+    def __init__(self, name: str,
+                 datatype: int,
                  default: Optional[Union[int, float, str]] = None,
                  description: Optional[str] = None,
                  valid_values: Optional[Dict] = None,
@@ -32,13 +32,15 @@ class ControlVariable(object):
 
         self.__name = name
         self.__datatype = datatype
-        self.__default = default
+        # self.__default = default
+        self.default = default
         self.__description = description
         self.__force_default = False
         self.__valid_values = valid_values  # Possible valid values
         self.__value_repr = value_repr  # What do the valid_values represent (e.g. flag, parameter, etc)?
+
         self.__associated_value = None  # Based on a value what's the associated valid_value?
-        self.__values = None
+        self.__values: Union[np.ndarray, None] = None
 
     def __str__(self) -> str:
         outstr = f'name: {self.name}\ndatatype: {self.datatype}\n'
@@ -96,7 +98,7 @@ class ControlVariable(object):
             print(f'WARNING: Datatype, {dtype}, is not valid.')
 
     @property
-    def default(self) -> Union[int, float, str, None]:
+    def default(self) -> Union[int, float, str, np.ndarray, None]:
         """Get default value for control variable.
 
         :returns: current default value
@@ -107,8 +109,8 @@ class ControlVariable(object):
                 return self.__default
             else:
                 return self.__default[0]
-        else:
-            return None
+
+        return None
 
     @default.setter
     def default(self, value: Union[int, float, str]):
@@ -118,8 +120,8 @@ class ControlVariable(object):
         """
 
         # Convert datatype first
-        datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
-                         3: self.__str_to_float, 4: self.__str_to_str}
+        datatype_conv: Dict[int, Callable] = {1: self.__str_to_int, 2: self.__str_to_float,
+                                                 3: self.__str_to_float, 4: self.__str_to_str}
 
         if self.__datatype in DATA_TYPES.keys():
             value = datatype_conv[self.__datatype](value)
@@ -166,10 +168,11 @@ class ControlVariable(object):
         elif self.__default is not None:
             return self.__default.size
         else:
+            # There are no values stored for the control variable
             return 0
 
     @property
-    def valid_values(self) -> Dict:
+    def valid_values(self) -> Union[Dict, None]:
         """Get the values that are valid for the control variable.
 
         :returns: Valid values for the control variable
@@ -188,7 +191,7 @@ class ControlVariable(object):
             self.__valid_values = data
 
     @property
-    def value_repr(self) -> str:
+    def value_repr(self) -> Union[str, None]:
         """Get what the control variable value represents.
 
         A control variable value can represent a flag, interval, or parameter.
@@ -209,7 +212,7 @@ class ControlVariable(object):
         self.__value_repr = data
 
     @property
-    def values(self) -> Union[np.ndarray, int, float, str]:
+    def values(self) -> Union[np.ndarray, int, float, str, None]:
         """Get the values for the control variable.
 
         If force_default is True then the default value is returned regardless
@@ -224,8 +227,10 @@ class ControlVariable(object):
             elif self.__values.size == 0:
                 raise ControlError(f'Control variable, {self.__name}, has invalid data')
             elif self.__values.size > 1:
+                # An array of data (e.g. start_time)
                 return self.__values
             else:
+                # Single value
                 return self.__values[0]
         else:
             return self.default
@@ -240,8 +245,8 @@ class ControlVariable(object):
         # TODO: 2021-09-23 PAN In the case of array variables (e.g. start_time),
         #       check that the new array length is the same as the old array length
         # Convert datatype first
-        datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
-                         3: self.__str_to_float, 4: self.__str_to_str}
+        datatype_conv: Dict[int, Callable] = {1: self.__str_to_int, 2: self.__str_to_float,
+                                              3: self.__str_to_float, 4: self.__str_to_str}
 
         if self.__datatype in DATA_TYPES.keys():
             data = datatype_conv[self.__datatype](data)
@@ -263,7 +268,7 @@ class ControlVariable(object):
         # Convert provide list of data to float
         if isinstance(data, str):
             return [float(data)]
-        else:
+        elif isinstance(data, list):
             try:
                 return [float(vv) for vv in data]
             except ValueError as ve:
