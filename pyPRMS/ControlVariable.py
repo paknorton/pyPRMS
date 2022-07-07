@@ -113,7 +113,7 @@ class ControlVariable(object):
         return None
 
     @default.setter
-    def default(self, value: Union[int, float, str]):
+    def default(self, value: Union[int, float, str, None]):
         """Set the default value for the control variable.
 
         :param value: The default value
@@ -121,7 +121,11 @@ class ControlVariable(object):
 
         # Convert datatype first
         datatype_conv: Dict[int, Callable] = {1: self.__str_to_int, 2: self.__str_to_float,
-                                                 3: self.__str_to_float, 4: self.__str_to_str}
+                                              3: self.__str_to_float, 4: self.__str_to_str}
+
+        if value is None:
+            # Typically value is None when a ControlVariable is first instantiated
+            return
 
         if self.__datatype in DATA_TYPES.keys():
             value = datatype_conv[self.__datatype](value)
@@ -285,7 +289,7 @@ class ControlVariable(object):
 
         if isinstance(data, str):
             return [int(data)]
-        else:
+        elif isinstance(data, list):
             # Convert list of data to integer
             try:
                 return [int(vv) for vv in data]
