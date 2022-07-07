@@ -15,7 +15,7 @@ from collections import OrderedDict
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
 try:
-    from typing import Optional, Union, Dict, List, Tuple, OrderedDict as OrderedDictType
+    from typing import Optional, Union, Dict, List, Set, Tuple, OrderedDict as OrderedDictType
 except ImportError:
     # pre-python 3.7.2
     from typing import Optional, Union, Dict, List, MutableMapping as OrderedDictType   # type: ignore
@@ -613,8 +613,8 @@ class Parameters(object):
                 self.get(pp).remove_by_index('npoigages', poi_del_indices)
 
 
-    def remove_by_global_id(self, hrus: Optional[List] = None,
-                            segs: Optional[List] = None):
+    def remove_by_global_id(self, hrus: Optional[List[int]] = None,
+                            segs: Optional[List[int]] = None):
         """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
 
         :param hrus: list of national HRU ids
@@ -622,6 +622,7 @@ class Parameters(object):
         """
 
         if segs is not None:
+            # TODO: 2022-07-07 PAN - need code for removing segments
             pass
 
         if hrus is not None:
@@ -643,14 +644,19 @@ class Parameters(object):
             self.get('nhm_id').subset_by_index('nhru', nhm_idx.values())
 
             # Update hru_segment_nhm then go back and make sure the referenced nhm_segs are valid
+            # NOTE: See https://github.com/python/mypy/issues/3004 for the discussion about
+            #       supporting asymmetrical getter/setter properties.
             self.get('hru_segment_nhm').subset_by_index('nhru', nhm_idx.values())
+            proc_list = self.get('hru_segment_nhm').tolist()
             self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk == 0 else -1
-                                                for kk in self.get('hru_segment_nhm').data.tolist()]
+                                                for kk in self.get('hru_segment_nhm').tolist()]   # type: ignore
 
             # Now do the local hru_segment
+            # NOTE: See https://github.com/python/mypy/issues/3004 for the discussion about
+            #       supporting asymmetrical getter/setter properties.
             self.get('hru_segment').subset_by_index('nhru', nhm_idx.values())
             self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk == 0 else -1
-                                            for kk in self.get('hru_segment_nhm').data.tolist()]
+                                            for kk in self.get('hru_segment_nhm').tolist()]   # type: ignore
 
             # # First remove the HRUs from nhm_id and hru_segment_nhm
             # id_to_seg = np.column_stack((self.get('nhm_id').data, self.get('hru_segment_nhm').data))
@@ -691,7 +697,7 @@ class Parameters(object):
 
                                 # Renumber the hru_deplcrv indices
                                 data_copy = pp.data.copy()
-                                with np.nditer(data_copy, op_flags=['readwrite']) as it:
+                                with np.nditer(data_copy, op_flags=[['readwrite']]) as it:
                                     for xx in it:
                                         xx[...] = uniq_dict[int(xx)]
 
@@ -840,7 +846,7 @@ class Parameters(object):
         # Given a d/s segment (dsmost_seg) create a subset of u/s segments
 
         # Get all unique segments u/s of the starting segment
-        uniq_seg_us = set()
+        uniq_seg_us: Set[int] = set()
         if outlet_segs:
             for xx in outlet_segs:
                 try:
