@@ -363,9 +363,7 @@ class Parameter(object):
         raise ValueError(f'Parameter, {self.__name}, has no data')
 
     @data.setter
-    def data(self, data_in: Union[List,
-                                  npt.NDArray,
-                                  pd.Series]):
+    def data(self, data_in: Union[List, npt.NDArray, pd.Series]):
         """Sets the data for the parameter.
 
         :param data_in: A list containing the parameter data
@@ -607,10 +605,32 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
+    def outliers(self) -> NamedTuple:
+        """Returns the number of values less than or greater than the valid range
+
+        :returns: NamedTuple containing count of values less than and values greater than valid range
+        """
+        Outliers = namedtuple('Outliers', ['name', 'under', 'over'])
+
+        values_under = 0
+        values_over = 0
+
+        if self.__data is not None:
+            if self.__minimum is not None:
+                values_under = np.count_nonzero(self.__data < self.__minimum)
+                # values_under = len(self.__data[self.__data < self.__minimum])
+
+            if self.__maximum is not None:
+                values_over = np.count_nonzero(self.__data > self.__maximum)
+                # values_over = len(self.__data[self.__data > self.__maximum])
+
+        return Outliers(self.__name, values_under, values_over)
+
     def stats(self) -> Optional[NamedTuple]:
         """Returns basic statistics on parameter values.
 
-        :returns: None (for strings or no data) or NamedTuple containing min, max, mean, and median of parameter values"""
+        :returns: None (for strings or no data) or NamedTuple containing min, max, mean, and median of parameter values
+        """
         Stats = namedtuple('Stats', ['name', 'min', 'max', 'mean', 'median'])
 
         # if self.__name in ['poi_gage_id']:
