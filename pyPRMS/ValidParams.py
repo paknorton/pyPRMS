@@ -27,22 +27,10 @@ class ValidParams(Parameters):
 
         super(ValidParams, self).__init__()
 
-        self.__filename = filename
-
-        if filename is not None:
-            self.__xml_tree = xmlET.parse(self.__filename)
-        else:
-            # Use the pyPRMS package file, parameters.xml, by default.
-            xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', 'xml/parameters.xml').decode('utf-8'))
-            self.__xml_tree = xmlET.parse(xml_fh)
-
-        # TODO: need more robust logic here; currently no way to handle failures
-        self.__isloaded = False
-        self._read()
-        self.__isloaded = True
+        self.filename = filename
 
     @property
-    def filename(self) -> Union[str, None]:
+    def filename(self) -> Optional[Union[str, None]]:
         """Get XML filename.
 
         Returned filename is None if reading from the library-internal XML file.
@@ -53,7 +41,7 @@ class ValidParams(Parameters):
         return self.__filename
 
     @filename.setter
-    def filename(self, filename: str = None):
+    def filename(self, filename: Optional[str] = None):
         """Set the XML file name.
 
         If no filename is specified an library-internal XML file is read.
@@ -63,11 +51,14 @@ class ValidParams(Parameters):
 
         self.__filename = filename
 
-        if filename is not None:
-            self.__xml_tree = xmlET.parse(self.__filename)
+        if self.filename is not None:
+            self.__xml_tree = xmlET.parse(self.filename)
         else:
             # Use the package parameters.xml by default
-            xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', 'xml/parameters.xml').decode('utf-8'))
+            res = pkgutil.get_data('pyPRMS', 'xml/parameters.xml')
+
+            assert res is not None
+            xml_fh = io.StringIO(res.decode('utf-8'))
             self.__xml_tree = xmlET.parse(xml_fh)
 
         self.__isloaded = False
@@ -85,9 +76,10 @@ class ValidParams(Parameters):
         params_by_module = []
 
         for xx in self.parameters.values():
-            for mm in xx.modules:
-                if mm in modules:
-                    params_by_module.append(xx.name)
+            if xx.modules is not None:
+                for mm in xx.modules:
+                    if mm in modules:
+                        params_by_module.append(xx.name)
         return set(params_by_module)
 
     def _read(self):
