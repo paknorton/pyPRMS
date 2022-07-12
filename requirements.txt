@@ -3,7 +3,7 @@ pyproj
 shapely
 matplotlib
 cartopy
-networkx
+networkx >= 2
 numpy
 netCDF4
 pandas
