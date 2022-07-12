@@ -230,10 +230,12 @@ class Parameters(object):
 
             if not pp.check_values():
                 pp_stats = pp.stats()
+                pp_outliers = pp.outliers()
 
                 if not(isinstance(pp.minimum, str) or isinstance(pp.maximum, str)):
                     print(f'    WARNING: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
-                          f'the valid range of ({pp.minimum}, {pp.maximum})')
+                          f'the valid range of ({pp.minimum}, {pp.maximum}); ' +
+                          f'under/over=({pp_outliers.under}, {pp_outliers.over})')
                     # print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
                     #       f'the valid range of ({pp.minimum}, {pp.maximum})')
                 elif pp.minimum == 'bounded':
@@ -254,6 +256,19 @@ class Parameters(object):
             if pp.name == 'snarea_curve':
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
                     print('  WARNING: snarea_curve has more entries than needed by hru_deplcrv')
+
+    def outlier_ids(self, name) -> List[int]:
+        """Returns list of HRU or segment IDs of invalid parameter values
+
+        :returns: List of HRU or segment IDs
+        """
+        cparam = self.__parameters[name]
+
+        param_data = self.get_dataframe(name)
+        bad_value_ids = param_data[(param_data[name] < cparam.minimum) | (param_data[name] > cparam.maximum)].index.tolist()
+
+        return bad_value_ids
+
 
     def exists(self, name) -> bool:
         """Checks if a parameter name exists.
