@@ -4,6 +4,7 @@ from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.colors import Normalize     # , LogNorm, PowerNorm
 from matplotlib.patches import Polygon
 from osgeo import ogr
+from typing import Optional, Sequence, Set, Union
 
 import cartopy.crs as ccrs
 import copy
@@ -111,7 +112,7 @@ def get_projection(gdf: geopandas.GeoDataFrame):
 
 
 def get_extent(shapefile: str,
-               layer_name: Option[str] = None,
+               layer_name: Optional[str] = None,
                driver: Optional[str] = 'ESRI Shapefile'):
     """Get the extent from a shapefile.
 
@@ -167,9 +168,9 @@ def get_extent(shapefile: str,
 
 def set_colormap(the_var: str,
                  param_data: pd.DataFrame,
-                 cmap: Optional[str, matplotlib.colors.LinearSegmentedColormap] = None,
-                 min_val: Optional[int, float] = None,
-                 max_val: Optional[int, float] = None,
+                 cmap: Optional[Union[str, colors.LinearSegmentedColormap]] = None,
+                 min_val: Optional[Union[int, float]] = None,
+                 max_val: Optional[Union[int, float]] = None,
                  **kwargs):
     """Set the colormap for a plot.
 
