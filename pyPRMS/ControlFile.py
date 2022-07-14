@@ -116,11 +116,10 @@ class ControlFile(Control):
                     pass
 
                 try:
-                    self.add(varname)
+                    self.add(name=varname, datatype=(valuetype))
                 except ControlError:
                     pass
 
-                self.get(varname).datatype = int(valuetype)
                 self.get(varname).values = vals
 
         self.header = header_tmp
