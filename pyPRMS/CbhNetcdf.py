@@ -79,16 +79,19 @@ class CbhNetcdf(object):
                     self.__dataset = xr.open_mfdataset(xfiles, chunks={'hru': 1040}, combine='by_coords',
                                                        decode_cf=True, engine='netcdf4')
             else:
-                try:
-                    self.__dataset = xr.open_mfdataset(self.__src_path,
-                                                       chunks={'hruid': 1040}, combine='by_coords',
-                                                       decode_cf=True, engine='netcdf4')
-                    # NOTE: With a multi-file dataset the time attributes 'units' and
-                    #       'calendar' are lost.
-                    #       see https://github.com/pydata/xarray/issues/2436
-                except ValueError:
-                    self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040}, combine='by_coords',
-                                                       decode_cf=True, engine='netcdf4')
+                self.__dataset = xr.open_mfdataset(self.__src_path,
+                                                   chunks={}, combine='by_coords',
+                                                   decode_cf=True, engine='netcdf4')
+                # try:
+                #     self.__dataset = xr.open_mfdataset(self.__src_path,
+                #                                        chunks={'hruid': 1040}, combine='by_coords',
+                #                                        decode_cf=True, engine='netcdf4')
+                #     # NOTE: With a multi-file dataset the time attributes 'units' and
+                #     #       'calendar' are lost.
+                #     #       see https://github.com/pydata/xarray/issues/2436
+                # except ValueError:
+                #     self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040}, combine='by_coords',
+                #                                        decode_cf=True, engine='netcdf4')
         else:
             print('ERROR: write the code for all HRUs')
             exit()
@@ -106,7 +109,8 @@ class CbhNetcdf(object):
             # print(self.__endate, type(self.__endate))
             # print(self.__nhm_hrus, type(self.__nhm_hrus))
             try:
-                data = self.__dataset[var].loc[self.__stdate:self.__endate, self.__nhm_hrus].to_pandas()
+                data = self.__dataset[var].sel(time=slice(self.__stdate, self.__endate), nhru=self.__nhm_hrus).to_pandas()
+                # data = self.__dataset[var].loc[self.__stdate:self.__endate, self.__nhm_hrus].to_pandas()
             except IndexError:
                 print(f'ERROR: Indices (time, hruid) were used to subset {var} which expects' +
                       f'indices ({" ".join(map(str, self.__dataset[var].coords))})')
