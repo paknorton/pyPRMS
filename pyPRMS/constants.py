@@ -1,5 +1,7 @@
 import numpy as np
 
+from typing import List
+
 # Order to write control file parameters for printing and writing a new control file
 ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'model_mode', 'param_file', 'data_file',
              'model_output_file', 'cbh_check_flag', 'parameter_check_flag', 'print_debug',
@@ -74,8 +76,8 @@ DIMENSION_NAMES = ['mxnsos', 'ncascade', 'ncascdgw', 'nconsumed', 'ndays', 'ndep
 HRU_DIMS = ['nhru', 'ngw', 'nssr']
 
 # Constants for NhmParamDb
-REGIONS = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
-           'r10L', 'r10U', 'r11', 'r12', 'r13', 'r14', 'r15', 'r16', 'r17', 'r18']
+REGIONS: List[str] = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
+                      'r10L', 'r10U', 'r11', 'r12', 'r13', 'r14', 'r15', 'r16', 'r17', 'r18']
 PARAMETERS_XML = 'parameters.xml'
 DIMENSIONS_XML = 'dimensions.xml'
 NETCDF_DATATYPES = {1: 'i4', 2: 'f4', 3: 'f8', 4: 'S1'}
