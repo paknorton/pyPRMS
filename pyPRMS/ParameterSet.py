@@ -414,7 +414,7 @@ class ParameterSet(object):
         # hruo = nco.createVariable('hru', 'i4', ('hru'))
         for vv in self.parameters.values():
             curr_datatype = NETCDF_DATATYPES[vv.datatype]
-            print(vv.name, curr_datatype)
+            # print(vv.name, curr_datatype)
             # sys.stdout.flush()
 
             if curr_datatype != 'S1':
