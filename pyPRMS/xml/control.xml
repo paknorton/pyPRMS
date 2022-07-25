@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <control>
-    <control_param name="aniOutON_OFF">
+    <control_param name="aniOutON_OFF" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -10,7 +10,7 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="basinOutON_OFF" version="5.0">
+    <control_param name="basinOutON_OFF" version="5.0" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -24,7 +24,7 @@
             <variable name="basinOut_freq"/>
         </related_variables>
     </control_param>
-    <control_param name="basinOutVars" version="5.0">
+    <control_param name="basinOutVars" version="5.0" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -35,7 +35,7 @@
             <variable name="basinOut_freq"/>
         </related_variables>
     </control_param>
-    <control_param name="basinOut_freq">
+    <control_param name="basinOut_freq" deprecated="6.0">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -73,7 +73,7 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="cbh_binary_flag">
+    <control_param name="cbh_binary_flag" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -83,7 +83,7 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="cbh_check_flag">
+    <control_param name="cbh_check_flag" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -93,7 +93,7 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="csvON_OFF">
+    <control_param name="csvON_OFF" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -104,7 +104,7 @@
             <value name="2" version="5.1.0">only output pairs of simulated and measured flows</value>
         </values>
     </control_param>
-    <control_param name="dispGraphsBuffSize">
+    <control_param name="dispGraphsBuffSize" deprecated="6.0">
         <default>50</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -351,7 +351,7 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="mapOutON_OFF">
+    <control_param name="mapOutON_OFF" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -361,13 +361,13 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="naniOutVars">
+    <control_param name="naniOutVars" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Number of output variables specified in the aniOutVar_names list</desc>
     </control_param>
-    <control_param name="ndispGraphs">
+    <control_param name="ndispGraphs" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -457,7 +457,7 @@
             <variable name="outputSelectDatesON_OFF"/>
         </related_variables>
     </control_param>
-    <control_param name="nmapOutVars">
+    <control_param name="nmapOutVars" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -520,7 +520,7 @@
         <numvals>1</numvals>
         <desc>Number of variables to include in Statistics Variables File and names specified in statVar_names</desc>
     </control_param>
-    <control_param name="nsubOutON_OFF" version="5.0">
+    <control_param name="nsubOutON_OFF" version="5.0" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -530,13 +530,13 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="nsubOutVars" version="5.0">
+    <control_param name="nsubOutVars" version="5.0" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Number of variables to include in nsub summary output file(s)</desc>
     </control_param>
-    <control_param name="nsubOut_format" version="5.0">
+    <control_param name="nsubOut_format" version="5.0" deprecated="6.0">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -553,7 +553,7 @@
             <variable name="nsubOutON_OFF"/>
         </related_variables>
     </control_param>
-    <control_param name="nsubOut_freq" version="5.0">
+    <control_param name="nsubOut_freq" version="5.0" deprecated="6.0">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -591,7 +591,7 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="parameter_check_flag">
+    <control_param name="parameter_check_flag" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -645,7 +645,7 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="statsON_OFF">
+    <control_param name="statsON_OFF" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -706,7 +706,7 @@
         <numvals>1</numvals>
         <desc>Root pathname for Animation Files(s) to which a filename suffix based on dimension name associated with selected variables is appended</desc>
     </control_param>
-    <control_param name="basinOutBaseFileName" version="5.0">
+    <control_param name="basinOutBaseFileName" version="5.0" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -733,7 +733,7 @@
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values used to set values of cov_type for each HRU</desc>
     </control_param>
-    <control_param name="csv_output_file">
+    <control_param name="csv_output_file" deprecated="6.0">
         <default>prms_summary.csv</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -834,19 +834,19 @@
         <numvals>1</numvals>
         <desc>Pathname for Water-Budget File for results module basin_sum</desc>
     </control_param>
-    <control_param name="nhruOutBaseFileName">
+    <control_param name="nhruOutBaseFileName" deprecated="6.0">
         <default>nhru_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>String to define the prefix for each nhru summary output file.</desc>
     </control_param>
-    <control_param name="nsegmentOutBaseFileName">
+    <control_param name="nsegmentOutBaseFileName" deprecated="6.0">
         <default>nsegment_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>none</desc>
     </control_param>
-    <control_param name="nsubOutBaseFileName" version="5.0">
+    <control_param name="nsubOutBaseFileName" version="5.0" deprecated="6.0">
         <default>nsub_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -982,7 +982,7 @@
         <numvals>1</numvals>
         <desc>Module name for surface-runoff/infiltration computation method (srunoff_carea or srunoff_smidx)</desc>
     </control_param>
-    <control_param name="stat_var_file">
+    <control_param name="stat_var_file" deprecated="6.0">
         <default>statvar.out</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -1088,13 +1088,13 @@
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter wrain_intcp </desc>
     </control_param>
-    <control_param name="aniOutVar_names">
+    <control_param name="aniOutVar_names" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</desc>
     </control_param>
-    <control_param name="basinOutVar_names" version="5.0">
+    <control_param name="basinOutVar_names" version="5.0" deprecated="6.0">
         <default>basin_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -1106,55 +1106,55 @@
         <numvals>1</numvals>
         <desc>Pathname(s) for measured input Data File(s), typically a single Data File is specified</desc>
     </control_param>
-    <control_param name="dispVar_element">
+    <control_param name="dispVar_element" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable's dimension size)</desc>
     </control_param>
-    <control_param name="dispVar_names">
+    <control_param name="dispVar_names" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
-    <control_param name="dispVar_plot">
+    <control_param name="dispVar_plot" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
-    <control_param name="mapOutVar_names">
+    <control_param name="mapOutVar_names" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which output is written to mapped output files(s); variables must be of type real or double.</desc>
     </control_param>
-    <control_param name="nhruOutVar_names">
+    <control_param name="nhruOutVar_names" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which output is written to nhru summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName. The suffix of the files is based on the value of nhruOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
     </control_param>
-    <control_param name="nsegmentOutVar_names" version="5.0">
+    <control_param name="nsegmentOutVar_names" version="5.0" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>none</desc>
     </control_param>
-    <control_param name="nsubOutVar_names" version="5.0">
+    <control_param name="nsubOutVar_names" version="5.0" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which output is written to nsub summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName. The suffix of the files is based on the value of nsubOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
     </control_param>
-    <control_param name="statVar_element">
+    <control_param name="statVar_element" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of identification numbers corresponding to variables specified in statVar_names list (1 to variable's dimension size)</desc>
     </control_param>
-    <control_param name="statVar_names">
+    <control_param name="statVar_names" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
