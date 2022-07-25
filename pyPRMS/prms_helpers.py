@@ -80,10 +80,25 @@ def float_to_str(f: float) -> str:
 def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
 
     Version = namedtuple('Version', ['major', 'minor', 'revision'])
+    flds = [None, None, None]
 
-    if version_str is None:
-        return Version(0, 0, 0)
-
-    flds = [int(kk) for kk in version_str.split(delim)]
+    # if version_str is None:
+    #     return Version(0, 0, 0)
+    if version_str is not None:
+        for ii, kk in enumerate(version_str.split(delim)):
+            flds[ii] = int(kk)
+    # flds = [int(kk) for kk in version_str.split(delim)]
 
     return Version(flds[0], flds[1], flds[2])
+
+
+# def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
+#
+#     Version = namedtuple('Version', ['major', 'minor', 'revision'])
+#
+#     if version_str is None:
+#         return Version(0, 0, 0)
+#
+#     flds = [int(kk) for kk in version_str.split(delim)]
+#
+#     return Version(flds[0], flds[1], flds[2])

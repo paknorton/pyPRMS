@@ -5,7 +5,7 @@
 # import xml.etree.ElementTree as xmlET
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
-from typing import Optional
+from typing import Optional, Union
 from pyPRMS.constants import DATA_TYPES, VAR_DELIM
 from pyPRMS.Control import Control
 from pyPRMS.Exceptions_custom import ControlError
@@ -21,8 +21,9 @@ class ControlFile(Control):
     # Description: Class object to handle reading and writing PRMS
     #              control files.
 
-    def __init__(self, filename: str, verbose: Optional[bool] = False):
-        super(ControlFile, self).__init__()
+    def __init__(self, filename: str, verbose: Optional[bool] = False,
+                 version:Optional[Union[str, int]] = 5):
+        super(ControlFile, self).__init__(verbose=verbose, version=version)
 
         self.__verbose = verbose
         self.__isloaded = False

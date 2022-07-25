@@ -8,11 +8,12 @@ import numpy as np
 from collections import OrderedDict
 
 try:
-    from typing import Union, Dict, List, OrderedDict as OrderedDictType, Sequence
+    from typing import Dict, List, Optional, OrderedDict as OrderedDictType, Sequence, Union
 except ImportError:
     # pre-python 3.7.2
     from typing import Union, Dict, List, MutableMapping as OrderedDictType, Sequence   # type: ignore
 
+from pyPRMS.prms_helpers import version_info
 from pyPRMS.ControlVariable import ControlVariable
 from pyPRMS.Exceptions_custom import ControlError
 from pyPRMS.constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, \
@@ -27,13 +28,14 @@ class Control(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-18
 
-    def __init__(self):
+    def __init__(self, verbose: Optional[bool] = False, version: Optional[Union[str, int]] = 5):
         """Create Control object.
         """
 
         # Container to hold dicionary of ControlVariables
         self.__control_vars = OrderedDict()
         self.__header = None
+        self.__verbose = verbose
 
         # First read control.xml from the library
         # This makes sure any missing variables from the control file
@@ -43,11 +45,17 @@ class Control(object):
         xml_root = xml_tree.getroot()
 
         for elem in xml_root.findall('control_param'):
-            version = elem.attrib.get('version')
+            var_version = version_info(elem.attrib.get('version'))
+            depr_version = version_info(elem.attrib.get('deprecated'))
             name = elem.attrib.get('name')
 
-            if version == '6.0':
-                # For now just skip PRMS6-specific control variables
+            if (var_version.major is not None and var_version.major > version):
+                if self.__verbose:
+                    print(f'{name} rejected by version')
+                continue
+            if (depr_version.major is not None and depr_version.major <= version):
+                if self.__verbose:
+                    print(f'{name} rejected by deprecation version')
                 continue
 
             datatype = int(elem.find('type').text)

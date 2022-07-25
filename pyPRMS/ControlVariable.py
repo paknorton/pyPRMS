@@ -45,8 +45,8 @@ class ControlVariable(object):
     def __str__(self) -> str:
         outstr = f'name: {self.name}\ndatatype: {self.datatype}\n'
 
-        if self.default is not None:
-            outstr += f'default: {self.default}\n'
+        # if self.default is not None:
+        outstr += f'default: {self.default}\n'
 
         outstr += 'Size of data: '
         if self.values is not None:
@@ -125,6 +125,7 @@ class ControlVariable(object):
 
         if value is None:
             # Typically value is None when a ControlVariable is first instantiated
+            self.__default = value
             return
 
         if self.__datatype in DATA_TYPES.keys():
