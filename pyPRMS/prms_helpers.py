@@ -1,49 +1,47 @@
 
+from collections import namedtuple
+from datetime import datetime
+from typing import List, NamedTuple, Optional, Union, Sequence
 
 import calendar
-from datetime import datetime
-# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Sequence
-from typing import Union, Sequence
-
 import decimal
+import pandas as pd   # type: ignore
 import xml.etree.ElementTree as xmlET
 
-import pandas as pd
 
-
-def dparse(*dstr: Union[Sequence[str], Sequence[int]]) -> datetime:
-    """Convert date string to datetime.
-
-    This function is used by Pandas to parse dates.
-    If only a year is provided the returned datetime will be for the last day of the year (e.g. 12-31).
-    If only a year and a month is provided the returned datetime will be for the last day of the given month.
-
-    :param dstr: year, month, day; or year, month; or year
-
-    :returns: datetime object
-    """
-
-    dint = [int(x) for x in dstr]
-
-    if len(dint) == 2:
-        # For months we want the last day of each month
-        dint.append(calendar.monthrange(*dint)[1])
-    if len(dint) == 1:
-        # For annual we want the last day of the year
-        dint.append(12)
-        dint.append(calendar.monthrange(*dint)[1])
-
-    return pd.to_datetime('-'.join([str(d) for d in dint]))
-    # return datetime(*dint)
-
-# def dparse(yr, mo, dy, hr, minute, sec):
-#     # Date parser for working with the date format from PRMS files
+# def dparse(*dstr: Union[Sequence[str], Sequence[int]]) -> datetime:
+#     """Convert date string to datetime.
 #
-#     # Convert to integer first
-#     yr, mo, dy, hr, minute, sec = [int(x) for x in [yr, mo, dy, hr, minute, sec]]
+#     This function is used by Pandas to parse dates.
+#     If only a year is provided the returned datetime will be for the last day of the year (e.g. 12-31).
+#     If only a year and a month is provided the returned datetime will be for the last day of the given month.
 #
-#     dt = datetime.datetime(yr, mo, dy, hr, minute, sec)
-#     return dt
+#     :param dstr: year, month, day; or year, month; or year
+#
+#     :returns: datetime object
+#     """
+#
+#     dint: List[int] = list()
+#
+#     for xx in dstr:
+#         if isinstance(xx, str):
+#             dint.append(int(xx))
+#         elif isinstance(xx, int):
+#             dint.append(xx)
+#         else:
+#             raise TypeError('dparse entries must be either string or integer')
+#     # dint = [int(x) if isinstance(x, str) else x for x in dstr]
+#
+#     if len(dint) == 2:
+#         # For months we want the last day of each month
+#         dint.append(calendar.monthrange(*dint)[1])
+#     if len(dint) == 1:
+#         # For annual we want the last day of the year
+#         dint.append(12)
+#         dint.append(calendar.monthrange(*dint)[1])
+#
+#     # return pd.to_datetime(dint)
+#     return pd.to_datetime('-'.join([str(d) for d in dint]))
 
 
 def read_xml(filename: str) -> xmlET.Element:
@@ -77,3 +75,15 @@ def float_to_str(f: float) -> str:
 
     d1 = ctx.create_decimal(repr(f))
     return format(d1, 'f')
+
+
+def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
+
+    Version = namedtuple('Version', ['major', 'minor', 'revision'])
+
+    if version_str is None:
+        return Version(0, 0, 0)
+
+    flds = [int(kk) for kk in version_str.split(delim)]
+
+    return Version(flds[0], flds[1], flds[2])

@@ -1,9 +1,10 @@
 
 import numpy as np
-import pandas as pd
+import pandas as pd   # type: ignore
 
-from pyPRMS.prms_helpers import dparse
+# from pyPRMS.prms_helpers import dparse
 
+TS_FORMAT = '%Y %m %d %H %M %S' # 1915 1 13 0 0 0
 
 class Statvar(object):
     def __init__(self, filename=None, missing=-999.0):
@@ -89,8 +90,11 @@ class Statvar(object):
         # Use pandas to read the data in from the remainder of the file
         # We use a custom date parser to convert the date information to a datetime
         self.__rawdata = pd.read_csv(infile, sep=r"\s+", header=None, names=self.__header,
-                                     parse_dates={'thedate': ['year', 'month', 'day', 'hour', 'min', 'sec']},
-                                     date_parser=dparse, index_col='thedate')
+                                     parse_dates={'time': ['year', 'month', 'day', 'hour', 'min', 'sec']},
+                                     index_col='time')
+                                     # date_parser=dparse, index_col='time')
+
+        self.__rawdata.index = pd.to_datetime(self.__rawdata.index, exact=True, cache=True, format=TS_FORMAT)
 
         # Drop the 'rec' field and convert the missing data to NaNs
         self.__rawdata.drop(['rec'], axis=1, inplace=True)

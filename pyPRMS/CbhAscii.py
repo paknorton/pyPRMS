@@ -1,23 +1,23 @@
 import datetime
 import os
 import numpy as np
-import pandas as pd
-import netCDF4 as nc
+import pandas as pd   # type: ignore
+import netCDF4 as nc   # type: ignore
 from collections import OrderedDict
 
 try:
-    from typing import List, Union, Optional, OrderedDict as OrderedDictType
+    from typing import Dict, List, Union, Optional, OrderedDict as OrderedDictType
 except ImportError:
     # pre-python 3.7.2
     from typing import List, Union, Optional, MutableMapping as OrderedDictType
 
 
-from pyPRMS.prms_helpers import dparse
+# from pyPRMS.prms_helpers import dparse
 from pyPRMS.constants import REGIONS
 
 CBH_VARNAMES = ['prcp', 'tmin', 'tmax']
 CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]
-
+TS_FORMAT = '%Y %m %d %H %M %S' # 1915 1 13 0 0 0
 
 class CbhAscii(object):
 
@@ -88,8 +88,11 @@ class CbhAscii(object):
         # Columns 0-5 always represent date/time information
         self.__data = pd.read_csv(self.__src_path, sep=' ', skipinitialspace=True, usecols=incl_cols,
                                   skiprows=3, engine='c', memory_map=True,
-                                  date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                                  parse_dates={'time': CBH_INDEX_COLS},
+                                  # date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                                   index_col='time', header=None, na_values=[-99.0, -999.0])
+
+        self.__data.index = pd.to_datetime(self.__data.index, exact=True, cache=True, format=TS_FORMAT)
 
         if self.__stdate is not None and self.__endate is not None:
             self.__data = self.__data[self.__stdate:self.__endate]
@@ -114,8 +117,11 @@ class CbhAscii(object):
         # Columns 0-5 always represent date/time information
         self.__data = pd.read_csv(self.__src_path, sep=' ', skipinitialspace=True,
                                   skiprows=3, engine='c', memory_map=True,
-                                  date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                                  parse_dates={'time': CBH_INDEX_COLS},
+                                  # date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                                   index_col='time', header=None, na_values=[-99.0, -999.0])
+
+        self.__data.index = pd.to_datetime(self.__data.index, exact=True, cache=True, format=TS_FORMAT)
 
         if self.__stdate is not None and self.__endate is not None:
             self.__data = self.__data[self.__stdate:self.__endate]
@@ -147,13 +153,17 @@ class CbhAscii(object):
             df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
                              usecols=columns,
                              skiprows=3, engine='c', memory_map=True,
-                             date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                             parse_dates={'time': CBH_INDEX_COLS},
+                             # date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                              index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
         else:
             df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
                              skiprows=3, engine='c', memory_map=True,
-                             date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                             parse_dates={'time': CBH_INDEX_COLS},
+                             # date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                              index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
+
+        df.index = pd.to_datetime(df.index, exact=True, cache=True, format=TS_FORMAT)
         return df
 
     def check_region(self, region: str) -> Union[OrderedDictType[int, int], None]:
@@ -222,8 +232,10 @@ class CbhAscii(object):
                 df = pd.read_csv(cbh_file, sep=' ', skipinitialspace=True,
                                  usecols=load_cols, nrows=2,
                                  skiprows=3, engine='c', memory_map=True,
-                                 date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                                 parse_dates={'time': CBH_INDEX_COLS},
+                                 # date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                                  index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
+
 
                 # Override Pandas' rather stupid default of float64
                 col_dtypes = {xx: np.float32 for xx in df.columns}
@@ -232,8 +244,11 @@ class CbhAscii(object):
                 df = pd.read_csv(cbh_file, sep=' ', skipinitialspace=True,
                                  usecols=load_cols, dtype=col_dtypes,
                                  skiprows=3, engine='c', memory_map=True,
-                                 date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
+                                 parse_dates={'time': CBH_INDEX_COLS},
+                                 # date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                                  index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
+
+                df.index = pd.to_datetime(df.index, exact=True, cache=True, format=TS_FORMAT)
 
                 if self.__stdate is not None and self.__endate is not None:
                     # Restrict the date range
