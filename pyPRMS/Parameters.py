@@ -351,11 +351,11 @@ class Parameters(object):
         :returns: Dataframe of extracted values
         """
         param = self.__parameters[name]
-        dim_set = set(param.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw', 'nsegment'})
+        dim_set = set(param.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw', 'nsegment', 'ndeplval'})
         id_index_map = {}
         cdim = dim_set.pop()
 
-        if cdim in ['nhru', 'nssr', 'ngw']:
+        if cdim in ['nhru', 'nssr', 'ngw', 'ndeplval']:
             # Global IDs should be in the range of nhm_id
             id_index_map = self.__parameters['nhm_id'].index_map
         elif cdim in ['nsegment']:
@@ -363,14 +363,27 @@ class Parameters(object):
             id_index_map = self.__parameters['nhm_seg'].index_map
 
         # Zero-based indices in order of global_ids
-        nhm_idx0 = []
-        for kk in global_ids:
-            nhm_idx0.append(id_index_map[kk])
+        nhm_idx0 = [id_index_map[kk] for kk in global_ids]
+
+        if name in ['hru_deplcrv', 'snarea_curve']:
+            init_data = self.__parameters['hru_deplcrv'].data[tuple(nhm_idx0), ]
+            uniq_deplcrv = np.unique(init_data).tolist()
 
         if param.dimensions.ndims == 2:
             return param.data[tuple(nhm_idx0), :]
         else:
-            return param.data[tuple(nhm_idx0), ]
+            if name == 'hru_deplcrv':
+                # Renumber the hru_deplcrv indices for the subset
+                uniq_dict = {xx: ii+1 for ii, xx in enumerate(uniq_deplcrv)}
+
+                # Create new hru_deplcrv and renumber
+                return np.array([uniq_dict[xx] for xx in init_data])
+            elif name == 'snarea_curve':
+                uniq_deplcrv0 = [xx - 1 for xx in uniq_deplcrv]
+                return param.data.reshape((-1, 11))[tuple(uniq_deplcrv0), :].reshape((-1))
+
+            else:
+                return param.data[tuple(nhm_idx0), ]
 
     def plot(self, name: str,
              output_dir: Optional[str] = None,
@@ -646,6 +659,7 @@ class Parameters(object):
             nhm_seg = self.get('nhm_seg').tolist()
 
             print(list(nhm_idx.keys())[0:10])
+            print(list(nhm_idx.values())[0:10])
 
             for xx in list(nhm_idx.keys()):
                 if xx in hrus:
@@ -718,10 +732,11 @@ class Parameters(object):
 
                                 pp.data = data_copy
 
-                                tmp = self.__parameters['snarea_curve'].data.reshape((-1, 11))[tuple(uniq_deplcrv_idx0), :]
-
-                                self.__parameters['snarea_curve'].data = tmp.ravel()
+                                # Handle snarea_curve
+                                tmp = self.__parameters['snarea_curve'].data.reshape((-1, 11))[tuple(uniq_deplcrv_idx0), :].reshape((-1))
+                                print(f'{pp.name}: {tmp.size=}, {tmp.ndim=}')
                                 self.__parameters['snarea_curve'].dimensions['ndeplval'].size = tmp.size
+                                self.__parameters['snarea_curve'].data = tmp   # .ravel()
 
             # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
             # new_deplcrv = pp['hru_deplcrv'].data.tolist()
