@@ -315,7 +315,7 @@ class ParameterSet(object):
                         required_params.remove(xx)
                 elif xx == 'gvr_hru_id':
                     if self.__ctl_obj is not None:
-                        if self.__ctl_obj.get('mapOutON_OFF').values == 0:
+                        if not self.__ctl_obj.exists('mapOutON_OFF') or self.__ctl_obj.get('mapOutON_OFF').values == 0:
                             required_params.remove(xx)
                 elif xx in ['hru_lat', 'hru_lon', ]:
                     if not self.parameters.exists(xx):
