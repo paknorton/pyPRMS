@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import io
+import operator
 import pkgutil
 import xml.etree.ElementTree as xmlET
 
@@ -17,8 +18,11 @@ from pyPRMS.prms_helpers import version_info
 from pyPRMS.ControlVariable import ControlVariable
 from pyPRMS.Exceptions_custom import ControlError
 from pyPRMS.constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, \
-                             VAR_DELIM
+                             ctl_summary_modules, VAR_DELIM
 
+cond_check = {'=': operator.eq,
+              '>': operator.gt,
+              '<': operator.lt}
 
 class Control(object):
     """
@@ -184,6 +188,41 @@ class Control(object):
                 mod_dict[xx] = ctl_implicit_modules[xx]
 
         return mod_dict
+
+    @property
+    def summary_modules(self) -> List[str]:
+        """Get list of summary modules in PRMS
+        """
+
+        summary_modules = {'basin_sum': '',
+                           'basin_summary': 'basinOutON_OFF > 0',
+                           'map_results': 'mapOutON_OFF > 0',
+                           'nhru_summary': 'nhruOutON_OFF > 0',
+                           'nsegment_summary': 'nsegmentOutON_OFF > 0',
+                           'nsub_summary': 'nsubOutON_OFF > 0',
+                           'subbasin': 'subbasin_flag = 1'}
+
+        active_modules = []
+
+        for cmod, cond in summary_modules.items():
+            if self._check_condition(cond):
+                active_modules.append(cmod)
+
+        return active_modules
+
+    def _check_condition(self, cstr: str) -> bool:
+        """Takes a string of the form '<control_var> <op> <value>' and checks
+        if the condition is True
+        """
+        if len(cstr) == 0:
+            return True
+
+        var, op, value = cstr.split(' ')
+        value = int(value)
+
+        if self.exists(var):
+            return cond_check[op](self.get(var).values, value)
+        return False
 
     def add(self, name: str, datatype: int):
         """Add a control variable by name.
