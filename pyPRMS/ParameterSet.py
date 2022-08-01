@@ -1,4 +1,5 @@
 
+import operator
 import netCDF4 as nc    # type: ignore
 import numpy as np
 import os
@@ -16,6 +17,10 @@ from pyPRMS.ValidParams import ValidParams
 from pyPRMS.constants import CATEGORY_DELIM, NETCDF_DATATYPES, NHM_DATATYPES, PARAMETERS_XML
 from pyPRMS.constants import DIMENSIONS_XML, VAR_DELIM, HRU_DIMS
 from pyPRMS.prms_helpers import float_to_str
+
+cond_check = {'=': operator.eq,
+              '>': operator.gt,
+              '<': operator.lt}
 
 
 class ParameterSet(object):
@@ -263,7 +268,6 @@ class ParameterSet(object):
         seg_to_hru = self.parameters.seg_to_hru
         hru_to_seg = self.parameters.hru_to_seg
 
-
     def reduce_by_modules(self):
         """Reduce the ParameterSet to the parameters required by the modules
         defined in a control file.
@@ -275,8 +279,55 @@ class ParameterSet(object):
             raise TypeError('Master parameter object is not initialized')
 
         # if self.__master_params is not None and self.__ctl_obj is not None:
-        pset = self.master_parameters.get_params_for_modules(modules=list(self.__ctl_obj.modules.values()))
+        modules_used = set(self.__ctl_obj.modules.values()).union(set(self.__ctl_obj.summary_modules))
+        pset = self.master_parameters.get_params_for_modules(modules=list(modules_used))
         self.reduce_parameters(required_params=pset)
+
+    def missing_params(self):
+        """Get list of parameters that are missing from the parameter set
+        """
+        modules_used = set(self.__ctl_obj.modules.values()).union(set(self.__ctl_obj.summary_modules))
+        pset = self.master_parameters.get_params_for_modules(modules=list(modules_used))
+        cleaned_list = self._trim_req_params(pset)
+
+        if isinstance(cleaned_list, set):
+            final_params = cleaned_list.difference(set(self.parameters.keys()))
+        elif isinstance(cleaned_list, list):
+            final_params = set(cleaned_list).difference(set(self.parameters.keys()))
+        else:
+            raise TypeError('remove_unneeded_parameters() requires a set or list argument')
+        return final_params
+
+    def _trim_req_params(self, required_params):
+        """Reduce a list of parameters by removing those parameters that don't meet
+        secondary requirements.
+        """
+
+        check_list = ['gvr_hru_id', 'obsout_segment', 'rain_code', 'hru_lon']
+
+        parameter_dim_conditions = {'basin_solsta': 'nsol > 0',
+                                    'hru_solsta': 'nsol > 0',
+                                    'rad_conv': 'nsol > 0',
+                                    'humidity_percent': 'nhumid > 0',
+                                    'irr_type': 'nwateruse > 0'}
+
+        for cparam, cond in parameter_dim_conditions.items():
+            if cparam in required_params:
+                if not self._condition_check_dim(cond):
+                    # print(f'Removing {cparam}')
+                    required_params.remove(cparam)
+
+        for xx in check_list:
+            if xx in required_params:
+                if xx == 'gvr_hru_id':
+                    if self.__ctl_obj is not None:
+                        if not self.__ctl_obj.exists('mapOutON_OFF') or self.__ctl_obj.get('mapOutON_OFF').values == 0:
+                            required_params.remove(xx)
+                elif xx in ['hru_lat', 'hru_lon', ]:
+                    if not self.parameters.exists(xx):
+                        required_params.remove(xx)
+
+        return required_params
 
     def reduce_parameters(self, required_params: Union[Set, List]):
         """Remove parameters that are not needed.
@@ -289,48 +340,31 @@ class ParameterSet(object):
         :raises TypeError: if required_params is not a set or list
         """
 
-        # WARNING: 2019-04-23 PAN
-        #          Very hacky way to remove parameters that shouldn't always get
-        #          included. Need to figure out a better way.
-        check_list = ['basin_solsta', 'gvr_hru_id', 'hru_solsta',
-                      'humidity_percent', 'irr_type', 'obsout_segment',
-                      'rad_conv', 'rain_code', 'hru_lon']
-
-        for xx in check_list:
-            if xx in required_params:
-                if xx in ['basin_solsta', 'hru_solsta', 'rad_conv']:
-                    if not self.dimensions.exists('nsol'):
-                        required_params.remove(xx)
-                    elif self.dimensions.get('nsol') == 0:
-                        required_params.remove(xx)
-                elif xx == 'humidity_percent':
-                    if not self.dimensions.exists('nhumid'):
-                        required_params.remove(xx)
-                    elif self.dimensions.get('nhumid') == 0:
-                        required_params.remove(xx)
-                elif xx == 'irr_type':
-                    if not self.dimensions.exists('nwateruse'):
-                        required_params.remove(xx)
-                    elif self.dimensions.get('nwateruse') == 0:
-                        required_params.remove(xx)
-                elif xx == 'gvr_hru_id':
-                    if self.__ctl_obj is not None:
-                        if not self.__ctl_obj.exists('mapOutON_OFF') or self.__ctl_obj.get('mapOutON_OFF').values == 0:
-                            required_params.remove(xx)
-                elif xx in ['hru_lat', 'hru_lon', ]:
-                    if not self.parameters.exists(xx):
-                        required_params.remove(xx)
+        cleaned_list = self._trim_req_params(required_params)
 
         if isinstance(required_params, set):
-            remove_list = set(self.parameters.keys()).difference(required_params)
+            remove_list = set(self.parameters.keys()).difference(cleaned_list)
         elif isinstance(required_params, list):
-            remove_list = set(self.parameters.keys()).difference(set(required_params))
+            remove_list = set(self.parameters.keys()).difference(set(cleaned_list))
         else:
             raise TypeError('remove_unneeded_parameters() requires a set or list argument')
 
         for rparam in remove_list:
             self.parameters.remove(rparam)
 
+    def _condition_check_dim(self, cstr: str) -> bool:
+        """Takes a string of the form '<control_var> <op> <value>' and checks
+        if the condition is True
+        """
+        if len(cstr) == 0:
+            return False
+
+        var, op, value = cstr.split(' ')
+        value = int(value)
+
+        if self.dimensions.exists(var):
+            return cond_check[op](self.dimensions.get(var), value)
+        return False
 
     def remove_by_global_id(self, hrus: Optional[List] = None,
                             segs: Optional[List] = None):
@@ -353,7 +387,6 @@ class ParameterSet(object):
             if self.__dimensions.exists('ngw'):
                 self.__dimensions['ngw'].size -= len(hrus)
 
-
     def remove_poi(self, poi: str):
         """Remove POIs by gage_id.
 
@@ -371,7 +404,6 @@ class ParameterSet(object):
             # All POIs were removed
             self.__dimensions['npoigages'].size = 0
             self.__dimensions['nobs'].size = 0
-
 
     def write_parameters_xml(self, output_dir: str):
         """Write global parameters.xml file.
