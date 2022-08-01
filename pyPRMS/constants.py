@@ -49,12 +49,16 @@ ctl_order = ['start_time', 'end_time', 'executable_desc', 'executable_model', 'm
 ctl_variable_modules = ['et_module', 'precip_module', 'soilzone_module', 'solrad_module',
                         'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module']
 
+ctl_summary_modules = ['basin_sum', 'basin_summary', 'map_results',
+                       'nhru_summary', 'nsegment_summary', 'nsub_summary', 'subbasin']
+
 ctl_implicit_modules = {'basin_module': 'basin',
                         'intcp_module': 'intcp',
                         'obs_module': 'obs',
                         'snow_module': 'snowcomp',
                         'gw_module': 'gwflow',
                         'soilzone_module': 'soilzone'}
+
 
 # Constants related to parameter files
 DIMENSIONS_HDR = 'Dimensions'
