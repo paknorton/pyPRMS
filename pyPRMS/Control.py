@@ -190,21 +190,22 @@ class Control(object):
         return mod_dict
 
     @property
-    def summary_modules(self) -> List[str]:
+    def additional_modules(self) -> List[str]:
         """Get list of summary modules in PRMS
         """
 
-        summary_modules = {'basin_sum': '',
-                           'basin_summary': 'basinOutON_OFF > 0',
-                           'map_results': 'mapOutON_OFF > 0',
-                           'nhru_summary': 'nhruOutON_OFF > 0',
-                           'nsegment_summary': 'nsegmentOutON_OFF > 0',
-                           'nsub_summary': 'nsubOutON_OFF > 0',
-                           'subbasin': 'subbasin_flag = 1'}
+        module_requirements = {'basin_sum': '',
+                               'basin_summary': 'basinOutON_OFF > 0',
+                               'map_results': 'mapOutON_OFF > 0',
+                               'nhru_summary': 'nhruOutON_OFF > 0',
+                               'nsegment_summary': 'nsegmentOutON_OFF > 0',
+                               'nsub_summary': 'nsubOutON_OFF > 0',
+                               'stream_temp': 'stream_temp_flag > 0',
+                               'subbasin': 'subbasin_flag = 1'}
 
         active_modules = []
 
-        for cmod, cond in summary_modules.items():
+        for cmod, cond in module_requirements.items():
             if self._check_condition(cond):
                 active_modules.append(cmod)
 
