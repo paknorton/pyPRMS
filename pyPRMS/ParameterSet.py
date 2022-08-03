@@ -1,5 +1,6 @@
 
 import operator
+# noinspection PyPep8Naming
 import netCDF4 as nc    # type: ignore
 import numpy as np
 import os
@@ -8,7 +9,7 @@ import sys
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
-from typing import cast, Dict, List, Optional, Sequence, Set, Union
+from typing import cast, List, Optional, Set, Union
 
 from pyPRMS.Control import Control
 from pyPRMS.Parameters import Parameters
@@ -90,6 +91,26 @@ class ParameterSet(object):
         """
 
         return self.__master_params
+
+    @property
+    def missing_params(self) -> Set:
+        """Get list of parameters that are missing from the parameter set
+        """
+
+        if self.__ctl_obj is None or self.master_parameters is None:
+            return set()
+
+        modules_used = set(self.__ctl_obj.modules.values()).union(set(self.__ctl_obj.additional_modules))
+        pset = self.master_parameters.get_params_for_modules(modules=list(modules_used))
+        cleaned_list = self._trim_req_params(pset)
+
+        if isinstance(cleaned_list, set):
+            final_params = cleaned_list.difference(set(self.parameters.keys()))
+        elif isinstance(cleaned_list, list):
+            final_params = set(cleaned_list).difference(set(self.parameters.keys()))
+        else:
+            raise TypeError('remove_unneeded_parameters() requires a set or list argument')
+        return final_params
 
     @property
     def parameters(self) -> Parameters:
@@ -181,6 +202,21 @@ class ParameterSet(object):
 
         assert False, 'ParameterSet._read() must be defined by child class'
 
+    def add_missing_parameters(self):
+        """Adds missing parameters that are required by the selected modules
+        """
+
+        for cparam in list(self.missing_params):
+            self.parameters.add(cparam, info=self.master_parameters[cparam])
+
+            # Start with the parameter having dimension 'one'
+            self.parameters[cparam].dimensions.add('one', size=1)
+
+            self.parameters[cparam].data = [self.master_parameters[cparam].default]
+
+            # Now expand the parameter to its full size
+            self.expand_parameter(cparam)
+
     def degenerate_parameters(self):
         """Print parameters that have fewer dimensions than specified in the master parameters."""
 
@@ -218,7 +254,7 @@ class ParameterSet(object):
                 for kk, vv in new_dims.items():
                     vv.size = self.__dimensions[kk].size
 
-                if set(new_dims.keys()) == set(self.__parameters[name].dimensions.keys()):
+                if self.verbose and set(new_dims.keys()) == set(self.__parameters[name].dimensions.keys()):
                     print(f'Parameter, {name}, already has the maximum number of dimensions')
                     print('    current: ', list(self.__parameters[name].dimensions.keys()))
                     print('  requested: ', list(new_dims.keys()))
@@ -249,24 +285,24 @@ class ParameterSet(object):
                         if self.verbose:
                             print('hru_deplcrv and snarea_curve have been expanded/updated')
 
-    def extract_upstream(self, outlet_segs: List[int] = [],
-                         cutoff_segs: List[int] = [],
-                         noroute_hrus: List[int] = []):
-        """Extract upstream watershed bounded by segment outlets and upstream cutoffs.
-
-        Extracts the watershed (segments and HRUs) upstream of a given stream segment
-
-        :param outlet_segs: list of downstream outlet segments
-        :param cutoff_segs: list of upstream cutoff segments
-        :param noroute_hrus: list of non-routed HRUs to include
-        """
-
-        dag_ds = self.parameters.stream_network()
-
-        dag_ds_subset = self.parameters._get_upstream_subset(dag_ds, cutoff_segs, outlet_segs)
-
-        seg_to_hru = self.parameters.seg_to_hru
-        hru_to_seg = self.parameters.hru_to_seg
+    # def extract_upstream(self, outlet_segs: List[int] = [],
+    #                      cutoff_segs: List[int] = [],
+    #                      noroute_hrus: List[int] = []):
+    #     """Extract upstream watershed bounded by segment outlets and upstream cutoffs.
+    #
+    #     Extracts the watershed (segments and HRUs) upstream of a given stream segment
+    #
+    #     :param outlet_segs: list of downstream outlet segments
+    #     :param cutoff_segs: list of upstream cutoff segments
+    #     :param noroute_hrus: list of non-routed HRUs to include
+    #     """
+    #
+    #     dag_ds = self.parameters.stream_network()
+    #
+    #     dag_ds_subset = self.parameters._get_upstream_subset(dag_ds, cutoff_segs, outlet_segs)
+    #
+    #     seg_to_hru = self.parameters.seg_to_hru
+    #     hru_to_seg = self.parameters.hru_to_seg
 
     def reduce_by_modules(self):
         """Reduce the ParameterSet to the parameters required by the modules
@@ -279,24 +315,9 @@ class ParameterSet(object):
             raise TypeError('Master parameter object is not initialized')
 
         # if self.__master_params is not None and self.__ctl_obj is not None:
-        modules_used = set(self.__ctl_obj.modules.values()).union(set(self.__ctl_obj.summary_modules))
+        modules_used = set(self.__ctl_obj.modules.values()).union(set(self.__ctl_obj.additional_modules))
         pset = self.master_parameters.get_params_for_modules(modules=list(modules_used))
         self.reduce_parameters(required_params=pset)
-
-    def missing_params(self):
-        """Get list of parameters that are missing from the parameter set
-        """
-        modules_used = set(self.__ctl_obj.modules.values()).union(set(self.__ctl_obj.summary_modules))
-        pset = self.master_parameters.get_params_for_modules(modules=list(modules_used))
-        cleaned_list = self._trim_req_params(pset)
-
-        if isinstance(cleaned_list, set):
-            final_params = cleaned_list.difference(set(self.parameters.keys()))
-        elif isinstance(cleaned_list, list):
-            final_params = set(cleaned_list).difference(set(self.parameters.keys()))
-        else:
-            raise TypeError('remove_unneeded_parameters() requires a set or list argument')
-        return final_params
 
     def _trim_req_params(self, required_params):
         """Reduce a list of parameters by removing those parameters that don't meet
@@ -360,10 +381,10 @@ class ParameterSet(object):
             return False
 
         var, op, value = cstr.split(' ')
-        value = int(value)
+        value = int(value)  # type: ignore
 
         if self.dimensions.exists(var):
-            return cond_check[op](self.dimensions.get(var), value)
+            return cond_check[op](self.dimensions.get(var).size, value)
         return False
 
     def remove_by_global_id(self, hrus: Optional[List] = None,
