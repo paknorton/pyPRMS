@@ -324,16 +324,24 @@ class Parameters(object):
                     param_data.index.name = 'hru'
             else:
                 param_data = self.__parameters['nhm_id'].as_dataframe
-        elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
-            try:
-                param_id = self.__parameters['nhm_seg'].as_dataframe
-
-                # Create a DataFrame of the parameter
-                param_data = param_data.merge(param_id, left_index=True, right_index=True)
-                param_data.set_index('nhm_seg', inplace=True)
-            except KeyError:
                 param_data.rename(index={k: k + 1 for k in param_data.index}, inplace=True)
-                param_data.index.name = 'seg'
+                param_data.index.name = 'local_id'
+        elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
+            if name != 'nhm_seg':
+                try:
+                    param_id = self.__parameters['nhm_seg'].as_dataframe
+
+                    # Create a DataFrame of the parameter
+                    param_data = param_data.merge(param_id, left_index=True, right_index=True)
+                    param_data.set_index('nhm_seg', inplace=True)
+                except KeyError:
+                    param_data.rename(index={k: k + 1 for k in param_data.index}, inplace=True)
+                    param_data.index.name = 'seg'
+            else:
+                param_data = self.__parameters['nhm_seg'].as_dataframe
+                param_data.rename(index={k: k + 1 for k in param_data.index}, inplace=True)
+                param_data.index.name = 'local_seg'
+
         elif name == 'snarea_curve':
             # Special handling for snarea_curve parameter
             param_data = pd.DataFrame(cparam.as_dataframe.values.reshape((-1, 11)))
@@ -456,7 +464,7 @@ class Parameters(object):
 
                 crs_proj = get_projection(self.__hru_poly)
 
-                # This takes care of multipolygons that are in the NHM geodatabase/shapefile
+                # Takes care of multipolygons that are in the NHM geodatabase/shapefile
                 geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
 
                 # print('Writing first plot')
@@ -482,6 +490,10 @@ class Parameters(object):
                     cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label='Curve index')
                     cb.ax.tick_params(length=0)
                 elif name == 'soil_type':
+                    tck_arr = np.arange(drange[0], drange[1]+1)
+                    cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label=name)
+                    cb.ax.tick_params(length=0)
+                elif name == 'calibration_status':
                     tck_arr = np.arange(drange[0], drange[1]+1)
                     cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label=name)
                     cb.ax.tick_params(length=0)
@@ -542,11 +554,11 @@ class Parameters(object):
                 if self.__seg_poly is not None:
                     if self.__hru_poly is not None:
                         minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
-                        hru_geoms_exploded = self.__hru_poly.explode().reset_index(level=1, drop=True)
+                        hru_geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
                     else:
                         minx, miny, maxx, maxy = self.__seg_poly.geometry.total_bounds
 
-                    seg_geoms_exploded = self.__seg_poly.explode().reset_index(level=1, drop=True)
+                    seg_geoms_exploded = self.__seg_poly.explode(index_parts=True).reset_index(level=1, drop=True)
 
                     # param_data = self.get_dataframe(name).iloc[:]
 
