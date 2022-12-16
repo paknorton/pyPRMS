@@ -7,7 +7,10 @@ except ImportError:
     pass
 
 import cartopy.crs as ccrs  # type: ignore
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
+
+import os
+os.environ['USE_PYGEOS'] = '0'
 
 import gc
 import geopandas    # type: ignore
@@ -617,6 +620,7 @@ class Parameters(object):
                                                                                         alpha=0.7))
 
                     col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
+                                               cmap=cmap, norm=norm,
                                                **dict(kwargs))
 
                     if mask_defaults is not None:
