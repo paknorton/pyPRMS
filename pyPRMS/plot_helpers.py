@@ -30,10 +30,11 @@ def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_widt
         if geom.has_z:
             a = shapely.geometry.LineString(zip(*geom.xy))
 
-        lines.append(shapely.geometry.LineString(a))
+        lines.append(shapely.geometry.LineString(a).coords)
 
     if vary_width:
         lwidths = ((values / values.max()).to_numpy() + 0.01) * linewidth
+
         if vary_color:
             lines = LineCollection(lines, linewidths=lwidths, cmap=cmap, norm=norm, alpha=alpha)
         else:
@@ -50,7 +51,7 @@ def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_widt
     return lines
 
 
-def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, facecolor=None, edgecolor=None,
+def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, # facecolor=None, edgecolor=None,
                             alpha=1.0, linewidth=1.0, **kwargs):
     """ Plot a collection of Polygon geometries.
     """
@@ -59,24 +60,55 @@ def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, faceco
     patches = []
 
     for poly in geoms:
+        a = np.asarray(poly.exterior.coords)
 
-        a = np.asarray(poly.exterior)
         if poly.has_z:
             a = shapely.geometry.Polygon(zip(*poly.exterior.xy))
 
         patches.append(Polygon(a))
 
-    # patches = PatchCollection(patches, facecolor=facecolor, linewidth=linewidth, edgecolor=edgecolor,
-    #                           alpha=alpha, cmap=cmap, norm=norm)
-    patches = PatchCollection(patches, match_original=False,
-                              edgecolor='face', linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm, **kwargs)
+    # patches = PatchCollection(patches, match_original=False,
+    #                           edgecolor='face', linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm, **kwargs)
     if values is not None:
+        kwargs.pop('facecolor', None)
+        patches = PatchCollection(patches, match_original=False, # edgecolor=edgecolor,
+                                  linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm, **kwargs)
         patches.set_array(values)
-        # patches.set_cmap(cmap)
+    else:
+        kwargs.pop('vary_width', None)
+        kwargs.pop('vary_color', None)
+        patches = PatchCollection(patches, match_original=False, # edgecolor=edgecolor, facecolor=facecolor,
+                                  linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm, **kwargs)
 
     ax.add_collection(patches, autolim=True)
     ax.autoscale_view()
     return patches
+
+
+def get_figsize(extent, init_size=(10, 10), **kwargs):
+    # init_size: tuple of width, height
+    init_width, init_height = init_size
+    minx, maxx, miny, maxy = extent
+
+    wh_ratio = init_width / init_height
+    hw_ratio = init_height / init_width
+
+    xrng = maxx - minx
+    yrng = maxy - miny
+    xy_ratio = xrng / yrng
+    yx_ratio = yrng / xrng
+
+    # print(f'{xrng=}, {yrng=}')
+    # print(f'{xy_ratio=}, {yx_ratio=}')
+
+    if xy_ratio < 1.0:
+        init_width *= xy_ratio
+    elif yx_ratio < 1.0:
+        init_height *= yx_ratio
+
+    # print(f'{init_width=}, {init_height=}')
+
+    return init_width, init_height
 
 
 def get_projection(gdf: geopandas.GeoDataFrame):
