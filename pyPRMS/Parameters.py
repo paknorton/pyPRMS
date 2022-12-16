@@ -6,6 +6,9 @@ try:
 except ImportError:
     pass
 
+import cartopy.crs as ccrs  # type: ignore
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+
 import gc
 import geopandas    # type: ignore
 import networkx as nx   # type: ignore
@@ -25,7 +28,7 @@ import matplotlib.pyplot as plt     # type: ignore
 import matplotlib as mpl        # type: ignore
 
 from pyPRMS.Parameter import Parameter
-from pyPRMS.plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection
+from pyPRMS.plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
 from pyPRMS.Exceptions_custom import ParameterError
 
 
@@ -454,6 +457,7 @@ class Parameters(object):
 
             cmap, norm = set_colormap(name, param_data, min_val=drange[0],
                                       max_val=drange[1], **kwargs)
+            kwargs.pop('cmap', None)
 
             if mask_defaults is not None:
                 cmap.set_bad(mask_defaults, 0.7)
@@ -470,15 +474,38 @@ class Parameters(object):
                 # print('Writing first plot')
                 df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True, how='left')
 
-                fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
+                fig_width, fig_height = get_figsize([minx, maxx, miny, maxy], **dict(kwargs))
+                kwargs.pop('init_size', None)
+
+                fig = plt.figure(figsize=(fig_width, fig_height))
 
                 ax = plt.axes(projection=crs_proj)
                 ax.coastlines()
-                ax.gridlines()
+                gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
+                gl.top_labels = None
+                gl.right_labels = None
+                gl.xformatter = LONGITUDE_FORMATTER
+                gl.yformatter = LATITUDE_FORMATTER
+
                 ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
 
+                if time_index is not None:
+                    plt.title(f'Variable: {name},  Month: {time_index+1}')
+                else:
+                    plt.title(f'Variable: {name}')
+
+                if mask_defaults is not None:
+                    plt.annotate(f'NOTE: Values = {cparam.default} are masked', xy=(0.5, 0.01),
+                                 xycoords='axes fraction', va='center', ha='center',
+                                 fontsize=10, fontweight='bold',
+                                 bbox=dict(boxstyle="round", facecolor=mask_defaults, alpha=1.0))
+
+                # Setup the color bar
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                 mapper.set_array(df_mrg[name])
+                cax = fig.add_axes([ax.get_position().x1 + 0.01,
+                                    ax.get_position().y0, 0.02,
+                                    ax.get_position().height])
 
                 # TODO: 2022-06-17 PAN - Categorical variables require entry in two places.
                 #       The first place is here for labelling and the second place is in
@@ -487,38 +514,25 @@ class Parameters(object):
                 if name == 'hru_deplcrv':
                     # tck_arr = np.arange(param_data.min().min(), param_data.max().max()+1)
                     tck_arr = np.arange(drange[0], drange[1]+1)
-                    cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label='Curve index')
+                    cb = plt.colorbar(mapper, cax=cax, ticks=tck_arr, label='Curve index')
                     cb.ax.tick_params(length=0)
                 elif name == 'soil_type':
                     tck_arr = np.arange(drange[0], drange[1]+1)
-                    cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label=name)
+                    cb = plt.colorbar(mapper, cax=cax, ticks=tck_arr, label=name)
                     cb.ax.tick_params(length=0)
                 elif name == 'calibration_status':
                     tck_arr = np.arange(drange[0], drange[1]+1)
-                    cb = plt.colorbar(mapper, shrink=0.6, ticks=tck_arr, label=name)
+                    cb = plt.colorbar(mapper, cax=cax, ticks=tck_arr, label=name)
                     cb.ax.tick_params(length=0)
                 else:
-                    plt.colorbar(mapper, shrink=0.6, label=cparam.units)
-
-                # if is_monthly:
-                if time_index is not None:
-                    plt.title(f'Variable: {name},  Month: {time_index+1}')
-                else:
-                    plt.title(f'Variable: {name}')
+                    plt.colorbar(mapper, cax=cax, label=cparam.units)
 
                 col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
-                                              **dict(kwargs, cmap=cmap, norm=norm))
-
-                if mask_defaults is not None:
-                    plt.annotate(f'NOTE: Values = {cparam.default} are masked', xy=(0.5, 0.01),
-                                 xycoords='axes fraction', fontsize=12, fontweight='bold',
-                                 bbox=dict(facecolor=mask_defaults, alpha=1.0))
-
-                    # plt.text(x, y, 'Barcelona',fontsize=12,fontweight='bold', ha='left',
-                    #          va='center',color='k', bbox=dict(facecolor='b', alpha=0.2))
+                                              cmap=cmap, norm=norm, **dict(kwargs))
+                # col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
+                #                               **dict(kwargs, cmap=cmap, norm=norm))
 
                 if output_dir is not None:
-                    # if is_monthly:
                     if time_index is not None:
                         # First month
                         plt.savefig(f'{output_dir}/{name}_{time_index+1:02}.png', dpi=150, bbox_inches='tight')
@@ -568,30 +582,42 @@ class Parameters(object):
                     df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key,
                                                       right_index=True, how='left')
 
-                    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
+                    fig_width, fig_height = get_figsize([minx, maxx, miny, maxy], **dict(kwargs))
+                    kwargs.pop('init_size', None)
+
+                    fig = plt.figure(figsize=(fig_width, fig_height))
 
                     ax = plt.axes(projection=crs_proj)
                     ax.coastlines()
-                    ax.gridlines()
+                    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
+                    gl.top_labels = None
+                    gl.right_labels = None
+                    gl.xformatter = LONGITUDE_FORMATTER
+                    gl.yformatter = LATITUDE_FORMATTER
+
                     ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
+
+                    plt.title('Variable: {}'.format(name))
 
                     if kwargs.get('vary_color', True):
                         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                         mapper.set_array(df_mrg[name])
-                        plt.colorbar(mapper, shrink=0.6, label=cparam.units)
-
-                    plt.title('Variable: {}'.format(name))
+                        cax = fig.add_axes([ax.get_position().x1 + 0.01,
+                                            ax.get_position().y0, 0.02,
+                                            ax.get_position().height])
+                        # plt.colorbar(im, cax=cax) # Similar to fig.colorbar(im, cax = cax)
+                        plt.colorbar(mapper, cax=cax, label=cparam.units)   # , shrink=0.6
 
                     # TODO: 2022-06-16 PAN - figure out best way to optionally include HRUs in
                     #       segment plots
-                    # if self.__hru_poly is not None:
-                    #     hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry, **dict(kwargs, cmap=cmap,
-                    #                                                                                norm=norm,
-                    #                                                                                linewidth=0.5,
-                    #                                                                                alpha=0.7))
+                    if self.__hru_poly is not None:
+                        hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry,
+                                                           # linewidth=0.5, alpha=0.7,
+                                                           cmap=cmap, norm=norm, **dict(kwargs, linewidth=0.5,
+                                                                                        alpha=0.7))
 
                     col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
-                                               **dict(kwargs, cmap=cmap, norm=norm))
+                                               **dict(kwargs))
 
                     if mask_defaults is not None:
                         plt.annotate(f'NOTE: Values = {cparam.default} are masked', xy=(0.5, 0.01),
