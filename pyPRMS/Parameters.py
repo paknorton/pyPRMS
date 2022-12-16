@@ -551,12 +551,8 @@ class Parameters(object):
                             df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True,
                                                           how='left')
 
-                            # if is_monthly:
-                            # if time_index is not None:
                             ax.set_title(f'Variable: {name},  Month: {tt+1}')
-
                             col.set_array(df_mrg[name])
-                            # fig
                             plt.savefig(f'{output_dir}/{name}_{tt+1:02}.png', dpi=150, bbox_inches='tight')
                     else:
                         plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
@@ -566,8 +562,7 @@ class Parameters(object):
                     plt.close()
                     gc.collect()
             elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
-                # Plot segment parameters
-                # Get extent information
+                # Plot segment-related parameters
                 if self.__seg_poly is not None:
                     if self.__hru_poly is not None:
                         minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
@@ -577,11 +572,8 @@ class Parameters(object):
 
                     seg_geoms_exploded = self.__seg_poly.explode(index_parts=True).reset_index(level=1, drop=True)
 
-                    # param_data = self.get_dataframe(name).iloc[:]
-
                     crs_proj = get_projection(self.__seg_poly)
 
-                    # print('Writing first plot')
                     df_mrg = seg_geoms_exploded.merge(param_data, left_on=self.__seg_shape_key,
                                                       right_index=True, how='left')
 
@@ -608,16 +600,12 @@ class Parameters(object):
                         cax = fig.add_axes([ax.get_position().x1 + 0.01,
                                             ax.get_position().y0, 0.02,
                                             ax.get_position().height])
-                        # plt.colorbar(im, cax=cax) # Similar to fig.colorbar(im, cax = cax)
                         plt.colorbar(mapper, cax=cax, label=cparam.units)   # , shrink=0.6
 
-                    # TODO: 2022-06-16 PAN - figure out best way to optionally include HRUs in
-                    #       segment plots
                     if self.__hru_poly is not None:
                         hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry,
-                                                           # linewidth=0.5, alpha=0.7,
-                                                           cmap=cmap, norm=norm, **dict(kwargs, linewidth=0.5,
-                                                                                        alpha=0.7))
+                                                           cmap=cmap, norm=norm,
+                                                           **dict(kwargs, linewidth=0.5, alpha=0.7))
 
                     col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
                                                cmap=cmap, norm=norm,

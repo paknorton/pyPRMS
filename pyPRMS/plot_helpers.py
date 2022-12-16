@@ -71,13 +71,13 @@ def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, # face
     #                           edgecolor='face', linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm, **kwargs)
     if values is not None:
         kwargs.pop('facecolor', None)
-        patches = PatchCollection(patches, match_original=False, # edgecolor=edgecolor,
+        patches = PatchCollection(patches, match_original=False,
                                   linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm, **kwargs)
         patches.set_array(values)
     else:
         kwargs.pop('vary_width', None)
         kwargs.pop('vary_color', None)
-        patches = PatchCollection(patches, match_original=False, # edgecolor=edgecolor, facecolor=facecolor,
+        patches = PatchCollection(patches, match_original=False,
                                   linewidth=linewidth, alpha=alpha, cmap=cmap, norm=norm, **kwargs)
 
     ax.add_collection(patches, autolim=True)
@@ -97,7 +97,6 @@ def get_figsize(extent, init_size=(10, 10), **kwargs):
     yrng = maxy - miny
     xy_ratio = xrng / yrng
     yx_ratio = yrng / xrng
-
     # print(f'{xrng=}, {yrng=}')
     # print(f'{xy_ratio=}, {yx_ratio=}')
 
@@ -105,7 +104,6 @@ def get_figsize(extent, init_size=(10, 10), **kwargs):
         init_width *= xy_ratio
     elif yx_ratio < 1.0:
         init_height *= yx_ratio
-
     # print(f'{init_width=}, {init_height=}')
 
     return init_width, init_height
