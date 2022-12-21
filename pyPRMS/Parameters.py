@@ -1,4 +1,21 @@
 
+import os
+os.environ['USE_PYGEOS'] = '0'
+
+import cartopy.crs as ccrs  # type: ignore
+import gc
+import geopandas    # type: ignore
+import matplotlib as mpl        # type: ignore
+import matplotlib.pyplot as plt     # type: ignore
+import networkx as nx   # type: ignore
+import numpy as np
+import pandas as pd     # type: ignore
+
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
+from collections import OrderedDict
+from pyPRMS.Exceptions_custom import ParameterError
+from pyPRMS.Parameter import Parameter
+from pyPRMS.plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
 
 try:
     # NOTE: cached_property is not available in python version < 3.8
@@ -6,33 +23,11 @@ try:
 except ImportError:
     pass
 
-import cartopy.crs as ccrs  # type: ignore
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
-
-import os
-os.environ['USE_PYGEOS'] = '0'
-
-import gc
-import geopandas    # type: ignore
-import networkx as nx   # type: ignore
-import numpy as np
-import pandas as pd     # type: ignore
-from collections import OrderedDict
-# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
-
 try:
     from typing import Optional, Union, Dict, List, Set, Tuple, OrderedDict as OrderedDictType
 except ImportError:
     # pre-python 3.7.2
     from typing import Optional, Union, Dict, List, MutableMapping as OrderedDictType   # type: ignore
-
-import matplotlib.pyplot as plt     # type: ignore
-# import matplotlib.colors as colors
-import matplotlib as mpl        # type: ignore
-
-from pyPRMS.Parameter import Parameter
-from pyPRMS.plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
-from pyPRMS.Exceptions_custom import ParameterError
 
 
 class Parameters(object):
@@ -248,8 +243,6 @@ class Parameters(object):
                     # TODO: Handling bounded parameters needs improvement
                     print(f'    WARNING: Bounded parameter value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
                           f'the valid range of ({pp.default}, {pp.maximum})')
-                    # print(f'    WARNING: Bounded parameter value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
-                    #       f'the valid range of ({pp.default}, {pp.maximum})')
 
             if pp.all_equal():
                 if pp.data.ndim == 2:
@@ -262,19 +255,6 @@ class Parameters(object):
             if pp.name == 'snarea_curve':
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
                     print('  WARNING: snarea_curve has more entries than needed by hru_deplcrv')
-
-    def outlier_ids(self, name) -> List[int]:
-        """Returns list of HRU or segment IDs of invalid parameter values
-
-        :returns: List of HRU or segment IDs
-        """
-        cparam = self.__parameters[name]
-
-        param_data = self.get_dataframe(name)
-        bad_value_ids = param_data[(param_data[name] < cparam.minimum) | (param_data[name] > cparam.maximum)].index.tolist()
-
-        return bad_value_ids
-
 
     def exists(self, name) -> bool:
         """Checks if a parameter name exists.
@@ -398,6 +378,18 @@ class Parameters(object):
 
             else:
                 return param.data[tuple(nhm_idx0), ]
+
+    def outlier_ids(self, name) -> List[int]:
+        """Returns list of HRU or segment IDs of invalid parameter values
+
+        :returns: List of HRU or segment IDs
+        """
+        cparam = self.__parameters[name]
+
+        param_data = self.get_dataframe(name)
+        bad_value_ids = param_data[(param_data[name] < cparam.minimum) | (param_data[name] > cparam.maximum)].index.tolist()
+
+        return bad_value_ids
 
     def plot(self, name: str,
              output_dir: Optional[str] = None,
@@ -644,33 +636,6 @@ class Parameters(object):
             if self.exists(name):
                 del self.__parameters[name]
 
-
-    def remove_poi(self, poi: str):
-        """Remove POIs by gage_id.
-
-        :param poi: POI id to remove
-        """
-
-        # First get array of poi_gage_id indices matching the specified POI IDs
-        poi_ids = self.get('poi_gage_id').data
-        sorter = np.argsort(poi_ids)
-        poi_del_indices = sorter[np.searchsorted(poi_ids, poi, sorter=sorter)]
-
-        poi_parameters = ['poi_gage_id', 'poi_gage_segment', 'poi_type']
-
-        # print(f'POIs to delete: {poi}')
-        # print(f'Current POIs: {poi_ids}')
-        # print(f'Size of poi_del_indices: {poi_del_indices.size}')
-        if self.get('poi_gage_id').dimensions.get('npoigages').size == poi_del_indices.size:
-            # We're trying to remove all the POIs
-            for pp in poi_parameters:
-                self.remove(pp)
-        else:
-            # Remove the matching poi gage entries from each of the poi-related parameters
-            for pp in poi_parameters:
-                self.get(pp).remove_by_index('npoigages', poi_del_indices)
-
-
     def remove_by_global_id(self, hrus: Optional[List[int]] = None,
                             segs: Optional[List[int]] = None):
         """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
@@ -771,22 +736,30 @@ class Parameters(object):
             # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
             # new_deplcrv = pp['hru_deplcrv'].data.tolist()
 
-    def shapefile_segments(self, filename: str,
-                           layer_name: Optional[str] = None,
-                           shape_key: Optional[str] = None):
-        """Read a shapefile or geodatabase that corresponds to stream segments.
+    def remove_poi(self, poi: str):
+        """Remove POIs by gage_id.
 
-        :param filename: name of shapefile or geodatabase
-        :param layer_name: name of layer in geodatabase
-        :param shape_key: name of attribute for key
+        :param poi: POI id to remove
         """
 
-        self.__seg_poly = geopandas.read_file(filename, layer=layer_name)
+        # First get array of poi_gage_id indices matching the specified POI IDs
+        poi_ids = self.get('poi_gage_id').data
+        sorter = np.argsort(poi_ids)
+        poi_del_indices = sorter[np.searchsorted(poi_ids, poi, sorter=sorter)]
 
-        if self.__seg_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
-            print('Overriding USGS aea crs with EPSG:5070')
-            self.__seg_poly.crs = 'EPSG:5070'
-        self.__seg_shape_key = shape_key
+        poi_parameters = ['poi_gage_id', 'poi_gage_segment', 'poi_type']
+
+        # print(f'POIs to delete: {poi}')
+        # print(f'Current POIs: {poi_ids}')
+        # print(f'Size of poi_del_indices: {poi_del_indices.size}')
+        if self.get('poi_gage_id').dimensions.get('npoigages').size == poi_del_indices.size:
+            # We're trying to remove all the POIs
+            for pp in poi_parameters:
+                self.remove(pp)
+        else:
+            # Remove the matching poi gage entries from each of the poi-related parameters
+            for pp in poi_parameters:
+                self.get(pp).remove_by_index('npoigages', poi_del_indices)
 
     def shapefile_hrus(self, filename: str,
                        layer_name: Optional[str] = None,
@@ -804,6 +777,23 @@ class Parameters(object):
             print('Overriding USGS aea crs with EPSG:5070')
             self.__hru_poly.crs = 'EPSG:5070'
         self.__hru_shape_key = shape_key
+
+    def shapefile_segments(self, filename: str,
+                           layer_name: Optional[str] = None,
+                           shape_key: Optional[str] = None):
+        """Read a shapefile or geodatabase that corresponds to stream segments.
+
+        :param filename: name of shapefile or geodatabase
+        :param layer_name: name of layer in geodatabase
+        :param shape_key: name of attribute for key
+        """
+
+        self.__seg_poly = geopandas.read_file(filename, layer=layer_name)
+
+        if self.__seg_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
+            print('Overriding USGS aea crs with EPSG:5070')
+            self.__seg_poly.crs = 'EPSG:5070'
+        self.__seg_shape_key = shape_key
 
     def stream_network(self, tosegment: Optional[str] = 'tosegment_nhm',
                        seg_id: Optional[str] = 'nhm_seg') -> Union[nx.DiGraph, None]:
