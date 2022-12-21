@@ -44,7 +44,7 @@ class ValidParams(Parameters):
     def filename(self, filename: Optional[str] = None):
         """Set the XML file name.
 
-        If no filename is specified an library-internal XML file is read.
+        If no filename is specified a library-internal XML file is read.
 
         :param filename: name of XML parameter file
         """
