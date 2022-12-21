@@ -1,19 +1,17 @@
 
-import operator
-# noinspection PyPep8Naming
 import netCDF4 as nc    # type: ignore
 import numpy as np
+import operator
 import os
 import sys
-# noinspection PyUnresolvedReferences
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
-# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
+
 from typing import cast, List, Optional, Set, Union
 
 from pyPRMS.Control import Control
-from pyPRMS.Parameters import Parameters
 from pyPRMS.Dimensions import Dimensions
+from pyPRMS.Parameters import Parameters
 from pyPRMS.ValidParams import ValidParams
 from pyPRMS.constants import CATEGORY_DELIM, NETCDF_DATATYPES, NHM_DATATYPES, PARAMETERS_XML
 from pyPRMS.constants import DIMENSIONS_XML, VAR_DELIM, HRU_DIMS
