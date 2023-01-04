@@ -558,7 +558,6 @@ class Parameters(object):
                 if self.__seg_poly is not None:
                     if self.__hru_poly is not None:
                         minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
-                        hru_geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
                     else:
                         minx, miny, maxx, maxy = self.__seg_poly.geometry.total_bounds
 
@@ -595,6 +594,7 @@ class Parameters(object):
                         plt.colorbar(mapper, cax=cax, label=cparam.units)   # , shrink=0.6
 
                     if self.__hru_poly is not None:
+                        hru_geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
                         hru_poly = plot_polygon_collection(ax, hru_geoms_exploded.geometry,
                                                            cmap=cmap, norm=norm,
                                                            **dict(kwargs, linewidth=0.5, alpha=0.7))
