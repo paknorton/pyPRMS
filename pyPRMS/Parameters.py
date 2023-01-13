@@ -294,7 +294,7 @@ class Parameters(object):
         cparam = self.__parameters[name]
         param_data = cparam.as_dataframe
 
-        if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
+        if cparam.is_hru_param():
             if name != 'nhm_id':
                 try:
                     param_id = self.__parameters['nhm_id'].as_dataframe
@@ -302,17 +302,14 @@ class Parameters(object):
                     # Create a DataFrame of the parameter
                     param_data = param_data.merge(param_id, left_index=True, right_index=True)
                     param_data.set_index('nhm_id', inplace=True)
+                    param_data.index.name = 'nhm_id'
                 except KeyError:
                     # If there is no nhm_id parameter then just return the
                     # requested parameter by itself
-                    param_data.rename(index={k: k + 1 for k in param_data.index},
-                                      inplace=True)
-                    param_data.index.name = 'hru'
+                    pass
             else:
                 param_data = self.__parameters['nhm_id'].as_dataframe
-                param_data.rename(index={k: k + 1 for k in param_data.index}, inplace=True)
-                param_data.index.name = 'local_id'
-        elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
+        elif cparam.is_seg_param():
             if name != 'nhm_seg':
                 try:
                     param_id = self.__parameters['nhm_seg'].as_dataframe
@@ -320,14 +317,11 @@ class Parameters(object):
                     # Create a DataFrame of the parameter
                     param_data = param_data.merge(param_id, left_index=True, right_index=True)
                     param_data.set_index('nhm_seg', inplace=True)
+                    param_data.index.name = 'nhm_seg'
                 except KeyError:
-                    param_data.rename(index={k: k + 1 for k in param_data.index}, inplace=True)
-                    param_data.index.name = 'seg'
+                    pass
             else:
                 param_data = self.__parameters['nhm_seg'].as_dataframe
-                param_data.rename(index={k: k + 1 for k in param_data.index}, inplace=True)
-                param_data.index.name = 'local_seg'
-
         elif name == 'snarea_curve':
             # Special handling for snarea_curve parameter
             param_data = pd.DataFrame(cparam.as_dataframe.values.reshape((-1, 11)))
