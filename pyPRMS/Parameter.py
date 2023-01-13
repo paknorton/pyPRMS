@@ -124,8 +124,19 @@ class Parameter(object):
         else:
             # Assuming 1D array
             df = pd.DataFrame(self.data, columns=[self.name])
-            # df.rename(columns={0: name}, inplace=True)
 
+        df.rename(index={k: k + 1 for k in df.index}, inplace=True)
+
+        if self.is_hru_param():
+            idx_name = 'model_hru_idx'
+        elif self.is_seg_param():
+            idx_name = 'model_seg_idx'
+        elif self.is_poi_param():
+            idx_name = 'model_poi_idx'
+        else:
+            idx_name = 'idx'
+
+        df.index.name = idx_name
         return df
 
     @property
@@ -522,6 +533,14 @@ class Parameter(object):
         """
 
         return not set(self.__dimensions.keys()).isdisjoint({'nhru', 'ngw', 'nssr'})
+
+    def is_poi_param(self) -> bool:
+        """Test if parameter is dimensioned by nsegment
+
+        :returns: true if parameter is dimensioned by npoigages
+        """
+
+        return not set(self.__dimensions.keys()).isdisjoint({'npoigages'})
 
     def is_seg_param(self) -> bool:
         """Test if parameter is dimensioned by nsegment.
