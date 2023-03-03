@@ -5,11 +5,9 @@ import pandas as pd     # type: ignore
 from typing import cast, Optional
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
 
-from pyPRMS.constants import DATATYPE_TO_DTYPE
-from pyPRMS.prms_helpers import read_xml
-from pyPRMS.ParameterSet import ParameterSet
-from pyPRMS.constants import NHM_DATATYPES
-from pyPRMS.constants import PARAMETERS_XML, DIMENSIONS_XML
+from ..prms_helpers import read_xml
+from .ParameterSet import ParameterSet
+from ..constants import DATATYPE_TO_DTYPE, NHM_DATATYPES, PARAMETERS_XML, DIMENSIONS_XML
 
 
 class ParamDb(ParameterSet):

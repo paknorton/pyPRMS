@@ -3,9 +3,9 @@
 import argparse
 import os
 
-from pyPRMS.ParamDb import ParamDb
-from pyPRMS.ParamDbRegion import ParamDbRegion
-from pyPRMS.ParameterFile import ParameterFile
+from ..parameters.ParamDb import ParamDb
+from ..parameters.ParamDbRegion import ParamDbRegion
+from ..parameters.ParameterFile import ParameterFile
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 

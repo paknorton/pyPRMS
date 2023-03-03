@@ -5,7 +5,7 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages   # type: ignore
 
 # To use a consistent encoding
 from codecs import open
@@ -66,6 +66,7 @@ setup(
         # 'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
 
     # What does your project relate to?

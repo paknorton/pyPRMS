@@ -1,6 +1,6 @@
 
 import pytest
-from pyPRMS.Parameter import Parameter
+from pyPRMS.parameters.Parameter import Parameter
 
 
 class TestParameter:

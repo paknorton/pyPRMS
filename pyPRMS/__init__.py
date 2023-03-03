@@ -1,9 +1,23 @@
 
-# This software is preliminary or provisional and is subject to revision. It is being provided to meet the need for
-# timely best science. The software has not received final approval by the U.S. Geological Survey (USGS).
-# No warranty, expressed or implied, is made by the USGS or the U.S. Government as to the functionality of the
-# software and related material nor shall the fact of release constitute any such warranty. The software is
-# provided on the condition that neither the USGS nor the U.S. Government shall be held liable for any damages
-# resulting from the authorized or unauthorized use of the software.
+from .control.Control import Control
+from .control.ControlVariable import ControlVariable
+from .control.ControlFile import ControlFile
+from .dimensions.Dimension import Dimension
+from .dimensions.Dimensions import Dimensions, ParamDimensions
+from .parameters.Parameter import Parameter
+from .parameters.Parameters import Parameters
+from .parameters.ParameterSet import ParameterSet
+from .parameters.ParameterFile import ParameterFile
+from .parameters.ParamDb import ParamDb
+from .parameters.ParameterNetCDF import ParameterNetCDF
+from .parameters.ValidParams import ValidParams
+from .cbh.CbhAscii import CbhAscii
+from .cbh.CbhNetcdf import CbhNetcdf
 
-__version__ = '0.9.3'
+
+from .version import __author__, __author_email__, __version__
+
+__all__ = ['control',
+           'dimensions',
+           'parameters',
+           'cbh', ]

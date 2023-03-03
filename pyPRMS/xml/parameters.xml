@@ -1189,6 +1189,9 @@
         <minimum>bounded</minimum>
         <maximum>nhrucell</maximum>
         <default>0</default>
+        <requires>
+            <control>mapOutON_OFF=1</control>
+        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -1206,6 +1209,9 @@
         <minimum>0.0</minimum>
         <maximum>1.0</maximum>
         <default>0.0</default>
+        <requires>
+            <control>mapOutON_OFF=1</control>
+        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -1223,6 +1229,9 @@
         <minimum>0</minimum>
         <maximum>7</maximum>
         <default>0</default>
+        <requires>
+            <control>mapOutON_OFF=1</control>
+        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -1241,6 +1250,9 @@
         <minimum>0</minimum>
         <maximum>3</maximum>
         <default>0</default>
+        <requires>
+            <control>mapOutON_OFF=1</control>
+        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -1259,6 +1271,9 @@
         <minimum>1</minimum>
         <maximum>50000</maximum>
         <default>1</default>
+        <requires>
+            <control>mapOutON_OFF=1</control>
+        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -2485,10 +2500,8 @@
         <maximum>24.0</maximum>
         <default>1.0</default>
         <modules>
-            <module>routing</module>
-            <module>streamflow</module>
             <module>muskingum</module>
-            <module>muskingum_mann</module>
+            <module>muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2505,10 +2518,9 @@
         <maximum>nsegment</maximum>
         <default>0</default>
         <modules>
-            <module>routing</module>
-            <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_lake</module>
             <module>muskingum_mann</module>
         </modules>
         <dimensions>
@@ -2526,10 +2538,9 @@
         <maximum>nsegment</maximum>
         <default>0</default>
         <modules>
-            <module>routing</module>
-            <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_lake</module>
             <module>muskingum_mann</module>
         </modules>
         <dimensions>
@@ -2547,10 +2558,9 @@
         <maximum>nobs</maximum>
         <default>0</default>
         <modules>
-            <module>routing</module>
-            <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_lake</module>
             <module>muskingum_mann</module>
         </modules>
         <dimensions>
@@ -2568,10 +2578,9 @@
         <maximum>nobs</maximum>
         <default>0</default>
         <modules>
-            <module>routing</module>
-            <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_lake</module>
             <module>muskingum_mann</module>
         </modules>
         <dimensions>
@@ -2589,10 +2598,9 @@
         <maximum>111</maximum>
         <default>0</default>
         <modules>
-            <module>routing</module>
-            <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_lake</module>
             <module>muskingum_mann</module>
         </modules>
         <dimensions>
@@ -2610,10 +2618,9 @@
         <maximum>1000000</maximum>
         <default>0</default>
         <modules>
-            <module>routing</module>
-            <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_lake</module>
             <module>muskingum_mann</module>
         </modules>
         <dimensions>
@@ -2631,10 +2638,9 @@
         <maximum>1000000</maximum>
         <default>0</default>
         <modules>
-            <module>routing</module>
-            <module>streamflow</module>
             <module>strmflow_in_out</module>
             <module>muskingum</module>
+            <module>muskingum_lake</module>
             <module>muskingum_mann</module>
         </modules>
         <dimensions>
@@ -2652,8 +2658,6 @@
         <maximum>0.5</maximum>
         <default>0.2</default>
         <modules>
-            <module>routing</module>
-            <module>streamflow</module>
             <module>muskingum</module>
             <module>muskingum_mann</module>
         </modules>
@@ -3553,6 +3557,9 @@
         <minimum>bounded</minimum>
         <maximum>nhru</maximum>
         <default>0</default>
+        <requires>
+            <control>mapOutON_OFF=1</control>
+        </requires>
         <modules>
             <module>soilzone</module>
             <module>map_results</module>

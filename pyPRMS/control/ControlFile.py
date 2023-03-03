@@ -6,9 +6,9 @@
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
 from typing import Optional, Union
-from pyPRMS.constants import DATA_TYPES, VAR_DELIM
-from pyPRMS.Control import Control
-from pyPRMS.Exceptions_custom import ControlError
+from ..constants import DATA_TYPES, VAR_DELIM
+from .Control import Control
+from ..Exceptions_custom import ControlError
 
 
 class ControlFile(Control):

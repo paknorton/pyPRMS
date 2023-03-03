@@ -87,4 +87,4 @@ DIMENSIONS_XML = 'dimensions.xml'
 NETCDF_DATATYPES = {1: 'i4', 2: 'f4', 3: 'f8', 4: 'S1'}
 NHM_DATATYPES = {'I': 1, 'F': 2, 'D': 3, 'S': 4}
 PARNAME_DATATYPES = {'long': 1, 'float': 2, 'double': 3, 'string': 4}
-DATATYPE_TO_DTYPE = {1: int, 2: float, 3: float, 4: np.str_}
+DATATYPE_TO_DTYPE = {1: int, 2: np.float32, 3: np.float64, 4: np.str_}

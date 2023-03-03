@@ -13,9 +13,9 @@ import pandas as pd     # type: ignore
 
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 from collections import OrderedDict
-from pyPRMS.Exceptions_custom import ParameterError
-from pyPRMS.Parameter import Parameter
-from pyPRMS.plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
+from ..Exceptions_custom import ParameterError
+from .Parameter import Parameter
+from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
 
 try:
     # NOTE: cached_property is not available in python version < 3.8

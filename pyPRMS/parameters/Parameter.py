@@ -7,8 +7,8 @@ from typing import Any, cast, NamedTuple, Optional, Union, List
 import xml.etree.ElementTree as xmlET
 
 # from pyPRMS.Exceptions_custom import ConcatError
-from pyPRMS.constants import DATA_TYPES, DATATYPE_TO_DTYPE
-from pyPRMS.Dimensions import ParamDimensions
+from ..constants import DATA_TYPES, DATATYPE_TO_DTYPE
+from ..dimensions.Dimensions import ParamDimensions
 
 
 class Parameter(object):

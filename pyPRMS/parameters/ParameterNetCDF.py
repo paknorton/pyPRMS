@@ -2,7 +2,7 @@
 import xarray as xr
 from typing import Optional
 
-from pyPRMS.ParameterSet import ParameterSet
+from .ParameterSet import ParameterSet
 
 
 NCF_TO_NHM_TYPES = {'int32': 1, 'float32': 2, 'float64': 3, '|S1': 4}

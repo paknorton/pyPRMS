@@ -14,11 +14,11 @@ except ImportError:
     # pre-python 3.7.2
     from typing import Union, Dict, List, MutableMapping as OrderedDictType, Sequence   # type: ignore
 
-from pyPRMS.prms_helpers import version_info
-from pyPRMS.ControlVariable import ControlVariable
-from pyPRMS.Exceptions_custom import ControlError
-from pyPRMS.constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, \
-                             ctl_summary_modules, VAR_DELIM
+from ..prms_helpers import version_info
+from .ControlVariable import ControlVariable
+from ..Exceptions_custom import ControlError
+from ..constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, \
+    VAR_DELIM
 
 cond_check = {'=': operator.eq,
               '>': operator.gt,

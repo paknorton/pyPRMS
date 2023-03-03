@@ -1,7 +1,7 @@
 
-from typing import Optional, Union, List
+from typing import Optional, Union  # , List
 
-from pyPRMS.constants import DIMENSION_NAMES
+from ..constants import DIMENSION_NAMES
 
 
 def _valid_dimension_name(name: str) -> bool:

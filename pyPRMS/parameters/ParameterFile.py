@@ -2,9 +2,9 @@
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
 from typing import List, Optional, Set
 
-from pyPRMS.Exceptions_custom import ParameterError
-from pyPRMS.ParameterSet import ParameterSet
-from pyPRMS.constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
+from ..Exceptions_custom import ParameterError
+from .ParameterSet import ParameterSet
+from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
 
 
 class ParameterFile(ParameterSet):

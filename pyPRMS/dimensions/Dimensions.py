@@ -9,8 +9,8 @@ except ImportError:
 
 import xml.etree.ElementTree as xmlET
 
-from pyPRMS.Dimension import Dimension
-from pyPRMS.prms_helpers import read_xml
+from .Dimension import Dimension
+from ..prms_helpers import read_xml
 
 
 class Dimensions(object):

@@ -1,6 +1,6 @@
 
 import pytest
-from pyPRMS.Dimension import Dimension
+from pyPRMS.dimensions.Dimension import Dimension
 
 
 class TestDimension:

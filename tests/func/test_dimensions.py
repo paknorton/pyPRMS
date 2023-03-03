@@ -1,6 +1,6 @@
 
 import pytest
-from pyPRMS.Dimensions import Dimensions
+from pyPRMS.dimensions.Dimensions import Dimensions
 
 
 @pytest.fixture(scope='class')

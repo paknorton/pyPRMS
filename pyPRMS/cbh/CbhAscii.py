@@ -13,7 +13,7 @@ except ImportError:
 
 
 # from pyPRMS.prms_helpers import dparse
-from pyPRMS.constants import REGIONS
+from ..constants import REGIONS
 
 CBH_VARNAMES = ['prcp', 'tmin', 'tmax']
 CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]

@@ -3,8 +3,8 @@
 import numpy as np
 from typing import Callable, Dict, List, Optional, Sequence, Union
 
-from pyPRMS.constants import DATA_TYPES
-from pyPRMS.Exceptions_custom import ControlError
+from ..constants import DATA_TYPES
+from ..Exceptions_custom import ControlError
 
 class ControlVariable(object):
     """

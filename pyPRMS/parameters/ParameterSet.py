@@ -9,13 +9,13 @@ import xml.etree.ElementTree as xmlET
 
 from typing import cast, List, Optional, Set, Union
 
-from pyPRMS.Control import Control
-from pyPRMS.Dimensions import Dimensions
-from pyPRMS.Parameters import Parameters
-from pyPRMS.ValidParams import ValidParams
-from pyPRMS.constants import CATEGORY_DELIM, NETCDF_DATATYPES, NHM_DATATYPES, PARAMETERS_XML
-from pyPRMS.constants import DIMENSIONS_XML, VAR_DELIM, HRU_DIMS
-from pyPRMS.prms_helpers import float_to_str
+from ..control.Control import Control
+from ..dimensions.Dimensions import Dimensions
+from ..parameters.Parameters import Parameters
+from ..parameters.ValidParams import ValidParams
+from ..constants import CATEGORY_DELIM, NETCDF_DATATYPES, NHM_DATATYPES, PARAMETERS_XML
+from ..constants import DIMENSIONS_XML, VAR_DELIM, HRU_DIMS
+from ..prms_helpers import float_to_str
 
 cond_check = {'=': operator.eq,
               '>': operator.gt,

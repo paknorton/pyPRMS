@@ -7,11 +7,9 @@ from typing import Dict, Iterator, List, Optional, Set
 import numpy as np
 import pandas as pd   # type: ignore
 
-from pyPRMS.prms_helpers import read_xml
-# from pyPRMS.Exceptions_custom import ConcatError, ParameterError
-from pyPRMS.ParameterSet import ParameterSet
-from pyPRMS.constants import REGIONS, NHM_DATATYPES
-from pyPRMS.constants import DATATYPE_TO_DTYPE, PARAMETERS_XML
+from ..prms_helpers import read_xml
+from .ParameterSet import ParameterSet
+from ..constants import REGIONS, NHM_DATATYPES, DATATYPE_TO_DTYPE, PARAMETERS_XML
 
 
 class ParamDbRegion(ParameterSet):

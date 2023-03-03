@@ -3,9 +3,9 @@ import pkgutil
 import xml.etree.ElementTree as xmlET
 from typing import Optional, Sequence, Set, Union
 
-from pyPRMS.Parameters import Parameters
-from pyPRMS.Exceptions_custom import ParameterError
-from pyPRMS.constants import NHM_DATATYPES
+from .Parameters import Parameters
+from ..Exceptions_custom import ParameterError
+from ..constants import NHM_DATATYPES
 
 
 class ValidParams(Parameters):
