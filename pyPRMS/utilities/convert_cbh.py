@@ -5,8 +5,8 @@ import datetime
 import netCDF4
 import os
 
-from ..cbh.CbhAscii import CbhAscii
-from ..parameters.ParamDbRegion import ParamDbRegion
+from pyPRMS import CbhAscii
+from pyPRMS import ParamDbRegion
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
