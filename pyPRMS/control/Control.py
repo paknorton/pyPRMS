@@ -8,17 +8,12 @@ import xml.etree.ElementTree as xmlET
 import numpy as np
 from collections import OrderedDict
 
-try:
-    from typing import Dict, List, Optional, OrderedDict as OrderedDictType, Sequence, Union
-except ImportError:
-    # pre-python 3.7.2
-    from typing import Union, Dict, List, MutableMapping as OrderedDictType, Sequence   # type: ignore
+from typing import Dict, List, Optional, OrderedDict as OrderedDictType, Sequence, Union
 
 from ..prms_helpers import version_info
 from .ControlVariable import ControlVariable
 from ..Exceptions_custom import ControlError
-from ..constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, \
-    VAR_DELIM
+from ..constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, VAR_DELIM
 
 cond_check = {'=': operator.eq,
               '>': operator.gt,
