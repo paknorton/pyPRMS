@@ -40,6 +40,16 @@ def float_to_str(f: float) -> str:
     d1 = ctx.create_decimal(repr(f))
     return format(d1, 'f')
 
+def get_file_iter(filename):
+    '''Reads a file and returns an iterator to the data
+    '''
+
+    infile = open(filename, 'r')
+    rawdata = infile.read().splitlines()
+    infile.close()
+
+    return iter(rawdata)
+
 
 def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
 
