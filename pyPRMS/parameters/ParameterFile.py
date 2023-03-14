@@ -5,6 +5,7 @@ from typing import List, Optional, Set
 from ..Exceptions_custom import ParameterError
 from .ParameterSet import ParameterSet
 from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
+from ..prms_helpers import get_file_iter
 
 
 class ParameterFile(ParameterSet):
@@ -79,11 +80,12 @@ class ParameterFile(ParameterSet):
             print('INFO: Reading parameter file')
 
         # Read the parameter file into memory and parse it
-        infile = open(self.filename, 'r', encoding='ascii')
-        rawdata = infile.read().splitlines()
-        infile.close()
-
-        it = iter(rawdata)
+        it = get_file_iter(self.filename)
+        # infile = open(self.filename, 'r', encoding='ascii')
+        # rawdata = infile.read().splitlines()
+        # infile.close()
+        #
+        # it = iter(rawdata)
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Grab the header stuff first
