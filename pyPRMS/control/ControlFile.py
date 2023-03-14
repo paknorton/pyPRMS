@@ -4,9 +4,11 @@
 # import pkgutil
 # import xml.etree.ElementTree as xmlET
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
+import numpy as np
 
 from typing import Optional, Union
-from ..constants import DATA_TYPES, VAR_DELIM
+from ..constants import DATA_TYPES, PTYPE_TO_DTYPE, VAR_DELIM
+from ..prms_helpers import get_file_iter
 from .Control import Control
 from ..Exceptions_custom import ControlError
 
@@ -60,12 +62,8 @@ class ControlFile(Control):
 
         self.__isloaded = False
 
+        it = get_file_iter(self.filename)
         header_tmp = []
-        infile = open(self.filename, 'r')
-        rawdata = infile.read().splitlines()
-        infile.close()
-
-        it = iter(rawdata)
 
         for fidx, line in enumerate(it):
             if fidx == 0:
@@ -86,23 +84,28 @@ class ControlFile(Control):
                 numval = int(next(it))  # number of values for this variable
                 valuetype = int(next(it))  # Variable type (1 - integer, 2 - float, 4 - character)
 
-                vals = []
+                vals = np.zeros(numval, dtype=PTYPE_TO_DTYPE[valuetype])
 
-                for vv in range(0, numval):
-                    try:
-                        if valuetype == 1:  # integer
-                            vals.append(int(next(it)))
-                        elif valuetype == 2:  # float
-                            vals.append(float(next(it)))
-                        else:  # character
-                            vals.append(next(it))
-                    except ValueError:
-                        print(f'varname: {varname} value type and defined type {DATA_TYPES[valuetype]} don\'t match')
+                for idx in range(0, numval):
+                    # NOTE: string float to int is not OK but float to int is OK
+                    vals[idx] = next(it)
+                    # vals.append(next(it))
+                    # try:
+                    #     if valuetype == 1:  # integer
+                    #         vals.append(int(next(it)))
+                    #     elif valuetype == 2:  # float
+                    #         vals.append(float(next(it)))
+                    #     else:  # character
+                    #         vals.append(next(it))
+                    # except ValueError:
+                    #     print(f'varname: {varname} value type and defined type {DATA_TYPES[valuetype]} don\'t match')
 
-                if len(vals) != numval:
-                    print(f'ERROR: Not enough values provided for {varname}')
-                    print(f'       Expected {numval}, got {len(vals)}')
+                # if len(vals) != numval:
+                #     print(f'ERROR: Not enough values provided for {varname}')
+                #     print(f'       Expected {numval}, got {len(vals)}')
 
+                # After reading expected values make sure there aren't more values
+                # before the next delimiter.
                 try:
                     cnt = numval
                     while next(it) != VAR_DELIM:
@@ -116,12 +119,18 @@ class ControlFile(Control):
                     # Hit the end of the file
                     pass
 
-                try:
-                    self.add(name=varname, datatype=(valuetype))
-                except ControlError:
-                    pass
+                if self.exists(varname):
+                    # All valid variables for the given PRMS version
+                    # were already loaded from XML so skip any control
+                    # file variables that don't already exist.
+                    try:
+                        self.add(name=varname, datatype=(valuetype))
+                    except ControlError:
+                        # Control dict was pre-populated with default variables
+                        # so we ignore the duplicate variable error.
+                        pass
 
-                self.get(varname).values = vals
+                    self.get(varname).values = vals
 
         self.header = header_tmp
         self.__isloaded = True
