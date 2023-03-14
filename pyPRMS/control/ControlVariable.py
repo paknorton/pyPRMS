@@ -3,7 +3,7 @@
 import numpy as np
 from typing import Callable, Dict, List, Optional, Sequence, Union
 
-from ..constants import DATA_TYPES
+from ..constants import DATA_TYPES, PTYPE_TO_DTYPE
 from ..Exceptions_custom import ControlError
 
 class ControlVariable(object):
@@ -119,22 +119,33 @@ class ControlVariable(object):
         :param value: The default value
         """
 
-        # Convert datatype first
-        datatype_conv: Dict[int, Callable] = {1: self.__str_to_int, 2: self.__str_to_float,
-                                              3: self.__str_to_float, 4: self.__str_to_str}
-
         if value is None:
             # Typically value is None when a ControlVariable is first instantiated
             self.__default = value
             return
 
-        if self.__datatype in DATA_TYPES.keys():
-            value = datatype_conv[self.__datatype](value)
-        else:
-            err_txt = f'Defined datatype {self.__datatype} for control variable {self.__name} is not valid'
-            raise TypeError(err_txt)
+        # Convert to correct datatype
+        if not isinstance(value, (list, np.ndarray)):
+            value = [value]
 
-        self.__default = np.array(value)
+        self.__default = np.array(value, dtype=PTYPE_TO_DTYPE[self.__datatype])
+
+        # Convert datatype first
+        # datatype_conv: Dict[int, Callable] = {1: self.__str_to_int, 2: self.__str_to_float,
+        #                                       3: self.__str_to_float, 4: self.__str_to_str}
+        #
+        # if value is None:
+        #     # Typically value is None when a ControlVariable is first instantiated
+        #     self.__default = value
+        #     return
+        #
+        # if self.__datatype in DATA_TYPES.keys():
+        #     value = datatype_conv[self.__datatype](value)
+        # else:
+        #     err_txt = f'Defined datatype {self.__datatype} for control variable {self.__name} is not valid'
+        #     raise TypeError(err_txt)
+        #
+        # self.__default = np.array(value)
 
     @property
     def force_default(self) -> bool:
@@ -250,16 +261,29 @@ class ControlVariable(object):
         # TODO: 2021-09-23 PAN In the case of array variables (e.g. start_time),
         #       check that the new array length is the same as the old array length
         # Convert datatype first
-        datatype_conv: Dict[int, Callable] = {1: self.__str_to_int, 2: self.__str_to_float,
-                                              3: self.__str_to_float, 4: self.__str_to_str}
+        # ptype_to_np = {1: np.int32, 2: np.float32, 3: np.float64, 4: np.chararray}
 
-        if self.__datatype in DATA_TYPES.keys():
-            data = datatype_conv[self.__datatype](data)
+        # datatype_conv: Dict[int, Callable] = {1: self.__str_to_int, 2: self.__str_to_float,
+        #                                       3: self.__str_to_float, 4: self.__str_to_str}
+
+        # if self.__datatype in DATA_TYPES.keys():
+        #     data = datatype_conv[self.__datatype](data)
+        # else:
+        #     raise TypeError(f'Defined datatype {self.__datatype} for parameter {self.__name} is not valid')
+        #
+        # # Convert to ndarray
+        # self.__values = np.array(data)
+
+        if isinstance(data, list):
+            self.__values = np.array(data, dtype=PTYPE_TO_DTYPE[self.__datatype])
+        elif isinstance(data, np.ndarray):
+            if data.dtype == PTYPE_TO_DTYPE[self.__datatype]:
+                self.__values = data
+            else:
+                # Attempt to convert to correct datatype
+                self.__values = np.array(data, dtype=PTYPE_TO_DTYPE[self.__datatype])
         else:
-            raise TypeError(f'Defined datatype {self.__datatype} for parameter {self.__name} is not valid')
-
-        # Convert to ndarray
-        self.__values = np.array(data)
+            self.__values = np.array([data], dtype=PTYPE_TO_DTYPE[self.__datatype])
 
     @staticmethod
     def __str_to_float(data: Union[List[str], str]) -> List[float]:
@@ -270,7 +294,7 @@ class ControlVariable(object):
         :returns: Array of floats
         """
 
-        # Convert provide list of data to float
+        # Convert provided list of data to float
         if isinstance(data, str):
             return [float(data)]
         elif isinstance(data, list):
