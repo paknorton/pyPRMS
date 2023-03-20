@@ -66,6 +66,55 @@ def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') 
     return Version(flds[0], flds[1], flds[2])
 
 
+    def str_to_float(data: Union[List[str], str]) -> List[float]:
+        """Convert strings to floats.
+
+        :param data: data value(s)
+
+        :returns: Array of floats
+        """
+
+        # Convert provided list of data to float
+        if isinstance(data, str):
+            return [float(data)]
+        elif isinstance(data, list):
+            try:
+                return [float(vv) for vv in data]
+            except ValueError as ve:
+                print(ve)
+
+
+    def str_to_int(data: Union[List[str], str]) -> List[int]:
+        """Converts strings to integers.
+
+        :param data: data value(s)
+
+        :returns: array of integers
+        """
+
+        if isinstance(data, str):
+            return [int(data)]
+        elif isinstance(data, list):
+            # Convert list of data to integer
+            try:
+                return [int(vv) for vv in data]
+            except ValueError as ve:
+                print(ve)
+
+
+    def str_to_str(data: Union[List[str], str]) -> List[str]:
+        """Null op for string-to-string conversion.
+
+        :param data: data value(s)
+
+        :returns: unmodified array of data
+        """
+
+        # nop for list of strings
+        if isinstance(data, str):
+            data = [data]
+
+        return data
 # def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
 #
 #     Version = namedtuple('Version', ['major', 'minor', 'revision'])
