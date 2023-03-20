@@ -780,59 +780,59 @@ class Parameter(object):
             # Returns a list of indices where the data elements match value
             return np.where(self.__data == value)[0]
 
-    @staticmethod
-    def __str_to_float(data: List[str]) -> List[float]:
-        """Convert strings to a floats.
-
-        :param data: list of data
-
-        :returns: array of floats
-        """
-
-        # Convert provide list of data to float
-        return [float(vv) for vv in data]
-        # try:
-        #     return [float(vv) for vv in data]
-        # except ValueError as ve:
-        #     print(ve)
-
-    @staticmethod
-    def __str_to_int(data: List[str]) -> List[int]:
-        """Converts strings to integers.
-
-        :param data: list of data
-
-        :returns: array of integers
-        """
-
-        # Convert list of data to integer
-        try:
-            return [int(vv) for vv in data]
-        except ValueError:
-            # Perhaps it's a float, try converting to float and then integer
-            tmp = [float(vv) for vv in data]
-            return [int(vv) for vv in tmp]
-
-    @staticmethod
-    def __str_to_str(data: List[str]) -> List[str]:
-        """Null op for string-to-string conversion.
-
-        :param data: list of data
-
-        :returns: unmodified array of data
-        """
-
-        # nop for list of strings
-        # 2019-05-22 PAN: For python 3 force string type to byte
-        #                 otherwise they are treated as unicode
-        #                 which breaks the write_netcdf() routine.
-        # 2019-06-26 PAN: Removed the encode because it broke writing the ASCII
-        #                 parameter files. Instead the conversion to ascii is
-        #                 handled in the write_netcdf routine of ParameterSet
-        # data = [dd.encode() for dd in data]
-        if not all(isinstance(dd, str) for dd in data):
-            return [str(vv) for vv in data]
-        return data
+    # @staticmethod
+    # def __str_to_float(data: List[str]) -> List[float]:
+    #     """Convert strings to a floats.
+    #
+    #     :param data: list of data
+    #
+    #     :returns: array of floats
+    #     """
+    #
+    #     # Convert provide list of data to float
+    #     return [float(vv) for vv in data]
+    #     # try:
+    #     #     return [float(vv) for vv in data]
+    #     # except ValueError as ve:
+    #     #     print(ve)
+    #
+    # @staticmethod
+    # def __str_to_int(data: List[str]) -> List[int]:
+    #     """Converts strings to integers.
+    #
+    #     :param data: list of data
+    #
+    #     :returns: array of integers
+    #     """
+    #
+    #     # Convert list of data to integer
+    #     try:
+    #         return [int(vv) for vv in data]
+    #     except ValueError:
+    #         # Perhaps it's a float, try converting to float and then integer
+    #         tmp = [float(vv) for vv in data]
+    #         return [int(vv) for vv in tmp]
+    #
+    # @staticmethod
+    # def __str_to_str(data: List[str]) -> List[str]:
+    #     """Null op for string-to-string conversion.
+    #
+    #     :param data: list of data
+    #
+    #     :returns: unmodified array of data
+    #     """
+    #
+    #     # nop for list of strings
+    #     # 2019-05-22 PAN: For python 3 force string type to byte
+    #     #                 otherwise they are treated as unicode
+    #     #                 which breaks the write_netcdf() routine.
+    #     # 2019-06-26 PAN: Removed the encode because it broke writing the ASCII
+    #     #                 parameter files. Instead the conversion to ascii is
+    #     #                 handled in the write_netcdf routine of ParameterSet
+    #     # data = [dd.encode() for dd in data]
+    #     if not all(isinstance(dd, str) for dd in data):
+    #         return [str(vv) for vv in data]
+    #     return data
 
     # def concat(self, data_in):
     #     """Takes a list of parameter data and concatenates it to the end of the existing parameter data.
