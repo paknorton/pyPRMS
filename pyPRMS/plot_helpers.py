@@ -18,6 +18,20 @@ import pyproj as prj
 import shapely
 
 
+def read_gis(filename: str, layer_name: str):
+    """Read a shapefile or geodatabase that corresponds to HRUs.
+
+    :param filename: name of shapefile or geodatabase
+    """
+
+    gis_obj = geopandas.read_file(filename, layer=layer_name)
+
+    if gis_obj.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
+        print('Overriding USGS aea crs with EPSG:5070')
+        gis_obj.crs = 'EPSG:5070'
+    return gis_obj
+
+
 def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_width=False, vary_color=True, colors=None,
                          alpha=1.0, linewidth=1.0, **kwargs):
     """ Plot a collection of line geometries.
