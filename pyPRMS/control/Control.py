@@ -61,6 +61,7 @@ class Control(object):
 
             self.add(name=name, datatype=datatype)
 
+            # TODO: this shouldn't be here
             if name in ['start_time', 'end_time']:
                 # Hack to handle PRMS approach to dates
                 dt = elem.find('default').text.split('-')
@@ -77,6 +78,7 @@ class Control(object):
             if elem.find('force_default') is not None:
                 self.get(name).force_default = elem.find('force_default').text
 
+            # Possible valid values for variable
             outvals = {}
             for cvals in elem.findall('./values'):
                 self.get(name).value_repr = cvals.attrib.get('type')
@@ -116,8 +118,8 @@ class Control(object):
         for dv in self.__control_vars.keys():
             cvar = self.get(dv)
 
-            if cvar.value_repr == 'parameter' and (isinstance(cvar.values, int) or isinstance(cvar.values, np.int64)):
-                # dynamic parameter flags should always be integers
+            if cvar.value_repr == 'parameter' and (isinstance(cvar.values, np.int32) or isinstance(cvar.values, np.int64)):
+                # Dynamic parameter flags should always be integers
                 if cvar.values > 0:
                     dyn_params.extend(cvar.associated_values)
                     # dyn_params.append(self.get(dv).associated_values)
@@ -189,6 +191,7 @@ class Control(object):
         """Get list of summary modules in PRMS
         """
 
+        # TODO: module_requirements should be added to metadata?
         module_requirements = {'basin_sum': '',
                                'basin_summary': 'basinOutON_OFF > 0',
                                'map_results': 'mapOutON_OFF > 0',

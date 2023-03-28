@@ -87,22 +87,8 @@ class ControlFile(Control):
                 vals = np.zeros(numval, dtype=PTYPE_TO_DTYPE[valuetype])
 
                 for idx in range(0, numval):
-                    # NOTE: string float to int is not OK but float to int is OK
+                    # NOTE: string-float to int works but float to int does not
                     vals[idx] = next(it)
-                    # vals.append(next(it))
-                    # try:
-                    #     if valuetype == 1:  # integer
-                    #         vals.append(int(next(it)))
-                    #     elif valuetype == 2:  # float
-                    #         vals.append(float(next(it)))
-                    #     else:  # character
-                    #         vals.append(next(it))
-                    # except ValueError:
-                    #     print(f'varname: {varname} value type and defined type {DATA_TYPES[valuetype]} don\'t match')
-
-                # if len(vals) != numval:
-                #     print(f'ERROR: Not enough values provided for {varname}')
-                #     print(f'       Expected {numval}, got {len(vals)}')
 
                 # After reading expected values make sure there aren't more values
                 # before the next delimiter.
@@ -112,6 +98,7 @@ class ControlFile(Control):
                         cnt += 1
 
                     if cnt > numval:
+                        # TODO: This should raise an error?
                         print(f'WARNING: Too many values specified for {varname}')
                         print(f'      {numval} expected, {cnt} given')
                         print(f'       Keeping first {numval} values')
