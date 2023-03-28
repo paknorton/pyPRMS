@@ -14,6 +14,7 @@ from .parameters.ParameterNetCDF import ParameterNetCDF
 from .parameters.ValidParams import ValidParams
 from .cbh.CbhAscii import CbhAscii
 from .cbh.CbhNetcdf import CbhNetcdf
+from .Streamflow import Streamflow
 
 
 from .version import __author__, __author_email__, __version__
@@ -37,4 +38,5 @@ __all__ = ['control',
            'ParamDb',
            'ParamDbRegion',
            'ParameterNetCDF',
+           'Streamflow',
            'ValidParams']
