@@ -218,17 +218,23 @@ class ParameterSet(object):
     def degenerate_parameters(self):
         """Print parameters that have fewer dimensions than specified in the master parameters."""
 
+        result = []
+
         if self.__master_params is not None:
             for kk, vv in self.parameters.items():
                 try:
                     if set(vv.dimensions.keys()) != set(self.__master_params[kk].dimensions.keys()):
                         if not (set(self.__master_params[kk].dimensions.keys()).issubset(set(HRU_DIMS)) and
                                 set(vv.dimensions.keys()).issubset(HRU_DIMS)):
-                            print(f'Parameter, {kk}, is degenerate')
-                            print('  parameter: ', list(vv.dimensions.keys()))
-                            print('     master: ', list(self.__master_params[kk].dimensions.keys()))
+                            result.append(kk)
+                            if self.verbose:
+                                print(f'Parameter, {kk}, is degenerate')
+                                print('  parameter: ', list(vv.dimensions.keys()))
+                                print('     master: ', list(self.__master_params[kk].dimensions.keys()))
                 except ValueError:
-                    print(f'ERROR: Parameter, {kk}, is not a valid PRMS parameter')
+                    if self.verbose:
+                        print(f'ERROR: Parameter, {kk}, is not a valid PRMS parameter')
+        return result
 
     def expand_parameter(self, name: str):
         """Expand an existing parameter.
