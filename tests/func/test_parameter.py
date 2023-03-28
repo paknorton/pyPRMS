@@ -26,6 +26,8 @@ class TestParameter:
             aparam.dimensions.add(name='ngw', size=2)
 
     def test_add_data_int_to_str(self):
+        # Integer data added to a string parameter should be converted
+        # to an array of strings.
         aparam = Parameter(name='someparam')
         aparam.dimensions.add(name='nhru', size=4)
         aparam.datatype = 4
@@ -35,6 +37,7 @@ class TestParameter:
 
     @pytest.mark.parametrize('dtype', [1, 2, 3])
     def test_add_data_bad_convert_raises(self, dtype):
+        # Trying to add string data to numeric datatypes should cause an error
         aparam = Parameter(name='someparam')
         aparam.dimensions.add(name='nhru', size=4)
         aparam.datatype = dtype
