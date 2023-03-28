@@ -43,10 +43,20 @@ class ControlVariable(object):
         self.__values: Union[np.ndarray, None] = None
 
     def __str__(self) -> str:
-        outstr = f'name: {self.name}\ndatatype: {self.datatype}\n'
+        outstr = f'name: {self.name}\n'
+        outstr += f'datatype: {self.datatype} ({DATA_TYPES[self.datatype]})\n'
 
+        outstr += f'description: {self.description}\n'
         # if self.default is not None:
-        outstr += f'default: {self.default}\n'
+        outstr += f'default value: {self.default}\n'
+
+        if self.value_repr:
+            outstr += f'values represent: {self.value_repr}\n'
+
+        if self.valid_values:
+            outstr += f'valid_values: \n'
+            for kk, vv in self.valid_values.items():
+                outstr += f'   {kk}: {vv}\n'
 
         outstr += 'Size of data: '
         if self.values is not None:
@@ -58,12 +68,12 @@ class ControlVariable(object):
 
     @property
     def associated_values(self) -> List[str]:
-        """Get list of control variable names which are associated with this
-        control variable.
+        """Get list of valid values for a control variable.
 
-        :returns: Associated control variables
+        :returns: Control variable valid values
         """
 
+        # TODO: this function should be renamed
         assoc_vals = []
         if self.__valid_values is not None:
             # if self.size > 1:
@@ -148,6 +158,13 @@ class ControlVariable(object):
         # self.__default = np.array(value)
 
     @property
+    def description(self):
+        return self.__description
+
+    @description.setter
+    def description(self,value):
+        self.__description = value
+    @property
     def force_default(self) -> bool:
         """Get logical value which indicates whether the default value for a
         control variable should always be used instead of the current value.
@@ -189,7 +206,7 @@ class ControlVariable(object):
 
     @property
     def valid_values(self) -> Union[Dict, None]:
-        """Get the values that are valid for the control variable.
+        """Return the values that are valid for the control variable.
 
         :returns: Valid values for the control variable
         """
@@ -284,55 +301,4 @@ class ControlVariable(object):
                 self.__values = np.array(data, dtype=PTYPE_TO_DTYPE[self.__datatype])
         else:
             self.__values = np.array([data], dtype=PTYPE_TO_DTYPE[self.__datatype])
-
-    @staticmethod
-    def __str_to_float(data: Union[List[str], str]) -> List[float]:
-        """Convert strings to floats.
-
-        :param data: data value(s)
-
-        :returns: Array of floats
-        """
-
-        # Convert provided list of data to float
-        if isinstance(data, str):
-            return [float(data)]
-        elif isinstance(data, list):
-            try:
-                return [float(vv) for vv in data]
-            except ValueError as ve:
-                print(ve)
-
-    @staticmethod
-    def __str_to_int(data: Union[List[str], str]) -> List[int]:
-        """Converts strings to integers.
-
-        :param data: data value(s)
-
-        :returns: array of integers
-        """
-
-        if isinstance(data, str):
-            return [int(data)]
-        elif isinstance(data, list):
-            # Convert list of data to integer
-            try:
-                return [int(vv) for vv in data]
-            except ValueError as ve:
-                print(ve)
-
-    @staticmethod
-    def __str_to_str(data: Union[List[str], str]) -> List[str]:
-        """Null op for string-to-string conversion.
-
-        :param data: data value(s)
-
-        :returns: unmodified array of data
-        """
-
-        # nop for list of strings
-        if isinstance(data, str):
-            data = [data]
-
-        return data
 
