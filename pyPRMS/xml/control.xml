@@ -4,7 +4,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Switch to specify whether or not Animation File(s) are generated (0=no; 1=yes)</desc>
+        <desc>Switch to specify whether or not Animation File(s) are generated</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -14,7 +14,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Switch to specify whether or not basin summary output files are generated (0=no; 1=yes)</desc>
+        <desc>Switch to specify whether or not basin summary output files are generated</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -39,7 +39,7 @@
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Output frequency and type (1=daily; 2=monthly; 3=both; 4=mean monthly; 5=mean yearly; 6=yearly)</desc>
+        <desc>Output frequency and type</desc>
         <values type="interval">
             <value name="1">daily</value>
             <value name="2">monthly</value>
@@ -57,7 +57,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if HRU cascades are computed (0=no; 1=yes)</desc>
+        <desc>Flag to indicate if HRU cascades are computed</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -67,17 +67,18 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if GWR cascades are computed (0=no; 1=yes; 2 = GWR cascades are set equal to the HRU cascades and parameters gw_up_id, gw_strmseg_down_in, gw_down_id, and gw_pct_up are not required)</desc>
+        <desc>Flag to indicate if GWR cascades are computed</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
+            <value name="2">GWR cascades are set equal to the HRU cascades and parameters gw_up_id, gw_strmseg_down_in, gw_down_id, and gw_pct_up are not required</value>
         </values>
     </control_param>
     <control_param name="cbh_binary_flag" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to specify whether to input CBH files in a binary format using the samer order of values as the text file version (0=no; 1=yes)</desc>
+        <desc>Flag to specify whether to input CBH files in a binary format using the samer order of values as the text file version</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -87,7 +88,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if CBH values are validated each time step (0=no; 1=yes)</desc>
+        <desc>Flag to indicate if CBH values are validated each time step</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -97,7 +98,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Switch to specify whether or not common-separated values (CSV) summary output files are generated (0=no; 1=yes)</desc>
+        <desc>Switch to specify whether or not common-separated values (CSV) summary output files are generated</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -114,7 +115,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if depression-storage simulation is computed (0=no; 1=yes)</desc>
+        <desc>Flag to indicate if depression-storage simulation is computed</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -124,7 +125,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate to use time series of surface-depression transfer flow rates from the dprst_transfer_file (0=no; 1=yes)</desc>
+        <desc>Flag to indicate to use time series of surface-depression transfer flow rates from the dprst_transfer_file</desc>
         <values type="flag">
             <value name="0">no</value>
             <value name="1">yes</value>
@@ -134,7 +135,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of plant-canopy density values are input in a Dynamic Parameter File(s) (0=no; 1=file covden_sum_dynamic; 2=file covden_win_dynamic; 3=both)</desc>
+        <desc>Flag to indicate if a time series of plant-canopy density values are input in a Dynamic Parameter File(s)</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">covden_sum</value>
@@ -146,7 +147,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of plant-canopy type values are input in Dynamic Parameter File covtype_dynamic (0=no; 1=yes)</desc>
+        <desc>Flag to indicate if a time series of plant-canopy type values are input in Dynamic Parameter File covtype_dynamic</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">cov_type</value>
@@ -156,7 +157,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of surface-depression values are input in a Dynamic Parameter File(s) (0=no; 1=file dprst_frac_dynamic; 2=file dprst_depth_dynamic; 3=both)</desc>
+        <desc>Flag to indicate if a time series of surface-depression values are input in a Dynamic Parameter File(s)</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">dprst_frac</value>
@@ -168,17 +169,17 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of transpiration start Julian day values are input in a Dynamic Parameter File(s) (0=no; 1 =file fallfrost_dynamic)</desc>
+        <desc>Flag to indicate if a time series of transpiration start Julian day values are input in a Dynamic Parameter File(s)</desc>
         <values type="parameter">
             <value name="0">off</value>
-            <value name="1">fall_frost</value>
+            <value name="1">file fallfrost_dynamic</value>
         </values>
     </control_param>
     <control_param name="dyn_imperv_flag" version="5.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of impervious values are input in a Dynamic Parameter File(s) (0=no; 1=file imperv_frac_dynamic; 2=file imperv_stor_dynamic; 3=both)</desc>
+        <desc>Flag to indicate if a time series of impervious values are input in a Dynamic Parameter File(s)</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">hru_percent_imperv</value>
@@ -190,7 +191,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of plant canopy interception values are input in a Dynamic Parameter File(s) (0=no; 1=file wrain_intcp_dynamic; 2=file srain_intcp_dynamic; 4=file snow_intcp_dynamic; additive combinations)</desc>
+        <desc>Flag to indicate if a time series of plant canopy interception values are input in a Dynamic Parameter File(s)</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">wrain_intcp</value>
@@ -206,13 +207,18 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of potential ET coefficient values are input in Dynamic Parameter File potetcoef_dynamic to update coefficients for the specified month for the selected potential ET module specified by control parameter et_module (0=no; 1=parameter jh_coef, pt_alpha, hs_krs, hamon_coef, epan_coef, potet_cbh_adj, and pm_n_coef used in potet_jh, potet_pt, potet_hs, potet_hamon, potet_pan, climate_hru, and potet_pm modules, respectively; 2=parameter jh_coef_hru, pm_d_coef used in potet_jh and potet_pm modules, respectively)</desc>
+        <desc>Flag to indicate if a time series of potential ET coefficient values are input in Dynamic Parameter File potetcoef_dynamic to update coefficients for the specified month for the selected potential ET module specified by control parameter et_module</desc>
+        <values type="parameter">
+            <value name="0">off</value>
+            <value name="1">jh_coef, pt_alpha, hs_krs, hamon_coef, epan_coef, potet_cbh_adj, and pm_n_coef (potet_jh, potet_pt, potet_hs, potet_hamon, potet_pan, climate_hru, and potet_pm modules)</value>
+            <value name="2">jh_coef_hru, pm_d_coef (used in potet_jh and potet_pm modules)</value>
+        </values>
     </control_param>
     <control_param name="dyn_radtrncf_flag" version="5.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of solar radiation values are input in  Dynamic Parameter File radtrncf_dynamic (0=no; 1=yes)</desc>
+        <desc>Flag to indicate if a time series of solar radiation values are input in  Dynamic Parameter File radtrncf_dynamic</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">rad_trncf</value>
@@ -232,7 +238,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of soil-water capacity values are input in a Dynamic Parameter File(s) (0=no; 1=file soilmoist_dynamic only, 2=file soilrechr_dynamic only; 3=both)</desc>
+        <desc>Flag to indicate if a time series of soil-water capacity values are input in a Dynamic Parameter File(s)</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">soil_moist</value>
@@ -244,7 +250,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of transpiration start Julian day values are input in a Dynamic Parameter File(s) (0=no; 1=file springfrost_dynamic)</desc>
+        <desc>Flag to indicate if a time series of transpiration start Julian day values are input in a Dynamic Parameter File(s)</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">spring_frost</value>
@@ -254,7 +260,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of fraction of surface runoff from the impervious portion of an HRU are input in Dynamic Parameter File sro2dprst_imperv_dynamic (0=no; 1=yes)</desc>
+        <desc>Flag to indicate if a time series of fraction of surface runoff from the impervious portion of an HRU are input in Dynamic Parameter File</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">sro_to_dprst_imperv</value>
@@ -264,7 +270,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of fraction of surface runoff from the pervious portion of an HRU are input in Dynamic Parameter File sro2dprst_perv_dyn (0=no; 1=yes)</desc>
+        <desc>Flag to indicate if a time series of fraction of surface runoff from the pervious portion of an HRU are input in Dynamic Parameter File</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">sro_to_dprst_perv</value>
@@ -274,7 +280,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of transpiration month values are input in a Dynamic Parameter File(s) (0=no; 1=file transpbeg_dynamic; 2=file transpend_dynamic only, 3=both)</desc>
+        <desc>Flag to indicate if a time series of transpiration month values are input in a Dynamic Parameter File(s)</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">transp_beg</value>
@@ -302,7 +308,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate to use external transfer flow rates from the external_transfer_file (0=no; 1=yes)</desc>
+        <desc>Flag to indicate to use external transfer flow rates from the external_transfer_file</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -312,13 +318,18 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if GWR swales are allowed (0=no; 1=groundwater flow goes to groundwater sink; 3=groundwater flow goes to stream segment specified using parameter hru_segment</desc>
+        <desc>Flag to indicate if GWR swales are allowed</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">groundwater flow goes to groundwater sink</value>
+            <value name="3">groundwater flow goes to stream segment specified using parameter hru_segment</value>
+        </values>
     </control_param>
     <control_param name="gwr_transferON_OFF">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate to use groundwater transfer flow rates from the gwr_transfer_file (0=no; 1=yes)</desc>
+        <desc>Flag to indicate to use groundwater transfer flow rates from the gwr_transfer_file</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -345,7 +356,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate to use lake HRU transfer flow rates from the lake_transfer_file (0=no; 1=yes)</desc>
+        <desc>Flag to indicate to use lake HRU transfer flow rates from the lake_transfer_file</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -355,7 +366,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Switch to specify whether or not mapped output file(s) by a specified number of columns (parameter ncol) of daily, monthly, yearly, or total simulation results is generated (0=no; 1=yes)</desc>
+        <desc>Switch to specify whether or not mapped output file(s) by a specified number of columns (parameter ncol) of daily, monthly, yearly, or total simulation results is generated</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -387,10 +398,11 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Switch to specify whether or not nhru summary output files are generated (0=no; 1=yes)</desc>
+        <desc>Switch to specify whether or not nhru summary output files are generated</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
+            <value name="2">on; use nhm_id for header</value>
         </values>
     </control_param>
     <control_param name="nhruOutVars" deprecated="6.0">
@@ -403,7 +415,7 @@
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Format of values</desc>
         <values type="method">
             <value name="1">Scientific notation with four significant digits</value>
             <value name="2">Two decimal places</value>
@@ -420,7 +432,7 @@
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Output frequency and type (1=daily; 2=monthly; 3=both; 4=mean monthly; 5=mean yearly; 6=yearly)</desc>
+        <desc>Output frequency and type</desc>
         <values type="interval">
             <value name="1">daily</value>
             <value name="2">monthly</value>
@@ -448,6 +460,18 @@
             <variable name="nhruOutON_OFF"/>
         </related_variables>
     </control_param>
+    <control_param name="nhruOutVar_names" deprecated="6.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>nhruOutVars</numvals>
+        <desc>List of variable names for which output is written to nhru summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName. The suffix of the files is based on the value of nhruOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
+        <related_variables>
+            <variable name="nhruOutVars"/>
+            <variable name="nhruOutON_OFF"/>
+            <variable name="nhruOut_freq"/>
+            <variable name="nhruOut_format"/>
+        </related_variables>
+    </control_param>
     <control_param name="selectDatesFileName" version="5.2" deprecated="6.0">
         <default>selectDates.in</default>
         <type>4</type>
@@ -467,23 +491,24 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Switch to specify whether nsegment summary output files are generated</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
+            <value name="2">yes and use values of nhm_seg as column heading</value>
         </values>
     </control_param>
     <control_param name="nsegmentOutVars" version="5.0" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Number of variables to include in nsegment summary output file(s)</desc>
     </control_param>
     <control_param name="nsegmentOut_format" version="5.0" deprecated="6.0">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Format of values</desc>
         <values type="method">
             <value name="1">Scientific notation with four significant digits</value>
             <value name="2">Two decimal places</value>
@@ -500,7 +525,7 @@
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Output frequency and type</desc>
         <values type="interval">
             <value name="1">daily</value>
             <value name="2">monthly</value>
@@ -524,7 +549,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Switch to specify whether or not nsub summary output files are generated (0=no; 1=yes)</desc>
+        <desc>Switch to specify whether or not nsub summary output files are generated</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -540,7 +565,7 @@
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Format of values</desc>
         <values type="method">
             <value name="1">Scientific notation with four significant digits</value>
             <value name="2">Two decimal places</value>
@@ -557,7 +582,7 @@
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Output frequency and type (1=daily; 2=monthly; 3=both; 4=mean monthly; 5=mean yearly; 6=yearly)</desc>
+        <desc>Output frequency and type</desc>
         <values type="interval">
             <value name="1">daily</value>
             <value name="2">monthly</value>
@@ -575,7 +600,7 @@
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to specify whether or not the variable orad is specified as the last column of the swrad_day CBH file (0=no; 1=yes)</desc>
+        <desc>Flag to specify whether or not the variable orad is specified as the last column of the swrad_day CBH file</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -585,7 +610,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Switch to specify whether or not combined basin, nhru, nsegment summary output files are generated (0=no; 1=yes)</desc>
+        <desc>Switch to specify whether or not combined basin, nhru, nsegment summary output files are generated</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -595,7 +620,12 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if selected parameter values validation checks are treated as warnings or errors (0=no; 1=yes; 2=check parameters and then stop)</desc>
+        <desc>Flag to indicate if selected parameter values validation checks are treated as warnings or errors</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+            <value name="2">check parameters and then stop</value>
+        </values>
     </control_param>
     <control_param name="print_debug">
         <default>0</default>
@@ -620,7 +650,7 @@
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Number of years to simulate before writing mapped results, Basin, nhru, nsub, or nsegment Summary Output Files</desc>
         <version>
             <added>5.0</added>
         </version>
@@ -629,7 +659,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to determine if an Initial Conditions File will be generated at the end of simulation (0=no; 1=yes)</desc>
+        <desc>Flag to determine if an Initial Conditions File will be generated at the end of simulation</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -639,7 +669,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate to use stream segment transfer flow rates from the segment_transfer_file (0=no; 1=yes)</desc>
+        <desc>Flag to indicate to use stream segment transfer flow rates from the segment_transfer_file</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -649,16 +679,21 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Switch to specify whether or not the Statistics Variables File is generated (0=no; 1=statvar text format; 2=CSV format)</desc>
+        <desc>Switch to specify whether or not the Statistics Variables File is generated</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">statvar text format</value>
+            <value name="2">CSV format</value>
+        </values>
     </control_param>
     <control_param name="stream_temp_shade_flag">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Flag to indicate how shade is used in the stream_temp module</desc>
         <values type="flag">
-            <value name="0">off</value>
-            <value name="1">on</value>
+            <value name="0">Compute shade</value>
+            <value name="1">Specified constant</value>
         </values>
     </control_param>
     <control_param name="strmtemp_humidity_flag">
@@ -676,7 +711,7 @@
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if internal subbasin are computed (0=no; 1=yes)</desc>
+        <desc>Flag to indicate if internal subbasin are computed</desc>
         <values type="flag">
             <value name="0">off</value>
             <value name="1">on</value>
@@ -685,13 +720,13 @@
     <control_param name="end_time">
         <default>1980-12-31</default>
         <type>1</type>
-        <numvals>1</numvals>
+        <numvals>6</numvals>
         <desc>Simulation end date and time specified in order in the control item as: year, month, day, hour, minute, second</desc>
     </control_param>
     <control_param name="start_time">
         <default>1980-1-1</default>
         <type>1</type>
-        <numvals>1</numvals>
+        <numvals>6</numvals>
         <desc>Simulation start date and time specified in order in the control item as: year, month, day, hour, minute, second</desc>
     </control_param>
     <control_param name="initial_deltat">
@@ -707,7 +742,7 @@
         <desc>Root pathname for Animation Files(s) to which a filename suffix based on dimension name associated with selected variables is appended</desc>
     </control_param>
     <control_param name="basinOutBaseFileName" version="5.0" deprecated="6.0">
-        <default>none</default>
+        <default>String to define the prefix for each basin summary output file</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>String to define the prefix for each basin summary output file.</desc>
@@ -764,6 +799,16 @@
         <type>4</type>
         <numvals>1</numvals>
         <desc>Module name for potential evapotranspiration method (climate_hru, potet_jh, potet_hamon, potet_hs, potet_pt, potet_pm, potet_pm_sta, or potet_pan)</desc>
+        <values type="module">
+            <value name="climate_hru">Reads distributed potential evapotranspiration values for each HRU directly from pre-processed files.</value>
+            <value name="potet_hamon">Computes the potential evapotranspiration by using the Hamon formulation (Hamon, 1961).</value>
+            <value name="potet_hs">Computes the potential evapotranspiration by using the Hargreaves-Samani formulation (Hargreaves and Samani, 1982).</value>
+            <value name="potet_jh">Computes the potential evapotranspiration by using the Jensen-Haise formulation (Jensen and Haise, 1963).</value>
+            <value name="potet_pan">Computes the potential evapotranspiration for each HRU by using pan-evaporation data.</value>
+            <value name="potet_pm">Computes the potential evapotranspiration by using the Penman-Monteith formulation (Penman, 1948; Monteith, 1965); requires windspeed and humidity specified in CBH Files.</value>
+            <value name="potet_pm_sta">Computes the potential evapotranspiration by using the Penman-Monteith formulation (Penman, 1948; Monteith, 1965); requires windspeed and humidity specified in the Data File.</value>
+            <value name="potet_pt">Computes the potential evapotranspiration by using the Priestley-Taylor formulation (Priestley and Taylor, 1972).</value>
+        </values>
     </control_param>
     <control_param name="executable_desc">
         <default>MOWS</default>
@@ -826,7 +871,15 @@
         <default>PRMS5</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate the simulation mode (PRMS=PRMS; FROST=growing season for each HRU; WRITE_CLIMATE=write CBH files of minimum and maximum air temperature (variables tminf and tmaxf-Fahrenheit); precipitation (variable hru_ppt-inches); solar radiation (variable swrad-Langleys); potential ET (variable potet-inches); and/or transpiration flag (variable transp_on-none); POTET=simulate to potential ET; TRANSPIRE=simulate to transpiration period; DOCUMENTATION=write files of all declared parameters and variables in the executable)</desc>
+        <desc>Flag to indicate the simulation mode</desc>
+        <values type="flag">
+            <value name="PRMS">PRMS</value>
+            <value name="FROST">growing season for each HRU</value>
+            <value name="WRITE_CLIMATE">write CBH files of minimum and maximum air temperature (variables tminf and tmaxf-Fahrenheit); precipitation (variable hru_ppt-inches); solar radiation (variable swrad-Langleys); potential ET (variable potet-inches); and/or transpiration flag (variable transp_on)</value>
+            <value name="POTET">simulate to potential ET</value>
+            <value name="TRANSPIRE">simulate to transpiration period</value>
+            <value name="DOCUMENTATION">write files of all declared parameters and variables in the executable</value>
+        </values>
     </control_param>
     <control_param name="model_output_file">
         <default>prms.out</default>
@@ -838,25 +891,25 @@
         <default>nhru_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>String to define the prefix for each nhru summary output file.</desc>
+        <desc>String to define the prefix for each nhru summary output file</desc>
     </control_param>
     <control_param name="nsegmentOutBaseFileName" deprecated="6.0">
         <default>nsegment_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>String to define the prefix for each nsegment summary output file</desc>
     </control_param>
     <control_param name="nsubOutBaseFileName" version="5.0" deprecated="6.0">
         <default>nsub_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>String to define the prefix for each nsub summary output file.</desc>
+        <desc>String to define the prefix for each nsub summary output file</desc>
     </control_param>
     <control_param name="outVar_base_filename" version="6.0">
         <default>summary</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>String to define the prefix for each combined summary output file.</desc>
+        <desc>String to define the prefix for each combined summary output file</desc>
     </control_param>
     <control_param name="outVar_names" version="6.0">
         <default>none</default>
@@ -893,7 +946,16 @@
         <default>precip_1sta</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Module name for precipitation-distribution method (climate_hru, ide_dist, precip_1sta, precip_dist2, precip_laps, or xyz_dist)</desc>
+        <desc>Module name for precipitation-distribution method</desc>
+        <values type="module">
+            <value name="climate_hru">Reads distributed precipitation values for each HRU directly from pre-processed files.</value>
+            <value name="ide_dist">Determines the form of precipitation and distributes precipitation and temperatures to each HRU on the basis of measurements at stations with closest elevation or shortest distance to the respective HRU.</value>
+            <value name="precip_1sta">Determines the form of precipitation and distributes it to each HRU by using monthly correction factors to account for differences in altitude, spatial variation, topography, and measurement gage efficiency and observed data from one station. Note, each HRU uses data from a single station, but, multiple stations can be used in a model with each HRU assigned data from one of those stations.</value>
+            <value name="precip_dist2">Determines the form of precipitation and distributes it to each HRU by using an inverse distance weighting scheme.</value>
+            <value name="precip_laps">Determines the form of precipitation and distributes it to each HRU by using monthly lapse rates.</value>
+            <value name="precip_map">Distributes precipitation and determines form to each HRU by using time series precipitation data using an area-weighted method and correction factors to each HRU.</value>
+            <value name="xyz_dist">Determines the form of precipitation and distributes precipitation and temperatures to each HRU by using a multiple linear regression of measured data from a group of measurement stations or from atmospheric model simulation.</value>
+        </values>
     </control_param>
     <control_param name="radtrncf_dynamic" version="5.0">
         <default>dyn_rad_trncf.param</default>
@@ -913,7 +975,7 @@
         <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Pathname of the time series of pre-processed values for dynamic parameter snarea_thresh</desc>
     </control_param>
     <control_param name="snow_intcp_dynamic" version="5.0">
         <default>dyn_snow_intcp.param</default>
@@ -940,13 +1002,21 @@
         <default>soilzone</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Module name for soil zone method</desc>
+        <values type="module">
+            <value name="soilzone">Computes inflows to and outflows from the soil zone of each HRU and includes inflows from infiltration, groundwater, and upslope HRUs, and outflows to gravity drainage, interflow, and surface runoff to down-slope HRUs.</value>
+        </values>
     </control_param>
     <control_param name="solrad_module">
         <default>ddsolrad</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Module name for solar-radiation-distribution method (ccsolrad or ddsolrad)</desc>
+        <desc>Module name for solar-radiation-distribution method</desc>
+        <values type="module">
+            <value name="ccsolrad">Distributes solar radiation to each HRU and estimates missing solar radiation data using a relation between solar radiation and cloud cover.</value>
+            <value name="climate_hru">Reads distributed solar radiation values for each HRU directly from pre-processed files.</value>
+            <value name="ddsolrad">Distributes solar radiation to each HRU and estimates missing solar radiation data using a maximum temperature per degree-day relation.</value>
+        </values>
     </control_param>
     <control_param name="springfrost_dynamic" version="5.0">
         <default>dyn_spring_frost.param</default>
@@ -980,7 +1050,11 @@
         <default>srunoff_smidx</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Module name for surface-runoff/infiltration computation method (srunoff_carea or srunoff_smidx)</desc>
+        <desc>Module name for surface-runoff/infiltration computation method</desc>
+        <values type="module">
+            <value name="srunoff_carea">Computes surface runoff and infiltration for each HRU by using a linear variable-source-area method allowing for cascading flow.</value>
+            <value name="srunoff_smidx">Computes surface runoff and infiltration for each HRU by using a nonlinear variable-source-area method allowing for cascading flow.</value>
+        </values>
     </control_param>
     <control_param name="stat_var_file" deprecated="6.0">
         <default>statvar.out</default>
@@ -994,11 +1068,11 @@
         <numvals>1</numvals>
         <desc>Module name for streamflow routing simulation method</desc>
         <values type="module">
-            <value name="muskingum">Muskingum module</value>
-            <value name="muskingum_lake" version="5.0">Muskingum lake module</value>
-            <value name="muskingum_mann" version="5.1.0">Muskingum Mann module</value>
-            <value name="strmflow">Streamflow module</value>
-            <value name="strmflow_in_out">Streamflow in-out module</value>
+            <value name="muskingum">Computes flow in the stream network using the Muskingum routing method (Linsley and others, 1982).</value>
+            <value name="muskingum_lake" version="5.0">Computes flow in the stream network using the Muskingum routing method and flow and storage in on-channel lake using several methods.</value>
+            <value name="muskingum_mann" version="5.1.0">Computes flow in the stream network using the Muskingum routing method with Manning’s N equation.</value>
+            <value name="strmflow">Computes daily streamflow as the sum of surface runoff, shallow-subsurface flow (interflow), detention reservoir flow, and groundwater flow.</value>
+            <value name="strmflow_in_out">Routes water between segments in the stream network by setting the outflow to the inflow.</value>
         </values>
     </control_param>
     <control_param name="swrad_day">
@@ -1013,20 +1087,21 @@
         <numvals>1</numvals>
         <desc>Module name for temperature-distribution method (climate_hru, temp_1sta, temp_dist2, temp_laps, ide_dist, or xyz_dist)</desc>
         <values type="module">
-            <value name="climate_hru">Climate-by-HRU module</value>
-            <value name="ide_dist">IDE distribution module</value>
-            <value name="temp_dist2">Temperature 2-station distribution module</value>
-            <value name="temp_laps">Temperature laps module</value>
-            <value name="temp_sta" version="5.0">Temperature station module</value>
+            <value name="climate_hru">Reads distributed minimum and maximum air temperature values for each HRU directly from pre-processed files</value>
+            <value name="ide_dist">Determines the form of precipitation and distributes precipitation and temperatures to each HRU on the basis of measurements at stations with closest elevation or shortest distance to the respective HRU</value>
+            <value name="temp_dist2">Distributes maximum and minimum temperatures to each HRU by using a basin-wide lapse rate applied to the temperature data, adjusted for distance, measured at each station</value>
+            <value name="temp_laps">Distributes maximum and minimum temperatures to each HRU by computing a daily lapse rate with temperature data measured at a base station and a lapse station with differing altitudes</value>
+            <value name="temp_map">Distributes maximum and minimum temperatures to each HRU by using time series temperature data using an area-weighted method and correction factors to each HRU</value>
+            <value name="temp_sta" version="5.0">Distributes maximum and minimum temperatures to each HRU by using temperature data measured at one station, similar to temp_1sta except there is no lapse rate</value>
             <value name="temp_1sta">Temperature 1-station module</value>
-            <value name="xyz_dist">Temperature xyz module</value>
+            <value name="xyz_dist">Determines the form of precipitation and distributes precipitation and temperatures to each HRU by using a multiple linear regression of measured data from a group of measurement stations or from atmospheric model simulation</value>
         </values>
     </control_param>
     <control_param name="tmax_day">
         <default>tmax.day</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Pathname of the CBH file of pre-processed maximum air temperature input data for each HRU to specify variable tmaxf-degrees Fahrenheit </desc>
+        <desc>Pathname of the CBH file of pre-processed maximum air temperature input data for each HRU to specify variable tmaxf-degrees Fahrenheit</desc>
     </control_param>
     <control_param name="tmin_day">
         <default>tmin.day</default>
@@ -1038,19 +1113,24 @@
         <default>transp.day</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Pathname of the CBH file of pre-processed transpiration on or off flag for each HRU file to specify variable transp_on-none</desc>
+        <desc>Pathname of the CBH file of pre-processed transpiration on or off flag for each HRU file to specify variable transp_on</desc>
     </control_param>
     <control_param name="transp_module">
         <default>transp_tindex</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Module name for transpiration simulation method (climate_hru, transp_frost, or transp_tindex)</desc>
+        <desc>Module name for transpiration simulation method</desc>
+        <values type="module">
+            <value name="climate_hru">Reads distributed transpiration values for each HRU directly from pre-processed files.</value>
+            <value name="transp_frost">Determines whether the current time step is in a period of active transpiration by the killing frost method.</value>
+            <value name="transp_tindex">Determines whether the current time step is in a period of active transpiration by the temperature index method.</value>
+        </values>
     </control_param>
     <control_param name="transp_on_dynamic">
         <default>dyn_transp_on.param</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Pathname of the time series of pre-processed values used to set values of transp_on parameter</desc>
     </control_param>
     <control_param name="transpbeg_dynamic" version="5.0">
         <default>dyn_transp_beg.param</default>
@@ -1089,7 +1169,7 @@
         <desc>Pathname of the time series of pre-processed values for dynamic parameter wrain_intcp </desc>
     </control_param>
     <control_param name="aniOutVar_names" deprecated="6.0">
-        <default>none</default>
+        <default>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</desc>
@@ -1107,40 +1187,34 @@
         <desc>Pathname(s) for measured input Data File(s), typically a single Data File is specified</desc>
     </control_param>
     <control_param name="dispVar_element" deprecated="6.0">
-        <default>none</default>
+        <default>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable’s dimension size)</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable's dimension size)</desc>
     </control_param>
     <control_param name="dispVar_names" deprecated="6.0">
-        <default>none</default>
+        <default>List of variable names for which plots are output to the runtime graph</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
     <control_param name="dispVar_plot" deprecated="6.0">
-        <default>none</default>
+        <default>List of variable names for which plots are output to the runtime graph</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
     <control_param name="mapOutVar_names" deprecated="6.0">
-        <default>none</default>
+        <default>List of variable names for which output is written to mapped output files(s); variables must be of type real or double</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which output is written to mapped output files(s); variables must be of type real or double.</desc>
-    </control_param>
-    <control_param name="nhruOutVar_names" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>1</numvals>
-        <desc>List of variable names for which output is written to nhru summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName. The suffix of the files is based on the value of nhruOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
     </control_param>
     <control_param name="nsegmentOutVar_names" version="5.0" deprecated="6.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>List of variable names for which output is written to nsegment summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsegmentOutBaseFileName; variables must be of type real or double; the suffix of the files is based on the value of nsegmentOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv</desc>
     </control_param>
     <control_param name="nsubOutVar_names" version="5.0" deprecated="6.0">
         <default>none</default>
