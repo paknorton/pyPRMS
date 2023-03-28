@@ -4,6 +4,7 @@ from .control.ControlVariable import ControlVariable
 from .control.ControlFile import ControlFile
 from .dimensions.Dimension import Dimension
 from .dimensions.Dimensions import Dimensions, ParamDimensions
+from .summary.OutputVariables import OutputVariables
 from .parameters.Parameter import Parameter
 from .parameters.Parameters import Parameters
 from .parameters.ParameterSet import ParameterSet
@@ -30,6 +31,7 @@ __all__ = ['control',
            'ControlVariable',
            'Dimension',
            'Dimensions',
+           'OutputVariables',
            'ParamDimensions',
            'Parameter',
            'Parameters',
