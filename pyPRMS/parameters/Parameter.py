@@ -199,9 +199,16 @@ class Parameter(object):
                   f'values; using first value only.')
             data_np = np.array(data_np[0], ndmin=1)
         else:
-            err_txt = f'{self.name}: Number of dimensions for new data ({data_np.ndim}) ' + \
-                      f'doesn\'t match old ({self.ndims})'
-            raise IndexError(err_txt)
+            if data_np.size == 1:
+                # Incoming data is scalar but it should be an array; expand to the expected dims/size
+                new_sizes = [vv.size for vv in self.dimensions.values()]
+                data_np = np.broadcast_to(data_np, new_sizes)
+                print(f'{self.name}: Scalar was broadcast to {new_sizes}')
+            else:
+                print(f'{self.size=}; {data_np.size=}')
+                err_txt = f'{self.name}: Number of dimensions for new data ({data_np.ndim}) ' + \
+                          f'doesn\'t match old ({self.ndims})'
+                raise IndexError(err_txt)
 
         if self.__data is None:
             self.__data = data_np
