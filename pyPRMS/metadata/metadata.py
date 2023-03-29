@@ -8,6 +8,7 @@ outside_elem = {'control': 'control_param',
                 'parameters': 'parameter',
                 }
 
+NEW_DTYPE = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
 
 class MetaData(object):
     """Class to handle variable and parameter metadata"""
@@ -59,7 +60,7 @@ class MetaData(object):
             #     continue
 
             datatype = int(elem.find('type').text)
-            meta_dict[name]['datatype'] = datatype
+            meta_dict[name]['datatype'] = NEW_DTYPE[datatype]
 
             # TODO: this shouldn't be here
             # if name in ['start_time', 'end_time']:
@@ -79,10 +80,13 @@ class MetaData(object):
 
             meta_dict[name]['numvals'] = elem.find('numvals').text
 
+            # if name in ['start_time', 'end_time']:
+            #     meta_dict[name]['context'] =
+
             # Possible valid values for variable
             outvals = {}
             for cvals in elem.findall('./values'):
-                meta_dict[name]['value_type'] = cvals.attrib.get('type')
+                meta_dict[name]['valid_value_type'] = cvals.attrib.get('type')
 
                 meta_dict[name]['valid_values'] = {}
                 for cv in cvals.findall('./value'):
