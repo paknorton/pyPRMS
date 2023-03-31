@@ -23,9 +23,9 @@ class ControlFile(Control):
     # Description: Class object to handle reading and writing PRMS
     #              control files.
 
-    def __init__(self, filename: str, verbose: Optional[bool] = False,
+    def __init__(self, filename: str, metadata, verbose: Optional[bool] = False,
                  version:Optional[Union[str, int]] = 5):
-        super(ControlFile, self).__init__(verbose=verbose, version=version)
+        super(ControlFile, self).__init__(metadata=metadata, verbose=verbose, version=version)
 
         self.__verbose = verbose
         self.__isloaded = False
@@ -84,40 +84,53 @@ class ControlFile(Control):
                 numval = int(next(it))  # number of values for this variable
                 valuetype = int(next(it))  # Variable type (1 - integer, 2 - float, 4 - character)
 
-                vals = np.zeros(numval, dtype=PTYPE_TO_DTYPE[valuetype])
-
-                for idx in range(0, numval):
-                    # NOTE: string-float to int works but float to int does not
-                    vals[idx] = next(it)
-
-                # After reading expected values make sure there aren't more values
-                # before the next delimiter.
                 try:
-                    cnt = numval
-                    while next(it) != VAR_DELIM:
-                        cnt += 1
+                    # if self.get(varname).context == 'scalar' and varname not in ['start_time', 'end_time']:
+                    if self.get(varname).meta['context'] == 'scalar':
+                        if numval == 1:  # varname not in ['start_time', 'end_time']:
+                            vals = PTYPE_TO_DTYPE[valuetype](next(it))
+                        else:
+                            # Currently only start_time and end_time are scalars with numval > 1
+                            vals = np.zeros(numval, dtype=PTYPE_TO_DTYPE[valuetype])
+                            for idx in range(0, numval):
+                                # NOTE: string-float to int works but float to int does not
+                                vals[idx] = next(it)
+                    elif self.get(varname).meta['context'] == 'array':
+                        if valuetype == 4:
+                            # Arrays of strings should be objects
+                            vals = np.zeros(numval, dtype=object)
+                        else:
+                            vals = np.zeros(numval, dtype=PTYPE_TO_DTYPE[valuetype])
 
-                    if cnt > numval:
-                        # TODO: This should raise an error?
-                        print(f'WARNING: Too many values specified for {varname}')
-                        print(f'      {numval} expected, {cnt} given')
-                        print(f'       Keeping first {numval} values')
-                except StopIteration:
-                    # Hit the end of the file
-                    pass
+                        for idx in range(0, numval):
+                            # NOTE: string-float to int works but float to int does not
+                            vals[idx] = next(it)
+                    else:
+                        print(f'WARNING: {varname} has context={self.get(varname).meta["context"]} which is not supported')
 
-                if self.exists(varname):
-                    # All valid variables for the given PRMS version
-                    # were already loaded from XML so skip any control
-                    # file variables that don't already exist.
+                    # After reading expected values make sure there aren't more values
+                    # before the next delimiter.
                     try:
-                        self.add(name=varname, datatype=(valuetype))
-                    except ControlError:
-                        # Control dict was pre-populated with default variables
-                        # so we ignore the duplicate variable error.
+                        cnt = numval
+                        while next(it) != VAR_DELIM:
+                            cnt += 1
+
+                        if cnt > numval:
+                            # TODO: Should this raise an error?
+                            print(f'WARNING: Too many values specified for {varname}')
+                            print(f'      {numval} expected, {cnt} given')
+                            print(f'       Keeping first {numval} values')
+                    except StopIteration:
+                        # Hit the end of the file
                         pass
 
                     self.get(varname).values = vals
+
+                except ValueError as err:
+                    print(f'WARNING: {varname} is not a valid control variable')
+                    print(err)
+                    while next(it) != VAR_DELIM:
+                        pass
 
         self.header = header_tmp
         self.__isloaded = True
