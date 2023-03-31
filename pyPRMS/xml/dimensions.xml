@@ -4,11 +4,17 @@
         <desc>Number of HRU links for cascading flow</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>cascade_flag > 0</control>
+        </requires>
     </dimension>
     <dimension name="ncascdgw">
         <desc>Number of GWR links for cascading flow</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>cascadegw_flag > 0</control>
+        </requires>
     </dimension>
     <dimension name="nconsumed">
         <desc>Number of consumptive water-use destinations</desc>
@@ -49,6 +55,9 @@
         <desc>Number of spatial units in the target map for mapped results</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </dimension>
     <dimension name="nhru">
         <desc>Number of HRUs</desc>
@@ -59,6 +68,9 @@
         <desc>Number of unique intersections between HRUs and spatial units of a target map for mapped results</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </dimension>
     <dimension name="nhumid">
         <desc>Number of relative humidity measurement stations</desc>
@@ -124,6 +136,9 @@
         <desc>Number of internal subbasins</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </dimension>
     <dimension name="ntemp">
         <desc>Number of air-temperature-measurement stations</desc>
