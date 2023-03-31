@@ -1,87 +1,122 @@
 import io
+import numpy as np
 import pkgutil
 import xml.etree.ElementTree as xmlET   # type: ignore
+from collections import defaultdict
 
-from pyPRMS.prms_helpers import version_info
+from pyPRMS.prms_helpers import set_date, version_info
+from ..constants import NEW_PTYPE_TO_DTYPE
 
 outside_elem = {'control': 'control_param',
                 'parameters': 'parameter',
+                'dimensions': 'dimension',
+                'variables': 'variable'
                 }
 
 NEW_DTYPE = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
+NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
+
 
 class MetaData(object):
     """Class to handle variable and parameter metadata"""
 
-    def __init__(self, meta_type='control'):
-        fcn_map = {'control': self.__control_to_dict}
+    def __init__(self, version=5, verbose=False):
+        # meta_type - one of control, dimension, parameter, output
+        # version - PRMS major version to use for filtering
+
+        fcn_map = {'control': self.__control_to_dict,
+                   'dimensions': self.__dimensions_to_dict,
+                   'parameters': self.__parameters_to_dict,
+                   'variables': self.__variables_to_dict
+                   }
 
         self.__meta_dict = {}
+        self.__version = version
+        self.__verbose = verbose
 
         # meta_type: one of - control, dimensions, parameters, variables
-        xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', f'xml/{meta_type}.xml').decode('utf-8'))
-        xml_tree = xmlET.parse(xml_fh)
-        xml_root = xml_tree.getroot()
 
-        # self.__meta_dict[meta_type] = self.__control_to_dict(xml_root, meta_type)
-        self.__meta_dict[meta_type] = fcn_map[meta_type](xml_root, meta_type)
+        for mt, mf in fcn_map.items():
+            xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', f'xml/{mt}.xml').decode('utf-8'))
+            xml_tree = xmlET.parse(xml_fh)
+            xml_root = xml_tree.getroot()
+
+            self.__meta_dict[mt] = mf(xml_root, mt, self.__version)
 
     @property
     def metadata(self):
         return self.__meta_dict
 
-    @staticmethod
-    def __control_to_dict(xml_root, meta_type):
+    # @staticmethod
+    def __control_to_dict(self, xml_root, meta_type, version):
         """Convert control file metadata to dictionary"""
 
         meta_dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
+
+            var_version = version_info(elem.attrib.get('version'))
+            depr_version = version_info(elem.attrib.get('deprecated'))
+
+            if var_version.major is not None and var_version.major > version:
+                if self.__verbose:
+                    print(f'{name} rejected by version')
+                continue
+            if depr_version.major is not None and depr_version.major <= version:
+                if self.__verbose:
+                    print(f'{name} rejected by deprecation version')
+                continue
+
             meta_dict[name] = {}
 
-            if elem.attrib.get('version') is not None:
-                meta_dict[name]['version'] = elem.attrib.get('version')
+            var_version = elem.attrib.get('version')
+            if var_version is not None:
+                meta_dict[name]['version'] = var_version
 
             depr_version = elem.attrib.get('deprecated')
             if depr_version is not None:
                 meta_dict[name]['deprecated'] = depr_version
 
-            # version_info(elem.attrib.get('version'))
-            # version_info(elem.attrib.get('deprecated'))
+            if name in ['start_time', 'end_time']:
+                meta_dict[name]['datatype'] = 'datetime'
+            else:
+                datatype = int(elem.find('type').text)
+                meta_dict[name]['datatype'] = NEW_DTYPE[datatype]
 
-            # if (var_version.major is not None and var_version.major > version):
-            #     if self.__verbose:
-            #         print(f'{name} rejected by version')
-            #     continue
-            # if (depr_version.major is not None and depr_version.major <= version):
-            #     if self.__verbose:
-            #         print(f'{name} rejected by deprecation version')
-            #     continue
+            elems = {'description': 'desc',
+                     'numvals': 'numvals',
+                     'default': 'default', }
 
-            datatype = int(elem.find('type').text)
-            meta_dict[name]['datatype'] = NEW_DTYPE[datatype]
+            for ek, ev in elems.items():
+                try:
+                    if ev == 'numvals':
+                        tmp = elem.find(ev).text
 
-            # TODO: this shouldn't be here
-            # if name in ['start_time', 'end_time']:
-            #     # Hack to handle PRMS approach to dates
-            #     dt = elem.find('default').text.split('-')
-            #     if len(dt) < 6:
-            #         # pad short date with zeros for hms
-            #         dt.extend(['0' for _ in range(6 - len(dt))])
-            #     self.get(name).default = dt
-            # else:
-            #     # print('{}: {} {}'.format(name, type(elem.find('default').text), elem.find('default').text))
-            #     self.get(name).default = elem.find('default').text
-            meta_dict[name]['description'] = elem.find('desc').text
+                        if tmp in ['1', '6']:
+                            meta_dict[name]['context'] = 'scalar'
+                        else:
+                            meta_dict[name]['context'] = 'array'
+                        # meta_dict[name][ek] = int(elem.find(ev).text)
+                    elif ev == 'default':
+                        cdtype = NEW_PTYPE_TO_DTYPE[meta_dict[name]['datatype']]
+
+                        if meta_dict[name]['datatype'] == 'datetime':
+                            meta_dict[name][ek] = cdtype(set_date(elem.find(ev).text))
+                        else:
+                            meta_dict[name][ek] = cdtype(elem.find(ev).text)
+                    else:
+                        meta_dict[name][ek] = elem.find(ev).text
+                except ValueError:
+                    meta_dict[name][ek] = elem.find(ev).text
+                except AttributeError:
+                    pass
+
+            # meta_dict[name]['description'] = elem.find('desc').text
+            # meta_dict[name]['numvals'] = elem.find('numvals').text
 
             if elem.find('force_default') is not None:
                 meta_dict[name]['force_default'] = elem.find('force_default').text == '1'
-
-            meta_dict[name]['numvals'] = elem.find('numvals').text
-
-            # if name in ['start_time', 'end_time']:
-            #     meta_dict[name]['context'] =
 
             # Possible valid values for variable
             outvals = {}
@@ -91,5 +126,163 @@ class MetaData(object):
                 meta_dict[name]['valid_values'] = {}
                 for cv in cvals.findall('./value'):
                     meta_dict[name]['valid_values'][cv.attrib.get('name')] = cv.text
+
+        return meta_dict
+
+    def __parameters_to_dict(self, xml_root, meta_type, version):
+        """Convert control file metadata to dictionary"""
+
+        meta_dict = {}
+
+        for elem in xml_root.findall(outside_elem[meta_type]):
+            name = elem.attrib.get('name')
+            var_version = version_info(elem.attrib.get('version'))
+            depr_version = version_info(elem.attrib.get('deprecated'))
+
+            if var_version.major is not None and var_version.major > version:
+                if self.__verbose:
+                    print(f'{name} rejected by version')
+                continue
+            if depr_version.major is not None and depr_version.major <= version:
+                if self.__verbose:
+                    print(f'{name} rejected by deprecation version')
+                continue
+
+            meta_dict[name] = defaultdict(list)
+
+            var_version = elem.attrib.get('version')
+            if var_version is not None:
+                meta_dict[name]['version'] = var_version
+                # meta_dict[name]['version'] = elem.attrib.get('version')
+
+            depr_version = elem.attrib.get('deprecated')
+            if depr_version is not None:
+                meta_dict[name]['deprecated'] = depr_version
+
+            datatype = elem.find('type').text
+            meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
+
+            elems = {'description': 'desc',
+                     'help': 'help',
+                     'units': 'units',
+                     'minimum': 'minimum',
+                     'maximum': 'maximum',
+                     'default': 'default', }
+
+            for ek, ev in elems.items():
+                try:
+                    meta_dict[name][ek] = elem.find(ev).text
+                except AttributeError:
+                    pass
+
+            for cdim in elem.findall('./dimensions/dimension'):
+                meta_dict[name]['dimensions'].append(cdim.attrib.get('name'))
+
+            for cmod in elem.findall('./modules/module'):
+                meta_dict[name]['modules'].append(cmod.text)
+
+            for creq in elem.findall('./requires/*'):
+                meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
+
+        return meta_dict
+
+    def __dimensions_to_dict(self, xml_root, meta_type, version):
+        """Convert control file metadata to dictionary"""
+
+        meta_dict = {}
+
+        for elem in xml_root.findall(outside_elem[meta_type]):
+            name = elem.attrib.get('name')
+            # var_version = version_info(elem.attrib.get('version'))
+            # depr_version = version_info(elem.attrib.get('deprecated'))
+            #
+            # if var_version.major is not None and var_version.major > version:
+            #     if self.__verbose:
+            #         print(f'{name} rejected by version')
+            #     continue
+            # if depr_version.major is not None and depr_version.major <= version:
+            #     if self.__verbose:
+            #         print(f'{name} rejected by deprecation version')
+            #     continue
+
+            meta_dict[name] = defaultdict(list)
+
+            # var_version = elem.attrib.get('version')
+            # if var_version is not None:
+            #     meta_dict[name]['version'] = var_version
+            #     # meta_dict[name]['version'] = elem.attrib.get('version')
+            #
+            # depr_version = elem.attrib.get('deprecated')
+            # if depr_version is not None:
+            #     meta_dict[name]['deprecated'] = depr_version
+
+            elems = {'description': 'desc',
+                     'size': 'size',
+                     'default': 'default', }
+
+            for ek, ev in elems.items():
+                try:
+                    meta_dict[name][ek] = elem.find(ev).text
+                except AttributeError:
+                    pass
+
+            # for cmod in elem.findall('./modules/module'):
+            #     meta_dict[name]['modules'].append(cmod.text)
+
+            for creq in elem.findall('./requires/*'):
+                meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
+
+        return meta_dict
+
+    def __variables_to_dict(self, xml_root, meta_type, version):
+        """Convert control file metadata to dictionary"""
+
+        meta_dict = {}
+
+        for elem in xml_root.findall(outside_elem[meta_type]):
+            name = elem.attrib.get('name')
+            # var_version = version_info(elem.attrib.get('version'))
+            # depr_version = version_info(elem.attrib.get('deprecated'))
+            #
+            # if var_version.major is not None and var_version.major > version:
+            #     if self.__verbose:
+            #         print(f'{name} rejected by version')
+            #     continue
+            # if depr_version.major is not None and depr_version.major <= version:
+            #     if self.__verbose:
+            #         print(f'{name} rejected by deprecation version')
+            #     continue
+
+            meta_dict[name] = defaultdict(list)
+
+            # var_version = elem.attrib.get('version')
+            # if var_version is not None:
+            #     meta_dict[name]['version'] = var_version
+            #     # meta_dict[name]['version'] = elem.attrib.get('version')
+            #
+            # depr_version = elem.attrib.get('deprecated')
+            # if depr_version is not None:
+            #     meta_dict[name]['deprecated'] = depr_version
+
+            datatype = elem.find('type').text
+            meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
+
+            elems = {'description': 'desc',
+                     'units': 'units', }
+
+            for ek, ev in elems.items():
+                try:
+                    meta_dict[name][ek] = elem.find(ev).text
+                except AttributeError:
+                    pass
+
+            for cdim in elem.findall('./dimensions/dimension'):
+                meta_dict[name]['dimensions'].append(cdim.attrib.get('name'))
+
+            for cmod in elem.findall('./modules/module'):
+                meta_dict[name]['modules'].append(cmod.text)
+
+            # for creq in elem.findall('./requires/*'):
+            #     meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
 
         return meta_dict
