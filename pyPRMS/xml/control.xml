@@ -1171,13 +1171,13 @@
     <control_param name="aniOutVar_names" deprecated="6.0">
         <default>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>naniOutVars</numvals>
         <desc>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</desc>
     </control_param>
     <control_param name="basinOutVar_names" version="5.0" deprecated="6.0">
         <default>basin_summary_</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>basinOutVars</numvals>
         <desc>List of variable names for which output is written to basin summary Comma Separated Values (CSV) output file(s). Each variable is written to files in the order specified in basinOutVars with the prefix of each file equal to the value of basinOutBaseFileName. The suffix of the files is based on the value of basinOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
     </control_param>
     <control_param name="data_file">
@@ -1207,31 +1207,31 @@
     <control_param name="mapOutVar_names" deprecated="6.0">
         <default>List of variable names for which output is written to mapped output files(s); variables must be of type real or double</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nmapOutVars</numvals>
         <desc>List of variable names for which output is written to mapped output files(s); variables must be of type real or double.</desc>
     </control_param>
     <control_param name="nsegmentOutVar_names" version="5.0" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nsegmentOutVars</numvals>
         <desc>List of variable names for which output is written to nsegment summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsegmentOutBaseFileName; variables must be of type real or double; the suffix of the files is based on the value of nsegmentOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv</desc>
     </control_param>
     <control_param name="nsubOutVar_names" version="5.0" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nsubOutVars</numvals>
         <desc>List of variable names for which output is written to nsub summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName. The suffix of the files is based on the value of nsubOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
     </control_param>
     <control_param name="statVar_element" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nstatVars</numvals>
         <desc>List of identification numbers corresponding to variables specified in statVar_names list (1 to variable's dimension size)</desc>
     </control_param>
     <control_param name="statVar_names" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nstatVars</numvals>
         <desc>List of variable names for which output is written to Statistics Variables File</desc>
     </control_param>
     <control_param name="snarea_curve_flag" version="5.1.0">
