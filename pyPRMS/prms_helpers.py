@@ -1,11 +1,15 @@
 
 from collections import namedtuple
-from datetime import datetime
+
+# from datetime import datetime
 from typing import List, NamedTuple, Optional, Union, Sequence
 
 import calendar
+import datetime
 import decimal
 import pandas as pd   # type: ignore
+import numpy as np
+import re
 import xml.etree.ElementTree as xmlET
 
 def read_xml(filename: str) -> xmlET.Element:
@@ -49,6 +53,23 @@ def get_file_iter(filename):
     infile.close()
 
     return iter(rawdata)
+
+
+def set_date(adate: Union[datetime.datetime, datetime.date, str]) -> datetime.datetime:
+    """Return datetime object given a datetime or string of format YYYY-MM-DD
+
+    :param adate: Datetime object or string (YYYY-MM-DD)
+    :returns: Datetime object
+    """
+    if isinstance(adate, datetime.date):
+        return datetime.datetime.combine(adate, datetime.time.min)
+        # return adate
+    elif isinstance(adate, datetime.datetime):
+        return adate
+    elif isinstance(adate, np.ndarray):
+        return datetime.datetime(*adate)
+    else:
+        return datetime.datetime(*[int(x) for x in re.split('[- :]', adate)])  # type: ignore
 
 
 def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
