@@ -68,6 +68,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+            <control>model_mode = PRMS5</control>
+        </requires>
     </parameter>
     <parameter name="dprst_frac_open">
         <type>F</type>
@@ -85,6 +89,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="elev_units">
         <type>I</type>
@@ -241,6 +248,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nobs > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="print_freq">
         <type>I</type>
@@ -348,6 +358,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascadegw_flag = 1</control>
+            <dimension>ncascdgw > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="gw_pct_up">
         <type>F</type>
@@ -365,6 +379,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascadegw_flag = 1</control>
+            <dimension>ncascdgw > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="gw_strmseg_down_id">
         <type>I</type>
@@ -382,6 +400,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascadegw_flag = 1</control>
+            <dimension>ncascdgw > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="gw_up_id">
         <type>I</type>
@@ -399,6 +421,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascadegw_flag = 1</control>
+            <dimension>ncascdgw > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="hru_down_id">
         <type>I</type>
@@ -416,6 +442,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="hru_pct_up">
         <type>F</type>
@@ -433,6 +463,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="hru_strmseg_down_id">
         <type>I</type>
@@ -450,6 +484,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="hru_up_id">
         <type>I</type>
@@ -459,10 +497,6 @@
         <minimum>bounded</minimum>
         <maximum>nhru</maximum>
         <default>0</default>
-        <requires>
-            <control>cascade_flag=1</control>
-            <dimension>ncascade>0</dimension>
-        </requires>
         <modules>
             <module>cascade</module>
         </modules>
@@ -471,6 +505,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="crad_coef">
         <type>F</type>
@@ -533,6 +571,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nsol > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="hru_solsta">
         <type>I</type>
@@ -552,6 +593,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nsol > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="ppt_rad_adj">
         <type>F</type>
@@ -595,6 +639,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nsol > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="radj_sppt">
         <type>F</type>
@@ -953,6 +1000,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>model_mode = FROST</control>
+        </requires>
     </parameter>
     <parameter name="elevlake_init">
         <type>F</type>
@@ -1129,6 +1179,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nwateruse > 1</dimension>
+        </requires>
     </parameter>
     <parameter name="snow_intcp">
         <type>F</type>
@@ -1189,9 +1242,6 @@
         <minimum>bounded</minimum>
         <maximum>nhrucell</maximum>
         <default>0</default>
-        <requires>
-            <control>mapOutON_OFF=1</control>
-        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -1200,6 +1250,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </parameter>
     <parameter name="gvr_cell_pct">
         <type>F</type>
@@ -1209,9 +1262,6 @@
         <minimum>0.0</minimum>
         <maximum>1.0</maximum>
         <default>0.0</default>
-        <requires>
-            <control>mapOutON_OFF=1</control>
-        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -1220,6 +1270,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </parameter>
     <parameter name="mapvars_freq">
         <type>I</type>
@@ -1229,9 +1282,6 @@
         <minimum>0</minimum>
         <maximum>7</maximum>
         <default>0</default>
-        <requires>
-            <control>mapOutON_OFF=1</control>
-        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -1241,6 +1291,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </parameter>
     <parameter name="mapvars_units">
         <type>I</type>
@@ -1250,9 +1303,6 @@
         <minimum>0</minimum>
         <maximum>3</maximum>
         <default>0</default>
-        <requires>
-            <control>mapOutON_OFF=1</control>
-        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -1262,6 +1312,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </parameter>
     <parameter name="ncol">
         <type>I</type>
@@ -1271,9 +1324,6 @@
         <minimum>1</minimum>
         <maximum>50000</maximum>
         <default>1</default>
-        <requires>
-            <control>mapOutON_OFF=1</control>
-        </requires>
         <modules>
             <module>map_results</module>
         </modules>
@@ -1283,6 +1333,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </parameter>
     <parameter name="segment_flow_init">
         <type>F</type>
@@ -1456,6 +1509,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="lake_vol_init">
         <type>F</type>
@@ -1850,6 +1906,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nobs > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="hamon_coef">
         <type>F</type>
@@ -1947,6 +2006,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nevap > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="crop_coef">
         <type>F</type>
@@ -2030,6 +2092,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nhumid > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="hru_windspeed_sta">
         <type>I</type>
@@ -2047,6 +2112,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nwind > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="pt_alpha">
         <type>F</type>
@@ -2821,6 +2889,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>csvON_OFF = 1</control>
+            <dimension>npoigages > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="tosegment_nhm">
         <type>I</type>
@@ -2892,6 +2964,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>csvON_OFF = 1</control>
+            <dimension>npoigages > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="poi_gage_segment">
         <type>I</type>
@@ -2910,6 +2986,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>csvON_OFF = 1</control>
+            <dimension>npoigages > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="albset_rna">
         <type>F</type>
@@ -3090,6 +3170,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>snarea_curve_flag = 0</control>
+        </requires>
     </parameter>
     <parameter name="nhm_deplcrv">
         <type>I</type>
@@ -3211,6 +3294,9 @@
                 <default>11</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>snarea_curve_flag = 0</control>
+        </requires>
     </parameter>
     <parameter name="snarea_thresh">
         <type>F</type>
@@ -3476,6 +3562,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>model_mode = PRMS5</control>
+        </requires>
     </parameter>
     <parameter name="soil_moist_max">
         <type>F</type>
@@ -3512,6 +3601,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>model_mode = PRMS5</control>
+        </requires>
     </parameter>
     <parameter name="soil_rechr_max_frac">
         <type>F</type>
@@ -3548,6 +3640,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>model_mode = PRMS5</control>
+        </requires>
     </parameter>
     <parameter name="gvr_hru_id">
         <type>I</type>
@@ -3557,9 +3652,6 @@
         <minimum>bounded</minimum>
         <maximum>nhru</maximum>
         <default>0</default>
-        <requires>
-            <control>mapOutON_OFF=1</control>
-        </requires>
         <modules>
             <module>soilzone</module>
             <module>map_results</module>
@@ -3569,6 +3661,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </parameter>
     <parameter name="hru_aspect">
         <type>F</type>
@@ -3658,6 +3753,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="dprst_et_coef">
         <type>F</type>
@@ -3677,6 +3775,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="dprst_flow_coef">
         <type>F</type>
@@ -3696,6 +3797,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="dprst_frac_init">
         <type>F</type>
@@ -3715,6 +3819,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="dprst_seep_rate_clos">
         <type>F</type>
@@ -3734,6 +3841,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="dprst_seep_rate_open">
         <type>F</type>
@@ -3753,6 +3863,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="op_flow_thres">
         <type>F</type>
@@ -3772,6 +3885,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="smidx_coef">
         <type>F</type>
@@ -3827,6 +3943,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="sro_to_dprst_perv">
         <type>F</type>
@@ -3846,6 +3965,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+            <control>model_mode = PRMS5</control>
+        </requires>
     </parameter>
     <parameter name="va_clos_exp">
         <type>F</type>
@@ -3865,6 +3988,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="va_open_exp">
         <type>F</type>
@@ -3884,6 +4010,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="imperv_stor_max">
         <type>F</type>
@@ -3940,6 +4069,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="alte">
         <type>F</type>
@@ -3957,6 +4089,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="altw">
         <type>F</type>
@@ -3974,6 +4109,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="azrh">
         <type>F</type>
@@ -3991,6 +4129,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="gw_init">
         <type>F</type>
@@ -4025,6 +4166,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="lat_temp_adj">
         <type>F</type>
@@ -4046,6 +4190,9 @@
                 <default>12</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="maxiter_sntemp">
         <type>I</type>
@@ -4064,6 +4211,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="melt_temp">
         <type>F</type>
@@ -4082,6 +4232,9 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="seg_elev">
         <type>F</type>
@@ -4099,6 +4252,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="seg_lat">
         <type>F</type>
@@ -4116,6 +4272,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="seg_humidity">
         <type>F</type>
@@ -4137,6 +4296,9 @@
                 <default>12</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="seg_humidity_sta">
         <type>I</type>
@@ -4243,6 +4405,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="segshade_win">
         <type>F</type>
@@ -4260,6 +4425,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="ss_init">
         <type>F</type>
@@ -4294,6 +4462,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="vce">
         <type>F</type>
@@ -4311,6 +4482,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="vcw">
         <type>F</type>
@@ -4328,6 +4502,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="vdemn">
         <type>F</type>
@@ -4345,6 +4522,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="vdemx">
         <type>F</type>
@@ -4362,6 +4542,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="vdwmn" version="5.1.0">
         <type>F</type>
@@ -4379,6 +4562,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="vdwmx">
         <type>F</type>
@@ -4396,6 +4582,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="vhe">
         <type>F</type>
@@ -4413,6 +4602,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="vhw">
         <type>F</type>
@@ -4430,6 +4622,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="voe">
         <type>F</type>
@@ -4447,6 +4642,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="vow">
         <type>F</type>
@@ -4464,6 +4662,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="width_alpha">
         <type>F</type>
@@ -4481,6 +4682,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="width_m">
         <type>F</type>
@@ -4498,6 +4702,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="subbasin_down">
         <type>I</type>
@@ -4515,6 +4722,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="hru_subbasin">
         <type>I</type>
@@ -4533,6 +4743,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="hru_tsta">
         <type>I</type>
@@ -5098,6 +5311,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
 
 </parameters>
