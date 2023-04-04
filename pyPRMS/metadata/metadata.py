@@ -1,5 +1,5 @@
 import io
-import numpy as np
+# import numpy as np
 import pkgutil
 import xml.etree.ElementTree as xmlET   # type: ignore
 from collections import defaultdict
@@ -216,14 +216,21 @@ class MetaData(object):
             # if depr_version is not None:
             #     meta_dict[name]['deprecated'] = depr_version
 
-            elems = {'description': 'desc',
-                     'size': 'size',
-                     'default': 'default', }
+            elems = {'description': {'orig_name': 'desc', 'datatype': str},
+                     'size': {'orig_name': 'size', 'datatype': int},
+                     'default': {'orig_name': 'default', 'datatype': int},
+                     'is_fixed': {'orig_name': 'is_fixed', 'datatype': bool}}
 
             for ek, ev in elems.items():
                 try:
-                    meta_dict[name][ek] = elem.find(ev).text
+                    meta_dict[name][ek] = ev['datatype'](elem.find(ev['orig_name']).text)
+                    # if ek == 'is_fixed':
+                    #     meta_dict[name][ek] = bool(elem.find(ev).text)
+                    # else:
+                    #     meta_dict[name][ek] = elem.find(ev).text
                 except AttributeError:
+                    if ek == 'is_fixed':
+                        meta_dict[name][ek] = False
                     pass
 
             # for cmod in elem.findall('./modules/module'):
