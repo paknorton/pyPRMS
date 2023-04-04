@@ -17,7 +17,7 @@ class Dimensions(object):
     """Container of Dimension objects."""
     __dimensions: OrderedDictType[str, Dimension]
 
-    def __init__(self, verbose: Optional[bool] = False,
+    def __init__(self, metadata=None, verbose: Optional[bool] = False,
                  verify: Optional[bool] = True):
         """Create ordered dictionary containing Dimension objects.
 
@@ -27,6 +27,13 @@ class Dimensions(object):
         self.__dimensions: OrderedDict[str, Dimension] = OrderedDict()
         self.__verbose = verbose
         self.__verify = verify
+
+        self.metadata = metadata
+
+        if self.metadata is not None:
+            for cdim, cvals in self.metadata.items():
+                self.add(name=cdim, meta=self.metadata)
+                # self.add(name=cdim, meta=cvals)
 
     def __str__(self) -> str:
         """Pretty-print dimensions.
@@ -96,7 +103,7 @@ class Dimensions(object):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name: str, size: int):
+    def add(self, name: str, size=None, meta=None):
         """Add a new Dimension object.
 
         :param name: Name of the dimension
@@ -108,7 +115,7 @@ class Dimensions(object):
         # TODO: check for valid dimension size for ndays, nmonths, and one
         if name not in self.__dimensions:
             try:
-                self.__dimensions[name] = Dimension(name=name, size=size)
+                self.__dimensions[name] = Dimension(name=name, meta=meta)
             except ValueError as err:
                 if self.__verify:
                     print(err)
