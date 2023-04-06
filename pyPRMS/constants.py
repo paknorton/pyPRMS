@@ -88,5 +88,6 @@ NHM_DATATYPES = {'I': 1, 'F': 2, 'D': 3, 'S': 4}
 # PARNAME_DATATYPES = {'long': 1, 'float': 2, 'double': 3, 'string': 4}
 DATATYPE_TO_DTYPE = {1: int, 2: np.float32, 3: np.float64, 4: np.str_}
 PTYPE_TO_DTYPE = {1: np.int32, 2: np.float32, 3: np.float64, 4: np.str_}
+
 NEW_PTYPE_TO_DTYPE = {'int32': np.int32, 'float32': np.float32, 'float64': np.float64, 'string': np.str_, 'datetime': np.datetime64}
 PTYPE_TO_PRMS_TYPE = {'int32': 1, 'float32': 2, 'float64': 3, 'string': 4, 'datetime': 1}
