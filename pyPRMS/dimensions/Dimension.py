@@ -47,6 +47,10 @@ class Dimension(object):
             self.size = 0
 
     @property
+    def is_fixed(self):
+        return self.meta.get('is_fixed', False)
+
+    @property
     def name(self) -> str:
         """Name of the dimension.
 
@@ -75,7 +79,7 @@ class Dimension(object):
         value = int(value)
 
         if self.meta is not None:
-            if self.meta['is_fixed'] and self.meta['default'] != value:
+            if self.is_fixed and self.meta['default'] != value:
                 raise ValueError(f'{self.name} is a fixed dimension and cannot be changed')
 
         if value < 0:
