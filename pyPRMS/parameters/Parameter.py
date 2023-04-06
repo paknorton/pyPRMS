@@ -7,7 +7,7 @@ from typing import Any, cast, NamedTuple, Optional, Union, List
 import xml.etree.ElementTree as xmlET
 
 # from pyPRMS.Exceptions_custom import ConcatError
-from ..constants import DATA_TYPES, DATATYPE_TO_DTYPE
+from ..constants import DATA_TYPES, DATATYPE_TO_DTYPE, NEW_PTYPE_TO_DTYPE
 from ..dimensions.Dimensions import ParamDimensions
 
 
@@ -21,94 +21,97 @@ class Parameter(object):
     # Container for a single parameter
     # TODO: 2021-12-03 PAN - The arguments should not all be optional
     def __init__(self, name: str,
-                 datatype: Optional[int]=None,
-                 units: Optional[str]=None,
-                 model: Optional[str]=None,
-                 description: Optional[str]=None,
-                 help: Optional[str]=None,
-                 modules: Optional[Union[str, List[str]]]=None,
-                 minimum: Optional[Union[int, float, str]]=None,
-                 maximum: Optional[Union[int, float, str]]=None,
-                 default: Optional[Union[int, float, str]]=None):
+                 dimensions=tuple(['one']),
+                 meta=None):
+                 # datatype: Optional[int]=None,
+                 # units: Optional[str]=None,
+                 # model: Optional[str]=None,
+                 # description: Optional[str]=None,
+                 # help: Optional[str]=None,
+                 # modules: Optional[Union[str, List[str]]]=None,
+                 # minimum: Optional[Union[int, float, str]]=None,
+                 # maximum: Optional[Union[int, float, str]]=None,
+                 # default: Optional[Union[int, float, str]]=None):
         """
         Initialize a parameter object.
 
         :param name: A valid PRMS parameter name
-        :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
-        :param units: Optional units string for the parameter
-        :param model: Model string for parameter
-        :param description: Description of the parameter
-        :param help: Help text for the parameter
-        :param modules: List of modules that require the parameter
-        :param minimum: Minimum value allowed in the parameter data
-        :param maximum: Maximum value allowed in the parameter data
-        :param default: Default value used for parameter data
         """
 
         # Set the parameter name
+        self.__dimensions = dimensions
+
         self.__name = name
+
+        if meta is None:
+            self.meta = meta
+            self.meta_dims = {}
+        else:
+            self.meta = meta[name]
+            self.meta_dims = meta.get('dimensions', {})
 
         # Initialize internal variables
         # self.__datatype = None
-        self.__units = ''
-        self.__model = ''
-        self.__description = ''
-        self.__help = ''
-        self.__modules: Optional[List[str]] = None
-        self.__minimum: Optional[Union[int, float, str]] = None
-        self.__maximum: Optional[Union[int, float, str]] = None
-        self.__default: Optional[Union[int, float, str]] = None
+        # self.__units = ''
+        # self.__model = ''
+        # self.__description = ''
+        # self.__help = ''
+        # self.__modules: Optional[List[str]] = None
+        # self.__minimum: Optional[Union[int, float, str]] = None
+        # self.__maximum: Optional[Union[int, float, str]] = None
+        # self.__default: Optional[Union[int, float, str]] = None
 
-        self.__dimensions = ParamDimensions()
+        # self.__dimensions = ParamDimensions()
         self.__data: Optional[npt.NDArray] = None  # array
         # self.__data: Optional[npt.NDArray[Union[np.int_, np.float_, np.str_]]] = None  # array
 
         self.__modified = False
 
         # Use setters for most internal variables
-        self.datatype = datatype    # type: ignore
-        self.units = units  # type: ignore
-        self.model = model  # type: ignore
-        self.description = description  # type: ignore
-        self.help = help    # type: ignore
-        self.modules = modules  # type: ignore
-        self.minimum = minimum  # type: ignore
-        self.maximum = maximum  # type: ignore
-        self.default = default  # type: ignore
+        # self.datatype = datatype    # type: ignore
+        # self.units = units  # type: ignore
+        # self.model = model  # type: ignore
+        # self.description = description  # type: ignore
+        # self.help = help    # type: ignore
+        # self.modules = modules  # type: ignore
+        # self.minimum = minimum  # type: ignore
+        # self.maximum = maximum  # type: ignore
+        # self.default = default  # type: ignore
 
     def __str__(self) -> str:
         """Pretty-print string representation of the parameter information.
 
         :return: Pretty-print string of arameter information
         """
-        out_text = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndescription: {}\nhelp: {}\n'
-        outstr = out_text.format(self.name, self.datatype, self.units, self.ndims, self.description,
-                                 self.help)
-
-        if self.__minimum is not None:
-            outstr += f'Minimum value: {self.__minimum}\n'
-
-        if self.__maximum is not None:
-            outstr += f'Maximum value: {self.__maximum}\n'
-
-        if self.__default is not None:
-            outstr += f'Default value: {self.__default}\n'
-
-        outstr += 'Size of data: '
-        if self.__data is not None:
-            outstr += f'{self.data.size}\n'
-        else:
-            outstr += '<empty>\n'
-
-        if self.__modules is not None:
-            outstr += 'Modules: '
-
-            for xx in self.__modules:
-                outstr += f'{xx} '
-            outstr += '\n'
-
-        if self.ndims:
-            outstr += 'Dimensions:\n' + self.__dimensions.__str__()
+        outstr = f'{self.name}\n'
+        # out_text = 'name: {}\ndatatype: {}\nunits: {}\nndims: {}\ndescription: {}\nhelp: {}\n'
+        # outstr = out_text.format(self.name, self.datatype, self.units, self.ndims, self.description,
+        #                          self.help)
+        #
+        # if self.__minimum is not None:
+        #     outstr += f'Minimum value: {self.__minimum}\n'
+        #
+        # if self.__maximum is not None:
+        #     outstr += f'Maximum value: {self.__maximum}\n'
+        #
+        # if self.__default is not None:
+        #     outstr += f'Default value: {self.__default}\n'
+        #
+        # outstr += 'Size of data: '
+        # if self.__data is not None:
+        #     outstr += f'{self.data.size}\n'
+        # else:
+        #     outstr += '<empty>\n'
+        #
+        # if self.__modules is not None:
+        #     outstr += 'Modules: '
+        #
+        #     for xx in self.__modules:
+        #         outstr += f'{xx} '
+        #     outstr += '\n'
+        #
+        # if self.ndims:
+        #     outstr += 'Dimensions:\n' + self.__dimensions.__str__()
         return outstr
 
     @property
@@ -160,124 +163,139 @@ class Parameter(object):
         :raises ValueError: if the number of dimensions for the parameter is greater than 2
         """
         # Raise an error if no dimensions are defined for parameter
-        if not self.ndims:
-            raise ValueError(f'No dimensions have been defined for {self.name}; unable to append data')
+        # if not self.ndims:
+        #     raise ValueError(f'No dimensions have been defined for {self.name}; unable to append data')
 
         data_np: Union[npt.NDArray, None] = None
 
-        if isinstance(data_in, list):
-            data_np = np.array(data_in, dtype=DATATYPE_TO_DTYPE[self.datatype])
-        elif isinstance(data_in, np.ndarray):
-            data_np = data_in
-        elif isinstance(data_in, pd.Series):
-            data_np = data_in.to_numpy()
-        else:
-            raise TypeError('Right-hand variable not of type list, ndarray, or Pandas Series')
+        # vals = np.zeros(numval, dtype=PTYPE_TO_DTYPE[valuetype])
 
-        assert data_np is not None
-
-        if data_np.size == self.size:
-            # The incoming size matches the expected size for the parameter
-            if data_np.ndim < self.ndims:
-                # A numpy scalar (size=1, ndim=0) should not be reshaped
-
-                if data_np.ndim != 0:
-                    # Assume data_np is 1D, parameter is 2D; there are no scalars
-                    # order higher dimension possibilities.
-                    data_np = data_np.reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
-            elif data_np.ndim == self.ndims:
-                # TODO: If dealing with 2D incoming data should make sure that
-                #       the shape is correct compared to declared dimensions.
-                pass
+        # Possible things
+        # 1) no metadata, so dimension size information
+        # 2) have metadata
+        #    - check size/shape of incoming data to expected  size/shape
+        if self.meta is not None:
+            if isinstance(data_in, list):
+                if self.__dimensions[0] == 'one' and len(data_in) > 1:
+                    print(f'ERROR: {self.name}, is a scalar but data is a list of size {len(data_in)}')
+                elif len(self.__dimensions) > 1:
+                    data_np = np.array(data_in, dtype=DATATYPE_TO_DTYPE[self.datatype])
+                else:
+                    data_np = np.array(data_in, dtype=DATATYPE_TO_DTYPE[self.datatype])
+            elif isinstance(data_in, np.ndarray):
+                data_np = data_in
+            elif isinstance(data_in, pd.Series):
+                data_np = data_in.to_numpy()
             else:
-                raise ValueError(f'{self.__name}, source data ndim, {data_np.ndim} > parameter ndim, {self.ndims}')
-        elif data_np.size > self.size and 'one' in self.__dimensions.dimensions.keys():
-            # In certain circumstances it is possible for a one-dimensioned
-            # parameter to be passed a data array with size > 1. If this happens
-            # just use the first element from the array.
-            print(f'WARNING: {self.__name}, with dimension "one" was passed {data_np.size} ' +
-                  f'values; using first value only.')
-            data_np = np.array(data_np[0], ndmin=1)
-        else:
-            err_txt = f'{self.name}: Number of dimensions for new data ({data_np.ndim}) ' + \
-                      f'doesn\'t match old ({self.ndims})'
-            raise IndexError(err_txt)
+                raise TypeError('Right-hand variable not of type list, ndarray, or Pandas Series')
 
-        if self.__data is None:
-            self.__data = data_np
-        elif np.array_equal(self.__data, data_np):
+            assert data_np is not None
+
+            if data_np.size == self.size:
+                # The incoming size matches the expected size for the parameter
+                if data_np.ndim < self.ndims:
+                    # A numpy scalar (size=1, ndim=0) should not be reshaped
+
+                    if data_np.ndim != 0:
+                        # Assume data_np is 1D, parameter is 2D; there are no scalars
+                        # order higher dimension possibilities.
+                        data_np = data_np.reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
+                elif data_np.ndim == self.ndims:
+                    # TODO: If dealing with 2D incoming data should make sure that
+                    #       the shape is correct compared to declared dimensions.
+                    pass
+                else:
+                    raise ValueError(f'{self.__name}, source data ndim, {data_np.ndim} > parameter ndim, {self.ndims}')
+            elif data_np.size > self.size and 'one' in self.__dimensions.dimensions.keys():
+                # In certain circumstances it is possible for a one-dimensioned
+                # parameter to be passed a data array with size > 1. If this happens
+                # just use the first element from the array.
+                print(f'WARNING: {self.__name}, with dimension "one" was passed {data_np.size} ' +
+                      f'values; using first value only.')
+                data_np = np.array(data_np[0], ndmin=1)
+            else:
+                err_txt = f'{self.name}: Number of dimensions for new data ({data_np.ndim}) ' + \
+                          f'doesn\'t match old ({self.ndims})'
+                raise IndexError(err_txt)
+
+            if self.__data is None:
+                self.__data = data_np
+            elif np.array_equal(self.__data, data_np):
+                pass
+                # print(f'{self.__name}: updated value is equal to the old value')
+            else:
+                # Pre-existing data has been modified
+                self.__data = data_np
+                self.__modified = True
+        else:
+            # No metadata was specified
             pass
-            # print(f'{self.__name}: updated value is equal to the old value')
-        else:
-            # Pre-existing data has been modified
-            self.__data = data_np
-            self.__modified = True
 
-    @property
-    def datatype(self) -> int:
-        """Returns the datatype of the parameter.
-
-        :returns: datatype of the parameter data
-        """
-        return self.__datatype
-
-    @datatype.setter
-    def datatype(self, dtype: int):
-        """Sets the datatype for the parameter.
-
-        :param dtype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
-        """
-
-        # TODO: Should this be able to handle both string (e.g. 'I') and integer datatypes?
-        # TODO: If datatype is changed should verify existing data can be cast to it
-        if dtype in DATA_TYPES:
-            self.__datatype = dtype
-        elif dtype is None:
-            self.__datatype = None
-        else:
-            # TODO: This should raise and error (what kind?)
-            raise TypeError(f'Invalid datatype, {dtype}, specified for parameter')
-
-    @property
-    def default(self) -> Union[int, float, str, None]:
-        """Returns the default value for the parameter.
-
-        :returns: Default value defined for the parameter
-        """
-        return self.__default
-
-    @default.setter
-    def default(self, value: Union[int, float, str, None]):
-        """Set the default value for the parameter.
-
-        :param value: default value for the parameter
-        """
-        # TODO: 2020-04-30 PAN: This should check if given value is between
-        #                       min and max valid values (if set)
-        if self.__datatype is None or value is None:
-            self.__default = value
-        elif DATA_TYPES[self.__datatype] == 'float':
-            self.__default = float(value)
-        elif DATA_TYPES[self.__datatype] == 'integer':
-            self.__default = int(value)
-        else:
-            self.__default = value
-
-    @property
-    def description(self) -> str:
-        """Returns the parameter description.
-
-        :returns: parameter description
-        """
-        return self.__description
-
-    @description.setter
-    def description(self, descstr: str):
-        """Set the model description for the parameter.
-
-        :param descstr: Description string
-        """
-        self.__description = descstr
+    # @property
+    # def datatype(self) -> int:
+    #     """Returns the datatype of the parameter.
+    #
+    #     :returns: datatype of the parameter data
+    #     """
+    #     return self.__datatype
+    #
+    # @datatype.setter
+    # def datatype(self, dtype: int):
+    #     """Sets the datatype for the parameter.
+    #
+    #     :param dtype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
+    #     """
+    #
+    #     # TODO: Should this be able to handle both string (e.g. 'I') and integer datatypes?
+    #     # TODO: If datatype is changed should verify existing data can be cast to it
+    #     if dtype in DATA_TYPES:
+    #         self.__datatype = dtype
+    #     elif dtype is None:
+    #         self.__datatype = None
+    #     else:
+    #         # TODO: This should raise and error (what kind?)
+    #         raise TypeError(f'Invalid datatype, {dtype}, specified for parameter')
+    #
+    # @property
+    # def default(self) -> Union[int, float, str, None]:
+    #     """Returns the default value for the parameter.
+    #
+    #     :returns: Default value defined for the parameter
+    #     """
+    #     return self.__default
+    #
+    # @default.setter
+    # def default(self, value: Union[int, float, str, None]):
+    #     """Set the default value for the parameter.
+    #
+    #     :param value: default value for the parameter
+    #     """
+    #     # TODO: 2020-04-30 PAN: This should check if given value is between
+    #     #                       min and max valid values (if set)
+    #     if self.__datatype is None or value is None:
+    #         self.__default = value
+    #     elif DATA_TYPES[self.__datatype] == 'float':
+    #         self.__default = float(value)
+    #     elif DATA_TYPES[self.__datatype] == 'integer':
+    #         self.__default = int(value)
+    #     else:
+    #         self.__default = value
+    #
+    # @property
+    # def description(self) -> str:
+    #     """Returns the parameter description.
+    #
+    #     :returns: parameter description
+    #     """
+    #     return self.__description
+    #
+    # @description.setter
+    # def description(self, descstr: str):
+    #     """Set the model description for the parameter.
+    #
+    #     :param descstr: Description string
+    #     """
+    #     self.__description = descstr
 
     @property
     def dimensions(self) -> ParamDimensions:
@@ -286,21 +304,21 @@ class Parameter(object):
         :returns: Dimensions object for the parameter"""
         return self.__dimensions
 
-    @property
-    def help(self) -> str:
-        """Returns the help information for the parameter.
-
-        :returns: parameter help information
-        """
-        return self.__help
-
-    @help.setter
-    def help(self, helpstr: str):
-        """Set the help string for the parameter.
-
-        :param helpstr: Help string
-        """
-        self.__help = helpstr
+    # @property
+    # def help(self) -> str:
+    #     """Returns the help information for the parameter.
+    #
+    #     :returns: parameter help information
+    #     """
+    #     return self.__help
+    #
+    # @help.setter
+    # def help(self, helpstr: str):
+    #     """Set the help string for the parameter.
+    #
+    #     :param helpstr: Help string
+    #     """
+    #     self.__help = helpstr
 
     @property
     def index_map(self) -> Union[OrderedDict[Any, int], None]:
@@ -314,75 +332,75 @@ class Parameter(object):
 
         return OrderedDict((val, idx) for idx, val in enumerate(self.__data.tolist()))
 
-    @property
-    def maximum(self) -> Union[int, float, str, None]:
-        """Returns the maximum valid value for the parameter.
+    # @property
+    # def maximum(self) -> Union[int, float, str, None]:
+    #     """Returns the maximum valid value for the parameter.
+    #
+    #     :returns: maximum valid data value
+    #     """
+    #     return self.__maximum
+    #
+    # @maximum.setter
+    # def maximum(self, value: Union[int, float, str, None]):
+    #     """Set the maximum valid value for the parameter.
+    #
+    #     :param value: The maximum valid value
+    #     """
+    #     if self.__datatype is None or value is None:
+    #         self.__maximum = value
+    #     elif DATA_TYPES[self.__datatype] == 'float':
+    #         self.__maximum = float(value)
+    #     elif DATA_TYPES[self.__datatype] == 'integer':
+    #         try:
+    #             self.__maximum = int(value)
+    #         except ValueError:
+    #             # This happens with bounded parameters
+    #             self.__maximum = value
+    #     else:
+    #         self.__maximum = value
 
-        :returns: maximum valid data value
-        """
-        return self.__maximum
-
-    @maximum.setter
-    def maximum(self, value: Union[int, float, str, None]):
-        """Set the maximum valid value for the parameter.
-
-        :param value: The maximum valid value
-        """
-        if self.__datatype is None or value is None:
-            self.__maximum = value
-        elif DATA_TYPES[self.__datatype] == 'float':
-            self.__maximum = float(value)
-        elif DATA_TYPES[self.__datatype] == 'integer':
-            try:
-                self.__maximum = int(value)
-            except ValueError:
-                # This happens with bounded parameters
-                self.__maximum = value
-        else:
-            self.__maximum = value
-
-    @property
-    def minimum(self) -> Union[int, float, str, None]:
-        """Returns the minimum valid value for the parameter.
-
-        :returns: minimum valid data value
-        """
-        return self.__minimum
-
-    @minimum.setter
-    def minimum(self, value: Union[int, float, str, None]):
-        """Set the minimum valid value for the parameter.
-
-        :param value: The minimum valid value
-        """
-        if self.__datatype is None or value is None:
-            self.__minimum = value
-        elif DATA_TYPES[self.__datatype] == 'float':
-            self.__minimum = float(value)
-        elif DATA_TYPES[self.__datatype] == 'integer':
-            try:
-                self.__minimum = int(value)
-            except ValueError:
-                # This happens with 'bounded' parameters
-                self.__minimum = str(value)
-        else:
-            self.__minimum = value
-
-    @property
-    def model(self) -> str:
-        """Returns the model the parameter is used in.
-
-        :returns: model string
-        """
-        return self.__model
-
-    @model.setter
-    def model(self, modelstr: str):
-        """Set the model description for the parameter.
-
-        :param modelstr: String denoting the model (e.g. PRMS)
-        """
-        self.__model = modelstr
+    # @property
+    # def minimum(self) -> Union[int, float, str, None]:
+    #     """Returns the minimum valid value for the parameter.
+    #
+    #     :returns: minimum valid data value
+    #     """
+    #     return self.__minimum
+    #
+    # @minimum.setter
+    # def minimum(self, value: Union[int, float, str, None]):
+    #     """Set the minimum valid value for the parameter.
+    #
+    #     :param value: The minimum valid value
+    #     """
+    #     if self.__datatype is None or value is None:
+    #         self.__minimum = value
+    #     elif DATA_TYPES[self.__datatype] == 'float':
+    #         self.__minimum = float(value)
+    #     elif DATA_TYPES[self.__datatype] == 'integer':
+    #         try:
+    #             self.__minimum = int(value)
+    #         except ValueError:
+    #             # This happens with 'bounded' parameters
+    #             self.__minimum = str(value)
+    #     else:
+    #         self.__minimum = value
+    #
+    # @property
+    # def model(self) -> str:
+    #     """Returns the model the parameter is used in.
+    #
+    #     :returns: model string
+    #     """
+    #     return self.__model
+    #
+    # @model.setter
+    # def model(self, modelstr: str):
+    #     """Set the model description for the parameter.
+    #
+    #     :param modelstr: String denoting the model (e.g. PRMS)
+    #     """
+    #     self.__model = modelstr
 
     @property
     def modified(self) -> bool:
@@ -440,21 +458,21 @@ class Parameter(object):
         # Compute the total size of the parameter
         return functools.reduce(lambda x, y: x * y, arr_shp)
 
-    @property
-    def units(self) -> str:
-        """Returns the parameter units.
-
-        :returns: units for the parameter
-        """
-        return self.__units
-
-    @units.setter
-    def units(self, unitstr: str):
-        """Set the parameter units.
-
-        :param unitstr: String denoting the units for the parameter (e.g. mm)
-        """
-        self.__units = unitstr
+    # @property
+    # def units(self) -> str:
+    #     """Returns the parameter units.
+    #
+    #     :returns: units for the parameter
+    #     """
+    #     return self.__units
+    #
+    # @units.setter
+    # def units(self, unitstr: str):
+    #     """Set the parameter units.
+    #
+    #     :param unitstr: String denoting the units for the parameter (e.g. mm)
+    #     """
+    #     self.__units = unitstr
 
     @property
     def xml(self) -> xmlET.Element:

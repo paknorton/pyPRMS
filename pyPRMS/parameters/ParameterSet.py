@@ -28,7 +28,7 @@ class ParameterSet(object):
     Container for a Parameters object and a Dimensions object.
     """
 
-    def __init__(self, verbose: Optional[bool] = False,
+    def __init__(self, metadata, verbose: Optional[bool] = False,
                  verify: Optional[bool] = True):
         """Create a new ParameterSet.
 
@@ -36,8 +36,9 @@ class ParameterSet(object):
         :param verify: whether to load the master parameters (default=True)
         """
 
+        self.__dimensions = Dimensions(metadata=metadata['dimensions'], verbose=verbose,
+                                       verify=verify)
         self.__parameters = Parameters()
-        self.__dimensions = Dimensions()
 
         # TODO: 2020-06-12 PAN shouldn't this be part of the Parameters class?
         self.__master_params: Optional[ValidParams] = None
