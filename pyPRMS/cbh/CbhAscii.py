@@ -164,6 +164,10 @@ class CbhAscii(object):
                              index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
 
         df.index = pd.to_datetime(df.index, exact=True, cache=True, format=TS_FORMAT)
+
+        # Rename columns with local model indices
+        ren_dict = {k + 6: k + 1 for k in range(len(df.columns))}
+        df.rename(columns=ren_dict, inplace=True)
         return df
 
     def check_region(self, region: str) -> Union[OrderedDictType[int, int], None]:
