@@ -626,10 +626,20 @@ class ParameterSet(object):
         # Write the parameters out to a file
         outfile = open(filename, 'w')
 
-        if header:
+        if header is not None:
+            if len(header) > 2:
+                raise ValueError('Header should be a list of two items')
+            if header == 1:
+                # Must have two header lines
+                outfile.write('Written by pyPRMS\n')
+
             for hh in header:
                 # Write out any header stuff
                 outfile.write(f'{hh}\n')
+        else:
+            # Write a default header
+            outfile.write('Written by pyPRMS\n')
+            outfile.write('Comment: It is all downhill from here\n')
 
         # Dimension section must be written first
         outfile.write(f'{CATEGORY_DELIM} Dimensions {CATEGORY_DELIM}\n')
