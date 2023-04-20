@@ -628,8 +628,10 @@ class ParameterSet(object):
 
         if header is not None:
             if len(header) > 2:
+                # TODO: 2023-04-19 - this check should happen before
+                #       opening the output file.
                 raise ValueError('Header should be a list of two items')
-            if header == 1:
+            if len(header) == 1:
                 # Must have two header lines
                 outfile.write('Written by pyPRMS\n')
 
