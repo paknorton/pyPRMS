@@ -1175,7 +1175,7 @@
         <desc>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</desc>
     </control_param>
     <control_param name="basinOutVar_names" version="5.0" deprecated="6.0">
-        <default>basin_summary_</default>
+        <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which output is written to basin summary Comma Separated Values (CSV) output file(s). Each variable is written to files in the order specified in basinOutVars with the prefix of each file equal to the value of basinOutBaseFileName. The suffix of the files is based on the value of basinOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
