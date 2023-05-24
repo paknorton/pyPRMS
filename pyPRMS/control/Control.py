@@ -7,14 +7,14 @@ import pkgutil
 import re
 import xml.etree.ElementTree as xmlET
 
-from collections import OrderedDict
+# from collections import OrderedDict
 
-from typing import Dict, List, Optional, OrderedDict as OrderedDictType, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Union   # OrderedDict as OrderedDictType,
 
 from ..prms_helpers import version_info
 from .ControlVariable import ControlVariable
 from ..Exceptions_custom import ControlError
-from ..constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, VAR_DELIM, PTYPE_TO_PRMS_TYPE
+from ..constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, MetaDataType, VAR_DELIM, PTYPE_TO_PRMS_TYPE
 
 cond_check = {'=': operator.eq,
               '>': operator.gt,
@@ -28,20 +28,23 @@ class Control(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-18
 
-    def __init__(self, metadata, verbose: Optional[bool] = False, version: Optional[Union[str, int]] = 5):
+    def __init__(self, metadata: MetaDataType, verbose: Optional[bool] = False, version: Optional[Union[str, int]] = 5):
         """Create Control object.
         """
 
         # Container to hold dicionary of ControlVariables
-        self.__control_vars = OrderedDict()
-        self.__header = None
+        # self.__control_vars = OrderedDict()
+        self.__control_vars: Dict = {}
+        self.__header: Optional[List[str]] = None
         self.__verbose = verbose
 
-        for cvar, cvals in metadata.items():
-            # print(cvar)
+        # Create an entry for each variable in the control section of
+        # the metadata dictionary
+        for cvar, cvals in metadata['control'].items():
             self.add(name=cvar, meta=cvals)
 
-        print('Pre-populate done')
+        if verbose:
+            print('Pre-populate control variables done')
 
     def __getitem__(self, item: str) -> ControlVariable:
         """Get ControlVariable object for a variable.
@@ -62,7 +65,8 @@ class Control(object):
         return data_dict
 
     @property
-    def control_variables(self) -> OrderedDictType[str, ControlVariable]:
+    def control_variables(self) -> Dict[str, ControlVariable]:
+    # def control_variables(self) -> OrderedDictType[str, ControlVariable]:
         """Get control variable objects.
 
         :returns: control variable objects
@@ -76,7 +80,7 @@ class Control(object):
         :returns: list of parameter names
         """
 
-        dyn_params = []
+        dyn_params: List[str] = []
 
         for dv in self.__control_vars.keys():
             cvar = self.get(dv)
@@ -97,7 +101,7 @@ class Control(object):
         return len(self.dynamic_parameters) > 0
 
     @property
-    def header(self) -> Union[List[str], None]:
+    def header(self) -> Optional[Sequence[str]]:
         """Get header information defined for a control object.
 
         This is typically taken from the first two lines of a control file.
@@ -107,15 +111,17 @@ class Control(object):
         return self.__header
 
     @header.setter
-    def header(self, info: Union[Sequence[str], str]):
+    def header(self, info: Union[Sequence[str], str, None]):
         """Set the header information.
 
         :param info: list or string of header line(s)
         """
 
-        if isinstance(info, list):
+        if info is None:
+            self.__header = None
+        elif isinstance(info, list):
             self.__header = info
-        else:
+        elif isinstance(info, str):
             self.__header = [info]
 
     @property
@@ -138,7 +144,7 @@ class Control(object):
                     if vv.values == 'climate_hru':
                         mname = 'temperature_hru'
 
-                mod_dict[vv.name] = mname
+                mod_dict[vv.name] = str(mname)
 
         # Add the modules that are implicitly included
         for mtype, mname in ctl_implicit_modules.items():
@@ -236,8 +242,9 @@ class Control(object):
 
         outfile = open(filename, 'w')
 
-        for hh in self.__header:
-            outfile.write(f'{hh}\n')
+        if self.__header is not None:
+            for hh in self.__header:
+                outfile.write(f'{hh}\n')
 
         order = ['datatype', 'values']
 
@@ -266,7 +273,7 @@ class Control(object):
                                 outfile.write(f'{cval}\n')
                     else:
                         if item == 'datatype':
-                            outfile.write(f'{cvar.values.size}\n')
+                            outfile.write(f'{cvar.size}\n')
                             outfile.write(f'{PTYPE_TO_PRMS_TYPE[cvar.meta["datatype"]]}\n')
                         if item == 'values':
                             if cvar.meta['context'] == 'scalar':
