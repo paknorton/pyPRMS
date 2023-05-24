@@ -17,7 +17,7 @@ class ControlVariable(object):
     # Create date: 2019-04-18
 
     def __init__(self, name: str,
-                 meta=None):
+                 meta: Optional[Dict] = None):
         """Initialize a control variable object.
 
         :param name: Name of control variable
@@ -30,19 +30,20 @@ class ControlVariable(object):
 
     def __str__(self) -> str:
         outstr = f'name: {self.name}\n'
-        outstr += f'datatype: {self.meta["datatype"]}\n'
-        # outstr += f'datatype: {self.datatype} ({DATA_TYPES[self.datatype]})\n'
+        if self.meta is not None:
+            outstr += f'datatype: {self.meta.get("datatype")}\n'
+            # outstr += f'datatype: {self.datatype} ({DATA_TYPES[self.datatype]})\n'
 
-        outstr += f'description: {self.meta["description"]}\n'
-        outstr += f'default: {self.meta["default"]}\n'
+            outstr += f'description: {self.meta["description"]}\n'
+            outstr += f'default: {self.meta["default"]}\n'
 
-        if 'valid_value_type' in self.meta:
-            outstr += f'valid values represent: {self.meta["valid_value_type"]}\n'
+            if 'valid_value_type' in self.meta:
+                outstr += f'valid values represent: {self.meta["valid_value_type"]}\n'
 
-        if 'valid_values' in self.meta:
-            outstr += f'valid_values: \n'
-            for kk, vv in self.meta['valid_values'].items():
-                outstr += f'   {kk}: {vv}\n'
+            if 'valid_values' in self.meta:
+                outstr += f'valid_values: \n'
+                for kk, vv in self.meta['valid_values'].items():
+                    outstr += f'   {kk}: {vv}\n'
 
         return outstr
 
@@ -96,13 +97,16 @@ class ControlVariable(object):
         :returns: Value(s) of control variable
         """
 
-        if self.meta.get('force_default', False):
-            return self.meta['default']
+        if self.meta is not None:
+            force_default = self.meta.get('force_default', False)
 
-        if self.__values is not None:
-            return self.__values
+            if force_default:
+                return self.meta['default']
 
-        return self.meta['default']
+            if self.__values is not None:
+                return self.__values
+
+        return None
 
     @values.setter
     def values(self, data: Union[Sequence[str], str, int, float, datetime.datetime]):
@@ -111,31 +115,35 @@ class ControlVariable(object):
         :param data: list or string of value(s)
         """
 
-        cdtype = NEW_PTYPE_TO_DTYPE[self.meta['datatype']]
+        if self.meta is not None:
+            cdtype = NEW_PTYPE_TO_DTYPE[self.meta['datatype']]
 
-        if self.meta['context'] == 'scalar':
-            if isinstance(data, list):
-                self.__values = np.array(data, dtype=cdtype)[0]
-            elif isinstance(data, np.ndarray):
-                if data.dtype == cdtype:
-                    self.__values = data[0]
-                elif self.meta['datatype'] == 'datetime':
-                    self.__values = cdtype(set_date(data))
+            if self.meta['context'] == 'scalar':
+                if isinstance(data, list):
+                    self.__values = np.array(data, dtype=cdtype)[0]
+                elif isinstance(data, np.ndarray):
+                    if data.dtype == cdtype:
+                        self.__values = data[0]
+                    elif self.meta['datatype'] == 'datetime':
+                        self.__values = cdtype(set_date(data))
+                    else:
+                        print(f'WARNING: {self.name} - datatype inconsistency; no values added')
                 else:
-                    print(f'WARNING: {self.name} - datatype inconsistency; no values added')
+                    self.__values = cdtype(data)
             else:
-                self.__values = cdtype(data)
-        else:
-            if isinstance(data, list):
-                self.__values = np.array(data, dtype=cdtype)
-            elif isinstance(data, np.ndarray):
-                if data.dtype == cdtype:
-                    self.__values = data
-                else:
-                    # Attempt to convert to correct datatype
+                if isinstance(data, list):
                     self.__values = np.array(data, dtype=cdtype)
-            else:
-                self.__values = np.array([data], dtype=cdtype)
+                elif isinstance(data, np.ndarray):
+                    if data.dtype == cdtype:
+                        self.__values = data
+                    else:
+                        # Attempt to convert to correct datatype
+                        self.__values = np.array(data, dtype=cdtype)
+                else:
+                    self.__values = np.array([data], dtype=cdtype)
+        else:
+            # TODO: 2023-05-24 PAN - probably raise an error if this happens
+            print('ERROR: meta is not defined; values not added.')
 
     @property
     def value_meaning(self) -> Union[str, None]:
@@ -144,13 +152,15 @@ class ControlVariable(object):
         :returns: Control variable value meaning
         """
 
-        # This will fail for keys that are conditionals (e.g. ">0")
-        try:
-            if 'valid_values' in self.meta:
-                # We want a KeyError here if the key is missing
-                return self.meta['valid_values'][self.values]
+        if self.meta is not None:
+            # This will fail for keys that are conditionals (e.g. ">0")
+            try:
+                if 'valid_values' in self.meta:
+                    # We want a KeyError here if the key is missing
+                    return self.meta['valid_values'][self.values]
 
-            return None
-        except KeyError:
-            # Try again but return None if the key is still missing
-            return self.meta['valid_values'].get(str(self.values), None)
+                return None
+            except KeyError:
+                # Try again but return None if the key is still missing
+                return self.meta['valid_values'].get(str(self.values), None)
+        return None
