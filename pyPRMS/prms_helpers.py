@@ -12,6 +12,8 @@ import numpy as np
 import re
 import xml.etree.ElementTree as xmlET
 
+from constants import Version
+
 def read_xml(filename: str) -> xmlET.Element:
     """Returns the root of the xml tree for a given file.
 
@@ -72,70 +74,70 @@ def set_date(adate: Union[datetime.datetime, datetime.date, str]) -> datetime.da
         return datetime.datetime(*[int(x) for x in re.split('[- :]', adate)])  # type: ignore
 
 
-def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
+def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> Version:
+    """Given a version string (MM.mm.rr) returns a named tuple of version values
+    """
 
-    Version = namedtuple('Version', ['major', 'minor', 'revision'])
-    flds = [None, None, None]
+    # Version = NamedTuple('Version', [('major', Union[int, None]),
+    #                                  ('minor', Union[int, None]),
+    #                                  ('revision', Union[int, None])])
+    flds: List[Union[int, None]] = [None, None, None]
 
-    # if version_str is None:
-    #     return Version(0, 0, 0)
     if version_str is not None:
         for ii, kk in enumerate(version_str.split(delim)):
             flds[ii] = int(kk)
-    # flds = [int(kk) for kk in version_str.split(delim)]
 
     return Version(flds[0], flds[1], flds[2])
 
 
-    def str_to_float(data: Union[List[str], str]) -> List[float]:
-        """Convert strings to floats.
+def str_to_float(data: Union[List[str], str]) -> List[float]:
+    """Convert strings to floats.
 
-        :param data: data value(s)
+    :param data: data value(s)
 
-        :returns: Array of floats
-        """
+    :returns: Array of floats
+    """
 
-        # Convert provided list of data to float
-        if isinstance(data, str):
-            return [float(data)]
-        elif isinstance(data, list):
-            try:
-                return [float(vv) for vv in data]
-            except ValueError as ve:
-                print(ve)
+    # Convert provided list of data to float
+    if isinstance(data, str):
+        return [float(data)]
+    elif isinstance(data, list):
+        try:
+            return [float(vv) for vv in data]
+        except ValueError as ve:
+            print(ve)
+
+def str_to_int(data: Union[List[str], str]) -> List[int]:
+    """Converts strings to integers.
+
+    :param data: data value(s)
+
+    :returns: array of integers
+    """
+
+    if isinstance(data, str):
+        return [int(data)]
+    elif isinstance(data, list):
+        # Convert list of data to integer
+        try:
+            return [int(vv) for vv in data]
+        except ValueError as ve:
+            print(ve)
 
 
-    def str_to_int(data: Union[List[str], str]) -> List[int]:
-        """Converts strings to integers.
+def str_to_str(data: Union[List[str], str]) -> List[str]:
+    """Null op for string-to-string conversion.
 
-        :param data: data value(s)
+    :param data: data value(s)
 
-        :returns: array of integers
-        """
+    :returns: unmodified array of data
+    """
 
-        if isinstance(data, str):
-            return [int(data)]
-        elif isinstance(data, list):
-            # Convert list of data to integer
-            try:
-                return [int(vv) for vv in data]
-            except ValueError as ve:
-                print(ve)
+    # nop for list of strings
+    if isinstance(data, str):
+        data = [data]
 
-
-    def str_to_str(data: Union[List[str], str]) -> List[str]:
-        """Null op for string-to-string conversion.
-
-        :param data: data value(s)
-
-        :returns: unmodified array of data
-        """
-
-        # nop for list of strings
-        if isinstance(data, str):
-            data = [data]
-
-        return data
+    return data
 # def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
 #
 #     Version = namedtuple('Version', ['major', 'minor', 'revision'])
