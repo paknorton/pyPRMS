@@ -1,6 +1,13 @@
 import numpy as np
 
-from typing import List
+from typing import Dict, List, NamedTuple, Union
+
+# Define aliases for static typing
+MetaDataType = Dict[str, Dict]
+
+Version = NamedTuple('Version', [('major', Union[int, None]),
+                                 ('minor', Union[int, None]),
+                                 ('revision', Union[int, None])])
 
 # Order to write control file parameters for printing and writing a new control file
 ctl_order = ['start_time', 'end_time', 'initial_deltat', 'executable_desc', 'executable_model', 'model_mode',
