@@ -1,13 +1,14 @@
 
-import constants
-import Exceptions_custom
-import plot_helpers
-import prms_helpers
+from . import constants
+from . import Exceptions_custom
+from . import plot_helpers
+from . import prms_helpers
 from .control.Control import Control
 from .control.ControlVariable import ControlVariable
 from .control.ControlFile import ControlFile
 from .dimensions.Dimension import Dimension
 from .dimensions.Dimensions import Dimensions, ParamDimensions
+from .metadata.metadata import MetaData
 from .summary.OutputVariables import OutputVariables
 from .parameters.Parameter import Parameter
 from .parameters.Parameters import Parameters
@@ -39,6 +40,7 @@ __all__ = ['constants',
            'ControlVariable',
            'Dimension',
            'Dimensions',
+           'MetaData',
            'OutputVariables',
            'ParamDimensions',
            'Parameter',
