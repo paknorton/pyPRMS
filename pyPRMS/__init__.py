@@ -1,4 +1,8 @@
 
+import constants
+import Exceptions_custom
+import plot_helpers
+import prms_helpers
 from .control.Control import Control
 from .control.ControlVariable import ControlVariable
 from .control.ControlFile import ControlFile
@@ -20,7 +24,11 @@ from .Streamflow import Streamflow
 
 from .version import __author__, __author_email__, __version__
 
-__all__ = ['control',
+__all__ = ['constants',
+           'Exceptions_custom',
+           'plot_helpers',
+           'prms_helpers',
+           'control',
            'dimensions',
            'parameters',
            'cbh',
