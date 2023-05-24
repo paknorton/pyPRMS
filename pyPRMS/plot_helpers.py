@@ -8,7 +8,7 @@ from typing import Optional, Sequence, Set, Union
 
 import cartopy.crs as ccrs
 import copy
-import geopandas
+
 import matplotlib as mpl
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
@@ -17,6 +17,9 @@ import pandas as pd
 import pyproj as prj
 import shapely
 
+import os
+os.environ['USE_PYGEOS'] = '0'
+import geopandas
 
 def read_gis(filename: str, layer_name: str):
     """Read a shapefile or geodatabase that corresponds to HRUs.
