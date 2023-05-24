@@ -34,7 +34,7 @@ class ControlVariable(object):
         # outstr += f'datatype: {self.datatype} ({DATA_TYPES[self.datatype]})\n'
 
         outstr += f'description: {self.meta["description"]}\n'
-        outstr += f'default value: {self.meta["default"]}\n'
+        outstr += f'default: {self.meta["default"]}\n'
 
         if 'valid_value_type' in self.meta:
             outstr += f'valid values represent: {self.meta["valid_value_type"]}\n'
@@ -46,26 +46,26 @@ class ControlVariable(object):
 
         return outstr
 
-    @property
-    def associated_values(self) -> List[str]:
-        """Get list of valid values for a control variable.
-
-        :returns: Control variable valid values
-        """
-
-        # TODO: this function should be renamed
-        assoc_vals = []
-        # if self.__valid_values is not None:
-        if 'valid_values' in self.meta:
-            return list(self.meta['valid_values'][self.values])
-            # for xx in self.values:
-            #     for vv in self.__valid_values[xx]:
-            #         assoc_vals.append(vv)
-            # else:
-            #     for vv in self.__valid_values[str(self.values)]:
-            #         assoc_vals.append(vv)
-
-        return assoc_vals
+    # @property
+    # def associated_values(self) -> List[str]:
+    #     """Get list of valid values for a control variable.
+    #
+    #     :returns: Control variable valid values
+    #     """
+    #
+    #     # TODO: this function should be renamed
+    #     assoc_vals = []
+    #     # if self.__valid_values is not None:
+    #     if 'valid_values' in self.meta:
+    #         return list(self.meta['valid_values'][self.values])
+    #         # for xx in self.values:
+    #         #     for vv in self.__valid_values[xx]:
+    #         #         assoc_vals.append(vv)
+    #         # else:
+    #         #     for vv in self.__valid_values[str(self.values)]:
+    #         #         assoc_vals.append(vv)
+    #
+    #     return assoc_vals
 
     @property
     def name(self) -> str:
@@ -76,6 +76,16 @@ class ControlVariable(object):
 
         return self.__name
 
+    @property
+    def size(self) -> int:
+        """Return number of values"""
+        if self.__values is None:
+            return 0
+        elif isinstance(self.__values, np.ndarray):
+            return self.__values.size
+        else:
+            # int, float, str scalars
+            return 1
     @property
     def values(self) -> Union[np.ndarray, int, float, str, None]:
         """Get the values for the control variable.
@@ -127,3 +137,20 @@ class ControlVariable(object):
             else:
                 self.__values = np.array([data], dtype=cdtype)
 
+    @property
+    def value_meaning(self) -> Union[str, None]:
+        """Returns the meaning for a given value if it exists.
+
+        :returns: Control variable value meaning
+        """
+
+        # This will fail for keys that are conditionals (e.g. ">0")
+        try:
+            if 'valid_values' in self.meta:
+                # We want a KeyError here if the key is missing
+                return self.meta['valid_values'][self.values]
+
+            return None
+        except KeyError:
+            # Try again but return None if the key is still missing
+            return self.meta['valid_values'].get(str(self.values), None)
