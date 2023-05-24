@@ -3,9 +3,10 @@ import io
 import pkgutil
 import xml.etree.ElementTree as xmlET   # type: ignore
 from collections import defaultdict
+from typing import Dict, Optional, Union
 
 from pyPRMS.prms_helpers import set_date, version_info
-from ..constants import NEW_PTYPE_TO_DTYPE
+from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
 
 outside_elem = {'control': 'control_param',
                 'parameters': 'parameter',
@@ -20,7 +21,7 @@ NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
 class MetaData(object):
     """Class to handle variable and parameter metadata"""
 
-    def __init__(self, version=5, verbose=False):
+    def __init__(self, version: Optional[Union[str, int]] = 5, verbose: Optional[bool] = False):
         # meta_type - one of control, dimension, parameter, output
         # version - PRMS major version to use for filtering
 
@@ -30,7 +31,7 @@ class MetaData(object):
                    'variables': self.__variables_to_dict
                    }
 
-        self.__meta_dict = {}
+        self.__meta_dict: MetaDataType = {}
         self.__version = version
         self.__verbose = verbose
 
@@ -44,14 +45,14 @@ class MetaData(object):
             self.__meta_dict[mt] = mf(xml_root, mt, self.__version)
 
     @property
-    def metadata(self):
+    def metadata(self) -> MetaDataType:
         return self.__meta_dict
 
     # @staticmethod
-    def __control_to_dict(self, xml_root, meta_type, version):
+    def __control_to_dict(self, xml_root, meta_type, version) -> Dict:
         """Convert control file metadata to dictionary"""
 
-        meta_dict = {}
+        meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
@@ -119,7 +120,7 @@ class MetaData(object):
                 meta_dict[name]['force_default'] = elem.find('force_default').text == '1'
 
             # Possible valid values for variable
-            outvals = {}
+            # outvals = {}
             for cvals in elem.findall('./values'):
                 meta_dict[name]['valid_value_type'] = cvals.attrib.get('type')
 
@@ -129,10 +130,10 @@ class MetaData(object):
 
         return meta_dict
 
-    def __parameters_to_dict(self, xml_root, meta_type, version):
+    def __parameters_to_dict(self, xml_root, meta_type, version) -> Dict:
         """Convert control file metadata to dictionary"""
 
-        meta_dict = {}
+        meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
@@ -186,10 +187,10 @@ class MetaData(object):
 
         return meta_dict
 
-    def __dimensions_to_dict(self, xml_root, meta_type, version):
+    def __dimensions_to_dict(self, xml_root, meta_type, version) -> Dict:
         """Convert control file metadata to dictionary"""
 
-        meta_dict = {}
+        meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
@@ -241,10 +242,10 @@ class MetaData(object):
 
         return meta_dict
 
-    def __variables_to_dict(self, xml_root, meta_type, version):
+    def __variables_to_dict(self, xml_root, meta_type, version) -> Dict:
         """Convert control file metadata to dictionary"""
 
-        meta_dict = {}
+        meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
