@@ -105,6 +105,8 @@ class ControlVariable(object):
 
             if self.__values is not None:
                 return self.__values
+            else:
+                return self.meta.get('default', None)
 
         return None
 
