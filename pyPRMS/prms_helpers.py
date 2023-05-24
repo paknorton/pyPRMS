@@ -12,7 +12,7 @@ import numpy as np
 import re
 import xml.etree.ElementTree as xmlET
 
-from constants import Version
+from .constants import Version
 
 def read_xml(filename: str) -> xmlET.Element:
     """Returns the root of the xml tree for a given file.
