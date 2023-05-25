@@ -1,39 +1,36 @@
 
-from collections import OrderedDict
+# from collections import OrderedDict
 
-try:
-    from typing import Any, cast, Dict, Optional, OrderedDict as OrderedDictType, Union
-except ImportError:
-    # pre-python 3.7.2
-    from typing import cast, Dict, Optional, MutableMapping as OrderedDictType   # type: ignore
+from typing import Any, cast, Dict, Optional, Union   # , OrderedDict as OrderedDictType, Union
 
 import xml.etree.ElementTree as xmlET
 
 from .Dimension import Dimension
+from ..constants import MetaDataType
 from ..prms_helpers import read_xml
 
 
 class Dimensions(object):
     """Container of Dimension objects."""
-    __dimensions: OrderedDictType[str, Dimension]
+    __dimensions: Dict[str, Dimension]
 
-    def __init__(self, metadata=None, verbose: Optional[bool] = False,
-                 verify: Optional[bool] = True):
-        """Create ordered dictionary containing Dimension objects.
+    def __init__(self, metadata: Optional[MetaDataType] = None,
+                 verbose: Optional[bool] = False):
+        """Create dictionary containing Dimension objects.
 
         :param verbose: Output additional debug information
-        :param verify: Enforce valid dimension names (default=True)
         """
-        self.__dimensions: OrderedDict[str, Dimension] = OrderedDict()
+        self.__dimensions: Dict[str, Dimension] = {}
         self.__verbose = verbose
-        self.__verify = verify
+        self.metadata: Union[Dict, None] = None
 
-        self.metadata = metadata
+        if metadata is not None:
+            self.metadata = metadata['dimensions']
 
-        if self.metadata is not None:
-            for cdim, cvals in self.metadata.items():
-                self.add(name=cdim, meta=self.metadata)
-                # self.add(name=cdim, meta=cvals)
+        # if self.metadata is not None:
+        #     for cdim, cvals in self.metadata.items():
+        #         self.add(name=cdim, meta=self.metadata)
+        #
 
     def __str__(self) -> str:
         """Pretty-print dimensions.
@@ -46,7 +43,7 @@ class Dimensions(object):
             outstr = '<empty>'
         else:
             for kk, vv in self.__dimensions.items():
-                outstr += f'{kk}: {vv}\n'
+                outstr += f'{vv}\n'
         return outstr
 
     def __getattr__(self, name: str) -> Any:
@@ -68,7 +65,7 @@ class Dimensions(object):
         return self.__dimensions[item]
 
     @property
-    def dimensions(self) -> OrderedDictType[str, Dimension]:
+    def dimensions(self) -> Dict[str, Dimension]:
         """Get ordered dictionary of Dimension objects.
 
         :returns: OrderedDict of Dimension objects
@@ -103,7 +100,7 @@ class Dimensions(object):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name: str, size=None, meta=None):
+    def add(self, name: str, size: Optional[int] = None):
         """Add a new Dimension object.
 
         :param name: Name of the dimension
@@ -112,15 +109,8 @@ class Dimensions(object):
 
         # This method adds a dimension if it doesn't exist
         # Duplicate dimension names are silently ignored
-        # TODO: check for valid dimension size for ndays, nmonths, and one
         if name not in self.__dimensions:
-            try:
-                self.__dimensions[name] = Dimension(name=name, meta=meta)
-            except ValueError as err:
-                if self.__verify:
-                    print(err)
-                else:
-                    pass
+            self.__dimensions[name] = Dimension(name=name, meta=self.metadata, size=size)
         # else:
         #     # TODO: Should this raise an error?
         #     print('Dimension {} already exists...skipping add name'.format(name))
@@ -179,7 +169,8 @@ class Dimensions(object):
 
         if self.exists(name):
             return self.__dimensions[name]
-        raise ValueError(f'Dimension, {name}, does not exist.')
+        else:
+            raise ValueError(f'Dimension, {name}, does not exist.')
 
     def remove(self, name: str):
         """Remove Dimension object.
@@ -230,18 +221,18 @@ class ParamDimensions(Dimensions):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name: str, size: int = 0):
+    def add(self, name: str, size: Optional[int] = None):
         """Add a new Dimension object.
 
         :param name: Name of the dimension
         :param size: Size of the dimension
         """
 
+        if self.ndims == 2:
+            raise ValueError('A parameter cannot have more than two dimensions.')
+
         # Restrict number of dimensions for parameters
         super().add(name, size)
-
-        if self.ndims > 2:
-            raise ValueError('Number of dimensions greater than 2 is not supported')
 
     def add_from_xml(self, filename: str):
         """Add one or more dimensions from an xml file.
