@@ -217,10 +217,14 @@ class MetaData(object):
             # if depr_version is not None:
             #     meta_dict[name]['deprecated'] = depr_version
 
-            elems = {'description': {'orig_name': 'desc', 'datatype': str},
-                     'size': {'orig_name': 'size', 'datatype': int},
-                     'default': {'orig_name': 'default', 'datatype': int},
-                     'is_fixed': {'orig_name': 'is_fixed', 'datatype': bool}}
+            elems = {'description': {'orig_name': 'desc',
+                                     'datatype': str},
+                     'size': {'orig_name': 'size',
+                              'datatype': int},
+                     'default': {'orig_name': 'default',
+                                 'datatype': int},
+                     'is_fixed': {'orig_name': 'is_fixed',
+                                  'datatype': bool}}
 
             for ek, ev in elems.items():
                 try:
