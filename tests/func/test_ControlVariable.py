@@ -4,10 +4,10 @@ from pyPRMS import ControlVariable
 from pyPRMS import MetaData
 # from pyPRMS.constants import NEW_PTYPE_TO_DTYPE   # PTYPE_TO_DTYPE
 
-metadata = {'int_val': {'datatype': 'int32', 'context': 'scalar', 'default': 1, 'force_default': False},
-            'float32_val': {'datatype': 'float32', 'context': 'scalar', 'default': 2.3, 'force_default': False},
-            'str_val': {'datatype': 'string', 'context': 'scalar', 'default': 'none', 'force_default': False},
-            'str_list': {'datatype': 'string', 'context': 'array', 'default': 'none', 'force_default': False}}
+# metadata = {'int_val': {'datatype': 'int32', 'context': 'scalar', 'default': 1, 'force_default': False},
+#             'float32_val': {'datatype': 'float32', 'context': 'scalar', 'default': 2.3, 'force_default': False},
+#             'str_val': {'datatype': 'string', 'context': 'scalar', 'default': 'none', 'force_default': False},
+#             'str_list': {'datatype': 'string', 'context': 'array', 'default': 'none', 'force_default': False}}
 
 
 class TestControlVariable:
