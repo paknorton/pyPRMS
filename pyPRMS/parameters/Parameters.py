@@ -1,33 +1,24 @@
 
-import os
-os.environ['USE_PYGEOS'] = '0'
-
 import cartopy.crs as ccrs  # type: ignore
 import gc
-import geopandas    # type: ignore
 import matplotlib as mpl        # type: ignore
 import matplotlib.pyplot as plt     # type: ignore
 import networkx as nx   # type: ignore
 import numpy as np
 import pandas as pd     # type: ignore
 
+from functools import cached_property
+from typing import Optional, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
-from collections import OrderedDict
+
 from ..Exceptions_custom import ParameterError
 from .Parameter import Parameter
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
+from ..constants import MetaDataType
 
-try:
-    # NOTE: cached_property is not available in python version < 3.8
-    from functools import cached_property
-except ImportError:
-    pass
-
-try:
-    from typing import Optional, Union, Dict, List, Set, Tuple, OrderedDict as OrderedDictType
-except ImportError:
-    # pre-python 3.7.2
-    from typing import Optional, Union, Dict, List, MutableMapping as OrderedDictType   # type: ignore
+import os
+os.environ['USE_PYGEOS'] = '0'
+import geopandas    # type: ignore
 
 
 class Parameters(object):
@@ -37,18 +28,19 @@ class Parameters(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2017-05-01
 
-    def __init__(self):
+    def __init__(self, metadata: MetaDataType):
         """Initialize the Parameters object.
 
         Create an ordered dictionary to contain pyPRMS.Parameter objects
         """
-        self.__parameters = OrderedDict()
+        self.__parameters = dict()
         self.__hru_poly = None
         self.__hru_shape_key = None
         self.__seg_poly = None
         self.__seg_shape_key = None
         self.__seg_to_hru = None
         self.__hru_to_seg = None
+        self.metadata = metadata['parameters']
 
     def __getattr__(self, name):
         """Not sure what to write yet.
@@ -66,13 +58,13 @@ class Parameters(object):
 
     try:
         @cached_property
-        def hru_to_seg(self) -> OrderedDictType[int, int]:
+        def hru_to_seg(self) -> Dict[int, int]:
             """Returns an ordered dictionary mapping NHM HRU IDs to HRU NHM segment IDs.
 
             :returns: dictionary mapping nhm_id to hru_segment_nhm
             """
 
-            self.__hru_to_seg = OrderedDict()
+            self.__hru_to_seg = dict()
 
             hru_segment = self.__parameters['hru_segment_nhm'].tolist()
             nhm_id = self.__parameters['nhm_id'].tolist()
@@ -83,13 +75,13 @@ class Parameters(object):
             return self.__hru_to_seg
     except NameError:
         # Python pre-3.8 does not have the cache_property decorator
-        def hru_to_seg(self) -> OrderedDictType[int, int]:
+        def hru_to_seg(self) -> Dict[int, int]:
             """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs.
 
             :returns: dictionary mapping nhm_id to hru_segment_nhm
             """
 
-            self.__hru_to_seg = OrderedDict()
+            self.__hru_to_seg = dict()
 
             hru_segment = self.__parameters['hru_segment_nhm'].tolist()
             nhm_id = self.__parameters['nhm_id'].tolist()
@@ -100,7 +92,7 @@ class Parameters(object):
             return self.__hru_to_seg
 
     @property
-    def parameters(self) -> OrderedDictType[str, Parameter]:
+    def parameters(self) -> Dict[str, Parameter]:
         """Returns an ordered dictionary of parameter objects.
 
         :returns: dictionary of Parameter objects
@@ -114,7 +106,7 @@ class Parameters(object):
 
         :returns: dictionary mapping poi_id to poi_seg"""
 
-        return OrderedDict(zip(self.__parameters['poi_gage_id'].data,
+        return dict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data))
 
     @property
@@ -123,18 +115,18 @@ class Parameters(object):
 
         :returns: dictionary mapping poi_id to zero-based poi_seg"""
 
-        return OrderedDict(zip(self.__parameters['poi_gage_id'].data,
+        return dict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data - 1))
 
     try:
         @cached_property
-        def seg_to_hru(self) -> OrderedDictType[int, int]:
+        def seg_to_hru(self) -> Dict[int, int]:
             """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs.
 
             :returns: dictionary mapping hru_segment_nhm to nhm_id
             """
 
-            self.__seg_to_hru = OrderedDict()
+            self.__seg_to_hru = dict()
 
             hru_segment = self.__parameters['hru_segment_nhm'].tolist()
             nhm_id = self.__parameters['nhm_id'].tolist()
@@ -145,13 +137,13 @@ class Parameters(object):
                 self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
             return self.__seg_to_hru
     except NameError:
-        def seg_to_hru(self) -> OrderedDictType[int, int]:
+        def seg_to_hru(self) -> Dict[int, int]:
             """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs.
 
             :returns: dictionary mapping hru_segment_nhm to nhm_id
             """
 
-            self.__seg_to_hru = OrderedDict()
+            self.__seg_to_hru = dict()
 
             hru_segment = self.__parameters['hru_segment_nhm'].tolist()
             nhm_id = self.__parameters['nhm_id'].tolist()
@@ -162,31 +154,11 @@ class Parameters(object):
                 self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
             return self.__seg_to_hru
 
-    def add(self, name: Optional[str] = None,
-            datatype: Optional[int] = None,
-            units: Optional[str] = None,
-            model: Optional[str] = None,
-            description: Optional[str] = None,
-            help: Optional[str] = None,
-            modules: Optional[Union[str, List[str]]] = None,
-            minimum: Optional[Union[int, float, str]] = None,
-            maximum: Optional[Union[int, float, str]] = None,
-            default: Optional[Union[int, float, str]] = None,
-            info: Optional[Parameter] = None):
+    def add(self, name: str):
 
         """Add a new parameter by name.
 
         :param name: A valid PRMS parameter name
-        :param datatype: The datatype for the parameter (1-Integer, 2-Float, 3-Double, 4-String)
-        :param units: Option units string for the parameter
-        :param model: Name of model parameter is valid for
-        :param description: Description of the parameter
-        :param help: Help text for the parameter
-        :param modules: List of modules that require the parameter
-        :param minimum: Minimum value allowed in the parameter data
-        :param maximum: Maximum value allowed in the parameter data
-        :param default: Default value used for parameter data
-        :param info: Parameter object containing the metadata information for the parameter
 
         :raises ParameterError: if parameter already exists or name is None
         """
@@ -194,26 +166,8 @@ class Parameters(object):
         # Add a new parameter
         if self.exists(name):
             raise ParameterError("Parameter already exists")
-        elif name is None:
-            raise ParameterError("None is not a valid parameter name")
 
-        if isinstance(info, Parameter):
-            self.__parameters[name] = Parameter(name=name,
-                                                datatype=info.datatype,
-                                                units=info.units,
-                                                model=info.model,
-                                                description=info.description,
-                                                help=info.help,
-                                                modules=info.modules,
-                                                minimum=info.minimum,
-                                                maximum=info.maximum,
-                                                default=info.default)
-        else:
-            self.__parameters[name] = Parameter(name=name, datatype=datatype, units=units,
-                                                model=model, description=description,
-                                                help=help, modules=modules,
-                                                minimum=minimum, maximum=maximum,
-                                                default=default)
+        self.__parameters[name] = Parameter(name=name, meta=self.metadata)
 
     def check(self):
         """Check all parameter variables for proper array size.
@@ -644,7 +598,7 @@ class Parameters(object):
 
         if hrus is not None:
             # Map original nhm_id to their index
-            nhm_idx = OrderedDict((hid, ii) for ii, hid in enumerate(self.get('nhm_id').data.tolist()))
+            nhm_idx = dict((hid, ii) for ii, hid in enumerate(self.get('nhm_id').data.tolist()))
             nhm_seg = self.get('nhm_seg').tolist()
 
             print(list(nhm_idx.keys())[0:10])
