@@ -469,7 +469,12 @@ class Parameters(object):
                 fig = plt.figure(figsize=(fig_width, fig_height))
 
                 ax = plt.axes(projection=crs_proj)
-                ax.coastlines()
+
+                try:
+                    ax.coastlines()
+                except AttributeError:
+                    pass
+
                 gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
                 gl.top_labels = None
                 gl.right_labels = None
