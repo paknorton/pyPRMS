@@ -36,14 +36,13 @@ class ParameterSet(object):
         :param verify: whether to load the master parameters (default=True)
         """
 
-        self.__dimensions = Dimensions(metadata=metadata['dimensions'], verbose=verbose,
-                                       verify=verify)
-        self.__parameters = Parameters()
+        self.__dimensions = Dimensions(metadata=metadata, verbose=verbose)
+        self.__parameters = Parameters(metadata=metadata)
 
-        # TODO: 2020-06-12 PAN shouldn't this be part of the Parameters class?
-        self.__master_params: Optional[ValidParams] = None
-        if verify:
-            self.__master_params = ValidParams()
+        # # TODO: 2020-06-12 PAN shouldn't this be part of the Parameters class?
+        # self.__master_params: Optional[ValidParams] = None
+        # if verify:
+        #     self.__master_params = ValidParams()
 
         self.verbose = verbose
 
