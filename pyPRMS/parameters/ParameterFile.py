@@ -13,6 +13,7 @@ class ParameterFile(ParameterSet):
     """Class to handle reading PRMS parameter file format."""
 
     def __init__(self, filename: str,
+                 metadata,
                  verbose: Optional[bool] = False,
                  verify: Optional[bool] = True):
         """Create the ParameterFile object.
@@ -22,7 +23,7 @@ class ParameterFile(ParameterSet):
         :param verify: whether to load the master parameters (default=True)
         """
 
-        super(ParameterFile, self).__init__(verbose=verbose, verify=verify)
+        super(ParameterFile, self).__init__(metadata=metadata, verbose=verbose, verify=verify)
 
         # self.__filename = None
         # self.__header = None
@@ -81,11 +82,6 @@ class ParameterFile(ParameterSet):
 
         # Read the parameter file into memory and parse it
         it = get_file_iter(self.filename)
-        # infile = open(self.filename, 'r', encoding='ascii')
-        # rawdata = infile.read().splitlines()
-        # infile.close()
-        #
-        # it = iter(rawdata)
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Grab the header stuff first
