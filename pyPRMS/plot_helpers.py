@@ -150,8 +150,8 @@ def get_projection(gdf: geopandas.GeoDataFrame):
                                          false_easting=aa['Easting at false origin'],
                                          false_northing=aa['Northing at false origin'])
     else:
-        # We're gonna crash
-        crs_proj = None
+        crs_proj = ccrs.epsg(gdf.crs.to_authority()[1])
+
     return crs_proj
 
 
