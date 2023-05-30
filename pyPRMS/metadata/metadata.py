@@ -166,15 +166,32 @@ class MetaData(object):
             elems = {'description': 'desc',
                      'help': 'help',
                      'units': 'units',
+                     'default': 'default',
                      'minimum': 'minimum',
-                     'maximum': 'maximum',
-                     'default': 'default', }
+                     'maximum': 'maximum', }
 
             for ek, ev in elems.items():
-                try:
-                    meta_dict[name][ek] = elem.find(ev).text
-                except AttributeError:
-                    pass
+                if ek in ['default', 'minimum', 'maximum']:
+                    # Try to convert to the parameter datatype
+                    # Bounded parameters will fail
+                    cdtype = NEW_PTYPE_TO_DTYPE[meta_dict[name]['datatype']]
+
+                    try:
+                        meta_dict[name][ek] = cdtype(elem.find(ev).text)
+                    except ValueError:
+                        # Leave the value as a string
+                        if elem.find(ev).text == 'bounded':
+                            meta_dict[name][ek] = meta_dict[name]['default']
+                        else:
+                            meta_dict[name][ek] = elem.find(ev).text
+                    except AttributeError:
+                        # Occurs when element does not exist; just default to string
+                        meta_dict[name][ek] = ''
+                else:
+                    try:
+                        meta_dict[name][ek] = elem.find(ev).text
+                    except AttributeError:
+                        pass
 
             for cdim in elem.findall('./dimensions/dimension'):
                 meta_dict[name]['dimensions'].append(cdim.attrib.get('name'))
