@@ -10,7 +10,8 @@ import xml.etree.ElementTree as xmlET
 from ..constants import DATA_TYPES, DATATYPE_TO_DTYPE, NEW_PTYPE_TO_DTYPE
 from ..dimensions.Dimensions import ParamDimensions
 
-ParamDataType = Union[List, npt.NDArray, pd.Series, np.int32, np.float32, np.float64, np.str_]
+# ParamDataType = Union[List, npt.NDArray, pd.Series, np.int32, np.float32, np.float64, np.str_]
+ParamDataType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_]
 
 
 class Parameter(object):
@@ -22,7 +23,8 @@ class Parameter(object):
 
     # Container for a single parameter
     def __init__(self, name: str,
-                 meta: Optional[Dict] = None):
+                 meta: Optional[Dict] = None,
+                 global_dims=None):
                  # dimensions=tuple(['one'])):
         """
         Initialize a parameter object.
@@ -44,6 +46,9 @@ class Parameter(object):
             # Add the dimensions for this parameter
             for cname in self.meta['dimensions']:
                 self.__dimensions.add(cname)
+
+                if global_dims is not None:
+                    self.__dimensions[cname].size = global_dims.get(cname).size
 
         # self.__dimensions = ParamDimensions()
         self.__data: Optional[ParamDataType] = None  # array
@@ -152,11 +157,25 @@ class Parameter(object):
                 else:
                     raise ValueError(f'{self.__name}: expected {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]} but got {type(data_in)}')
             elif isinstance(data_in, np.ndarray):
-                if data_in.dtype != NEW_PTYPE_TO_DTYPE[self.meta['datatype']]:
-                    raise ValueError(f'{self.__name}: incoming datatype, {data_in.dtype}, does not match expected, {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]}')
-
                 if self.is_scalar and data_in.size > 1:
                     raise IndexError(f'{self.__name}: parameter expects a scalar but incoming data has size={data_in.size}')
+
+                expected_shape = tuple(ss.size for ss in self.dimensions.values())
+                expected_size = functools.reduce(lambda x, y: x * y, expected_shape)
+
+                if expected_size > 0 and data_in.shape != expected_shape:
+                    # If this is a parameter that was collapsed to a scalar we
+                    # can broadcast it to the correct shape
+                    if data_in.size == 1:
+                        data_in = np.repeat(data_in, expected_size)
+
+                    # Try to reshape the data to match the dimensionality
+                    try:
+                        data_in = data_in.reshape(expected_shape, order='F')
+                    except ValueError:
+                        raise IndexError(f'{self.__name}: Shape of incoming data, {data_in.shape}, '
+                                         f'does not match the expected shape, {expected_shape} '
+                                         'and cannot be reshaped to expected shape.')
 
                 if data_in.ndim != len(self.meta['dimensions']):
                     raise IndexError(f'{self.__name}: Number of dimensions do not match ({data_in.ndim} != {len(self.meta["dimensions"])})')
@@ -167,11 +186,19 @@ class Parameter(object):
                         raise IndexError(f'{self.__name}: Shape of incoming data, {data_in.shape}, '
                                          f'does not match shape of existing data, {self.__data.shape}')
 
-                self.__data = data_in
+                if data_in.dtype == NEW_PTYPE_TO_DTYPE[self.meta['datatype']]:
+                    self.__data = data_in
+                else:
+                    # Attempt to convert to correct datatype
+                    self.__data = np.array(data_in, dtype=NEW_PTYPE_TO_DTYPE[self.meta['datatype']])
+                    # raise ValueError(f'{self.__name}: incoming datatype, {data_in.dtype}, does not match expected, {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]}')
 
-                # Set the dimension sizes
-                for cname, cdim in zip(self.meta['dimensions'], self.__data.shape):
-                    self.__dimensions.get(cname).size = cdim
+                if expected_size == 0:
+                    # Set the dimension size(s) if existing dimension sizes are zero
+                    for cname, cdim in zip(self.meta['dimensions'], self.__data.shape):
+                        self.__dimensions.get(cname).size = cdim
+
+
             # if data_np.size == self.size:
             #     # The incoming size matches the expected size for the parameter
             #     if data_np.ndim < self.ndims:
@@ -307,7 +334,7 @@ class Parameter(object):
         """
         if self.__data is not None:
             if self.__data.size > 1:
-                return (self.__data == self.__data[0]).all()
+                return (self.__data == self.__data[0]).all()   # type: ignore
             return False
         else:
             raise TypeError('Parameter data is not initialized')
@@ -545,7 +572,7 @@ class Parameter(object):
         :returns: parameter data in the paramDb CSV format
         """
 
-        if self.__data is not None:
+        if self.meta is not None and self.__data is not None:
             outstr = '$id,{}\n'.format(self.name)
 
             ii = 0
@@ -565,7 +592,7 @@ class Parameter(object):
                 ii += 1
             return outstr
         else:
-            raise TypeError('Parameter data is not initialized')
+            raise TypeError('Parameter data and/or metadata is not initialized')
 
     def tostructure(self) -> dict:
         """Returns a dictionary structure of the parameter.
@@ -604,12 +631,16 @@ class Parameter(object):
         # Update a single element or single row (e.g. nhru x nmonth) in the
         # parameter data array.
         if self.__data is not None:
-            if np.array_equal(self.__data[index], value):
-                pass
-                # print(f'{self.__name}: updated value is equal to the old value')
+            if self.is_scalar:
+                if self.__data != value:
+                    self.__data = value   # type: ignore
+                    self.__modified = True
             else:
-                self.__data[index] = value
-                self.__modified = True
+                if not np.array_equal(self.__data[index], value):   # type: ignore
+                    # Change the element only if the incoming value is different
+                    # from the existing value
+                    self.__data[index] = value   # type: ignore
+                    self.__modified = True
         else:
             raise TypeError('Parameter data is not initialized')
 
@@ -621,7 +652,7 @@ class Parameter(object):
         :returns: Array of zero-based indices matching the given value
         """
 
-        if self.ndims > 1:
+        if self.ndim > 1:
             # TODO: 2021-03-24 PAN - add support for 2D arrays
             print(f'{self.name}: _value_index() does not support 2D arrays yet')
             return None
