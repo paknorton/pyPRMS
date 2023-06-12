@@ -11,6 +11,7 @@ from functools import cached_property
 from typing import Optional, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
+from ..dimensions.Dimensions import Dimensions
 from ..Exceptions_custom import ParameterError
 from .Parameter import Parameter
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
@@ -28,18 +29,21 @@ class Parameters(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2017-05-01
 
-    def __init__(self, metadata: MetaDataType):
+    def __init__(self, metadata: MetaDataType, verbose: Optional[bool] = False):
         """Initialize the Parameters object.
 
         Create an ordered dictionary to contain pyPRMS.Parameter objects
         """
-        self.__parameters = dict()
+        self.__dimensions = Dimensions(metadata=metadata, verbose=verbose)
+        self.__parameters: Dict[str, Parameter] = dict()
+
+        self.verbose = verbose
         self.__hru_poly = None
         self.__hru_shape_key = None
         self.__seg_poly = None
         self.__seg_shape_key = None
-        self.__seg_to_hru = None
-        self.__hru_to_seg = None
+        self.__seg_to_hru = dict()
+        self.__hru_to_seg = dict()
         self.metadata = metadata['parameters']
 
     def __getattr__(self, name):
@@ -56,40 +60,27 @@ class Parameters(object):
 
         return self.get(item)
 
-    try:
-        @cached_property
-        def hru_to_seg(self) -> Dict[int, int]:
-            """Returns an ordered dictionary mapping NHM HRU IDs to HRU NHM segment IDs.
+    @property
+    def dimensions(self) -> Dimensions:
+        """Get dimensions object.
 
-            :returns: dictionary mapping nhm_id to hru_segment_nhm
-            """
+        :returns: Dimensions object
+        """
+        return self.__dimensions
+    @cached_property
+    def hru_to_seg(self) -> Dict[int, int]:
+        """Returns an ordered dictionary mapping NHM HRU IDs to HRU NHM segment IDs.
 
-            self.__hru_to_seg = dict()
+        :returns: dictionary mapping nhm_id to hru_segment_nhm
+        """
 
-            hru_segment = self.__parameters['hru_segment_nhm'].tolist()
-            nhm_id = self.__parameters['nhm_id'].tolist()
+        # Only supported with python >= 3.9
+        hru_segment = self.__parameters['hru_segment_nhm'].tolist()
+        nhm_id = self.__parameters['nhm_id'].tolist()
 
-            for ii, vv in enumerate(hru_segment):
-                # keys are 1-based, values in arrays are 1-based
-                self.__hru_to_seg[nhm_id[ii]] = vv
-            return self.__hru_to_seg
-    except NameError:
-        # Python pre-3.8 does not have the cache_property decorator
-        def hru_to_seg(self) -> Dict[int, int]:
-            """Returns an ordered dictionary mapping HRU IDs to HRU segment IDs.
+        self.__hru_to_seg = dict([(nhm_id[idx], vv) for idx, vv in enumerate(hru_segment)])
 
-            :returns: dictionary mapping nhm_id to hru_segment_nhm
-            """
-
-            self.__hru_to_seg = dict()
-
-            hru_segment = self.__parameters['hru_segment_nhm'].tolist()
-            nhm_id = self.__parameters['nhm_id'].tolist()
-
-            for ii, vv in enumerate(hru_segment):
-                # keys are 1-based, values in arrays are 1-based
-                self.__hru_to_seg[nhm_id[ii]] = vv
-            return self.__hru_to_seg
+        return self.__hru_to_seg
 
     @property
     def parameters(self) -> Dict[str, Parameter]:
@@ -106,8 +97,8 @@ class Parameters(object):
 
         :returns: dictionary mapping poi_id to poi_seg"""
 
-        return dict(zip(self.__parameters['poi_gage_id'].data,
-                        self.__parameters['poi_gage_segment'].data))
+        return dict(zip(self.__parameters['poi_gage_id'].tolist(),
+                        self.__parameters['poi_gage_segment'].tolist()))
 
     @property
     def poi_to_seg0(self):
@@ -118,41 +109,21 @@ class Parameters(object):
         return dict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data - 1))
 
-    try:
-        @cached_property
-        def seg_to_hru(self) -> Dict[int, int]:
-            """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs.
+    @cached_property
+    def seg_to_hru(self) -> Dict[int, int]:
+        """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs.
 
-            :returns: dictionary mapping hru_segment_nhm to nhm_id
-            """
+        :returns: dictionary mapping hru_segment_nhm to nhm_id
+        """
 
-            self.__seg_to_hru = dict()
+        hru_segment = self.__parameters['hru_segment_nhm'].tolist()
+        nhm_id = self.__parameters['nhm_id'].tolist()
 
-            hru_segment = self.__parameters['hru_segment_nhm'].tolist()
-            nhm_id = self.__parameters['nhm_id'].tolist()
-
-            for ii, vv in enumerate(hru_segment):
-                # keys are 1-based, values in arrays are 1-based
-                # Non-routed HRUs have a seg key = zero
-                self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
-            return self.__seg_to_hru
-    except NameError:
-        def seg_to_hru(self) -> Dict[int, int]:
-            """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs.
-
-            :returns: dictionary mapping hru_segment_nhm to nhm_id
-            """
-
-            self.__seg_to_hru = dict()
-
-            hru_segment = self.__parameters['hru_segment_nhm'].tolist()
-            nhm_id = self.__parameters['nhm_id'].tolist()
-
-            for ii, vv in enumerate(hru_segment):
-                # keys are 1-based, values in arrays are 1-based
-                # Non-routed HRUs have a seg key = zero
-                self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
-            return self.__seg_to_hru
+        for ii, vv in enumerate(hru_segment):
+            # keys are 1-based, values in arrays are 1-based
+            # Non-routed HRUs have a seg key = zero
+            self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
+        return self.__seg_to_hru
 
     def add(self, name: str):
 
@@ -165,9 +136,16 @@ class Parameters(object):
 
         # Add a new parameter
         if self.exists(name):
-            raise ParameterError("Parameter already exists")
+            raise ParameterError(f'{name}: Parameter already exists')
 
-        self.__parameters[name] = Parameter(name=name, meta=self.metadata)
+        if name not in self.metadata:
+            raise ParameterError(f'{name}: Parameter is not a valid PRMS parameter')
+
+        for cdim in self.metadata[name]['dimensions']:
+            if not self.__dimensions.exists(cdim):
+                raise KeyError(f'Global dimension, {cdim}, does not exist')
+
+        self.__parameters[name] = Parameter(name=name, meta=self.metadata, global_dims=self.__dimensions)
 
     def check(self):
         """Check all parameter variables for proper array size.
@@ -186,17 +164,19 @@ class Parameters(object):
             if not pp.check_values():
                 pp_stats = pp.stats()
                 pp_outliers = pp.outliers()
+                valid_min = pp.meta['minimum']
+                valid_max = pp.meta['maximum']
 
-                if not(isinstance(pp.minimum, str) or isinstance(pp.maximum, str)):
+                if not(isinstance(valid_min, str) or isinstance(valid_max, str)):
                     print(f'    WARNING: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
-                          f'the valid range of ({pp.minimum}, {pp.maximum}); ' +
+                          f'the valid range of ({valid_min}, {valid_max}); ' +
                           f'under/over=({pp_outliers.under}, {pp_outliers.over})')
                     # print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
                     #       f'the valid range of ({pp.minimum}, {pp.maximum})')
-                elif pp.minimum == 'bounded':
+                elif valid_min == 'bounded':
                     # TODO: Handling bounded parameters needs improvement
                     print(f'    WARNING: Bounded parameter value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
-                          f'the valid range of ({pp.default}, {pp.maximum})')
+                          f'the valid range of ({pp.default}, {valid_max})')
 
             if pp.all_equal():
                 if pp.data.ndim == 2:
@@ -335,7 +315,7 @@ class Parameters(object):
         cparam = self.__parameters[name]
 
         param_data = self.get_dataframe(name)
-        bad_value_ids = param_data[(param_data[name] < cparam.minimum) | (param_data[name] > cparam.maximum)].index.tolist()
+        bad_value_ids = param_data[(param_data[name] < cparam.meta['minimum']) | (param_data[name] > cparam.meta['maximum'])].index.tolist()
 
         return bad_value_ids
 
@@ -369,18 +349,21 @@ class Parameters(object):
                 param_data = self.get_dataframe(name).iloc[:]
 
             if mask_defaults is not None:
-                param_data = param_data.mask(param_data == cparam.default)
+                param_data = param_data.mask(param_data == cparam.meta['default'])
 
             if isinstance(limits, str):
                 if limits == 'valid':
+                    valid_min = cparam.meta['minimum']
+                    valid_max = cparam.meta['maximum']
+
                     # Use the defined valid range of possible values
-                    if cparam.minimum == 'bounded':
+                    if valid_min == 'bounded':
                         # Parameters with bounded values need to always use the actual range of values
                         drange = [cparam.data.min().min(), cparam.data.max().max()]
                     elif name == 'jh_coef':
                         drange = [-0.05, 0.05]
                     else:
-                        drange = [cparam.minimum, cparam.maximum]
+                        drange = [valid_min, valid_max]
                 elif limits == 'centered':
                     # Use the maximum range of the actual data values
                     lim = max(abs(cparam.data.min().min()), abs(cparam.data.max().max()))
@@ -407,100 +390,101 @@ class Parameters(object):
 
             if set(cparam.dimensions.keys()).intersection({'nhru', 'ngw', 'nssr'}):
                 # Get extent information
-                minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
+                if self.__hru_poly is not None:
+                    minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
 
-                crs_proj = get_projection(self.__hru_poly)
+                    crs_proj = get_projection(self.__hru_poly)
 
-                # Takes care of multipolygons that are in the NHM geodatabase/shapefile
-                geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
+                    # Takes care of multipolygons that are in the NHM geodatabase/shapefile
+                    geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
 
-                # print('Writing first plot')
-                df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True, how='left')
+                    # print('Writing first plot')
+                    df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True, how='left')
 
-                fig_width, fig_height = get_figsize([minx, maxx, miny, maxy], **dict(kwargs))
-                kwargs.pop('init_size', None)
+                    fig_width, fig_height = get_figsize([minx, maxx, miny, maxy], **dict(kwargs))
+                    kwargs.pop('init_size', None)
 
-                fig = plt.figure(figsize=(fig_width, fig_height))
+                    fig = plt.figure(figsize=(fig_width, fig_height))
 
-                ax = plt.axes(projection=crs_proj)
-                ax.coastlines()
-                gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
-                gl.top_labels = None
-                gl.right_labels = None
-                gl.xformatter = LONGITUDE_FORMATTER
-                gl.yformatter = LATITUDE_FORMATTER
+                    ax = plt.axes(projection=crs_proj)
+                    ax.coastlines()
+                    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
+                    gl.top_labels = None
+                    gl.right_labels = None
+                    gl.xformatter = LONGITUDE_FORMATTER
+                    gl.yformatter = LATITUDE_FORMATTER
 
-                ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
+                    ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
 
-                if time_index is not None:
-                    plt.title(f'Variable: {name},  Month: {time_index+1}')
-                else:
-                    plt.title(f'Variable: {name}')
-
-                if mask_defaults is not None:
-                    plt.annotate(f'NOTE: Values = {cparam.default} are masked', xy=(0.5, 0.01),
-                                 xycoords='axes fraction', va='center', ha='center',
-                                 fontsize=10, fontweight='bold',
-                                 bbox=dict(boxstyle="round", facecolor=mask_defaults, alpha=1.0))
-
-                # Setup the color bar
-                mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-                mapper.set_array(df_mrg[name])
-                cax = fig.add_axes([ax.get_position().x1 + 0.01,
-                                    ax.get_position().y0, 0.02,
-                                    ax.get_position().height])
-
-                # TODO: 2022-06-17 PAN - Categorical variables require entry in two places.
-                #       The first place is here for labelling and the second place is in
-                #       plot_helpers.py for adjusting the color boundaries. Need to figure out
-                #       a more consistent/better way to do this.
-                if name == 'hru_deplcrv':
-                    # tck_arr = np.arange(param_data.min().min(), param_data.max().max()+1)
-                    tck_arr = np.arange(drange[0], drange[1]+1)
-                    cb = plt.colorbar(mapper, cax=cax, ticks=tck_arr, label='Curve index')
-                    cb.ax.tick_params(length=0)
-                elif name == 'soil_type':
-                    tck_arr = np.arange(drange[0], drange[1]+1)
-                    cb = plt.colorbar(mapper, cax=cax, ticks=tck_arr, label=name)
-                    cb.ax.tick_params(length=0)
-                elif name == 'calibration_status':
-                    tck_arr = np.arange(drange[0], drange[1]+1)
-                    cb = plt.colorbar(mapper, cax=cax, ticks=tck_arr, label=name)
-                    cb.ax.tick_params(length=0)
-                else:
-                    plt.colorbar(mapper, cax=cax, label=cparam.units)
-
-                col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
-                                              cmap=cmap, norm=norm, **dict(kwargs))
-                # col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
-                #                               **dict(kwargs, cmap=cmap, norm=norm))
-
-                if output_dir is not None:
                     if time_index is not None:
-                        # First month
-                        plt.savefig(f'{output_dir}/{name}_{time_index+1:02}.png', dpi=150, bbox_inches='tight')
-
-                        for tt in range(1, 12):
-                            # Months 2 through 12
-                            # print(f'    Index: {tt}')
-                            param_data = self.get_dataframe(name).iloc[:, tt].to_frame(name=name)
-
-                            if mask_defaults is not None:
-                                param_data = param_data.mask(param_data == cparam.default)
-
-                            df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True,
-                                                          how='left')
-
-                            ax.set_title(f'Variable: {name},  Month: {tt+1}')
-                            col.set_array(df_mrg[name])
-                            plt.savefig(f'{output_dir}/{name}_{tt+1:02}.png', dpi=150, bbox_inches='tight')
+                        plt.title(f'Variable: {name},  Month: {time_index+1}')
                     else:
-                        plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
+                        plt.title(f'Variable: {name}')
 
-                    # Close the figure so we don't chew up memory
-                    fig.clf()
-                    plt.close()
-                    gc.collect()
+                    if mask_defaults is not None:
+                        plt.annotate(f'NOTE: Values = {cparam.meta["default"]} are masked', xy=(0.5, 0.01),
+                                     xycoords='axes fraction', va='center', ha='center',
+                                     fontsize=10, fontweight='bold',
+                                     bbox=dict(boxstyle="round", facecolor=mask_defaults, alpha=1.0))
+
+                    # Setup the color bar
+                    mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+                    mapper.set_array(df_mrg[name])
+                    cax = fig.add_axes([ax.get_position().x1 + 0.01,
+                                        ax.get_position().y0, 0.02,
+                                        ax.get_position().height])
+
+                    # TODO: 2022-06-17 PAN - Categorical variables require entry in two places.
+                    #       The first place is here for labelling and the second place is in
+                    #       plot_helpers.py for adjusting the color boundaries. Need to figure out
+                    #       a more consistent/better way to do this.
+                    if name == 'hru_deplcrv':
+                        # tck_arr = np.arange(param_data.min().min(), param_data.max().max()+1)
+                        tck_arr = np.arange(drange[0], drange[1]+1)
+                        cb = plt.colorbar(mapper, cax=cax, ticks=tck_arr, label='Curve index')
+                        cb.ax.tick_params(length=0)
+                    elif name == 'soil_type':
+                        tck_arr = np.arange(drange[0], drange[1]+1)
+                        cb = plt.colorbar(mapper, cax=cax, ticks=tck_arr, label=name)
+                        cb.ax.tick_params(length=0)
+                    elif name == 'calibration_status':
+                        tck_arr = np.arange(drange[0], drange[1]+1)
+                        cb = plt.colorbar(mapper, cax=cax, ticks=tck_arr, label=name)
+                        cb.ax.tick_params(length=0)
+                    else:
+                        plt.colorbar(mapper, cax=cax, label=cparam.meta['units'])
+
+                    col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
+                                                  cmap=cmap, norm=norm, **dict(kwargs))
+                    # col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
+                    #                               **dict(kwargs, cmap=cmap, norm=norm))
+
+                    if output_dir is not None:
+                        if time_index is not None:
+                            # First month
+                            plt.savefig(f'{output_dir}/{name}_{time_index+1:02}.png', dpi=150, bbox_inches='tight')
+
+                            for tt in range(1, 12):
+                                # Months 2 through 12
+                                # print(f'    Index: {tt}')
+                                param_data = self.get_dataframe(name).iloc[:, tt].to_frame(name=name)
+
+                                if mask_defaults is not None:
+                                    param_data = param_data.mask(param_data == cparam.meta['default'])
+
+                                df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True,
+                                                              how='left')
+
+                                ax.set_title(f'Variable: {name},  Month: {tt+1}')
+                                col.set_array(df_mrg[name])
+                                plt.savefig(f'{output_dir}/{name}_{tt+1:02}.png', dpi=150, bbox_inches='tight')
+                        else:
+                            plt.savefig(f'{output_dir}/{name}.png', dpi=150, bbox_inches='tight')
+
+                        # Close the figure so we don't chew up memory
+                        fig.clf()
+                        plt.close()
+                        gc.collect()
             elif set(cparam.dimensions.keys()).intersection({'nsegment'}):
                 # Plot segment-related parameters
                 if self.__seg_poly is not None:
@@ -539,7 +523,7 @@ class Parameters(object):
                         cax = fig.add_axes([ax.get_position().x1 + 0.01,
                                             ax.get_position().y0, 0.02,
                                             ax.get_position().height])
-                        plt.colorbar(mapper, cax=cax, label=cparam.units)   # , shrink=0.6
+                        plt.colorbar(mapper, cax=cax, label=cparam.meta['units'])   # , shrink=0.6
 
                     if self.__hru_poly is not None:
                         hru_geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
@@ -552,7 +536,7 @@ class Parameters(object):
                                                **dict(kwargs))
 
                     if mask_defaults is not None:
-                        plt.annotate(f'NOTE: Values = {cparam.default} are masked', xy=(0.5, 0.01),
+                        plt.annotate(f'NOTE: Values = {cparam.meta["default"]} are masked', xy=(0.5, 0.01),
                                      xycoords='axes fraction', fontsize=12, fontweight='bold',
                                      bbox=dict(facecolor=mask_defaults, alpha=1.0))
 
