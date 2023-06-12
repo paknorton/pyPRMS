@@ -27,6 +27,16 @@ class TestEmptyDimensions():
         dims_obj.add(name=name, size=size)
         assert dims_obj[name].size == dims_obj.metadata[name].get('default')
 
+    @pytest.mark.parametrize('name, size', [('seven', 8),
+                                            ('nlapse', 2),
+                                            ('nglres', 10)])
+    def test_fixed_dimension_bad_size_error(self, dims_obj, name, size):
+        """Adding a fixed dimension and trying to override the size should
+        raise a ValueError
+        """
+        with pytest.raises(ValueError):
+            dims_obj.add(name=name, size=size)
+
     def test_dimensions_duplicate_ignore(self, dims_obj):
         """Adding a duplicate dimension name should be silently ignored"""
         pre_size = dims_obj.ndims
