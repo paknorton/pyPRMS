@@ -14,6 +14,9 @@ from pyPRMS import MetaData
 
 class TestParameter:
 
+    # Still to test
+    # - modified flag set when data is changed
+
     @pytest.mark.parametrize('name, ndim', [('cov_type', 1),
                                             ('tmax_adj', 2),
                                             ('basin_solsta', 0)])
