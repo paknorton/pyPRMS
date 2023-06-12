@@ -103,6 +103,9 @@ class Dimension(object):
 
                 self.__size = max(value, self.meta.get('default'))
 
+                # TODO: 2023-06-07 PAN - should the metadata size also get changed?
+                self.meta['size'] = self.__size
+
         # if self.meta is not None:
         #     if self.is_fixed and self.meta['default'] != value:
         #         raise ValueError(f'{self.name} is a fixed dimension and cannot be changed')
