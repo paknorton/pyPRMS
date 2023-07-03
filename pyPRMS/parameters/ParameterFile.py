@@ -2,7 +2,7 @@
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
 from typing import List, Optional, Set
 
-from ..Exceptions_custom import ParameterError
+from ..Exceptions_custom import ParameterExistsError, ParameterNotValidError
 from .ParameterSet import ParameterSet
 from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
 from ..prms_helpers import get_file_iter
@@ -103,7 +103,7 @@ class ParameterFile(ParameterSet):
                 continue
 
             # Add dimension - all dimensions are scalars
-            self.dimensions.add(line, int(next(it)))
+            self.dimensions.add(name=line, size=int(next(it)))
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Lastly process the parameters
@@ -116,19 +116,20 @@ class ParameterFile(ParameterSet):
 
             # Add the parameter
             try:
-                if self.master_parameters is not None:
-                    self.parameters.add(varname, info=self.master_parameters[varname])
-
-                    if self.master_parameters[varname].minimum == 'bounded':
-                        # TODO: The min and max of bounded parameter values will be adjusted later
-                        bounded_parameters.append(varname)
-                else:
-                    self.parameters.add(varname)
-            except ParameterError:
+                self.add(name=varname)
+                # if self.master_parameters is not None:
+                #     self.parameters.add(varname, info=self.master_parameters[varname])
+                #
+                #     if self.master_parameters[varname].minimum == 'bounded':
+                #         # TODO: The min and max of bounded parameter values will be adjusted later
+                #         bounded_parameters.append(varname)
+                # else:
+                #     self.parameters.add(varname)
+            except ParameterExistsError:
                 if self.__verbose:
                     print(f'Parameter, {varname}, updated with new values')
                 self.__updated_parameters.add(varname)
-            except ValueError:
+            except ParameterNotValidError:
                 if self.__verbose:
                     print(f'Parameter, {varname}, is not a valid parameter; skipping.')
 
