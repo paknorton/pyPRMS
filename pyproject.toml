@@ -28,7 +28,7 @@ dependencies = [
     "netCDF4",
     "networkx>=2",
     "numpy",
-    "pandas",
+    "pandas<2",
     "pyproj",
     "shapely",
     "xarray",
