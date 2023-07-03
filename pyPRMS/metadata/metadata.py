@@ -6,13 +6,13 @@ from collections import defaultdict
 from typing import Dict, Optional, Union
 
 from pyPRMS.prms_helpers import set_date, version_info
-from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
+from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE
 
 outside_elem = {'control': 'control_param',
                 'parameters': 'parameter',
                 'dimensions': 'dimension',
                 'variables': 'variable'
-                }
+               }
 
 NEW_DTYPE = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
 NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
