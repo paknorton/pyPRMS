@@ -1,7 +1,8 @@
 import pytest
-# import numpy as np
+import numpy as np
 from pyPRMS import ControlVariable
 from pyPRMS import MetaData
+from pyPRMS.constants import DATA_TYPES, NEW_PTYPE_TO_DTYPE
 
 # from pyPRMS.constants import NEW_PTYPE_TO_DTYPE   # PTYPE_TO_DTYPE
 
@@ -9,6 +10,13 @@ from pyPRMS import MetaData
 #             'float32_val': {'datatype': 'float32', 'context': 'scalar', 'default': 2.3, 'force_default': False},
 #             'str_val': {'datatype': 'string', 'context': 'scalar', 'default': 'none', 'force_default': False},
 #             'str_list': {'datatype': 'string', 'context': 'array', 'default': 'none', 'force_default': False}}
+
+
+@pytest.fixture(scope='class')
+def metadata_ctl():
+    prms_meta = MetaData(verbose=False).metadata['control']
+
+    return prms_meta
 
 
 class TestControlVariable:
@@ -21,14 +29,30 @@ class TestControlVariable:
     #                                   'float32_val',
     #                                   'str_val'])
     @pytest.mark.parametrize('name', ['prms_warmup'])
-    def test_create_control_variable(self, name):
-        prms_meta = MetaData().metadata['control']
-
-        avar = ControlVariable(name, meta=prms_meta[name])
+    def test_create_control_variable(self, metadata_ctl, name):
+        avar = ControlVariable(name, meta=metadata_ctl)
 
         # A control variable with no value assigned should return the default value
         assert avar.name == name and \
                avar.values == avar.meta['default']
+
+    def test_create_control_variable_invalid(self, metadata_ctl):
+        with pytest.raises(ValueError):
+            avar = ControlVariable('blah', meta=metadata_ctl)
+
+    def test_create_control_variable_nometadata_strict(self):
+        with pytest.raises(ValueError):
+            avar = ControlVariable('blah')
+
+    def test_create_control_variable_nometadata_nostrict(self):
+        avar = ControlVariable('blah', strict=False)
+        assert avar.name == 'blah' and avar.values is None
+
+    def test_control_variable_str(self, metadata_ctl):
+        expected = '----- ControlVariable -----\nname: prms_warmup\nversion: 5.0\ndatatype: int32\ndescription: Number of years to simulate before writing mapped results, Basin, nhru, nsub, or nsegment Summary Output Files\ncontext: scalar\ndefault: 1\n'
+        avar = ControlVariable('prms_warmup', meta=metadata_ctl)
+
+        assert avar.__str__() == expected
 
     # @pytest.mark.parametrize('name, dtype, def_val', [('int_val', 1, '5'),
     #                                                   ('float_val', 2, '5'),
@@ -53,29 +77,111 @@ class TestControlVariable:
 
     @pytest.mark.parametrize('name, val', [('prms_warmup', 8),
                                            ('et_module', 'potet_hamon'),
-                                           ('initial_deltat', 20.2)])
-    def test_set_value(self, name, val):
-        prms_meta = MetaData().metadata['control']
+                                           ('initial_deltat', 20.2),
+                                           ('start_time', np.array([2000, 2, 8], dtype=np.int32))])
+    def test_set_value(self, metadata_ctl, name, val):
+        # prms_meta = MetaData().metadata['control']
 
-        avar = ControlVariable(name, meta=prms_meta[name])
+        avar = ControlVariable(name, meta=metadata_ctl)
         avar.values = val
 
         assert avar.meta['default'] != avar.values
 
+    @pytest.mark.parametrize('name, val', [('prms_warmup', [8]),
+                                           ('initial_deltat', [20.2, 19.1])])
+    def test_set_value_scalar_with_list(self, metadata_ctl, name, val):
+        # prms_meta = MetaData().metadata['control']
+
+        avar = ControlVariable(name, meta=metadata_ctl)
+        avar.values = val
+
+        assert avar.values == NEW_PTYPE_TO_DTYPE[avar.meta['datatype']](val[0])
+
+    @pytest.mark.parametrize('name, val', [('prms_warmup', np.array([8], dtype=np.int32)),
+                                           ('initial_deltat', np.array([20.2, 19.1], dtype=np.float32))])
+    def test_set_value_scalar_with_array(self, metadata_ctl, name, val):
+        # prms_meta = MetaData().metadata['control']
+
+        avar = ControlVariable(name, meta=metadata_ctl)
+        avar.values = val
+
+        assert avar.values == NEW_PTYPE_TO_DTYPE[avar.meta['datatype']](val[0])
+
+    @pytest.mark.parametrize('name, val', [('prms_warmup', np.array([8], dtype=np.float32)),
+                                           ('initial_deltat', np.array([20.2, 19.1], dtype=np.int32))])
+    def test_set_value_scalar_with_array_wrong_dtype(self, metadata_ctl, name, val):
+        avar = ControlVariable(name, meta=metadata_ctl)
+
+        with pytest.raises(TypeError):
+            avar.values = val
+
+    @pytest.mark.parametrize('name, val', [('nsubOutVar_names', ['var1', 'var2', 'var3']),
+                                           ('nsubOutVar_names', np.array(['var1', 'var2', 'var3'], dtype=np.str_))])
+    def test_set_value_array_with_list_or_array(self, metadata_ctl, name, val):
+        # expected = np.array(['var1', 'var2', 'var3'], dtype=np.str_)
+        avar = ControlVariable(name, meta=metadata_ctl)
+        avar.values = val
+
+        assert np.equal(avar.values, val).all()
+
+    @pytest.mark.parametrize('name, val', [('prms_warmup', 2.0),
+                                           ('initial_deltat', 8),
+                                           ('et_module', 1)])
+    def test_set_value_scalar_with_scalar_wrong_dtype(self, metadata_ctl, name, val):
+        avar = ControlVariable(name, meta=metadata_ctl)
+
+        with pytest.raises(TypeError):
+            avar.values = val
+
     @pytest.mark.parametrize('name, val', [('prms_warmup', 8),
                                            ('et_module', 'potet_hamon'),
                                            ('initial_deltat', 20.2)])
-    def test_force_default(self, name, val):
+    def test_force_default(self, metadata_ctl, name, val):
         """Always return the default value when force_default is set"""
-        prms_meta = MetaData().metadata['control']
+        # prms_meta = MetaData().metadata['control']
 
-        avar = ControlVariable(name, meta=prms_meta[name])
+        avar = ControlVariable(name, meta=metadata_ctl)
         avar.values = val
 
         assert avar.meta['default'] != avar.values
 
         avar.meta['force_default'] = True
         assert avar.meta['default'] == avar.values
+
+        # The force_default is applied to the global metadata so
+        # make sure to set force_default back to False
+        avar.meta['force_default'] = False
+
+    @pytest.mark.parametrize('name, expected_meaning', [('prms_warmup', None),
+                                                        ('frozen_flag', 'No'),
+                                                        ('nhruOutNcol', 'All values for each timestep are written on a single line as in previous versions')])
+    def test_value_meaning(self, metadata_ctl, name, expected_meaning):
+        avar = ControlVariable(name, meta=metadata_ctl)
+
+        assert avar.value_meaning == expected_meaning
+
+    # @pytest.mark.parametrize('name, val', [('et_module', 'jump')])
+    # def test_value_meaning_invalid_value(self, metadata_ctl, name, val):
+    #     with pytest.raises(ValueError):
+    #         avar = ControlVariable(name, value=val, meta=metadata_ctl)
+    #         avar.values = val
+    #         assert avar.values == val
+
+    @pytest.mark.parametrize('name, val, expected_meaning', [('nhruOutNcol', 2, 'Number of columns')])
+    def test_value_meaning_conditional(self, metadata_ctl, name, val, expected_meaning):
+        avar = ControlVariable(name, value=val, meta=metadata_ctl)
+
+        assert avar.value_meaning == expected_meaning
+        assert avar.values == val
+
+    @pytest.mark.parametrize('name, val', [('nhruOutON_OFF', 8),
+                                           ('et_module', 'blah')])
+    def test_crap(self, metadata_ctl, name, val):
+        with pytest.raises(ValueError):
+            avar = ControlVariable(name=name, value=val, meta=metadata_ctl)
+            assert avar.values == val
+            aa = avar.value_meaning
+
 
     # @pytest.mark.parametrize('name, val, ret_type', [('int_val', 4, np.int32),
     #                                                  ('str1', 'file1', str),
