@@ -11,8 +11,7 @@ from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE
 outside_elem = {'control': 'control_param',
                 'parameters': 'parameter',
                 'dimensions': 'dimension',
-                'variables': 'variable'
-               }
+                'variables': 'variable'}
 
 NEW_DTYPE = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
 NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
@@ -211,28 +210,8 @@ class MetaData(object):
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
-            # var_version = version_info(elem.attrib.get('version'))
-            # depr_version = version_info(elem.attrib.get('deprecated'))
-            #
-            # if var_version.major is not None and var_version.major > version:
-            #     if self.__verbose:
-            #         print(f'{name} rejected by version')
-            #     continue
-            # if depr_version.major is not None and depr_version.major <= version:
-            #     if self.__verbose:
-            #         print(f'{name} rejected by deprecation version')
-            #     continue
 
-            meta_dict[name] = defaultdict(list)
-
-            # var_version = elem.attrib.get('version')
-            # if var_version is not None:
-            #     meta_dict[name]['version'] = var_version
-            #     # meta_dict[name]['version'] = elem.attrib.get('version')
-            #
-            # depr_version = elem.attrib.get('deprecated')
-            # if depr_version is not None:
-            #     meta_dict[name]['deprecated'] = depr_version
+            meta_dict[name] = {}
 
             elems = {'description': {'orig_name': 'desc',
                                      'datatype': str},
@@ -246,20 +225,13 @@ class MetaData(object):
             for ek, ev in elems.items():
                 try:
                     meta_dict[name][ek] = ev['datatype'](elem.find(ev['orig_name']).text)
-                    # if ek == 'is_fixed':
-                    #     meta_dict[name][ek] = bool(elem.find(ev).text)
-                    # else:
-                    #     meta_dict[name][ek] = elem.find(ev).text
                 except AttributeError:
                     if ek == 'is_fixed':
                         meta_dict[name][ek] = False
                     pass
 
-            # for cmod in elem.findall('./modules/module'):
-            #     meta_dict[name]['modules'].append(cmod.text)
-
             for creq in elem.findall('./requires/*'):
-                meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
+                meta_dict[name].setdefault(f'requires_{creq.tag}', list()).append(creq.text)
 
         return meta_dict
 
