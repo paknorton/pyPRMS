@@ -1,18 +1,6 @@
 
 from typing import Dict, Optional, Union  # , List
 
-# from ..constants import DIMENSION_NAMES
-
-
-# def _valid_dimension_name(name: str) -> bool:
-#     """Check if given dimension name is valid for PRMS.
-#
-#     :param str name: dimension name
-#     :returns: True if dimension name is valid otherwise False
-#     """
-#
-#     return name in DIMENSION_NAMES
-
 
 class Dimension(object):
     """Defines a single dimension."""
@@ -22,38 +10,43 @@ class Dimension(object):
 
     def __init__(self, name: str,
                  meta: Optional[Dict] = None,
-                 size: Optional[int] = None):
+                 size: Optional[int] = None,
+                 strict: Optional[bool] = True):
         """Create a new dimension object.
 
         A dimension has a name and a size associated with it.
 
         :param name: The name of the dimension
         :param size: The size of the dimension
+        :param strict: Enforce use of valid dimensions metadata
         """
 
         self.__name = name
 
         if meta is None:
-            self.meta = meta
+            if strict:
+                raise ValueError(f'Strict is true but no metadata was supplied')
+            else:
+                self.meta = {}
         else:
-            if name not in meta:
-                raise ValueError(f'`{self.name}` does not exist in metadata')
-
-            self.meta = meta[name]
+            if strict:
+                if name in meta:
+                    self.meta = meta[name]
+                else:
+                    raise ValueError(f'`{self.name}` does not exist in metadata')
+            else:
+                if isinstance(meta, dict):
+                    # Assume we have a dictionary of metadata for this dimension
+                    self.meta = meta
 
         if size is None:
-            if self.meta is None:
-                self.size = 0
-            else:
-                self.size = self.meta.get('default')
+            self.size = self.meta.get('default', 0)
         else:
             self.size = size
 
     @property
     def is_fixed(self):
-        if self.meta is not None:
-            return self.meta.get('is_fixed', False)
-        return False
+        return self.meta.get('is_fixed', False)
 
     @property
     def name(self) -> str:
@@ -81,41 +74,36 @@ class Dimension(object):
         :raises ValueError: if dimension size is not a positive integer
         """
 
+        if isinstance(value, float):
+            raise ValueError(f'{self.name} size cannot be a float value')
+
         value = int(value)
+        def_value = self.meta.get('default', 0)
 
         if value < 0:
             raise ValueError('Dimension size must be a positive integer')
 
-        if self.meta is None:
-            self.__size = value
+        if self.is_fixed:
+            if 0 < value != def_value:
+                raise ValueError(f'{self.name} is a fixed dimension and cannot be changed')
+
+            self.__size = def_value
         else:
-            if self.is_fixed:
-                if 0 < value != self.meta.get('default'):
-                    raise ValueError(f'{self.name} is a fixed dimension and cannot be changed')
+            # The size of a dimension should never be less than the default
+            if value < def_value:
+                raise ValueError(f'{self.name} size cannot be less than default value ({def_value})')
 
-                self.__size = self.meta.get('default')
-            else:
-                # The size of a dimension should never be less than the default
-                # TODO: 2023-05-25 PAN - should this raise an error if
-                #       the incoming value is less than the default?
-                if value < self.meta.get('default'):
-                    raise ValueError(f'{self.name} size cannot be less than default value ({self.meta.get("default")})')
+            self.__size = max(value, def_value)
 
-                self.__size = max(value, self.meta.get('default'))
-
-                # TODO: 2023-06-07 PAN - should the metadata size also get changed?
-                self.meta['size'] = self.__size
-
-        # if self.meta is not None:
-        #     if self.is_fixed and self.meta['default'] != value:
-        #         raise ValueError(f'{self.name} is a fixed dimension and cannot be changed')
+            # TODO: 2023-06-07 PAN - should the metadata size also get changed?
+            self.meta['size'] = self.__size
 
     def __repr__(self) -> str:
         """String respresentation of dimension.
 
         :returns: string with name and size of dimension
         """
-        return f'Dimension(name={self.name}, meta={self.meta}, size={self.size})'
+        return f"Dimension(name='{self.name}', meta={self.meta}, size={self.size}, strict=False)"
 
     def __str__(self) -> str:
         """Return friendly string representation of dimension
@@ -123,15 +111,11 @@ class Dimension(object):
         outstr = f'----- Dimension -----\n'
         outstr += f'name: {self.name}\n'
 
-        if self.meta is not None:
-            for kk, vv in self.meta.items():
-                if kk != 'size':
-                    outstr += f'{kk}: {vv}\n'
+        for kk, vv in self.meta.items():
+            if kk != 'size':
+                outstr += f'{kk}: {vv}\n'
 
-            outstr += f'size: {self.size}\n'
-        else:
-            outstr += f'size: {self.size}\n'
-            outstr += 'No metadata for dimension\n'
+        outstr += f'size: {self.size}\n'
 
         return outstr
 
@@ -167,8 +151,5 @@ class Dimension(object):
         # in a change to self.__size
         if not isinstance(other, int):
             raise ValueError('Dimension size type must be an integer')
-        # if self.__size - other < 0:
-        #     raise ValueError('Dimension size must be positive')
         self.size -= other
-
         return self
