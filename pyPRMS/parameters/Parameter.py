@@ -24,8 +24,8 @@ class Parameter(object):
     # Container for a single parameter
     def __init__(self, name: str,
                  meta: Optional[Dict] = None,
-                 global_dims=None):
-                 # dimensions=tuple(['one'])):
+                 global_dims=None,
+                 strict: Optional[bool] = True):
         """
         Initialize a parameter object.
 
@@ -34,26 +34,32 @@ class Parameter(object):
 
         # Set the parameter name
         self.__name = name
-
-        # self.__dimensions = dimensions
-        self.__dimensions = ParamDimensions()
+        self.__dimensions = ParamDimensions(strict=False)
 
         if meta is None:
-            self.meta = meta
+            if strict:
+                raise ValueError(f'Strict is true but no metadata was supplied')
+            else:
+                # NOTE: Having no metadata creates a parameter with no dimensions
+                self.meta = {}
         else:
-            self.meta = meta[name]
+            if strict:
+                if name in meta:
+                    self.meta = meta[name]
 
-            # Add the dimensions for this parameter
-            for cname in self.meta['dimensions']:
-                self.__dimensions.add(cname)
+                    # Add the dimensions for this parameter
+                    for cname in self.meta['dimensions']:
+                        self.__dimensions.add(cname)
 
-                if global_dims is not None:
-                    self.__dimensions[cname].size = global_dims.get(cname).size
+                        if global_dims is not None:
+                            self.__dimensions[cname].size = global_dims.get(cname).size
+                else:
+                    raise ValueError(f'`{self.name}` does not exist in metadata')
+            else:
+                # The meta must be supplied as an adhoc dictionary
+                self.meta = meta
 
-        # self.__dimensions = ParamDimensions()
-        self.__data: Optional[ParamDataType] = None  # array
-        # self.__data: Optional[npt.NDArray[Union[np.int_, np.float_, np.str_]]] = None  # array
-
+        self.__data: Optional[ParamDataType] = None
         self.__modified = False
 
     def __str__(self) -> str:
@@ -65,11 +71,9 @@ class Parameter(object):
         outstr = f'----- Parameter -----\n'
         outstr += f'name: {self.name}\n'
 
-        if self.meta is not None:
-            for kk, vv in self.meta.items():
-                outstr += f'{kk}: {vv}\n'
-        # if self.ndims:
-        #     outstr += 'Dimensions:\n' + self.__dimensions.__str__()
+        for kk, vv in self.meta.items():
+            outstr += f'{kk}: {vv}\n'
+
         return outstr
 
     @property
@@ -120,128 +124,61 @@ class Parameter(object):
         :raises TypeError: if the datatype for the parameter is invalid
         :raises ValueError: if the number of dimensions for the parameter is greater than 2
         """
-        # Raise an error if no dimensions are defined for parameter
-        # if not self.ndims:
-        #     raise ValueError(f'No dimensions have been defined for {self.name}; unable to append data')
 
         data_np: Union[npt.NDArray, None] = None
 
-        # vals = np.zeros(numval, dtype=PTYPE_TO_DTYPE[valuetype])
-
-        # Possible conditions
-        # 1) no metadata, so dimension size information
-        # 2) have metadata
-        #    - check size/shape of incoming data to expected  size/shape
-        if self.meta is not None:
-            # if isinstance(data_in, list):
-            #     if self.is_scalar and len(data_in) > 1:
-            #         # if self.__dimensions[0] == 'one' and len(data_in) > 1:
-            #         print(f'ERROR: {self.name}, is a scalar but data is a list of size {len(data_in)}')
-            #     elif len(self.meta['dimensions']) > 1:
-            #         # elif len(self.__dimensions) > 1:
-            #         data_np = np.array(data_in, dtype=NEW_PTYPE_TO_DTYPE[self.meta['datatype']])
-            #     else:
-            #         data_np = np.array(data_in, dtype=NEW_PTYPE_TO_DTYPE[self.meta['datatype']])
-            # elif isinstance(data_in, np.ndarray):
-            #     data_np = data_in
-            # elif isinstance(data_in, pd.Series):
-            #     data_np = data_in.to_numpy()
-            # else:
-            #     raise TypeError('Right-hand variable not of type list, ndarray, or Pandas Series')
-
-            # assert data_np is not None
-
-            if self.is_scalar:
-                if isinstance(data_in, NEW_PTYPE_TO_DTYPE[self.meta['datatype']]):
-                    self.__data = data_in
-                else:
-                    raise ValueError(f'{self.__name}: expected {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]} but got {type(data_in)}')
-            elif isinstance(data_in, np.ndarray):
-                if self.is_scalar and data_in.size > 1:
+        # Metadata required: datatype, dimensions
+        if self.is_scalar:
+            if isinstance(data_in, np.ndarray):
+                if data_in.size > 1:
                     raise IndexError(f'{self.__name}: parameter expects a scalar but incoming data has size={data_in.size}')
+                # elif not isinstance(data_in[0], NEW_PTYPE_TO_DTYPE[self.meta['datatype']]):
+                #
+                #     raise TypeError(f'{self.__name}: expected {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]} but got {type(data_in)}')
 
-                expected_shape = tuple(ss.size for ss in self.dimensions.values())
-                expected_size = functools.reduce(lambda x, y: x * y, expected_shape)
+                self.__data = NEW_PTYPE_TO_DTYPE[self.meta['datatype']](data_in[0])
+            # elif not isinstance(data_in, NEW_PTYPE_TO_DTYPE[self.meta['datatype']]):
+            #     raise TypeError(f'{self.__name}: expected {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]} but got {type(data_in)}')
+            else:
+                self.__data = NEW_PTYPE_TO_DTYPE[self.meta['datatype']](data_in)
+        elif isinstance(data_in, np.ndarray):
+            expected_shape = tuple(ss.size for ss in self.dimensions.values())
+            expected_size = functools.reduce(lambda x, y: x * y, expected_shape)
 
-                if expected_size > 0 and data_in.shape != expected_shape:
-                    # If this is a parameter that was collapsed to a scalar we
-                    # can broadcast it to the correct shape
-                    if data_in.size == 1:
-                        data_in = np.repeat(data_in, expected_size)
+            if expected_size > 0 and data_in.shape != expected_shape:
+                # If this is a parameter that was collapsed to a scalar we
+                # can broadcast it to the correct shape
+                if data_in.size == 1:
+                    data_in = np.repeat(data_in, expected_size)
 
-                    # Try to reshape the data to match the dimensionality
-                    try:
-                        data_in = data_in.reshape(expected_shape, order='F')
-                    except ValueError:
-                        raise IndexError(f'{self.__name}: Shape of incoming data, {data_in.shape}, '
-                                         f'does not match the expected shape, {expected_shape} '
-                                         'and cannot be reshaped to expected shape.')
+                # Try to reshape the data to match the dimensionality
+                try:
+                    data_in = data_in.reshape(expected_shape, order='F')
+                except ValueError:
+                    raise IndexError(f'{self.__name}: Shape of incoming data, {data_in.shape}, '
+                                     f'does not match the expected shape, {expected_shape} '
+                                     'and cannot be reshaped to expected shape.')
 
-                if data_in.ndim != len(self.meta['dimensions']):
-                    raise IndexError(f'{self.__name}: Number of dimensions do not match ({data_in.ndim} != {len(self.meta["dimensions"])})')
+            if data_in.ndim != len(self.meta['dimensions']):
+                raise IndexError(f'{self.__name}: Number of dimensions do not match ({data_in.ndim} != {len(self.meta["dimensions"])})')
 
-                if self.__data is not None:
-                    # Make sure shapes match
-                    if data_in.shape != self.__data.shape:
-                        raise IndexError(f'{self.__name}: Shape of incoming data, {data_in.shape}, '
-                                         f'does not match shape of existing data, {self.__data.shape}')
+            # if self.__data is not None:
+            #     # Make sure shapes match
+            #     if data_in.shape != self.__data.shape:
+            #         raise IndexError(f'{self.__name}: Shape of incoming data, {data_in.shape}, '
+            #                          f'does not match shape of existing data, {self.__data.shape}')
 
-                if data_in.dtype == NEW_PTYPE_TO_DTYPE[self.meta['datatype']]:
-                    self.__data = data_in
-                else:
-                    # Attempt to convert to correct datatype
-                    self.__data = np.array(data_in, dtype=NEW_PTYPE_TO_DTYPE[self.meta['datatype']])
-                    # raise ValueError(f'{self.__name}: incoming datatype, {data_in.dtype}, does not match expected, {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]}')
+            if data_in.dtype == NEW_PTYPE_TO_DTYPE[self.meta['datatype']]:
+                self.__data = data_in
+            else:
+                # Attempt to convert to correct datatype
+                self.__data = np.array(data_in, dtype=NEW_PTYPE_TO_DTYPE[self.meta['datatype']])
+                # raise ValueError(f'{self.__name}: incoming datatype, {data_in.dtype}, does not match expected, {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]}')
 
-                if expected_size == 0:
-                    # Set the dimension size(s) if existing dimension sizes are zero
-                    for cname, cdim in zip(self.meta['dimensions'], self.__data.shape):
-                        self.__dimensions.get(cname).size = cdim
-
-
-            # if data_np.size == self.size:
-            #     # The incoming size matches the expected size for the parameter
-            #     if data_np.ndim < self.ndims:
-            #         # A numpy scalar (size=1, ndim=0) should not be reshaped
-            #
-            #         if data_np.ndim != 0:
-            #             # Assume data_np is 1D, parameter is 2D; there are no scalars
-            #             # order higher dimension possibilities.
-            #             data_np = data_np.reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
-            #     elif data_np.ndim == self.ndims:
-            #         # TODO: If dealing with 2D incoming data should make sure that
-            #         #       the shape is correct compared to declared dimensions.
-            #         pass
-            #     else:
-            #         raise ValueError(f'{self.__name}, source data ndim, {data_np.ndim} > parameter ndim, {self.ndims}')
-            # elif data_np.size > self.size and self.is_scalar:
-            #     # In certain circumstances it is possible for a one-dimensioned
-            #     # parameter to be passed a data array with size > 1. If this happens
-            #     # just use the first element from the array.
-            #     print(f'WARNING: {self.__name}, with dimension "one" was passed {data_np.size} ' +
-            #           f'values; using first value only.')
-            #     data_np = np.array(data_np[0], ndmin=1)
-            # else:
-            #     err_txt = f'{self.name}: Number of dimensions for new data ({data_np.ndim}) ' + \
-            #               f'doesn\'t match old ({self.ndims})'
-            #     raise IndexError(err_txt)
-            #
-            # if self.__data is not None and not np.array_equal(self.__data, data_np):
-            #     self.__modified = True
-
-            # self.__data = data_np
-            # if self.__data is None:
-            #     self.__data = data_np
-            # elif np.array_equal(self.__data, data_np):
-            #     pass
-            #     # print(f'{self.__name}: updated value is equal to the old value')
-            # else:
-            #     # Pre-existing data has been modified
-            #     self.__data = data_np
-            #     self.__modified = True
-        else:
-            # No metadata was specified
-            pass
+            if expected_size == 0:
+                # Set the dimension size(s) if existing dimension sizes are zero
+                for cname, cdim in zip(self.meta['dimensions'], self.__data.shape):
+                    self.__dimensions.get(cname).size = cdim
 
     @property
     def dimensions(self) -> ParamDimensions:
@@ -259,14 +196,19 @@ class Parameter(object):
         :returns: dictionary mapping data values to index position
         """
 
-        if self.__data is not None and not self.is_scalar and self.__data.ndim == 1:
+        # FIXME: 20230706 PAN - this is flawed; duplicated values overwrite
+        #        index positions.
+        if isinstance(self.__data, np.ndarray) and self.__data.ndim == 1:
             return dict((val, idx) for idx, val in enumerate(self.__data.tolist()))
         else:
             return None
 
     @property
     def is_scalar(self):
-        return 'one' in self.meta['dimensions']
+        try:
+            return 'one' in self.meta['dimensions']
+        except KeyError:
+            return True
 
     @property
     def modified(self) -> bool:
@@ -277,14 +219,12 @@ class Parameter(object):
         return self.__modified
 
     @property
-    def modules(self) -> Union[List[str], None]:
+    def modules(self) -> List[str]:
         """Returns the names of the PRMS modules that require the parameter.
 
         :returns: names of PRMS modules that require the parameter
         """
-        if self.meta is not None:
-            return self.meta.get('modules')
-        return None
+        return self.meta.get('modules', [])
 
     @property
     def name(self) -> str:
@@ -303,7 +243,7 @@ class Parameter(object):
         if self.is_scalar:
             return 0
         else:
-            return self.__dimensions.ndims
+            return self.__dimensions.ndim
 
     # @property
     # def size(self) -> int:
@@ -360,9 +300,9 @@ class Parameter(object):
 
         :returns: true when all values are within the valid min/max range for the parameter
         """
-        if self.__data is not None and self.meta is not None:
-            minval = self.meta.get('minimum')
-            maxval = self.meta.get('maximum')
+        if self.__data is not None:
+            minval = self.meta.get('minimum', None)
+            maxval = self.meta.get('maximum', None)
 
             if minval is not None and maxval is not None:
                 # Check both ends of the range
@@ -397,10 +337,7 @@ class Parameter(object):
         :returns: true if parameter is dimensioned by nhru, ngw, or nssr
         """
 
-        if self.meta is None:
-            return False
-        else:
-            return not set(self.meta.get('dimensions')).isdisjoint({'nhru', 'ngw', 'nssr'})
+        return not set(self.meta.get('dimensions', [])).isdisjoint({'nhru', 'ngw', 'nssr'})
 
     def is_poi_param(self) -> bool:
         """Test if parameter is dimensioned by nsegment
@@ -408,20 +345,14 @@ class Parameter(object):
         :returns: true if parameter is dimensioned by npoigages
         """
 
-        if self.meta is None:
-            return False
-        else:
-            return not set(self.meta.get('dimensions')).isdisjoint({'npoigages'})
+        return not set(self.meta.get('dimensions', [])).isdisjoint({'npoigages'})
 
     def is_seg_param(self) -> bool:
         """Test if parameter is dimensioned by nsegment.
 
         :returns: true if parameter is dimensioned by nsegment"""
 
-        if self.meta is None:
-            return False
-        else:
-            return not set(self.meta.get('dimensions')).isdisjoint({'nsegment'})
+        return not set(self.meta.get('dimensions', [])).isdisjoint({'nsegment'})
 
     def outliers(self) -> NamedTuple:
         """Returns the number of values less than or greater than the valid range
@@ -434,14 +365,13 @@ class Parameter(object):
         values_over = 0
 
         if self.__data is not None:
-            if self.meta is not None:
-                if self.meta.get('minimum') is not None:
-                    values_under = np.count_nonzero(self.__data < self.meta.get('minimum'))
-                    # values_under = len(self.__data[self.__data < self.__minimum])
+            if self.meta.get('minimum', None) is not None:
+                values_under = np.count_nonzero(self.__data < self.meta.get('minimum'))
+                # values_under = len(self.__data[self.__data < self.__minimum])
 
-                if self.meta.get('maximum') is not None:
-                    values_over = np.count_nonzero(self.__data > self.meta.get('maximum'))
-                    # values_over = len(self.__data[self.__data > self.__maximum])
+            if self.meta.get('maximum', None) is not None:
+                values_over = np.count_nonzero(self.__data > self.meta.get('maximum'))
+                # values_over = len(self.__data[self.__data > self.__maximum])
 
         return Outliers(self.__name, values_under, values_over)
 
@@ -475,7 +405,7 @@ class Parameter(object):
             # Reshape has no meaning if there is no data to reshape
             return
 
-        if self.dimensions.ndims == 1:
+        if self.dimensions.ndim == 1:
             if 'one' in self.dimensions.keys():
                 # Reshaping from a scalar to a 1D or 2D array
                 # print('Scalar to 1D or 2D')
@@ -572,14 +502,14 @@ class Parameter(object):
         :returns: parameter data in the paramDb CSV format
         """
 
-        if self.meta is not None and self.__data is not None:
+        if self.__data is not None:
             outstr = '$id,{}\n'.format(self.name)
 
             ii = 0
             # Do not use self.tolist() here because it causes minor changes
             # to the values for floats.
             for dd in self.__data.ravel(order='F'):
-                if self.meta.get('datatype') in ['float32', 'float64']:
+                if self.meta.get('datatype', 'null') in ['float32', 'float64']:
                     # Float and double types have to be formatted specially so
                     # they aren't written in exponential notation or with
                     # extraneous zeroes
@@ -604,7 +534,7 @@ class Parameter(object):
 
         # Return all information about this parameter in the following form
         param = {'name': self.name,
-                 'datatype': self.meta.get('datatype'),
+                 'datatype': self.meta.get('datatype', 'null'),
                  'dimensions': self.dimensions.tostructure(),
                  'data': self.tolist()}
         return param
@@ -673,7 +603,7 @@ class Parameter(object):
     #     :raises ConcatError: if concatenation is attempted with a parameter of dimension 'one' (e.g. scalar)
     #     """
     #
-    #     if not self.ndims:
+    #     if not self.ndim:
     #         raise ValueError(f'No dimensions have been defined for {self.name}. Unable to concatenate data')
     #
     #     if self.__data is None:
@@ -691,12 +621,12 @@ class Parameter(object):
     #         raise TypeError(f'Defined datatype {self.__datatype} for parameter {self.__name} is not valid')
     #
     #     # Convert list to np.array
-    #     if self.ndims == 2:
+    #     if self.ndim == 2:
     #         data_np = np.array(data_in).reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
-    #     elif self.ndims == 1:
+    #     elif self.ndim == 1:
     #         data_np = np.array(data_in)
     #     else:
-    #         raise ValueError(f'Number of dimensions, {self.ndims}, is not supported')
+    #         raise ValueError(f'Number of dimensions, {self.ndim}, is not supported')
     #
     #     if 'one' in self.__dimensions.dimensions.keys():
     #         # A parameter with the dimension 'one' should never have more
