@@ -7,12 +7,17 @@ from typing import List, NamedTuple, Optional, Union, Sequence
 import calendar
 import datetime
 import decimal
+import operator
 import pandas as pd   # type: ignore
 import numpy as np
 import re
 import xml.etree.ElementTree as xmlET
 
 from .constants import Version
+
+cond_check = {'=': operator.eq,
+              '>': operator.gt,
+              '<': operator.lt}
 
 def read_xml(filename: str) -> xmlET.Element:
     """Returns the root of the xml tree for a given file.
