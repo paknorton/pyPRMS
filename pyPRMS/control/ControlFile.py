@@ -116,10 +116,10 @@ class ControlFile(Control):
                             cnt += 1
 
                         if cnt > numval:
-                            # TODO: Should this raise an error?
-                            print(f'WARNING: Too many values specified for {varname}')
-                            print(f'      {numval} expected, {cnt} given')
-                            print(f'       Keeping first {numval} values')
+                            raise ControlError(f'{varname}: too many values specified')
+                            # print(f'WARNING: Too many values specified for {varname}')
+                            # print(f'      {numval} expected, {cnt} given')
+                            # print(f'       Keeping first {numval} values')
                     except StopIteration:
                         # Hit the end of the file
                         pass
