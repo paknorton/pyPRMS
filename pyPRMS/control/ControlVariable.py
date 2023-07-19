@@ -74,26 +74,15 @@ class ControlVariable(object):
         #
         # return outstr
 
-    # @property
-    # def associated_values(self) -> List[str]:
-    #     """Get list of valid values for a control variable.
-    #
-    #     :returns: Control variable valid values
-    #     """
-    #
-    #     # TODO: this function should be renamed
-    #     assoc_vals = []
-    #     # if self.__valid_values is not None:
-    #     if 'valid_values' in self.meta:
-    #         return list(self.meta['valid_values'][self.values])
-    #         # for xx in self.values:
-    #         #     for vv in self.__valid_values[xx]:
-    #         #         assoc_vals.append(vv)
-    #         # else:
-    #         #     for vv in self.__valid_values[str(self.values)]:
-    #         #         assoc_vals.append(vv)
-    #
-    #     return assoc_vals
+    @property
+    def dyn_param_meaning(self):
+        """Returns a list of meanings for the value of a parameter flag"""
+        meaning = self.meta.get('valid_values', {}).get(str(self.values), None)
+
+        if meaning is None:
+            return list()
+        else:
+            return meaning.split(',')
 
     @property
     def name(self) -> str:
