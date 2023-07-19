@@ -27,7 +27,7 @@ class TestEmptyDimensions:
 
         assert dims_obj.__str__() == str_cmp
 
-    def test_dimensions_str(self, dims_obj):
+    def test_dimensions_dunder_str(self, dims_obj):
         """The __str__ method should produce a pretty string of the object"""
         str_cmp = "----- Dimension -----\nname: ncascade\ndescription: Number of HRU links for cascading flow\ndefault: 0\nis_fixed: False\nrequires_control: ['cascade_flag > 0']\nsize: 0\n\n"
         dims_obj.add(name='ncascade')

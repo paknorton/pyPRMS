@@ -46,7 +46,18 @@ class TestControlVariable:
 
     def test_create_control_variable_nometadata_nostrict(self):
         avar = ControlVariable('blah', strict=False)
-        assert avar.name == 'blah' and avar.values is None
+        assert (avar.name == 'blah' and
+                avar.values is None and
+                avar.size == 0 and
+                avar.dyn_param_meaning == [])
+
+    def test_create_control_variable_adhoc_meta_nostrict(self):
+        adhoc_meta = {'datatype': 'float32',
+                      'description': 'Some cool new variable',
+                      'context': 'scalar',
+                      'default': 8.2}
+        avar = ControlVariable(name='cool_var', meta=adhoc_meta, strict=False)
+        assert avar.meta == adhoc_meta and avar.size == 1
 
     def test_control_variable_str(self, metadata_ctl):
         expected = '----- ControlVariable -----\nname: prms_warmup\nversion: 5.0\ndatatype: int32\ndescription: Number of years to simulate before writing mapped results, Basin, nhru, nsub, or nsegment Summary Output Files\ncontext: scalar\ndefault: 1\n'
@@ -86,6 +97,7 @@ class TestControlVariable:
         avar.values = val
 
         assert avar.meta['default'] != avar.values
+        assert avar.size == 1
 
     @pytest.mark.parametrize('name, val', [('prms_warmup', [8]),
                                            ('initial_deltat', [20.2, 19.1])])
@@ -123,6 +135,7 @@ class TestControlVariable:
         avar.values = val
 
         assert np.equal(avar.values, val).all()
+        assert avar.size == len(val)
 
     @pytest.mark.parametrize('name, val', [('prms_warmup', 2.0),
                                            ('initial_deltat', 8),

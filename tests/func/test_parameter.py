@@ -1,6 +1,9 @@
 
 import pytest
 import numpy as np
+import xml.dom.minidom as minidom
+import xml.etree.ElementTree as xmlET
+
 from pyPRMS import Dimensions
 from pyPRMS import Parameter
 from pyPRMS import MetaData
@@ -86,10 +89,15 @@ class TestParameter:
         aparam = Parameter(name=name, meta=metadata_instance)
         aparam.data = data
 
-        # NOTE: 20230706 PAN - basin_solsta fails correct size test but succeeds in
-        #       a notebook.
-        # assert aparam.has_correct_size()
         assert (aparam.data == data).all()
+        assert aparam.has_correct_size()
+
+    def test_new_param_no_data(self, metadata_instance):
+        """Getting parameter data when data is None raises ValueError"""
+        aparam = Parameter(name='tmax_adj', meta=metadata_instance)
+        with pytest.raises(ValueError):
+            _ = aparam.data
+            assert aparam.has_correct_size()
 
     @pytest.mark.parametrize('name, data, expected', [('cov_type', np.array([1.4, 0, 1.6, 2.1], dtype=np.float32), np.array([1, 0, 1, 2], dtype=np.int32)),
                                                       ('tmax_adj', np.array([[2, 1, 3, 0], [2, 8, 4, 9]], dtype=np.int32), np.array([[2.0, 1.0, 3.0, 0], [2.0, 8, 4, 9]], dtype=np.float32)),
@@ -177,8 +185,6 @@ class TestParameter:
                                                        np.int32(8),
                                                        np.array([1, 0, 1, 2], dtype=np.int32))])
     def test_param_scalar_data_wrong_class(self, metadata_instance, name, data, new_data):
-        # prms_meta = MetaData(verbose=False).metadata['parameters']
-
         # Test first time assignment of data
         with pytest.raises(IndexError):
             aparam = Parameter(name=name, meta=metadata_instance)
@@ -191,20 +197,24 @@ class TestParameter:
             aparam.data = new_data
 
     @pytest.mark.parametrize('name, data', [('cov_type', np.array([0, 0, 0, 0], dtype=np.int32)),
-                                            ('tmax_adj', np.array([[1, 1, 1, 1], [1, 1, 1, 1]], dtype=np.float32))])
+                                            ('tmax_adj', np.array([[1, 1, 1, 1], [1, 1, 1, 1]], dtype=np.float32)),
+                                            ('temp_units', np.int32(0))])
     def test_new_param_all_values_equal(self, metadata_instance, name, data):
-        # prms_meta = MetaData(verbose=False).metadata['parameters']
-
         aparam = Parameter(name=name, meta=metadata_instance)
         aparam.data = data
 
         assert aparam.all_equal()
 
+    def test_new_param_all_values_equal_no_data_raises(self, metadata_instance):
+        """If a parameter has no data then all_equal() raises a ValueError"""
+        aparam = Parameter(name='tmax_adj', meta=metadata_instance)
+
+        with pytest.raises(ValueError):
+            aparam.all_equal()
+
     @pytest.mark.parametrize('name, data', [('cov_type', np.array([0, 1, 0, 0], dtype=np.int32)),
                                             ('tmax_adj', np.array([[1, 2, 1, 1], [1, 1, 1, 1]], dtype=np.float32))])
     def test_new_param_all_values_not_equal(self, metadata_instance, name, data):
-        # prms_meta = MetaData(verbose=False).metadata['parameters']
-
         aparam = Parameter(name=name, meta=metadata_instance)
         aparam.data = data
 
@@ -219,12 +229,27 @@ class TestParameter:
                                                            ('seg_humidity', False, True, False),
                                                            ('basin_solsta', False, False, False)])
     def test_param_check_dim_type(self, metadata_instance, name, ishru, isseg, ispoi):
-        # prms_meta = MetaData(verbose=False).metadata['parameters']
-
         aparam = Parameter(name=name, meta=metadata_instance)
 
         assert (aparam.is_hru_param() == ishru and aparam.is_seg_param() == isseg and
                 aparam.is_poi_param() == ispoi)
+
+    @pytest.mark.parametrize('name, data', [('cov_type', np.array([0, 1, 0, 0], dtype=np.int32)),
+                                            ('tmax_adj', np.array([[1, 2, 1, 1], [1, 1, 1, 1]], dtype=np.float32))])
+    def test_param_check_values(self, metadata_instance, name, data):
+        aparam = Parameter(name=name, meta=metadata_instance)
+        aparam.data = data
+
+        assert aparam.check_values()
+
+    @pytest.mark.parametrize('name, data', [('cov_type', np.array([0, 1, 0, 0], dtype=np.int32)),
+                                            ('tmax_adj', np.array([[1, 2, 1, 1], [1, 1, 1, 1]], dtype=np.float32))])
+    def test_param_check_values_no_data_raises(self, metadata_instance, name, data):
+        aparam = Parameter(name=name, meta=metadata_instance)
+        # aparam.data = data
+
+        with pytest.raises(ValueError):
+            assert aparam.check_values()
 
     @pytest.mark.parametrize('name, data, under, over', [('cov_type',
                                                           np.array([0, 1, 5, 0], dtype=np.int32),
@@ -261,6 +286,19 @@ class TestParameter:
         aparam.data = data
 
         assert (aparam.unique() == unique_vals).all()
+
+    def test_param_dunder_str(self, metadata_instance):
+        expected_str = "----- Parameter -----\nname: tmax_adj\ndatatype: float32\ndescription: HRU maximum temperature adjustment\nhelp: Adjustment to maximum temperature for each HRU, estimated on the basis of slope and aspect\nunits: temp_units\ndefault: 0.0\nminimum: -10.0\nmaximum: 10.0\ndimensions: ['nhru', 'nmonths']\nmodules: ['temp_1sta', 'temp_laps', 'temp_dist2', 'ide_dist', 'xyz_dist']\n"
+
+        aparam = Parameter(name='tmax_adj', meta=metadata_instance)
+        assert aparam.__str__() == expected_str
+
+    def test_param_xml(self, metadata_instance):
+        expected = '<?xml version="1.0" ?>\n<parameter name="tmax_adj" version="ver">\n<dimensions>\n<dimension name="nhru">\n<position>1</position>\n<size>0</size>\n</dimension>\n<dimension name="nmonths">\n<position>2</position>\n<size>0</size>\n</dimension>\n</dimensions>\n</parameter>\n'
+        aparam = Parameter(name='tmax_adj', meta=metadata_instance)
+        xmlstr = minidom.parseString(xmlET.tostring(aparam.xml)).toprettyxml(indent='')
+        assert xmlstr == expected
+
     # def test_add_data_with_no_dimensions_raises(self):
     #     aparam = Parameter(name='someparam')
     #
