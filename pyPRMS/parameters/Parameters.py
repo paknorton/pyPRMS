@@ -8,14 +8,16 @@ import numpy as np
 import pandas as pd     # type: ignore
 
 from functools import cached_property
-from typing import Optional, Union, Dict, List, Set, Tuple
+from typing import Optional, Sequence, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
+from ..control.Control import Control
 from ..dimensions.Dimensions import Dimensions
-from ..Exceptions_custom import ParameterError
+from ..Exceptions_custom import ParameterError, ParameterExistsError, ParameterNotValidError
 from .Parameter import Parameter
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
-from ..constants import MetaDataType
+from ..prms_helpers import cond_check
+from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
 
 import os
 os.environ['USE_PYGEOS'] = '0'
@@ -38,12 +40,13 @@ class Parameters(object):
         self.__parameters: Dict[str, Parameter] = dict()
 
         self.verbose = verbose
+        self.__control: Optional[Control] = None
         self.__hru_poly = None
         self.__hru_shape_key = None
         self.__seg_poly = None
         self.__seg_shape_key = None
-        self.__seg_to_hru = dict()
-        self.__hru_to_seg = dict()
+        self.__seg_to_hru: Dict = dict()
+        self.__hru_to_seg: Dict = dict()
         self.metadata = metadata['parameters']
 
     def __getattr__(self, name):
@@ -60,6 +63,38 @@ class Parameters(object):
 
         return self.get(item)
 
+    def __str__(self):
+        """Pretty-print string representation of the Parameters object.
+
+        :return: Pretty-print string of Parameters
+        """
+
+        outstr = '----- Dimensions -----\n'
+        for vv in self.__dimensions.values():
+            outstr += f'{vv.name}: size={vv.size}\n'
+
+        outstr += '----- Parameters -----\n'
+        for vv in self.__parameters.values():
+            outstr += f'{vv.name}: {vv.meta["dimensions"]}\n'
+
+        return outstr
+
+    @property
+    def control(self) -> Optional[Control]:
+        """Get Control object
+
+        :returns: Control object
+        """
+        return self.__control
+
+    @control.setter
+    def control(self, ctl_obj: Control):
+        """Sets the Control object for the ParameterSet.
+
+        :param ctl_obj: Control object
+        """
+        self.__control = ctl_obj
+
     @property
     def dimensions(self) -> Dimensions:
         """Get dimensions object.
@@ -67,6 +102,7 @@ class Parameters(object):
         :returns: Dimensions object
         """
         return self.__dimensions
+
     @cached_property
     def hru_to_seg(self) -> Dict[int, int]:
         """Returns an ordered dictionary mapping NHM HRU IDs to HRU NHM segment IDs.
@@ -81,6 +117,104 @@ class Parameters(object):
         self.__hru_to_seg = dict([(nhm_id[idx], vv) for idx, vv in enumerate(hru_segment)])
 
         return self.__hru_to_seg
+
+    # =========================================================================
+    # =========================================================================
+    @property
+    def missing_params(self) -> Set:
+        """Get list of parameters that are missing from the parameter set
+        """
+
+        if self.__control is None:
+            return set()
+
+        modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
+
+        # -------------------------------
+        # Get set of parameters required by the modules used
+        pset = set()
+        for kk, vv in self.metadata.items():
+            for mm in vv['modules']:
+                if mm in modules_used:
+                    pset.add(kk)
+
+        # Remove parameters that do not meet secondary requirements defined
+        # in the metadata
+        pset = self._trim_req_params(pset)
+
+        final_params = pset.difference(set(self.parameters.keys()))
+        return final_params
+
+    # TODO: 20230719 PAN - not sure this is needed anymore
+    # def get_params_for_modules(self, modules: Sequence[str]) -> Set[str]:
+    #     """Get list of unique parameters required for a given list of modules.
+    #
+    #     :param modules: List of PRMS modules
+    #
+    #     :returns: Set of parameter names
+    #     """
+    #
+    #     params_by_module = set()
+    #
+    #     for xx in self.parameters.values():
+    #         for mm in xx.meta.get('modules', []):
+    #             if mm in modules:
+    #                 params_by_module.add(xx.name)
+    #     return params_by_module
+
+    def _condition_check_ctl(self, cstr: str) -> bool:
+        """Takes a string of the form '<control_var> <op> <value>' and checks
+        if the condition is True
+        """
+        if len(cstr) == 0:
+            return False
+
+        var, op, value = cstr.split(' ')
+
+        cdtype = NEW_PTYPE_TO_DTYPE[self.control.get(var).meta['datatype']]
+        ctl_val = self.control.get(var).values
+        value = cdtype(value)
+
+        return cond_check[op](ctl_val, value)
+
+    def _condition_check_dim(self, cstr: str) -> bool:
+        """Takes a string of the form '<dimension> <op> <value>' and checks
+        if the condition is True
+        """
+        if len(cstr) == 0:
+            return False
+
+        var, op, value = cstr.split(' ')
+        value = int(value)  # type: ignore
+
+        if self.dimensions.exists(var):
+            return cond_check[op](self.dimensions.get(var).size, value)
+        return False
+
+    def _trim_req_params(self, param_set: Set) -> Set:
+        """Remove parameters from a set of parameters that do not meet secondary requirements"""
+        remove_set = set()
+
+        for cparam in param_set:
+            for xx in self.metadata[cparam].get('requires_control', []):
+                if not self._condition_check_ctl(xx):
+                    remove_set.add(cparam)
+                    if self.verbose:   # pragma: no cover
+                        print(f'{cparam}: Control condition ({xx}) not met')
+
+            for xx in self.metadata[cparam].get('requires_dimension', []):
+                if not self._condition_check_dim(xx):
+                    remove_set.add(cparam)
+                    if self.verbose:   # pragma: no cover
+                        print(f'{cparam}: Dimension condition ({xx}) not met')
+
+        for vv in remove_set:
+            param_set.remove(vv)
+
+        return param_set
+
+    # =========================================================================
+    # =========================================================================
 
     @property
     def parameters(self) -> Dict[str, Parameter]:
@@ -136,10 +270,10 @@ class Parameters(object):
 
         # Add a new parameter
         if self.exists(name):
-            raise ParameterError(f'{name}: Parameter already exists')
+            raise ParameterExistsError(f'{name}: Parameter already exists')
 
         if name not in self.metadata:
-            raise ParameterError(f'{name}: Parameter is not a valid PRMS parameter')
+            raise ParameterNotValidError(f'{name}: Parameter is not a valid PRMS parameter')
 
         for cdim in self.metadata[name]['dimensions']:
             if not self.__dimensions.exists(cdim):
@@ -182,9 +316,12 @@ class Parameters(object):
                 if pp.data.ndim == 2:
                     print('    INFO: dimensioned [{1}, {2}]; all values by {1} are equal to {0}'.format(pp.data[0],
                                                                                                         *list(pp.dimensions.keys())))
-                else:
+                elif pp.data.ndim == 1:
                     print('    INFO: dimensioned [{1}]; all values are equal to {0}'.format(pp.data[0],
                                                                                             *list(pp.dimensions.keys())))
+                else:
+                    # Scalars
+                    print(f'    INFO: Scalar; value = {pp.data}')
 
             if pp.name == 'snarea_curve':
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
@@ -208,8 +345,8 @@ class Parameters(object):
         # Return the given parameter
         if self.exists(name):
             return self.__parameters[name]
-        # TODO: This shouldn't be a value error
-        raise ValueError(f'Parameter, {name}, does not exist.')
+
+        raise ParameterError(f'Parameter, {name}, does not exist.')
 
     def get_dataframe(self, name: str) -> pd.DataFrame:
         """Returns a pandas DataFrame for a parameter.
@@ -272,23 +409,23 @@ class Parameters(object):
         :param global_ids: List of global IDs to extract
         :returns: Dataframe of extracted values
         """
-        param = self.__parameters[name]
+        param = self.get(name)
         dim_set = set(param.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw', 'nsegment', 'ndeplval'})
         id_index_map = {}
         cdim = dim_set.pop()
 
         if cdim in ['nhru', 'nssr', 'ngw', 'ndeplval']:
             # Global IDs should be in the range of nhm_id
-            id_index_map = self.__parameters['nhm_id'].index_map
+            id_index_map = self.get('nhm_id').index_map
         elif cdim in ['nsegment']:
             # Global IDs should be in the range of nhm_seg
-            id_index_map = self.__parameters['nhm_seg'].index_map
+            id_index_map = self.get('nhm_seg').index_map
 
         # Zero-based indices in order of global_ids
         nhm_idx0 = [id_index_map[kk] for kk in global_ids]
 
         if name in ['hru_deplcrv', 'snarea_curve']:
-            init_data = self.__parameters['hru_deplcrv'].data[tuple(nhm_idx0), ]
+            init_data = self.get('hru_deplcrv').data[tuple(nhm_idx0), ]
             uniq_deplcrv = np.unique(init_data).tolist()
 
         if param.dimensions.ndims == 2:
@@ -869,6 +1006,11 @@ class Parameters(object):
 
         return dag_ds_subset
 
+    def _read(self):
+        """Abstract function for reading parameters into Parameters object.
+        """
+
+        assert False, 'Parameters._read() must be defined by child class'
     # def replace_values(self, varname, newvals, newdims=None):
     #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
     #     if not self.__isloaded:

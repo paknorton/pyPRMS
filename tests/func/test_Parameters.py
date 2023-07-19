@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from pyPRMS import Parameters
-from pyPRMS.Exceptions_custom import ParameterError
+from pyPRMS.Exceptions_custom import ParameterError, ParameterExistsError
 from pyPRMS import MetaData
 
 
@@ -16,6 +16,11 @@ def pdb_instance():
 class TestParameters:
     # Still to test:
     # - add invalid parameter name
+
+    def test_parameters_read_method_is_abstract(self, pdb_instance):
+        """The Parameters class _read() method is abstract"""
+        with pytest.raises(AssertionError):
+            pdb_instance._read()
 
     @pytest.mark.parametrize('name, size', [('nhru', 4),
                                             ('nmonths', 12),
@@ -37,7 +42,7 @@ class TestParameters:
                                       ('basin_solsta')])
     def test_add_existing_parameter_error(self, pdb_instance, name):
         # Trying to add a parameter that already exists should raise an error
-        with pytest.raises(ParameterError):
+        with pytest.raises(ParameterExistsError):
             pdb_instance.add(name=name)
     @pytest.mark.parametrize('name, data', [('cov_type', np.array([1, 0, 1, 2], dtype=np.int32)),
                                             ('tmax_adj', np.zeros(48, dtype=np.float32).reshape((-1, 12), order='F')),
@@ -49,3 +54,7 @@ class TestParameters:
 
     def test_missing_parameter(self, pdb_instance):
         assert not pdb_instance.exists('hru_area')
+
+    def test_get_missing_parameter(self, pdb_instance):
+        with pytest.raises(ParameterError):
+            aa = pdb_instance.get('nothin')
