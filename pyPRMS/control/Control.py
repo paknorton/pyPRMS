@@ -40,8 +40,10 @@ class Control(object):
 
         # Create an entry for each variable in the control section of
         # the metadata dictionary
-        for cvar, cvals in metadata['control'].items():
-            self.add(name=cvar, meta=cvals)
+        # for cvar, cvals in metadata['control'].items():
+        #     self.add(name=cvar, meta=cvals)
+        for cvar in metadata['control'].keys():
+            self.add(name=cvar, meta=metadata['control'])
 
         if verbose:
             print('Pre-populate control variables done')
@@ -85,10 +87,11 @@ class Control(object):
         for dv in self.__control_vars.keys():
             cvar = self.get(dv)
 
-            if cvar.meta['valid_value_type'] == 'parameter' and (isinstance(cvar.values, np.int32) or isinstance(cvar.values, np.int64)):
+            if (cvar.meta.get('valid_value_type', '') == 'parameter' and
+                    (isinstance(cvar.values, np.int32) or isinstance(cvar.values, np.int64))):
                 # Dynamic parameter flags should always be integers
                 if cvar.values > 0:
-                    dyn_params.extend(cvar.associated_values)
+                    dyn_params.extend(cvar.dyn_param_meaning)
                     # dyn_params.append(self.get(dv).associated_values)
         return dyn_params
 
