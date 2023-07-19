@@ -141,6 +141,9 @@ class Parameter(object):
             #     raise TypeError(f'{self.__name}: expected {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]} but got {type(data_in)}')
             else:
                 self.__data = NEW_PTYPE_TO_DTYPE[self.meta['datatype']](data_in)
+
+            if self.__dimensions.get('one').size == 0:
+                self.__dimensions.get('one').size = 1
         elif isinstance(data_in, np.ndarray):
             expected_shape = tuple(ss.size for ss in self.dimensions.values())
             expected_size = functools.reduce(lambda x, y: x * y, expected_shape)
@@ -212,7 +215,7 @@ class Parameter(object):
 
     @property
     def modified(self) -> bool:
-        """Logical denoting whether parameter data has been modified.
+        """Logical denoting whether elements in the parameter data have been modified.
 
         :returns: True is parameter data was modified
         """
@@ -272,12 +275,12 @@ class Parameter(object):
 
         :returns true if all values are equal
         """
-        if self.__data is not None:
-            if self.__data.size > 1:
-                return (self.__data == self.__data[0]).all()   # type: ignore
-            return False
-        else:
-            raise TypeError('Parameter data is not initialized')
+        # if self.__data is not None:
+        if self.data.size > 1:
+            return (self.__data == self.__data[0]).all()   # type: ignore
+        return True  # scalar
+        # else:
+        #     raise TypeError('Parameter data is not initialized')
 
     def check(self) -> str:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) size
@@ -300,19 +303,19 @@ class Parameter(object):
 
         :returns: true when all values are within the valid min/max range for the parameter
         """
-        if self.__data is not None:
-            minval = self.meta.get('minimum', None)
-            maxval = self.meta.get('maximum', None)
+        # if self.__data is not None:
+        minval = self.meta.get('minimum', None)
+        maxval = self.meta.get('maximum', None)
 
-            if minval is not None and maxval is not None:
-                # Check both ends of the range
-                if not(isinstance(minval, str) or isinstance(maxval, str)):
-                    return bool((self.__data >= minval).all() and (self.__data <= maxval).all())
-                elif minval == 'bounded':
-                    return bool((self.__data >= self.meta.get('default')).all())
-            return True
-        else:
-            raise TypeError('Parameter data is not initialized')
+        if minval is not None and maxval is not None:
+            # Check both ends of the range
+            if not(isinstance(minval, str) or isinstance(maxval, str)):
+                return bool((self.data >= minval).all() and (self.data <= maxval).all())
+            elif minval == 'bounded':
+                return bool((self.data >= self.meta.get('default')).all())
+        return True
+        # else:
+        #     raise TypeError('Parameter data is not initialized')
 
     def has_correct_size(self) -> bool:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
@@ -325,11 +328,7 @@ class Parameter(object):
         for dd in self.dimensions.keys():
             total_size *= self.dimensions.get(dd).size
 
-        # This assumes a numpy array
-        if self.__data is not None:
-            return self.data.size == total_size
-        else:
-            return False
+        return self.data.size == total_size
 
     def is_hru_param(self) -> bool:
         """Test if parameter is dimensioned by HRU.
