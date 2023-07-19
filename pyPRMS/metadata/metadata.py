@@ -60,11 +60,11 @@ class MetaData(object):
             depr_version = version_info(elem.attrib.get('deprecated'))
 
             if var_version.major is not None and var_version.major > version:
-                if self.__verbose:
+                if self.__verbose:   # pragma: no cover
                     print(f'{name} rejected by version')
                 continue
             if depr_version.major is not None and depr_version.major <= version:
-                if self.__verbose:
+                if self.__verbose:   # pragma: no cover
                     print(f'{name} rejected by deprecation version')
                 continue
 
@@ -140,11 +140,11 @@ class MetaData(object):
             depr_version = version_info(elem.attrib.get('deprecated'))
 
             if var_version.major is not None and var_version.major > version:
-                if self.__verbose:
+                if self.__verbose:   # pragma: no cover
                     print(f'{name} rejected by version')
                 continue
             if depr_version.major is not None and depr_version.major <= version:
-                if self.__verbose:
+                if self.__verbose:   # pragma: no cover
                     print(f'{name} rejected by deprecation version')
                 continue
 
