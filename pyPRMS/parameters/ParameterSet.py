@@ -48,67 +48,67 @@ class ParameterSet(object):
 
         self.__ctl_obj: Optional[Control] = None
 
-    @property
-    def available_parameters(self) -> List[str]:
-        """Get a list of parameter names in the ParameterSet.
+    # @property
+    # def available_parameters(self) -> List[str]:
+    #     """Get a list of parameter names in the ParameterSet.
+    #
+    #     :returns: list of parameter names
+    #     """
+    #
+    #     return list(self.parameters.keys())
 
-        :returns: list of parameter names
-        """
+    # @property
+    # def control(self) -> Optional[Control]:
+    #     """Get Control object
+    #
+    #     :returns: Control object
+    #     """
+    #     return self.__ctl_obj
+    #
+    # @control.setter
+    # def control(self, ctl_obj: Control):
+    #     """Sets the Control object for the ParameterSet.
+    #
+    #     :param ctl_obj: Control object
+    #     """
+    #     self.__ctl_obj = ctl_obj
 
-        return list(self.parameters.keys())
+    # @property
+    # def dimensions(self) -> Dimensions:
+    #     """Get dimensions object.
+    #
+    #     :returns: Dimensions object
+    #     """
+    #     return self.__dimensions
 
-    @property
-    def control(self) -> Optional[Control]:
-        """Get Control object
+    # @property
+    # def master_parameters(self) -> Optional[ValidParams]:
+    #     """Get master parameters.
+    #
+    #     :returns: ValidParams object
+    #     """
+    #
+    #     return self.__master_params
 
-        :returns: Control object
-        """
-        return self.__ctl_obj
-
-    @control.setter
-    def control(self, ctl_obj: Control):
-        """Sets the Control object for the ParameterSet.
-
-        :param ctl_obj: Control object
-        """
-        self.__ctl_obj = ctl_obj
-
-    @property
-    def dimensions(self) -> Dimensions:
-        """Get dimensions object.
-
-        :returns: Dimensions object
-        """
-        return self.__dimensions
-
-    @property
-    def master_parameters(self) -> Optional[ValidParams]:
-        """Get master parameters.
-
-        :returns: ValidParams object
-        """
-
-        return self.__master_params
-
-    @property
-    def missing_params(self) -> Set:
-        """Get list of parameters that are missing from the parameter set
-        """
-
-        if self.__ctl_obj is None or self.master_parameters is None:
-            return set()
-
-        modules_used = set(self.__ctl_obj.modules.values()).union(set(self.__ctl_obj.additional_modules))
-        pset = self.master_parameters.get_params_for_modules(modules=list(modules_used))
-        cleaned_list = self._trim_req_params(pset)
-
-        if isinstance(cleaned_list, set):
-            final_params = cleaned_list.difference(set(self.parameters.keys()))
-        elif isinstance(cleaned_list, list):
-            final_params = set(cleaned_list).difference(set(self.parameters.keys()))
-        else:
-            raise TypeError('remove_unneeded_parameters() requires a set or list argument')
-        return final_params
+    # @property
+    # def missing_params(self) -> Set:
+    #     """Get list of parameters that are missing from the parameter set
+    #     """
+    #
+    #     if self.__ctl_obj is None or self.master_parameters is None:
+    #         return set()
+    #
+    #     modules_used = set(self.__ctl_obj.modules.values()).union(set(self.__ctl_obj.additional_modules))
+    #     pset = self.master_parameters.get_params_for_modules(modules=list(modules_used))
+    #     cleaned_list = self._trim_req_params(pset)
+    #
+    #     if isinstance(cleaned_list, set):
+    #         final_params = cleaned_list.difference(set(self.parameters.keys()))
+    #     elif isinstance(cleaned_list, list):
+    #         final_params = set(cleaned_list).difference(set(self.parameters.keys()))
+    #     else:
+    #         raise TypeError('remove_unneeded_parameters() requires a set or list argument')
+    #     return final_params
 
     @property
     def parameters(self) -> Parameters:
@@ -194,11 +194,11 @@ class ParameterSet(object):
 
         return params_xml
 
-    def _read(self):
-        """Abstract function for reading parameters into ParameterSet.
-        """
-
-        assert False, 'ParameterSet._read() must be defined by child class'
+    # def _read(self):
+    #     """Abstract function for reading parameters into ParameterSet.
+    #     """
+    #
+    #     assert False, 'ParameterSet._read() must be defined by child class'
 
     def add_missing_parameters(self):
         """Adds missing parameters that are required by the selected modules
@@ -323,36 +323,36 @@ class ParameterSet(object):
         pset = self.master_parameters.get_params_for_modules(modules=list(modules_used))
         self.reduce_parameters(required_params=pset)
 
-    def _trim_req_params(self, required_params):
-        """Reduce a list of parameters by removing those parameters that don't meet
-        secondary requirements.
-        """
-
-        check_list = ['gvr_hru_id', 'obsout_segment', 'rain_code', 'hru_lon']
-
-        parameter_dim_conditions = {'basin_solsta': 'nsol > 0',
-                                    'hru_solsta': 'nsol > 0',
-                                    'rad_conv': 'nsol > 0',
-                                    'humidity_percent': 'nhumid > 0',
-                                    'irr_type': 'nwateruse > 0'}
-
-        for cparam, cond in parameter_dim_conditions.items():
-            if cparam in required_params:
-                if not self._condition_check_dim(cond):
-                    # print(f'Removing {cparam}')
-                    required_params.remove(cparam)
-
-        for xx in check_list:
-            if xx in required_params:
-                if xx == 'gvr_hru_id':
-                    if self.__ctl_obj is not None:
-                        if not self.__ctl_obj.exists('mapOutON_OFF') or self.__ctl_obj.get('mapOutON_OFF').values == 0:
-                            required_params.remove(xx)
-                elif xx in ['hru_lat', 'hru_lon', ]:
-                    if not self.parameters.exists(xx):
-                        required_params.remove(xx)
-
-        return required_params
+    # def _trim_req_params(self, required_params):
+    #     """Reduce a list of parameters by removing those parameters that don't meet
+    #     secondary requirements.
+    #     """
+    #
+    #     check_list = ['gvr_hru_id', 'obsout_segment', 'rain_code', 'hru_lon']
+    #
+    #     parameter_dim_conditions = {'basin_solsta': 'nsol > 0',
+    #                                 'hru_solsta': 'nsol > 0',
+    #                                 'rad_conv': 'nsol > 0',
+    #                                 'humidity_percent': 'nhumid > 0',
+    #                                 'irr_type': 'nwateruse > 0'}
+    #
+    #     for cparam, cond in parameter_dim_conditions.items():
+    #         if cparam in required_params:
+    #             if not self._condition_check_dim(cond):
+    #                 # print(f'Removing {cparam}')
+    #                 required_params.remove(cparam)
+    #
+    #     for xx in check_list:
+    #         if xx in required_params:
+    #             if xx == 'gvr_hru_id':
+    #                 if self.__ctl_obj is not None:
+    #                     if not self.__ctl_obj.exists('mapOutON_OFF') or self.__ctl_obj.get('mapOutON_OFF').values == 0:
+    #                         required_params.remove(xx)
+    #             elif xx in ['hru_lat', 'hru_lon', ]:
+    #                 if not self.parameters.exists(xx):
+    #                     required_params.remove(xx)
+    #
+    #     return required_params
 
     def reduce_parameters(self, required_params: Union[Set, List]):
         """Remove parameters that are not needed.
@@ -377,19 +377,19 @@ class ParameterSet(object):
         for rparam in remove_list:
             self.parameters.remove(rparam)
 
-    def _condition_check_dim(self, cstr: str) -> bool:
-        """Takes a string of the form '<control_var> <op> <value>' and checks
-        if the condition is True
-        """
-        if len(cstr) == 0:
-            return False
-
-        var, op, value = cstr.split(' ')
-        value = int(value)  # type: ignore
-
-        if self.dimensions.exists(var):
-            return cond_check[op](self.dimensions.get(var).size, value)
-        return False
+    # def _condition_check_dim(self, cstr: str) -> bool:
+    #     """Takes a string of the form '<control_var> <op> <value>' and checks
+    #     if the condition is True
+    #     """
+    #     if len(cstr) == 0:
+    #         return False
+    #
+    #     var, op, value = cstr.split(' ')
+    #     value = int(value)  # type: ignore
+    #
+    #     if self.dimensions.exists(var):
+    #         return cond_check[op](self.dimensions.get(var).size, value)
+    #     return False
 
     def remove_by_global_id(self, hrus: Optional[List] = None,
                             segs: Optional[List] = None):
