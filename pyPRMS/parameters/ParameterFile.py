@@ -1,21 +1,23 @@
 
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
+import numpy as np
 from typing import List, Optional, Set
 
 from ..Exceptions_custom import ParameterExistsError, ParameterNotValidError
-from .ParameterSet import ParameterSet
-from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
+# from .ParameterSet import ParameterSet
+from .Parameters import Parameters
+from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM, PTYPE_TO_DTYPE
 from ..prms_helpers import get_file_iter
 
 
-class ParameterFile(ParameterSet):
+class ParameterFile(Parameters):
 
     """Class to handle reading PRMS parameter file format."""
 
     def __init__(self, filename: str,
                  metadata,
-                 verbose: Optional[bool] = False,
-                 verify: Optional[bool] = True):
+                 verbose: Optional[bool] = False):
+                 # verify: Optional[bool] = True):
         """Create the ParameterFile object.
 
         :param filename: name of parameter file
@@ -23,7 +25,7 @@ class ParameterFile(ParameterSet):
         :param verify: whether to load the master parameters (default=True)
         """
 
-        super(ParameterFile, self).__init__(metadata=metadata, verbose=verbose, verify=verify)
+        super(ParameterFile, self).__init__(metadata=metadata, verbose=verbose)
 
         # self.__filename = None
         # self.__header = None
@@ -77,7 +79,7 @@ class ParameterFile(ParameterSet):
         """Read parameter file.
         """
 
-        if self.__verbose:
+        if self.__verbose:   # pragma: no cover
             print('INFO: Reading parameter file')
 
         # Read the parameter file into memory and parse it
@@ -90,7 +92,7 @@ class ParameterFile(ParameterSet):
                 break
             self.__header.append(line)
 
-        if self.__verbose:
+        if self.__verbose:   # pragma: no cover
             print('INFO: headers:')
             print(self.__header)
 
@@ -113,6 +115,8 @@ class ParameterFile(ParameterSet):
             if line == VAR_DELIM:
                 continue
             varname = line.split(' ')[0]
+            if self.__verbose:   # pragma: no cover
+                print(f'{varname=}')
 
             # Add the parameter
             try:
@@ -126,11 +130,11 @@ class ParameterFile(ParameterSet):
                 # else:
                 #     self.parameters.add(varname)
             except ParameterExistsError:
-                if self.__verbose:
+                if self.__verbose:   # pragma: no cover
                     print(f'Parameter, {varname}, updated with new values')
                 self.__updated_parameters.add(varname)
             except ParameterNotValidError:
-                if self.__verbose:
+                if self.__verbose:   # pragma: no cover
                     print(f'Parameter, {varname}, is not a valid parameter; skipping.')
 
                 # Skip to the next parameter
@@ -150,56 +154,98 @@ class ParameterFile(ParameterSet):
             # the declared global dimensions.
             dim_size = int(next(it))
 
-            self.parameters.get(varname).datatype = int(next(it))
+            # The datatype
+            param_dtype = int(next(it))
 
-            # Add the dimensions to the parameter, dimension size is looked up from the global Dimensions object
-            for dd in dim_names:
-                self.parameters.get(varname).dimensions.add(dd, self.dimensions.get(dd).size)
-
-            # if numval != dim_size:
-            if dim_size != self.parameters.get(varname).size:
-                # The declared total size doesn't match the total size of the declared dimensions
-                print(f'{varname}: Declared total size for parameter does not match the total size of the ' +
-                      f'declared dimension(s) ({dim_size} != {self.parameters.get(varname).size}); skipping')
-
-                # Still have to read all the values to skip this properly
-                try:
-                    while True:
-                        cval = next(it)
-
-                        if cval == VAR_DELIM or cval.strip() == '':
-                            break
-                except StopIteration:
-                    # Hit the end of the file
-                    pass
-                self.parameters.remove(varname)
+            if self.get(varname).is_scalar:
+                vals = PTYPE_TO_DTYPE[param_dtype](next(it))
             else:
-                # Check if number of values written match the number of values declared
-                vals = []
-                try:
-                    # Read in the data values
-                    while True:
-                        cval = next(it)
-
-                        if cval[0:4] == VAR_DELIM or cval.strip() == '':
-                            break
-                        vals.append(cval)
-                except StopIteration:
-                    # Hit the end of the file
-                    pass
-
-                if len(vals) != dim_size:
-                    print(f'{varname}: number of values does not match declared dimension size ' +
-                          f'({len(vals)} != {dim_size}); skipping')
-
-                    # Remove the parameter from the dictionary
-                    self.parameters.remove(varname)
+                # Arrays of strings should be objects
+                if param_dtype == 4:
+                    vals = np.zeros(dim_size, dtype=object)
                 else:
-                    # Convert the values to the correct datatype
-                    # Ignore the type until https://github.com/python/mypy/issues/3004 is fixed
-                    self.parameters.get(varname).data = vals    # type: ignore
+                    vals = np.zeros(dim_size, dtype=PTYPE_TO_DTYPE[param_dtype])
 
-        for pp in bounded_parameters:
-            self._adjust_bounded(pp)
+                for idx in range(0, dim_size):
+                    # NOTE: string-float to int works but float to int does not
+                    vals[idx] = next(it)
+
+            # Make sure there are not any more values in the file
+            try:
+                cnt = dim_size
+                while True:
+                    cval = next(it)
+                    if cval[0:4] == VAR_DELIM or cval.strip() == '':
+                        break
+                    cnt += 1
+
+                if cnt > dim_size:
+                    print(f'WARNING: Too many values specified for {varname}')
+                    print(f'         {dim_size} expected, {cnt} given')
+                    print('          Removing parameter')
+
+                    self.remove(varname)
+                    continue
+            except StopIteration:
+                # Hit the end of the file
+                pass
+
+            self.get(varname).data = vals    # type: ignore
+        #     self.parameters.get(varname).datatype = int(next(it))
+        #
+        #     if self.__verbose:
+        #         print(f'{ndims=}')
+        #         print(f'{dim_names=}')
+        #     # Add the dimensions to the parameter, dimension size is looked up from the global Dimensions object
+        #     for dd in dim_names:
+        #         if self.__verbose:
+        #             print(f'\t{dd=}')
+        #         self.parameters.get(varname).dimensions.add(dd, self.dimensions.get(dd).size)
+        #
+        #     # if numval != dim_size:
+        #     if dim_size != self.parameters.get(varname).size:
+        #         # The declared total size doesn't match the total size of the declared dimensions
+        #         print(f'{varname}: Declared total size for parameter does not match the total size of the ' +
+        #               f'declared dimension(s) ({dim_size} != {self.parameters.get(varname).size}); skipping')
+        #
+        #         # Still have to read all the values to skip this properly
+        #         try:
+        #             while True:
+        #                 cval = next(it)
+        #
+        #                 if cval == VAR_DELIM or cval.strip() == '':
+        #                     break
+        #         except StopIteration:
+        #             # Hit the end of the file
+        #             pass
+        #         self.parameters.remove(varname)
+        #     else:
+        #         # Check if number of values written match the number of values declared
+        #         vals = []
+        #         try:
+        #             # Read in the data values
+        #             while True:
+        #                 cval = next(it)
+        #
+        #                 if cval[0:4] == VAR_DELIM or cval.strip() == '':
+        #                     break
+        #                 vals.append(cval)
+        #         except StopIteration:
+        #             # Hit the end of the file
+        #             pass
+        #
+        #         if len(vals) != dim_size:
+        #             print(f'{varname}: number of values does not match declared dimension size ' +
+        #                   f'({len(vals)} != {dim_size}); skipping')
+        #
+        #             # Remove the parameter from the dictionary
+        #             self.parameters.remove(varname)
+        #         else:
+        #             # Convert the values to the correct datatype
+        #             # Ignore the type until https://github.com/python/mypy/issues/3004 is fixed
+        #             self.parameters.get(varname).data = vals    # type: ignore
+        #
+        # for pp in bounded_parameters:
+        #     self._adjust_bounded(pp)
 
         self.__isloaded = True
