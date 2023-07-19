@@ -860,13 +860,7 @@
         <maximum>100.0</maximum>
         <default>0.0</default>
         <modules>
-            <module>potet_hru</module>
-            <module>potet_hamon</module>
-            <module>potet_hs</module>
-            <module>potet_jh</module>
-            <module>potet_pan</module>
             <module>potet_pm</module>
-            <module>potet_pm_sta</module>
             <module>potet_pt</module>
         </modules>
         <dimensions>
@@ -2890,7 +2884,6 @@
             </dimension>
         </dimensions>
         <requires>
-            <control>csvON_OFF = 1</control>
             <dimension>npoigages > 0</dimension>
         </requires>
     </parameter>
@@ -2965,7 +2958,6 @@
             </dimension>
         </dimensions>
         <requires>
-            <control>csvON_OFF = 1</control>
             <dimension>npoigages > 0</dimension>
         </requires>
     </parameter>
@@ -2987,7 +2979,6 @@
             </dimension>
         </dimensions>
         <requires>
-            <control>csvON_OFF = 1</control>
             <dimension>npoigages > 0</dimension>
         </requires>
     </parameter>
@@ -4316,6 +4307,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="seg_length">
         <type>F</type>
