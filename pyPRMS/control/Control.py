@@ -183,8 +183,8 @@ class Control(object):
         """Takes a string of the form '<control_var> <op> <value>' and checks
         if the condition is True
         """
-        if len(cstr) == 0:
-            return True
+        # if len(cstr) == 0:
+        #     return True
 
         var, op, value = cstr.split(' ')
         value = int(value)
@@ -292,6 +292,8 @@ class Control(object):
                                 if isinstance(cvar.values, np.ndarray):
                                     for cval in cvar.values:
                                         outfile.write(f'{cval}\n')
+                                else:
+                                    outfile.write(f'{cvar.values}\n')
 
 
         outfile.close()
