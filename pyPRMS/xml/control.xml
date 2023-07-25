@@ -1169,7 +1169,7 @@
         <desc>Pathname of the time series of pre-processed values for dynamic parameter wrain_intcp </desc>
     </control_param>
     <control_param name="aniOutVar_names" deprecated="6.0">
-        <default>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</default>
+        <default>none</default>
         <type>4</type>
         <numvals>naniOutVars</numvals>
         <desc>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</desc>
@@ -1187,25 +1187,25 @@
         <desc>Pathname(s) for measured input Data File(s), typically a single Data File is specified</desc>
     </control_param>
     <control_param name="dispVar_element" deprecated="6.0">
-        <default>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable’s dimension size)</default>
+        <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable's dimension size)</desc>
     </control_param>
     <control_param name="dispVar_names" deprecated="6.0">
-        <default>List of variable names for which plots are output to the runtime graph</default>
+        <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
     <control_param name="dispVar_plot" deprecated="6.0">
-        <default>List of variable names for which plots are output to the runtime graph</default>
+        <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
     <control_param name="mapOutVar_names" deprecated="6.0">
-        <default>List of variable names for which output is written to mapped output files(s); variables must be of type real or double</default>
+        <default>none</default>
         <type>4</type>
         <numvals>nmapOutVars</numvals>
         <desc>List of variable names for which output is written to mapped output files(s); variables must be of type real or double.</desc>
