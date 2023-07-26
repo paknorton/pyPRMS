@@ -15,9 +15,7 @@ from .parameters.Parameters import Parameters
 from .parameters.ParameterSet import ParameterSet
 from .parameters.ParameterFile import ParameterFile
 from .parameters.ParamDb import ParamDb
-from .parameters.ParamDbRegion import ParamDbRegion
 from .parameters.ParameterNetCDF import ParameterNetCDF
-from .parameters.ValidParams import ValidParams
 from .cbh.CbhAscii import CbhAscii
 from .cbh.CbhNetcdf import CbhNetcdf
 from .Streamflow import Streamflow
@@ -48,7 +46,5 @@ __all__ = ['constants',
            'ParameterSet',
            'ParameterFile',
            'ParamDb',
-           'ParamDbRegion',
            'ParameterNetCDF',
-           'Streamflow',
-           'ValidParams']
+           'Streamflow']
