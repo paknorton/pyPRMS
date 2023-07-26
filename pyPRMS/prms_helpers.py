@@ -31,6 +31,15 @@ def read_xml(filename: str) -> xmlET.Element:
     xml_tree = xmlET.parse(filename)
     return xml_tree.getroot()
 
+def flex_type(val):
+    if isinstance(val, str):
+        return val
+    else:
+        try:
+            return float_to_str(val)
+        except decimal.InvalidOperation:
+            print(f'Caused by: {val}')
+            raise
 
 def float_to_str(f: float) -> str:
     """Convert the given float to a string, without resorting to scientific notation.
