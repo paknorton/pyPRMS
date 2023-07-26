@@ -57,16 +57,6 @@ class Control(object):
         return self.get(item)
 
     @property
-    def control_data(self):
-        """Dictionary of data for each control variable"""
-        data_dict = {}
-
-        for kk, vv in self.__control_vars.items():
-            data_dict[kk] = vv.values
-
-        return data_dict
-
-    @property
     def control_variables(self) -> Dict[str, ControlVariable]:
     # def control_variables(self) -> OrderedDictType[str, ControlVariable]:
         """Get control variable objects.
@@ -191,7 +181,6 @@ class Control(object):
 
         if self.exists(var):
             return cond_check[op](self.get(var).values, value)
-        return False
 
     def add(self, name: str, meta=None):
         """Add a control variable by name.
@@ -236,6 +225,11 @@ class Control(object):
 
         if self.exists(name):
             del self.__control_vars[name]
+
+    def to_dict(self):
+        """Dictionary of data for each control variable"""
+
+        return {kk: vv.values for (kk, vv) in self.__control_vars.items()}
 
     def write(self, filename: str):
         """Write a control file.
