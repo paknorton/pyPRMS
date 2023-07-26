@@ -95,6 +95,18 @@ class TestParameterFile:
         assert pdb.headers == expected_headers
         assert not pdb.exists('altw')
 
+    @pytest.mark.parametrize('name, expected', [('tmax_cbh_adj', np.array([[1.157313, -0.855009, -0.793667, -0.793667, 0.984509, 0.974305,
+                                                                            0.974305, 0.448011, 0.461038, 0.461038, 1.214274, 1.157313],
+                                                                           [3., 1.098661, 0.93269, 0.93269, -0.987916, -0.966681,
+                                                                            -0.966681, 3., 3., 3., 3., 3.]], dtype=np.float32)),
+                                                ('potet_sublim', np.array([0.501412, 0.501412], dtype=np.float32))])
+    def test_read_parameter_file_subset_hru_param(self, pdb_instance, name, expected):
+        assert (pdb_instance.get_subset(name, [57873, 57879]) == expected).all()
+
+    @pytest.mark.parametrize('name, expected', [('seg_cum_area', np.array([ 74067.516, 296268.53 , 108523.89 ], dtype=np.float32))])
+    def test_read_parameter_file_subset_segment_param(self, pdb_instance, name, expected):
+        assert (pdb_instance.get_subset(name, [30114, 30118, 30116]) == expected).all()
+
     def test_read_parameter_file_with_control(self, datadir, pdb_instance):
         control_file = datadir.join('control.default.bandit')
 
