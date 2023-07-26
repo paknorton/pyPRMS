@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<dimensions>
+    <dimension name="nhru">
+        <size>14</size>
+    </dimension>
+    <dimension name="nsegment">
+        <size>7</size>
+    </dimension>
+    <dimension name="npoigages">
+        <size>1</size>
+    </dimension>
+    <dimension name="nobs">
+        <size>1</size>
+    </dimension>
+    <dimension name="ndeplval">
+        <size>11</size>
+    </dimension>
+    <dimension name="nmonths">
+        <size>12</size>
+    </dimension>
+    <dimension name="one">
+        <size>1</size>
+    </dimension>
+    <dimension name="ndepl">
+        <size>1</size>
+    </dimension>
+    <dimension name="ngw">
+        <size>14</size>
+    </dimension>
+    <dimension name="nssr">
+        <size>14</size>
+    </dimension>
+</dimensions>
