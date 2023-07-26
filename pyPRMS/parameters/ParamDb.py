@@ -55,27 +55,13 @@ class ParamDb(Parameters):
             curr_file = f'{self.__paramdb_dir}/{xml_param_name}.csv'
 
             if self.exists(xml_param_name):
-                # Sometimes the global parameter file has duplicates of parameters
+                # Sometimes the global parameter xml file has duplicates of parameters
                 print(f'WARNING: {xml_param_name} is duplicated in {PARAMETERS_XML}; skipping')
                 continue
 
             if os.path.exists(curr_file):
                 self.add(xml_param_name)
-                # self.add(name=xml_param_name,
-                #          datatype=NHM_DATATYPES[param.find('type').text],
-                #          units=getattr(param.find('units'), 'text', None),
-                #          description=getattr(param.find('desc'), 'text', None),
-                #          help=getattr(param.find('help'), 'text', None),
-                #          default=getattr(param.find('default'), 'text', None),
-                #          minimum=getattr(param.find('minimum'), 'text', None),
-                #          maximum=getattr(param.find('maximum'), 'text', None),
-                #          modules=[cmod.text for cmod in param.findall('./modules/module')])
 
-                # Add dimensions from the global dimensions for current parameter
-                # for cdim in param.findall('./dimensions/dimension'):
-                #     dim_name = cast(str, cdim.attrib.get('name'))
-                #     self.parameters.get(xml_param_name).dimensions.add(name=dim_name,
-                #                                                        size=cast(int, self.dimensions.get(dim_name).size))
                 cdtype = NEW_PTYPE_TO_DTYPE[self.get(xml_param_name).meta['datatype']]
                 tmp_data = pd.read_csv(curr_file,
                                        skiprows=0,
@@ -83,10 +69,5 @@ class ParamDb(Parameters):
                                        dtype={1: cdtype}).squeeze('columns').to_numpy()
 
                 self.get(xml_param_name).data = tmp_data
-
-                # if not self.get(xml_param_name).has_correct_size():
-                #     err_txt = f'ERROR: {xml_param_name}, mismatch between dimensions and size of data; skipping'
-                #     print(err_txt)
-                #     self.remove(xml_param_name)
             else:
                 print(f'WARNING: {xml_param_name}, ParamDb file does not exist; skipping')
