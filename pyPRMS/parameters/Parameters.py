@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt     # type: ignore
 import networkx as nx   # type: ignore
 import numpy as np
 import pandas as pd     # type: ignore
+import xml.dom.minidom as minidom
+import xml.etree.ElementTree as xmlET
 
 from functools import cached_property
 from typing import Optional, Sequence, Union, Dict, List, Set, Tuple
@@ -16,8 +18,8 @@ from ..dimensions.Dimensions import Dimensions
 from ..Exceptions_custom import ParameterError, ParameterExistsError, ParameterNotValidError
 from .Parameter import Parameter
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
-from ..prms_helpers import cond_check
-from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
+from ..prms_helpers import cond_check, float_to_str, flex_type
+from ..constants import DIMENSIONS_XML, MetaDataType, NEW_PTYPE_TO_DTYPE, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML
 
 import os
 os.environ['USE_PYGEOS'] = '0'
@@ -75,7 +77,7 @@ class Parameters(object):
 
         outstr += '----- Parameters -----\n'
         for vv in self.__parameters.values():
-            outstr += f'{vv.name}: {vv.meta["dimensions"]}\n'
+            outstr += f'{vv.name} [{", ".join(vv.meta["dimensions"])}]\n'
 
         return outstr
 
@@ -166,9 +168,9 @@ class Parameters(object):
         """Takes a string of the form '<control_var> <op> <value>' and checks
         if the condition is True
         """
-        if len(cstr) == 0:
-            return False
 
+        # if len(cstr) == 0:
+        #     return False
         var, op, value = cstr.split(' ')
 
         cdtype = NEW_PTYPE_TO_DTYPE[self.control.get(var).meta['datatype']]
@@ -181,9 +183,9 @@ class Parameters(object):
         """Takes a string of the form '<dimension> <op> <value>' and checks
         if the condition is True
         """
-        if len(cstr) == 0:
-            return False
 
+        # if len(cstr) == 0:
+        #     return False
         var, op, value = cstr.split(' ')
         value = int(value)  # type: ignore
 
@@ -259,6 +261,64 @@ class Parameters(object):
             self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
         return self.__seg_to_hru
 
+    @property
+    def xml_global_dimensions(self) -> xmlET.Element:
+        """Get XML element tree of the dimensions used by all parameters.
+
+        :returns: element tree of dimensions
+        """
+
+        dims_xml = xmlET.Element('dimensions')
+
+        for cdim in self.dimensions.dimensions.values():
+            dim_sub = xmlET.SubElement(dims_xml, 'dimension')
+            dim_sub.set('name', cdim.name)
+
+            for kk, vv in cdim.meta.items():
+                if kk in ['is_fixed', 'requires_control']:
+                    pass
+                else:
+                    xmlET.SubElement(dim_sub, kk).text = flex_type(vv)
+        return dims_xml
+
+    @property
+    def xml_global_parameters(self) -> xmlET.Element:
+        """Get XML element tree of the parameters.
+
+        :returns: element tree of parameters
+        """
+
+        # Map datatypes (e.g. np.int32) to the parameter type strings (e.g. 'I')
+        inv_nhm_datatypes = {vv: kk for kk, vv in NHM_DATATYPES.items()}
+        datatype_to_prms_type = {kk: inv_nhm_datatypes[vv] for kk, vv in PTYPE_TO_PRMS_TYPE.items()}
+
+        params_xml = xmlET.Element('parameters')
+
+        for pk in sorted(list(self.__parameters.keys())):
+            vv = self.__parameters[pk]
+
+            param_sub = xmlET.SubElement(params_xml, 'parameter')
+            param_sub.set('name', vv.name)
+
+            xmlET.SubElement(param_sub, 'type').text = datatype_to_prms_type[vv.meta['datatype']]
+
+            for mm, md in vv.meta.items():
+                if mm == 'modules':
+                    modules_sub = xmlET.SubElement(param_sub, 'modules')
+
+                    for cmod in md:
+                        xmlET.SubElement(modules_sub, 'module').text = cmod
+                elif mm in ['datatype', 'requires_control', 'requires_dimension', 'version']:
+                    pass
+                elif mm == 'dimensions':
+                    param_sub.append(vv.dimensions.xml)
+                else:
+                    xmlET.SubElement(param_sub, mm).text = flex_type(md)
+
+        return params_xml
+
+    # =========================================================================
+    # Methods
     def add(self, name: str):
 
         """Add a new parameter by name.
@@ -281,7 +341,7 @@ class Parameters(object):
 
         self.__parameters[name] = Parameter(name=name, meta=self.metadata, global_dims=self.__dimensions)
 
-    def check(self):
+    def check(self):   # pragma: no cover
         """Check all parameter variables for proper array size.
         """
 
@@ -428,7 +488,7 @@ class Parameters(object):
             init_data = self.get('hru_deplcrv').data[tuple(nhm_idx0), ]
             uniq_deplcrv = np.unique(init_data).tolist()
 
-        if param.dimensions.ndims == 2:
+        if param.dimensions.ndim == 2:
             return param.data[tuple(nhm_idx0), :]
         else:
             if name == 'hru_deplcrv':
@@ -460,7 +520,7 @@ class Parameters(object):
              output_dir: Optional[str] = None,
              limits: Optional[Union[str, List[float], Tuple[float, float]]] = 'valid',
              mask_defaults: Optional[str] = None,
-             **kwargs):
+             **kwargs):   # pragma: no cover
         """Plot a parameter.
 
         Plots either to the screen or an output directory.
@@ -705,106 +765,6 @@ class Parameters(object):
             if self.exists(name):
                 del self.__parameters[name]
 
-    def remove_by_global_id(self, hrus: Optional[List[int]] = None,
-                            segs: Optional[List[int]] = None):
-        """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
-
-        :param hrus: list of national HRU ids
-        :param segs: list of national segment ids
-        """
-
-        if segs is not None:
-            # TODO: 2022-07-07 PAN - need code for removing segments
-            pass
-
-        if hrus is not None:
-            # Map original nhm_id to their index
-            nhm_idx = dict((hid, ii) for ii, hid in enumerate(self.get('nhm_id').data.tolist()))
-            nhm_seg = self.get('nhm_seg').tolist()
-
-            print(list(nhm_idx.keys())[0:10])
-            print(list(nhm_idx.values())[0:10])
-
-            for xx in list(nhm_idx.keys()):
-                if xx in hrus:
-                    del nhm_idx[xx]
-
-            print('-'*40)
-            print(list(nhm_idx.keys())[0:10])
-            print(list(nhm_idx.values())[0:10])
-
-            # [hru_segment_nhm[yy] for yy in nhm_idx.values()]
-            self.get('nhm_id').subset_by_index('nhru', nhm_idx.values())
-
-            # Update hru_segment_nhm then go back and make sure the referenced nhm_segs are valid
-            # NOTE: See https://github.com/python/mypy/issues/3004 for the discussion about
-            #       supporting asymmetrical getter/setter properties.
-            self.get('hru_segment_nhm').subset_by_index('nhru', nhm_idx.values())
-            proc_list = self.get('hru_segment_nhm').tolist()
-            self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk == 0 else -1
-                                                for kk in self.get('hru_segment_nhm').tolist()]   # type: ignore
-
-            # Now do the local hru_segment
-            # NOTE: See https://github.com/python/mypy/issues/3004 for the discussion about
-            #       supporting asymmetrical getter/setter properties.
-            self.get('hru_segment').subset_by_index('nhru', nhm_idx.values())
-            self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk == 0 else -1
-                                            for kk in self.get('hru_segment_nhm').tolist()]   # type: ignore
-
-            # # First remove the HRUs from nhm_id and hru_segment_nhm
-            # id_to_seg = np.column_stack((self.get('nhm_id').data, self.get('hru_segment_nhm').data))
-            #
-            # # Create ordered dictionary to reindex hru_segment
-            # nhm_id_to_hru_segment_nhm = OrderedDict((nhm, hseg) for nhm, hseg in id_to_seg)
-            #
-            # nhm_seg = self.get('nhm_seg').data.tolist()
-            #
-            # self.get('nhm_id').data = [xx for xx in nhm_id_to_hru_segment_nhm.keys()]
-            # # self.get('nhm_id').remove_by_index('nhru', hrus)
-            #
-            # self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk == 0 else -1
-            #                                     for kk in nhm_id_to_hru_segment_nhm.values()]
-            #
-            # self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk == 0 else -1
-            #                                 for kk in nhm_id_to_hru_segment_nhm.values()]
-
-            for pp in self.__parameters.values():
-                if pp.name not in ['nhm_id', 'hru_segment_nhm', 'hru_segment']:
-                    dim_set = set(pp.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw'})
-
-                    if bool(dim_set):
-                        if len(dim_set) > 1:
-                            raise ValueError('dim_set > 1 for {}'.format(pp.name))
-                        else:
-                            cdim = dim_set.pop()
-                            pp.subset_by_index(cdim, nhm_idx.values())
-
-                            if pp.name == 'hru_deplcrv':
-                                # Save the list of snow indices for reducing the snarea_curve later
-                                uniq_deplcrv_idx = list(set(pp.data.tolist()))
-                                uniq_dict = {}
-                                for ii, xx in enumerate(uniq_deplcrv_idx):
-                                    uniq_dict[xx] = ii + 1
-
-                                uniq_deplcrv_idx0 = [xx - 1 for xx in uniq_deplcrv_idx]
-
-                                # Renumber the hru_deplcrv indices
-                                data_copy = pp.data.copy()
-                                with np.nditer(data_copy, op_flags=[['readwrite']]) as it:
-                                    for xx in it:
-                                        xx[...] = uniq_dict[int(xx)]
-
-                                pp.data = data_copy
-
-                                # Handle snarea_curve
-                                tmp = self.__parameters['snarea_curve'].data.reshape((-1, 11))[tuple(uniq_deplcrv_idx0), :].reshape((-1))
-                                print(f'{pp.name}: {tmp.size=}, {tmp.ndim=}')
-                                self.__parameters['snarea_curve'].dimensions['ndeplval'].size = tmp.size
-                                self.__parameters['snarea_curve'].data = tmp   # .ravel()
-
-            # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
-            # new_deplcrv = pp['hru_deplcrv'].data.tolist()
-
     def remove_poi(self, poi: str):
         """Remove POIs by gage_id.
 
@@ -832,7 +792,7 @@ class Parameters(object):
 
     def shapefile_hrus(self, filename: str,
                        layer_name: Optional[str] = None,
-                       shape_key: Optional[str] = None):
+                       shape_key: Optional[str] = None):   # pragma: no cover
         """Read a shapefile or geodatabase that corresponds to HRUs.
 
         :param filename: name of shapefile or geodatabase
@@ -849,7 +809,7 @@ class Parameters(object):
 
     def shapefile_segments(self, filename: str,
                            layer_name: Optional[str] = None,
-                           shape_key: Optional[str] = None):
+                           shape_key: Optional[str] = None):   # pragma: no cover
         """Read a shapefile or geodatabase that corresponds to stream segments.
 
         :param filename: name of shapefile or geodatabase
@@ -928,89 +888,213 @@ class Parameters(object):
 
         # TODO: Add handling for other dimensions
 
-    @staticmethod
-    def _get_upstream_subset(dag_ds: nx.DiGraph,
-                             cutoff_segs: List[int],
-                             outlet_segs: List[int]):
-        """Create upstream stream network bounded by downstream segment(s) and upstream cutoff(s).
+    def write_parameters_xml(self, output_dir: str):
+        """Write global parameters.xml file.
 
-        :param dag_ds: stream network
-        :param cutoff_segs: list of nhm_seg IDs above which the network is truncated
-        :param outlet_segs: list of nhm_seg IDs for the downstream-most segments
+        :param output_dir: output path for parameters.xml file
         """
 
-        # Create the upstream graph.
-        dag_us = dag_ds.reverse()
-        # bandit_helper_log.debug('Number of NHM upstream nodes: {}'.format(dag_us.number_of_nodes()))
-        # bandit_helper_log.debug('Number of NHM upstream edges: {}'.format(dag_us.number_of_edges()))
+        # Write the global parameters xml file
+        xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_parameters)).toprettyxml(indent='    ')
+        with open(f'{output_dir}/{PARAMETERS_XML}', 'w') as ff:
+            ff.write(xmlstr)
 
-        # Trim the u/s graph to remove segments above the u/s cutoff segments
-        try:
-            for xx in cutoff_segs:
-                try:
-                    dag_us.remove_nodes_from(nx.dfs_predecessors(dag_us, xx))
+    def write_dimensions_xml(self, output_dir: str):
+        """Write global dimensions.xml file.
 
-                    # Also remove the cutoff segment itself
-                    dag_us.remove_node(xx)
-                except KeyError:
-                    print('WARNING: nhm_segment {} does not exist in stream network'.format(xx))
-        except TypeError:
-            # bandit_helper_log.error('\nSelected cutoffs should at least be an empty list instead of NoneType.')
-            exit(200)
+        :param output_dir: output path for dimensions.xml file
+        """
 
-        # bandit_helper_log.debug('Number of NHM upstream nodes (trimmed): {}'.format(dag_us.number_of_nodes()))
-        # bandit_helper_log.debug('Number of NHM upstream edges (trimmed): {}'.format(dag_us.number_of_edges()))
-
-        # =======================================
-        # Given a d/s segment (dsmost_seg) create a subset of u/s segments
-
-        # Get all unique segments u/s of the starting segment
-        uniq_seg_us: Set[int] = set()
-        if outlet_segs:
-            for xx in outlet_segs:
-                try:
-                    pred = nx.dfs_predecessors(dag_us, xx)
-                    uniq_seg_us = uniq_seg_us.union(set(pred.keys()).union(set(pred.values())))
-                except KeyError:
-                    # bandit_helper_log.error('KeyError: Segment {} does not exist in stream network'.format(xx))
-                    print(f'\nKeyError: Segment {xx} does not exist in stream network')
-
-            # Get a subgraph in the dag_ds graph and return the edges
-            dag_ds_subset = dag_ds.subgraph(uniq_seg_us).copy()
-
-            # 2018-02-13 PAN: It is possible to have outlets specified which are not truly
-            #                 outlets in the most conservative sense (e.g. a point where
-            #                 the stream network exits the study area). This occurs when
-            #                 doing headwater extractions where all segments for a headwater
-            #                 are specified in the configuration file. Instead of creating
-            #                 output edges for all specified 'outlets' the set difference
-            #                 between the specified outlets and nodes in the graph subset
-            #                 which have no edges is performed first to reduce the number of
-            #                 outlets to the 'true' outlets of the system.
-            node_outlets = [ee[0] for ee in dag_ds_subset.edges()]
-            true_outlets = set(outlet_segs).difference(set(node_outlets))
-            # bandit_helper_log.debug('node_outlets: {}'.format(','.join(map(str, node_outlets))))
-            # bandit_helper_log.debug('true_outlets: {}'.format(','.join(map(str, true_outlets))))
-
-            # Add the downstream segments that exit the subgraph
-            for xx in true_outlets:
-                nhm_outlet = list(dag_ds.neighbors(xx))[0]
-                dag_ds_subset.add_node(nhm_outlet, style='filled', fontcolor='white', fillcolor='grey')
-                dag_ds_subset.add_edge(xx, nhm_outlet)
-                dag_ds_subset.nodes[xx]['style'] = 'filled'
-                dag_ds_subset.nodes[xx]['fontcolor'] = 'white'
-                dag_ds_subset.nodes[xx]['fillcolor'] = 'blue'
-        else:
-            # No outlets specified so pull the CONUS
-            dag_ds_subset = dag_ds
-
-        return dag_ds_subset
+        # Write the global dimensions xml file
+        xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_dimensions)).toprettyxml(indent='    ')
+        with open(f'{output_dir}/{DIMENSIONS_XML}', 'w') as ff:
+            ff.write(xmlstr)
 
     def _read(self):
         """Abstract function for reading parameters into Parameters object.
         """
 
         assert False, 'Parameters._read() must be defined by child class'
+
+    # def remove_by_global_id(self, hrus: Optional[List[int]] = None,
+    #                         segs: Optional[List[int]] = None):
+    #     """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
+    #
+    #     :param hrus: list of national HRU ids
+    #     :param segs: list of national segment ids
+    #     """
+    #
+    #     if segs is not None:
+    #         # TODO: 2022-07-07 PAN - need code for removing segments
+    #         pass
+    #
+    #     if hrus is not None:
+    #         # Map original nhm_id to their index
+    #         nhm_idx = dict((hid, ii) for ii, hid in enumerate(self.get('nhm_id').data.tolist()))
+    #         nhm_seg = self.get('nhm_seg').tolist()
+    #
+    #         print(list(nhm_idx.keys())[0:10])
+    #         print(list(nhm_idx.values())[0:10])
+    #
+    #         for xx in list(nhm_idx.keys()):
+    #             if xx in hrus:
+    #                 del nhm_idx[xx]
+    #
+    #         print('-'*40)
+    #         print(list(nhm_idx.keys())[0:10])
+    #         print(list(nhm_idx.values())[0:10])
+    #
+    #         # [hru_segment_nhm[yy] for yy in nhm_idx.values()]
+    #         self.get('nhm_id').subset_by_index('nhru', nhm_idx.values())
+    #
+    #         # Update hru_segment_nhm then go back and make sure the referenced nhm_segs are valid
+    #         # NOTE: See https://github.com/python/mypy/issues/3004 for the discussion about
+    #         #       supporting asymmetrical getter/setter properties.
+    #         self.get('hru_segment_nhm').subset_by_index('nhru', nhm_idx.values())
+    #         proc_list = self.get('hru_segment_nhm').tolist()
+    #         self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk == 0 else -1
+    #                                             for kk in self.get('hru_segment_nhm').tolist()]   # type: ignore
+    #
+    #         # Now do the local hru_segment
+    #         # NOTE: See https://github.com/python/mypy/issues/3004 for the discussion about
+    #         #       supporting asymmetrical getter/setter properties.
+    #         self.get('hru_segment').subset_by_index('nhru', nhm_idx.values())
+    #         self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk == 0 else -1
+    #                                         for kk in self.get('hru_segment_nhm').tolist()]   # type: ignore
+    #
+    #         # # First remove the HRUs from nhm_id and hru_segment_nhm
+    #         # id_to_seg = np.column_stack((self.get('nhm_id').data, self.get('hru_segment_nhm').data))
+    #         #
+    #         # # Create ordered dictionary to reindex hru_segment
+    #         # nhm_id_to_hru_segment_nhm = OrderedDict((nhm, hseg) for nhm, hseg in id_to_seg)
+    #         #
+    #         # nhm_seg = self.get('nhm_seg').data.tolist()
+    #         #
+    #         # self.get('nhm_id').data = [xx for xx in nhm_id_to_hru_segment_nhm.keys()]
+    #         # # self.get('nhm_id').remove_by_index('nhru', hrus)
+    #         #
+    #         # self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk == 0 else -1
+    #         #                                     for kk in nhm_id_to_hru_segment_nhm.values()]
+    #         #
+    #         # self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk == 0 else -1
+    #         #                                 for kk in nhm_id_to_hru_segment_nhm.values()]
+    #
+    #         for pp in self.__parameters.values():
+    #             if pp.name not in ['nhm_id', 'hru_segment_nhm', 'hru_segment']:
+    #                 dim_set = set(pp.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw'})
+    #
+    #                 if bool(dim_set):
+    #                     if len(dim_set) > 1:
+    #                         raise ValueError('dim_set > 1 for {}'.format(pp.name))
+    #                     else:
+    #                         cdim = dim_set.pop()
+    #                         pp.subset_by_index(cdim, nhm_idx.values())
+    #
+    #                         if pp.name == 'hru_deplcrv':
+    #                             # Save the list of snow indices for reducing the snarea_curve later
+    #                             uniq_deplcrv_idx = list(set(pp.data.tolist()))
+    #                             uniq_dict = {}
+    #                             for ii, xx in enumerate(uniq_deplcrv_idx):
+    #                                 uniq_dict[xx] = ii + 1
+    #
+    #                             uniq_deplcrv_idx0 = [xx - 1 for xx in uniq_deplcrv_idx]
+    #
+    #                             # Renumber the hru_deplcrv indices
+    #                             data_copy = pp.data.copy()
+    #                             with np.nditer(data_copy, op_flags=[['readwrite']]) as it:
+    #                                 for xx in it:
+    #                                     xx[...] = uniq_dict[int(xx)]
+    #
+    #                             pp.data = data_copy
+    #
+    #                             # Handle snarea_curve
+    #                             tmp = self.__parameters['snarea_curve'].data.reshape((-1, 11))[tuple(uniq_deplcrv_idx0), :].reshape((-1))
+    #                             print(f'{pp.name}: {tmp.size=}, {tmp.ndim=}')
+    #                             self.__parameters['snarea_curve'].dimensions['ndeplval'].size = tmp.size
+    #                             self.__parameters['snarea_curve'].data = tmp   # .ravel()
+    #
+    #         # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
+    #         # new_deplcrv = pp['hru_deplcrv'].data.tolist()
+
+    # TODO: 20230724 PAN - is this still needed?
+    # @staticmethod
+    # def _get_upstream_subset(dag_ds: nx.DiGraph,
+    #                          cutoff_segs: List[int],
+    #                          outlet_segs: List[int]):
+    #     """Create upstream stream network bounded by downstream segment(s) and upstream cutoff(s).
+    #
+    #     :param dag_ds: stream network
+    #     :param cutoff_segs: list of nhm_seg IDs above which the network is truncated
+    #     :param outlet_segs: list of nhm_seg IDs for the downstream-most segments
+    #     """
+    #
+    #     # Create the upstream graph.
+    #     dag_us = dag_ds.reverse()
+    #     # bandit_helper_log.debug('Number of NHM upstream nodes: {}'.format(dag_us.number_of_nodes()))
+    #     # bandit_helper_log.debug('Number of NHM upstream edges: {}'.format(dag_us.number_of_edges()))
+    #
+    #     # Trim the u/s graph to remove segments above the u/s cutoff segments
+    #     try:
+    #         for xx in cutoff_segs:
+    #             try:
+    #                 dag_us.remove_nodes_from(nx.dfs_predecessors(dag_us, xx))
+    #
+    #                 # Also remove the cutoff segment itself
+    #                 dag_us.remove_node(xx)
+    #             except KeyError:
+    #                 print('WARNING: nhm_segment {} does not exist in stream network'.format(xx))
+    #     except TypeError:
+    #         # bandit_helper_log.error('\nSelected cutoffs should at least be an empty list instead of NoneType.')
+    #         exit(200)
+    #
+    #     # bandit_helper_log.debug('Number of NHM upstream nodes (trimmed): {}'.format(dag_us.number_of_nodes()))
+    #     # bandit_helper_log.debug('Number of NHM upstream edges (trimmed): {}'.format(dag_us.number_of_edges()))
+    #
+    #     # =======================================
+    #     # Given a d/s segment (dsmost_seg) create a subset of u/s segments
+    #
+    #     # Get all unique segments u/s of the starting segment
+    #     uniq_seg_us: Set[int] = set()
+    #     if outlet_segs:
+    #         for xx in outlet_segs:
+    #             try:
+    #                 pred = nx.dfs_predecessors(dag_us, xx)
+    #                 uniq_seg_us = uniq_seg_us.union(set(pred.keys()).union(set(pred.values())))
+    #             except KeyError:
+    #                 # bandit_helper_log.error('KeyError: Segment {} does not exist in stream network'.format(xx))
+    #                 print(f'\nKeyError: Segment {xx} does not exist in stream network')
+    #
+    #         # Get a subgraph in the dag_ds graph and return the edges
+    #         dag_ds_subset = dag_ds.subgraph(uniq_seg_us).copy()
+    #
+    #         # 2018-02-13 PAN: It is possible to have outlets specified which are not truly
+    #         #                 outlets in the most conservative sense (e.g. a point where
+    #         #                 the stream network exits the study area). This occurs when
+    #         #                 doing headwater extractions where all segments for a headwater
+    #         #                 are specified in the configuration file. Instead of creating
+    #         #                 output edges for all specified 'outlets' the set difference
+    #         #                 between the specified outlets and nodes in the graph subset
+    #         #                 which have no edges is performed first to reduce the number of
+    #         #                 outlets to the 'true' outlets of the system.
+    #         node_outlets = [ee[0] for ee in dag_ds_subset.edges()]
+    #         true_outlets = set(outlet_segs).difference(set(node_outlets))
+    #         # bandit_helper_log.debug('node_outlets: {}'.format(','.join(map(str, node_outlets))))
+    #         # bandit_helper_log.debug('true_outlets: {}'.format(','.join(map(str, true_outlets))))
+    #
+    #         # Add the downstream segments that exit the subgraph
+    #         for xx in true_outlets:
+    #             nhm_outlet = list(dag_ds.neighbors(xx))[0]
+    #             dag_ds_subset.add_node(nhm_outlet, style='filled', fontcolor='white', fillcolor='grey')
+    #             dag_ds_subset.add_edge(xx, nhm_outlet)
+    #             dag_ds_subset.nodes[xx]['style'] = 'filled'
+    #             dag_ds_subset.nodes[xx]['fontcolor'] = 'white'
+    #             dag_ds_subset.nodes[xx]['fillcolor'] = 'blue'
+    #     else:
+    #         # No outlets specified so pull the CONUS
+    #         dag_ds_subset = dag_ds
+    #
+    #     return dag_ds_subset
+
     # def replace_values(self, varname, newvals, newdims=None):
     #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
     #     if not self.__isloaded:
