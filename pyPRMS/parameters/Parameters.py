@@ -910,6 +910,52 @@ class Parameters(object):
         with open(f'{output_dir}/{DIMENSIONS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
+    def write_parameters_metadata_csv(self, output_dir):
+        """Writes the parameter metadata to a CSV file"""
+
+        out_list = []
+
+        modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
+
+        for pk in sorted(list(self.__parameters.keys())):
+            pp = self.__parameters.get(pk)
+            md = pp.meta
+
+            modules = ', '.join(list(modules_used.intersection(set(md.get('modules')))))
+            if modules == '':
+                # We have a parameter that is needed by the declared modules
+                if self.verbose:
+                    print(f'{pp.name} not used with selected modules')
+                    print(f'    {md.get("modules")}')
+                continue
+
+            dims = ', '.join(list(pp.dimensions.keys()))
+
+            try:
+                act_min = pp.data.min()
+                act_max = pp.data.max()
+            except np.core._exceptions.UFuncTypeError:
+                act_min = ''
+                act_max = ''
+
+            out_list.append([pp.name, md.get('datatype', ''),
+                             md.get('units', ''),
+                             md.get('description', ''),
+                             md.get('minimum'),
+                             md.get('maximum'),
+                             act_min,
+                             act_max,
+                             md.get('default'),
+                             dims,
+                             modules])
+
+        col_names = ['parameter', 'datatype', 'units', 'description',
+                     'valid_minimum', 'valid_maximum', 'actual_minimum',
+                     'actual_maximum', 'default', 'dimensions', 'modules']
+
+        df = pd.DataFrame.from_records(out_list, columns=col_names)
+        df.to_csv(output_dir, sep='\t', index=False)
+
     def _read(self):
         """Abstract function for reading parameters into Parameters object.
         """
