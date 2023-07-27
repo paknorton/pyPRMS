@@ -2887,23 +2887,6 @@
             <dimension>npoigages > 0</dimension>
         </requires>
     </parameter>
-    <parameter name="tosegment_nhm">
-        <type>I</type>
-        <units>none</units>
-        <desc>National Hydrologic Model downstream segment ID</desc>
-        <help>National Model Hydrologic downstream segment ID</help>
-        <minimum>0</minimum>
-        <maximum>9999999</maximum>
-        <default>0</default>
-        <modules>
-            <module>setup_param</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </parameter>
     <parameter name="nhm_seg">
         <type>I</type>
         <units>none</units>
