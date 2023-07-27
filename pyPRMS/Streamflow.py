@@ -4,7 +4,7 @@ import pandas as pd   # type: ignore
 
 # from pyPRMS.prms_helpers import dparse
 
-TS_FORMAT = '%Y %m %d %H %M %S' # 1915 1 13 0 0 0
+TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
 
 
 class Streamflow(object):
@@ -33,24 +33,19 @@ class Streamflow(object):
     @property
     def headercount(self):
         """Number of rows to skip before data begins"""
-        if not self.__isloaded:
-            self.load_file(self.filename)
+
         return self.__headercount
 
     @property
     def metaheader(self):
         """List of columns in the metadata section of the data file"""
 
-        if not self.__isloaded:
-            self.load_file(self.filename)
         return self.__metaheader
 
     @property
     def stations(self):
         """List of streamgage IDs from streamflow data file"""
 
-        if not self.__isloaded:
-            self.load_file(self.filename)
         return self.__stations
 
     # @property
@@ -66,8 +61,6 @@ class Streamflow(object):
     @property
     def data(self):
         """Pandas dataframe of the observed streamflow for each POI"""
-        if not self.__isloaded:
-            self.load_file(self.filename)
 
         if self.__selectedStations is None:
             return self.__rawdata
@@ -77,8 +70,7 @@ class Streamflow(object):
     @property
     def numdays(self):
         """The number of days in the period of record"""
-        if not self.__isloaded:
-            self.load_file(self.filename)
+
         return self.data.shape[0]
 
     @property
