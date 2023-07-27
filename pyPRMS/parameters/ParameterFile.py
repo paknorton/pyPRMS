@@ -158,7 +158,7 @@ class ParameterFile(Parameters):
             param_dtype = int(next(it))
 
             if self.get(varname).is_scalar:
-                vals = PTYPE_TO_DTYPE[param_dtype](next(it))
+                vals = np.array(next(it), dtype=PTYPE_TO_DTYPE[param_dtype])
             else:
                 # Arrays of strings should be objects
                 if param_dtype == 4:
