@@ -18,6 +18,24 @@
             </dimension>
         </dimensions>
     </parameter>
+    <parameter name="K_coef">
+        <type>F</type>
+        <units>hours</units>
+        <desc>Muskingum storage coefficient</desc>
+        <minimum>0.01</minimum>
+        <maximum>24.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>muskingum</module>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+                <size>7</size>
+            </dimension>
+        </dimensions>
+    </parameter>
     <parameter name="adjmix_rain">
         <type>F</type>
         <units>decimal fraction</units>
