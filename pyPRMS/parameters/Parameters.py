@@ -19,7 +19,8 @@ from ..Exceptions_custom import ParameterError, ParameterExistsError, ParameterN
 from .Parameter import Parameter
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
 from ..prms_helpers import cond_check, float_to_str, flex_type
-from ..constants import DIMENSIONS_XML, MetaDataType, NEW_PTYPE_TO_DTYPE, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML
+from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, MetaDataType, NEW_PTYPE_TO_DTYPE,
+                         PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML, VAR_DELIM)
 
 import os
 os.environ['USE_PYGEOS'] = '0'
@@ -124,10 +125,25 @@ class Parameters(object):
     # =========================================================================
     @property
     def missing_params(self) -> Set:
-        """Get list of parameters that are missing from the parameter set
+        """Get set of parameters that are required for the modules selected
+        in the control file but are missing in the current set of parameters.
         """
 
+        pset = self._required_parameters()
+        return pset.difference(set(self.parameters.keys()))
+
+    @property
+    def unneeded_parameters(self) -> Set:
+        """Get set of parameters that are defined but not needed by any of the
+        modules selected in the control file"""
+
+        pset = self._required_parameters()
+        return set(self.parameters.keys()).difference(pset)
+
+    def _required_parameters(self) -> Set:
+        """Return set of parameters required by modules selected in control file"""
         if self.__control is None:
+            # TODO: 20230727 PAN - this should raise an exception
             return set()
 
         modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
@@ -142,10 +158,7 @@ class Parameters(object):
 
         # Remove parameters that do not meet secondary requirements defined
         # in the metadata
-        pset = self._trim_req_params(pset)
-
-        final_params = pset.difference(set(self.parameters.keys()))
-        return final_params
+        return self._trim_req_params(pset)
 
     # TODO: 20230719 PAN - not sure this is needed anymore
     # def get_params_for_modules(self, modules: Sequence[str]) -> Set[str]:
@@ -340,6 +353,20 @@ class Parameters(object):
                 raise KeyError(f'Global dimension, {cdim}, does not exist')
 
         self.__parameters[name] = Parameter(name=name, meta=self.metadata, global_dims=self.__dimensions)
+
+    def add_missing_parameters(self):
+        """Add missing parameters that are required by the selected modules
+        """
+
+        for cparam in list(self.missing_params):
+            if cparam in ['nhm_deplcrv']:
+                if self.verbose:
+                    print(f'{cparam} is missing but lacks the information to be added')
+                pass
+
+            self.add(cparam)
+
+            self.get(cparam).data = self.metadata.get('default')
 
     def check(self):   # pragma: no cover
         """Check all parameter variables for proper array size.
@@ -749,21 +776,18 @@ class Parameters(object):
             else:
                 print('Non-plottable parameter')
 
-    def remove(self, name: Union[str, List[str]]):
+    def remove(self, name: Union[str, Sequence[str]]):
         """Delete one or more parameters if they exist.
 
         :param name: parameter or list of parameters to remove
         """
 
-        if isinstance(name, list):
-            # Remove multiple parameters
-            for cparam in name:
-                if self.exists(cparam):
-                    del self.__parameters[cparam]
-            pass
-        else:
-            if self.exists(name):
-                del self.__parameters[name]
+        if isinstance(name, str):
+            name = [name]
+
+        for cparam in name:
+            if self.exists(cparam):
+                del self.__parameters[cparam]
 
     def remove_poi(self, poi: str):
         """Remove POIs by gage_id.
@@ -910,7 +934,115 @@ class Parameters(object):
         with open(f'{output_dir}/{DIMENSIONS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
-    def write_parameters_metadata_csv(self, output_dir):
+    def write_parameter_file(self, filename: str,
+                             header: Optional[List[str]] = None,
+                             prms_version: Optional[int] = 5):
+        """Write a parameter file.
+
+        :param filename: name of parameter file
+        :param header: list of header lines
+        :param prms_version: Output either version 5 or 5 parameter files
+        """
+
+        # Write the parameters out to a file
+        outfile = open(filename, 'w')
+
+        if header is not None:
+            if len(header) > 2:
+                # TODO: 2023-04-19 - this check should happen before
+                #       opening the output file.
+                raise ValueError('Header should be a list of two items')
+            if len(header) == 1:
+                # Must have two header lines
+                outfile.write('Written by pyPRMS\n')
+
+            for hh in header:
+                # Write out any header stuff
+                outfile.write(f'{hh}\n')
+        else:
+            # Write a default header
+            outfile.write('Written by pyPRMS\n')
+            outfile.write('Comment: It is all downhill from here\n')
+
+        # Dimension section must be written first
+        outfile.write(f'{CATEGORY_DELIM} Dimensions {CATEGORY_DELIM}\n')
+
+        for (kk, vv) in self.dimensions.items():
+            # Write each dimension name and size separated by VAR_DELIM
+            outfile.write(f'{VAR_DELIM}\n')
+            outfile.write(f'{kk}\n')
+            outfile.write(f'{vv.size:d}\n')
+
+        if prms_version == 5 and {'ngw', 'nssr'}.isdisjoint(set(self.dimensions.keys())):
+            # Add the ngw and nssr dimensions. These are always equal to nhru.
+            for kk in ['ngw', 'nssr']:
+                outfile.write(f'{VAR_DELIM}\n')
+                outfile.write(f'{kk}\n')
+                outfile.write(f'{self.dimensions["nhru"].size:d}\n')
+
+        # Now write out the Parameter category
+        order = ['name', 'dimensions', 'datatype', 'data']
+
+        outfile.write(f'{CATEGORY_DELIM} Parameters {CATEGORY_DELIM}\n')
+
+        for vv in self.parameters.values():
+            datatype = PTYPE_TO_PRMS_TYPE[vv.meta.get('datatype')]
+
+            for item in order:
+                # Write each variable out separated by self.__rowdelim
+                if item == 'dimensions':
+                    # Write number of dimensions first
+                    outfile.write(f'{vv.dimensions.ndim}\n')
+
+                    for dd in vv.dimensions.values():
+                        # Write dimension names
+                        if prms_version == 5:
+                            # On-the-fly change of dimension names for certain parameters
+                            # when the prms version is 5.
+                            if dd.name == 'nhru':
+                                if vv.name in ['gwflow_coef', 'gwsink_coef', 'gwstor_init',
+                                               'gwstor_min', 'gw_seep_coef']:
+                                    outfile.write('ngw\n')
+                                elif vv.name in ['ssr2gw_exp', 'ssr2gw_rate', 'ssstor_init',
+                                                 'ssstor_init_frac']:
+                                    outfile.write('nssr\n')
+                                else:
+                                    outfile.write(f'{dd.name}\n')
+                            else:
+                                outfile.write(f'{dd.name}\n')
+                        else:
+                            outfile.write(f'{dd.name}\n')
+                elif item == 'datatype':
+                    # dimsize (which is computed) must be written before datatype
+                    outfile.write(f'{vv.data.size}\n')
+                    outfile.write(f'{datatype}\n')
+                elif item == 'data':
+                    # Write one value per line
+                    # WARNING: 2019-10-10: had to change next line from order='A' to order='F'
+                    #          because flatten with 'A' was only honoring the Fortran memory layout
+                    #          if the array was contiguous which isn't always the
+                    #          case if the arrays have been altered in size.
+                    for xx in vv.data.flatten(order='F'):
+                        if datatype in [2, 3]:
+                            # Float and double types have to be formatted specially so
+                            # they aren't written in exponential notation or with
+                            # extraneous zeroes
+                            tmp = f'{xx:<20f}'.rstrip('0 ')
+                            # tmp = '{:<20f}'.format(xx).rstrip('0 ')
+                            if tmp[-1] == '.':
+                                tmp += '0'
+
+                            outfile.write(f'{tmp}\n')
+                        else:
+                            outfile.write(f'{xx}\n')
+                elif item == 'name':
+                    # Write the self.__rowdelim before the variable name
+                    outfile.write(f'{VAR_DELIM}\n')
+                    outfile.write(f'{vv.name}\n')
+
+        outfile.close()
+
+    def write_parameters_metadata_csv(self, filename: str):
         """Writes the parameter metadata to a CSV file"""
 
         out_list = []
@@ -954,7 +1086,7 @@ class Parameters(object):
                      'actual_maximum', 'default', 'dimensions', 'modules']
 
         df = pd.DataFrame.from_records(out_list, columns=col_names)
-        df.to_csv(output_dir, sep='\t', index=False)
+        df.to_csv(filename, sep='\t', index=False)
 
     def _read(self):
         """Abstract function for reading parameters into Parameters object.
