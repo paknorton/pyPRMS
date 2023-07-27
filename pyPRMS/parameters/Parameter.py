@@ -132,13 +132,12 @@ class Parameter(object):
             if isinstance(data_in, np.ndarray):
                 if data_in.size > 1:
                     raise IndexError(f'{self.__name}: parameter expects a scalar but incoming data has size={data_in.size}')
-                # elif not isinstance(data_in[0], NEW_PTYPE_TO_DTYPE[self.meta['datatype']]):
-                #
-                #     raise TypeError(f'{self.__name}: expected {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]} but got {type(data_in)}')
 
-                self.__data = NEW_PTYPE_TO_DTYPE[self.meta['datatype']](data_in[0])
-            # elif not isinstance(data_in, NEW_PTYPE_TO_DTYPE[self.meta['datatype']]):
-            #     raise TypeError(f'{self.__name}: expected {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]} but got {type(data_in)}')
+                if data_in.dtype == NEW_PTYPE_TO_DTYPE[self.meta['datatype']]:
+                    self.__data = data_in
+                else:
+                    # Attempt to convert to correct datatype
+                    self.__data = np.array(data_in, dtype=NEW_PTYPE_TO_DTYPE[self.meta['datatype']])
             else:
                 self.__data = NEW_PTYPE_TO_DTYPE[self.meta['datatype']](data_in)
 
