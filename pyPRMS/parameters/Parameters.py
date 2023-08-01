@@ -3,14 +3,16 @@ import cartopy.crs as ccrs  # type: ignore
 import gc
 import matplotlib as mpl        # type: ignore
 import matplotlib.pyplot as plt     # type: ignore
+import netCDF4 as nc    # type: ignore
 import networkx as nx   # type: ignore
 import numpy as np
 import pandas as pd     # type: ignore
+import sys
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
 from functools import cached_property
-from typing import Optional, Sequence, Union, Dict, List, Set, Tuple
+from typing import cast, Optional, Sequence, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
 from ..control.Control import Control
@@ -19,8 +21,8 @@ from ..Exceptions_custom import ParameterError, ParameterExistsError, ParameterN
 from .Parameter import Parameter
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
 from ..prms_helpers import cond_check, float_to_str, flex_type
-from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, MetaDataType, NEW_PTYPE_TO_DTYPE,
-                         PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML, VAR_DELIM)
+from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, MetaDataType, NETCDF_DATATYPES,
+                         NEW_PTYPE_TO_DTYPE, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML, VAR_DELIM)
 
 import os
 os.environ['USE_PYGEOS'] = '0'
@@ -934,6 +936,35 @@ class Parameters(object):
         with open(f'{output_dir}/{DIMENSIONS_XML}', 'w') as ff:
             ff.write(xmlstr)
 
+    def write_paramdb(self, output_dir: str):
+        """Write all parameters using the paramDb output format.
+
+        :param output_dir: output path for paramDb files
+        """
+
+        # Check for / create output directory
+        try:
+            if self.verbose:   # pragma: no cover
+                print(f'Creating output directory: {output_dir}')
+            os.makedirs(output_dir)
+        except OSError:
+            if self.verbose:   # pragma: no cover
+                print("\tUsing existing directory")
+
+        # Write the global dimensions xml file
+        self.write_dimensions_xml(output_dir)
+
+        # Write the global parameters xml file
+        self.write_parameters_xml(output_dir)
+
+        for xx in self.parameters.values():
+            # Write out each parameter in the paramDb csv format
+            if self.verbose:   # pragma: no cover
+                print(xx.name)
+
+            with open(f'{output_dir}/{xx.name}.csv', 'w') as ff:
+                ff.write(xx.toparamdb())
+
     def write_parameter_file(self, filename: str,
                              header: Optional[List[str]] = None,
                              prms_version: Optional[int] = 5):
@@ -1042,6 +1073,100 @@ class Parameters(object):
 
         outfile.close()
 
+    def write_parameter_netcdf(self, filename: str):
+        """Write parameters to a netcdf format file.
+
+        :param filename: full path for output file
+        """
+
+        # Create the netcdf file
+        nc_hdl = nc.Dataset(filename, 'w', clobber=True)
+
+        # Create dimensions
+        for (kk, vv) in self.dimensions.items():
+            if kk != 'one':
+                # Dimension 'one' is only used for scalars in PRMS
+                nc_hdl.createDimension(kk, vv.size)
+
+        # Create the variables
+        # hruo = nco.createVariable('hru', 'i4', ('hru'))
+        for vv in self.parameters.values():
+            curr_datatype = NETCDF_DATATYPES[PTYPE_TO_PRMS_TYPE[vv.meta.get('datatype')]]
+
+            if curr_datatype != 'S1':
+                try:
+                    if vv.dimensions.keys()[0] == 'one':
+                        # Scalar values
+                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
+                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                    else:
+                        # The variable dimensions are stored with C-ordering (slowest -> fastest)
+                        # The variables in this library are based on Fortran-ordering (fastest -> slowest)
+                        # so we reverse the order of the dimensions and the arrays for
+                        # writing out to the netcdf file.
+                        # dtmp = vv.dimensions.keys()
+                        # dtmp.reverse()
+                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()[::-1]),
+                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                        # curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()),
+                        #                                    fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                except TypeError:
+                    # python 3.x
+                    if list(vv.dimensions.keys())[0] == 'one':
+                        # Scalar values
+                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
+                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                    else:
+                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
+                                                           tuple(list(vv.dimensions.keys())[::-1]),
+                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+
+                # Add the attributes
+                for ck, cmeta in vv.meta.items():
+                    if ck in ['minimum', 'maximum']:
+                        curr_param.setncattr(f'valid_{ck}', cmeta)
+                    elif ck in ['help', 'description', 'units']:
+                        curr_param.setncattr(ck, cmeta)
+
+                # Write the data
+                if len(vv.dimensions.keys()) == 1:
+                    curr_param[:] = vv.data
+                elif len(vv.dimensions.keys()) == 2:
+                    curr_param[:, :] = vv.data.transpose()
+            else:
+                # String parameter
+                # Get the maximum string length in the array of data
+                # print('String parameter: {}'.format(vv.name))
+                str_size = len(max(vv.data, key=len))
+                # print('size: {}'.format(str_size))
+
+                # Create a dimension for the string length
+                nc_hdl.createDimension(vv.name + '_nchars', str_size)
+
+                # Temporary to add extra dimension for number of characters
+                tmp_dims = list(vv.dimensions.keys())
+                tmp_dims.extend([vv.name + '_nchars'])
+                curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(tmp_dims),
+                                                   fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+
+                # Add the attributes
+                for ck, cmeta in vv.meta.items():
+                    if ck in ['help', 'description', 'units']:
+                        curr_param.setncattr(ck, cmeta)
+
+                # Write the data
+                if len(tmp_dims) == 1:
+                    curr_param[:] = nc.stringtochar(vv.data)
+                elif len(tmp_dims) == 2:
+                    # curr_param._Encoding = 'ascii'
+
+                    # The stringtochar() routine won't handle the unicode numpy
+                    # datatype properly so we force it to dtype='S'
+                    curr_param[:, :] = nc.stringtochar(vv.data.astype('S'))
+            sys.stdout.flush()
+        # Close the netcdf file
+        nc_hdl.close()
+
     def write_parameters_metadata_csv(self, filename: str):
         """Writes the parameter metadata to a CSV file"""
 
@@ -1056,7 +1181,7 @@ class Parameters(object):
             modules = ', '.join(list(modules_used.intersection(set(md.get('modules')))))
             if modules == '':
                 # We have a parameter that is needed by the declared modules
-                if self.verbose:
+                if self.verbose:   # pragma: no cover
                     print(f'{pp.name} not used with selected modules')
                     print(f'    {md.get("modules")}')
                 continue
@@ -1087,6 +1212,26 @@ class Parameters(object):
 
         df = pd.DataFrame.from_records(out_list, columns=col_names)
         df.to_csv(filename, sep='\t', index=False)
+
+    def adjust_bounded_parameters(self):
+        """Adjust the upper and lower values for a bounded parameter.
+
+        :param name: name of parameter
+        """
+
+        for cparam in self.parameters.values():
+            cmeta = cparam.meta
+
+            if cmeta.get('maximum') in list(self.dimensions.keys()):
+                # if isinstance(cmeta.get('maximum'), str):
+                try:
+                    cmeta['maximum'] = self.dimensions.get(cmeta.get('maximum')).size
+
+                    if self.verbose:   # pragma: no cover
+                        print(f'{cparam.name} max size adjusted to {cmeta["maximum"]}')
+                except ValueError:
+                    print(f'{cparam.name} has bad valid maximum value')
+                    raise
 
     def _read(self):
         """Abstract function for reading parameters into Parameters object.
