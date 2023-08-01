@@ -71,3 +71,5 @@ class ParamDb(Parameters):
                 self.get(xml_param_name).data = tmp_data
             else:
                 print(f'WARNING: {xml_param_name}, ParamDb file does not exist; skipping')
+
+        self.adjust_bounded_parameters()

@@ -53,3 +53,5 @@ class ParameterNetCDF(Parameters):
 
             # Add the data
             self.get(str(var)).data = cparam.values
+
+        self.adjust_bounded_parameters()

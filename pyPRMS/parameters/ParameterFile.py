@@ -109,8 +109,6 @@ class ParameterFile(Parameters):
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Lastly process the parameters
-        bounded_parameters = []
-
         for line in it:
             if line == VAR_DELIM:
                 continue
@@ -121,14 +119,6 @@ class ParameterFile(Parameters):
             # Add the parameter
             try:
                 self.add(name=varname)
-                # if self.master_parameters is not None:
-                #     self.parameters.add(varname, info=self.master_parameters[varname])
-                #
-                #     if self.master_parameters[varname].minimum == 'bounded':
-                #         # TODO: The min and max of bounded parameter values will be adjusted later
-                #         bounded_parameters.append(varname)
-                # else:
-                #     self.parameters.add(varname)
             except ParameterExistsError:
                 if self.__verbose:   # pragma: no cover
                     print(f'Parameter, {varname}, updated with new values')
@@ -191,61 +181,6 @@ class ParameterFile(Parameters):
                 pass
 
             self.get(varname).data = vals    # type: ignore
-        #     self.parameters.get(varname).datatype = int(next(it))
-        #
-        #     if self.__verbose:
-        #         print(f'{ndims=}')
-        #         print(f'{dim_names=}')
-        #     # Add the dimensions to the parameter, dimension size is looked up from the global Dimensions object
-        #     for dd in dim_names:
-        #         if self.__verbose:
-        #             print(f'\t{dd=}')
-        #         self.parameters.get(varname).dimensions.add(dd, self.dimensions.get(dd).size)
-        #
-        #     # if numval != dim_size:
-        #     if dim_size != self.parameters.get(varname).size:
-        #         # The declared total size doesn't match the total size of the declared dimensions
-        #         print(f'{varname}: Declared total size for parameter does not match the total size of the ' +
-        #               f'declared dimension(s) ({dim_size} != {self.parameters.get(varname).size}); skipping')
-        #
-        #         # Still have to read all the values to skip this properly
-        #         try:
-        #             while True:
-        #                 cval = next(it)
-        #
-        #                 if cval == VAR_DELIM or cval.strip() == '':
-        #                     break
-        #         except StopIteration:
-        #             # Hit the end of the file
-        #             pass
-        #         self.parameters.remove(varname)
-        #     else:
-        #         # Check if number of values written match the number of values declared
-        #         vals = []
-        #         try:
-        #             # Read in the data values
-        #             while True:
-        #                 cval = next(it)
-        #
-        #                 if cval[0:4] == VAR_DELIM or cval.strip() == '':
-        #                     break
-        #                 vals.append(cval)
-        #         except StopIteration:
-        #             # Hit the end of the file
-        #             pass
-        #
-        #         if len(vals) != dim_size:
-        #             print(f'{varname}: number of values does not match declared dimension size ' +
-        #                   f'({len(vals)} != {dim_size}); skipping')
-        #
-        #             # Remove the parameter from the dictionary
-        #             self.parameters.remove(varname)
-        #         else:
-        #             # Convert the values to the correct datatype
-        #             # Ignore the type until https://github.com/python/mypy/issues/3004 is fixed
-        #             self.parameters.get(varname).data = vals    # type: ignore
-        #
-        # for pp in bounded_parameters:
-        #     self._adjust_bounded(pp)
 
+        self.adjust_bounded_parameters()
         self.__isloaded = True
