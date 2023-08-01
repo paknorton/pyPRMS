@@ -101,9 +101,6 @@ class Dimensions(object):
         :returns: XML element for the dimensions
         """
 
-        # <dimensions>
-        #     <dimension name = "nsegment" position = "1" size = "1434" />
-        # </ dimensions>
         dims_xml = xmlET.Element('dimensions')
 
         for kk, vv in self.dimensions.items():
