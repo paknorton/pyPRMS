@@ -97,7 +97,6 @@ class TestParameter:
         aparam = Parameter(name='tmax_adj', meta=metadata_instance)
         with pytest.raises(ValueError):
             _ = aparam.data
-            assert aparam.has_correct_size()
 
     @pytest.mark.parametrize('name, data, expected', [('cov_type', np.array([1.4, 0, 1.6, 2.1], dtype=np.float32), np.array([1, 0, 1, 2], dtype=np.int32)),
                                                       ('tmax_adj', np.array([[2, 1, 3, 0], [2, 8, 4, 9]], dtype=np.int32), np.array([[2.0, 1.0, 3.0, 0], [2.0, 8, 4, 9]], dtype=np.float32)),
