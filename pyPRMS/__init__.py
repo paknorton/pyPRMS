@@ -12,7 +12,6 @@ from .metadata.metadata import MetaData
 from .summary.OutputVariables import OutputVariables
 from .parameters.Parameter import Parameter
 from .parameters.Parameters import Parameters
-from .parameters.ParameterSet import ParameterSet
 from .parameters.ParameterFile import ParameterFile
 from .parameters.ParamDb import ParamDb
 from .parameters.ParameterNetCDF import ParameterNetCDF
@@ -43,7 +42,6 @@ __all__ = ['constants',
            'ParamDimensions',
            'Parameter',
            'Parameters',
-           'ParameterSet',
            'ParameterFile',
            'ParamDb',
            'ParameterNetCDF',
