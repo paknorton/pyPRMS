@@ -37,13 +37,6 @@ def pdb_instance(datadir):
 
 class TestParameterNetCDF:
 
-    def test_read_parameter_netcdf_file(self, datadir):
-        # control_file = datadir.join('control.default.bandit')
-        parameter_file = datadir.join('myparam.nc')
-
-        prms_meta = MetaData(verbose=True).metadata
-
-        # ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
-        pdb = ParameterNetCDF(parameter_file, metadata=prms_meta)
-
-        assert np.isclose(pdb.get('albset_rna').data, 0.8)
+    def test_read_parameter_netcdf_file(self, pdb_instance):
+        """Check basic reading of netcdf parameter file"""
+        assert np.isclose(pdb_instance.get('albset_rna').data, 0.8)
