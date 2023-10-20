@@ -71,7 +71,6 @@ class CbhNetcdf(object):
                 ds = xr.open_mfdataset(xfiles, chunks={'hruid': 1040}, combine='by_coords',
                                        decode_cf=True, engine='netcdf4')
             except ValueError:
-                # self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040}, combine='by_coords')
                 ds = xr.open_mfdataset(xfiles, chunks={'hru': 1040}, combine='by_coords',
                                        decode_cf=True, engine='netcdf4')
         else:
@@ -99,7 +98,6 @@ class CbhNetcdf(object):
             # print(self.__nhm_hrus, type(self.__nhm_hrus))
             try:
                 data = self.__dataset[var].sel(time=slice(self.__stdate, self.__endate), nhru=self.__nhm_hrus).to_pandas()
-                # data = self.__dataset[var].loc[self.__stdate:self.__endate, self.__nhm_hrus].to_pandas()
             except IndexError:
                 print(f'ERROR: Indices (time, nhru) were used to subset {var} which expects' +
                       f'indices ({" ".join(map(str, self.__dataset[var].coords))})')
@@ -157,72 +155,33 @@ class CbhNetcdf(object):
         :param variables: list of CBH variables to write
         """
 
-        # Create a netCDF file for the CBH data
-        nco = nc.Dataset(filename, 'w', clobber=True)
-        # nco.createDimension('hru', len(self.__dataset['hru'].loc[self.__nhm_hrus]))
-        nco.createDimension('hruid', len(self.__nhm_hrus))
-        nco.createDimension('time', None)
+        ds = self.__dataset
+        if self.__stdate is not None and self.__endate is not None:
+            ds = ds.sel(time=slice(self.__stdate, self.__endate), nhru=self.__nhm_hrus)
+        else:
+            ds = ds.sel(nhru=self.__nhm_hrus)
 
-        if self.__stdate is not None:
-            reference_time = self.__stdate.strftime('%Y-%m-%d %H:%M:%S')
-
-        cal_type = 'standard'
-
-        # Create the variables
-        timeo = nco.createVariable('time', 'f4', 'time')
-        timeo.long_name = 'time'
-        timeo.standard_name = 'time'
-        timeo.calendar = cal_type
-        timeo.units = f'days since {reference_time}'
-
-        hruo = nco.createVariable('hruid', 'i4', 'hruid')
-        hruo.long_name = 'Hydrologic Response Unit ID (HRU)'
-        hruo.cf_role = 'timeseries_id'
-
-        var_list: List[str] = []
         if variables is None:
-            var_list = list(self.__dataset.data_vars)
+            pass
         elif isinstance(variables, list):
-            var_list = variables
+            ds = ds[variables]
 
-        for cvar in var_list:
-            cxry = self.__dataset[cvar]
+        # Remove _FillValue from coordinate variables
+        for vv in list(ds.coords):
+            ds[vv].encoding.update({'_FillValue': None,
+                                    'contiguous': True})
 
-            try:
-                # This was older xarray behavior
-                cfill = cxry.attrs['fill_value']
-            except KeyError:
-                cfill = cxry.encoding['_FillValue']
+        ds['time'].attrs['standard_name'] = 'time'
+        ds['time'].attrs['long_name'] = 'time'
 
-            varo = nco.createVariable(cvar, cxry.encoding['dtype'], cxry.dims,
-                                      fill_value=cfill,
-                                      zlib=True)
-            varo.long_name = cxry.attrs['long_name']
-            varo.units = cxry.attrs['units']
+        # The nhru variable will represent the global HRU ids in an extraction
+        ds['nhru'].attrs['long_name'] = 'Global model Hydrologic Response Unit ID (HRU)'
+        ds['nhru'].attrs['cf_role'] = 'timeseries_id'
 
-            if 'standard_name' in cxry.attrs:
-                varo.standard_name = cxry.attrs['standard_name']
+        # Add/update global attributes
+        ds.attrs['Description'] = 'Climate-by-HRU'
+        # ds.attrs['Bandit_version'] = __version__
+        # ds.attrs['NHM_version'] =  nhmparamdb_revision
 
-        nco.setncattr('Description', 'Climate by HRU')
-        # nco.setncattr('Bandit_version', __version__)
-        # nco.setncattr('NHM_version', nhmparamdb_revision)
+        ds.to_netcdf(filename)
 
-        # Write the HRU ids
-        hruo[:] = self.__dataset['hruid'].loc[self.__nhm_hrus].values
-        hruo[:] = self.__nhm_hrus
-
-        # Write time information
-        # timeo[:] = nc.date2num(pd.to_datetime(self.__dataset['time'].loc[self.__stdate:self.__endate].values).tolist(),
-        #                units=f'days since {reference_time}',
-        #                calendar=cal_type)
-        timeo[:] = nc.date2num(pd.to_datetime(self.__dataset['time'].sel(time=slice(self.__stdate, self.__endate)).values).tolist(),
-                               units=f'days since {reference_time}',
-                               calendar=cal_type)
-
-        for cvar in var_list:
-            data = self.get_var(var=cvar)
-
-            # Write the CBH values
-            nco.variables[cvar][:, :] = data.values
-
-        nco.close()
