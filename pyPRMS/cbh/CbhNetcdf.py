@@ -174,6 +174,8 @@ class CbhNetcdf(object):
                                     'contiguous': True})
 
         ds['crs'] = self.__dataset['crs']
+        ds['crs'].encoding.update({'_FillValue': None,
+                                   'contiguous': True})
 
         ds['time'].attrs['standard_name'] = 'time'
         ds['time'].attrs['long_name'] = 'time'
