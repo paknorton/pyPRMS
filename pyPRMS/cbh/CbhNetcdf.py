@@ -192,7 +192,7 @@ class CbhNetcdf(object):
 
         if global_attrs is not None:
             for kk, vv in global_attrs.items():
-                ds.attrs[kk] = ds.attrs[vv]
+                ds.attrs[kk] = vv
 
         ds.to_netcdf(filename)
 
