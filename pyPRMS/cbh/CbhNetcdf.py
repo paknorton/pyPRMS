@@ -4,7 +4,7 @@ import pandas as pd   # type: ignore
 import netCDF4 as nc   # type: ignore
 import xarray as xr
 
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
