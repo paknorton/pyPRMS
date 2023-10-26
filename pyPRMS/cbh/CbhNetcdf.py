@@ -75,7 +75,7 @@ class CbhNetcdf(object):
                                        decode_cf=True, engine='netcdf4')
         else:
             ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
-                                   decode_cf=True, engine='netcdf4')
+                                   data_vars='minimal', decode_cf=True, engine='netcdf4')
 
         if self.__stdate is None and self.__endate is None:
             # If a date range is not specified then use the daterange from the dataset
@@ -148,11 +148,13 @@ class CbhNetcdf(object):
 
 
     def write_netcdf(self, filename: str = None,
-                     variables: Optional[List[str]] = None):
+                     variables: Optional[List[str]] = None,
+                     global_attrs: Optional[Dict] = None):
         """Write CBH to netCDF format file.
 
         :param filename: name of netCDF output file
         :param variables: list of CBH variables to write
+        :param global_attrs: optional dictionary of attributes to include in netcdf file
         """
 
         ds = self.__dataset
@@ -171,17 +173,26 @@ class CbhNetcdf(object):
             ds[vv].encoding.update({'_FillValue': None,
                                     'contiguous': True})
 
+        ds['crs'] = self.__dataset['crs']
+
         ds['time'].attrs['standard_name'] = 'time'
         ds['time'].attrs['long_name'] = 'time'
 
-        # The nhru variable will represent the global HRU ids in an extraction
-        ds['nhru'].attrs['long_name'] = 'Global model Hydrologic Response Unit ID (HRU)'
+        # Add nhm_id variable which will be the global NHM IDs
+        ds['nhm_id'] = ds['nhru']
+        ds['nhm_id'].attrs['long_name'] = 'Global model Hydrologic Response Unit ID (HRU)'
+
+        # Change the nhru coordinate variable values to reflect the local model HRU IDs
+        ds = ds.assign_coords(nhru=np.arange(1, ds.nhru.values.size+1, dtype=ds.nhru.dtype))
+        ds['nhru'].attrs['long_name'] = 'Local model Hydrologic Response Unit ID (HRU)'
         ds['nhru'].attrs['cf_role'] = 'timeseries_id'
 
         # Add/update global attributes
         ds.attrs['Description'] = 'Climate-by-HRU'
-        # ds.attrs['Bandit_version'] = __version__
-        # ds.attrs['NHM_version'] =  nhmparamdb_revision
+
+        if global_attrs is not None:
+            for kk, vv in global_attrs.items():
+                ds.attrs[kk] = ds.attrs[vv]
 
         ds.to_netcdf(filename)
 
