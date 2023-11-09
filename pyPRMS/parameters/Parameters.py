@@ -24,10 +24,15 @@ from ..prms_helpers import cond_check, float_to_str, flex_type
 from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, MetaDataType, NETCDF_DATATYPES,
                          NEW_PTYPE_TO_DTYPE, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML, VAR_DELIM)
 
+from rich.console import Console
+from rich import pretty
+
 import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas    # type: ignore
 
+pretty.install()
+con = Console()
 
 class Parameters(object):
     """Container of multiple pyPRMS.Parameter objects.
@@ -139,6 +144,9 @@ class Parameters(object):
         """Get set of parameters that are defined but not needed by any of the
         modules selected in the control file"""
 
+        if self.verbose:
+            con.print('-'*20, 'unneeded_parameters', '-'*20)
+
         pset = self._required_parameters()
         return set(self.parameters.keys()).difference(pset)
 
@@ -217,13 +225,13 @@ class Parameters(object):
                 if not self._condition_check_ctl(xx):
                     remove_set.add(cparam)
                     if self.verbose:   # pragma: no cover
-                        print(f'{cparam}: Control condition ({xx}) not met')
+                        con.print(f'[bold]{cparam}[/]: Control condition ({xx}) not met')
 
             for xx in self.metadata[cparam].get('requires_dimension', []):
                 if not self._condition_check_dim(xx):
                     remove_set.add(cparam)
                     if self.verbose:   # pragma: no cover
-                        print(f'{cparam}: Dimension condition ({xx}) not met')
+                        con.print(f'[bold]{cparam}[/]: Dimension condition ({xx}) not met')
 
         for vv in remove_set:
             param_set.remove(vv)
@@ -359,11 +367,13 @@ class Parameters(object):
     def add_missing_parameters(self):
         """Add missing parameters that are required by the selected modules
         """
+        if self.verbose:
+            con.print('-'*20, 'add_missing_parameters', '-'*20)
 
         for cparam in list(self.missing_params):
             if cparam in ['nhm_deplcrv']:
                 if self.verbose:
-                    print(f'{cparam} is missing but lacks the information to be added')
+                    con.print(f'[bold]{cparam}[/] is missing but lacks the information to be added')
                 pass
 
             self.add(cparam)
@@ -380,9 +390,9 @@ class Parameters(object):
 
             # print(pp.check())
             if pp.has_correct_size():
-                print(f'{pk}: Size OK')
+                con.print(f'[bold]{pk}[/]: Size [green4]OK[/green4]')
             else:
-                print(f'{pk}: Incorrect number of values for dimensions.')
+                con.print(f'[bold]{pk}[/]: [red]Incorrect number of values for dimensions[/red]')
 
             if not pp.check_values():
                 pp_stats = pp.stats()
@@ -390,31 +400,38 @@ class Parameters(object):
                 valid_min = pp.meta['minimum']
                 valid_max = pp.meta['maximum']
 
-                if not(isinstance(valid_min, str) or isinstance(valid_max, str)):
-                    print(f'    WARNING: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
-                          f'the valid range of ({valid_min}, {valid_max}); ' +
-                          f'under/over=({pp_outliers.under}, {pp_outliers.over})')
+                if not (isinstance(valid_min, str) or isinstance(valid_max, str)):
+                    con.print(f'    [dark_orange3]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
+                              f'the valid range of ({valid_min}, {valid_max}); ' +
+                              f'under/over=({pp_outliers.under}, {pp_outliers.over})')
                     # print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
                     #       f'the valid range of ({pp.minimum}, {pp.maximum})')
                 elif valid_min == 'bounded':
                     # TODO: Handling bounded parameters needs improvement
-                    print(f'    WARNING: Bounded parameter value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
-                          f'the valid range of ({pp.default}, {valid_max})')
+                    con.print(f'    [dark_orange3]WARNING[/]: Bounded parameter value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
+                              f'the valid range of ({pp.default}, {valid_max})')
 
             if pp.all_equal():
+                dims = list(pp.dimensions.keys())
+
                 if pp.data.ndim == 2:
-                    print('    INFO: dimensioned [{1}, {2}]; all values by {1} are equal to {0}'.format(pp.data[0],
-                                                                                                        *list(pp.dimensions.keys())))
+                    con.print(f'    INFO: dimensioned {dims}; all values by {dims[0]} are equal to {pp.data[0]}')
+                    # con.print('    INFO: dimensioned [{1}, {2}]; all values by {1} are equal to {0}'.format(pp.data[0],
+                    #                                                                                         *list(pp.dimensions.keys())))
                 elif pp.data.ndim == 1:
-                    print('    INFO: dimensioned [{1}]; all values are equal to {0}'.format(pp.data[0],
-                                                                                            *list(pp.dimensions.keys())))
+                    if 'one' in dims:
+                        con.print(f'    INFO: Scalar; value = {pp.data}')
+                    else:
+                        con.print(f'    INFO: dimensioned {dims}; all values are equal to {pp.data[0]}')
+                        # con.print('    INFO: dimensioned [{1}]; all values are equal to {0}'.format(pp.data[0],
+                        #                                                                             *list(pp.dimensions.keys())))
                 else:
                     # Scalars
-                    print(f'    INFO: Scalar; value = {pp.data}')
+                    con.print(f'    INFO: Scalar; value = {pp.data}')
 
             if pp.name == 'snarea_curve':
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
-                    print('  WARNING: snarea_curve has more entries than needed by hru_deplcrv')
+                    con.print('  [yellow3]WARNING[/]: snarea_curve has more entries than needed by hru_deplcrv')
 
     def exists(self, name) -> bool:
         """Checks if a parameter name exists.
@@ -1214,7 +1231,7 @@ class Parameters(object):
         df.to_csv(filename, sep='\t', index=False)
 
     def adjust_bounded_parameters(self):
-        """Adjust the upper and lower values for a bounded parameter.
+        """Adjust the valid upper and lower values for a bounded parameter.
 
         :param name: name of parameter
         """
@@ -1228,9 +1245,9 @@ class Parameters(object):
                     cmeta['maximum'] = self.dimensions.get(cmeta.get('maximum')).size
 
                     if self.verbose:   # pragma: no cover
-                        print(f'{cparam.name} max size adjusted to {cmeta["maximum"]}')
+                        con.print(f'[bold]{cparam.name}[/]: valid upper bound adjusted to {cmeta["maximum"]}')
                 except ValueError:
-                    print(f'{cparam.name} has bad valid maximum value')
+                    print(f'{cparam.name} has bad valid uppper bound value')
                     raise
 
     def _read(self):
