@@ -3399,6 +3399,23 @@
             </dimension>
         </dimensions>
     </parameter>
+    <parameter name="pref_flow_infil_frac">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of the soilwater infiltration to the preferential flow that occurs for each HRU</desc>
+        <help>Fraction of the soilwater infiltration to the preferential flow thatoccurs for each HRU</help>
+        <minimum>-1.0</minimum>
+        <maximum>1.0</maximum>
+        <default>-1.0</default>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </parameter>
     <parameter name="slowcoef_lin">
         <type>F</type>
         <units>fraction/day</units>
