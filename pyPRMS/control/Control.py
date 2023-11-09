@@ -152,7 +152,10 @@ class Control(object):
         """
 
         # TODO: module_requirements should be added to metadata?
-        module_requirements = {'basin_sum': 'print_debug = 4',
+        # NOTE: 20231109 PAN - we always want basin_sum included since the
+        #                      print_debug could be set to 4 (which uses the basin_sum module)
+        module_requirements = {'basin_sum': 'print_debug < 100',
+                               # 'basin_sum': 'print_debug = 4',
                                'basin_summary': 'basinOutON_OFF > 0',
                                'map_results': 'mapOutON_OFF > 0',
                                'nhru_summary': 'nhruOutON_OFF > 0',
