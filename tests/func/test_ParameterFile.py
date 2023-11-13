@@ -161,7 +161,7 @@ class TestParameterFile:
                                30117: [57881, 57882]}
         assert pdb_instance.seg_to_hru == expected_seg_to_hru
 
-        assert pdb_instance.missing_params == {'nhm_deplcrv'}
+        assert pdb_instance.missing_params == {'nhm_deplcrv', 'pref_flow_infil_frac'}
 
     def test_parameter_outlier_ids(self, pdb_instance):
         """Check that outlier_ids returns the correct NHM ids for the azrh parameter"""

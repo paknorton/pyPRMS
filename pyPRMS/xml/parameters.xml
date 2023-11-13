@@ -3403,7 +3403,7 @@
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Fraction of the soilwater infiltration to the preferential flow that occurs for each HRU</desc>
-        <help>Fraction of the soilwater infiltration to the preferential flow thatoccurs for each HRU</help>
+        <help>Fraction of the soilwater infiltration to the preferential flow that occurs for each HRU</help>
         <minimum>-1.0</minimum>
         <maximum>1.0</maximum>
         <default>-1.0</default>
