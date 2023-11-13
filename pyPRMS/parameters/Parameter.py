@@ -143,7 +143,7 @@ class Parameter(object):
 
             if self.__dimensions.get('one').size == 0:
                 self.__dimensions.get('one').size = 1
-        elif isinstance(data_in, np.ndarray):
+        elif isinstance(data_in, np.ndarray) or isinstance(data_in, np.generic):
             expected_shape = tuple(ss.size for ss in self.dimensions.values())
             expected_size = functools.reduce(lambda x, y: x * y, expected_shape)
 
@@ -181,6 +181,9 @@ class Parameter(object):
                 # Set the dimension size(s) if existing dimension sizes are zero
                 for cname, cdim in zip(self.meta['dimensions'], self.__data.shape):
                     self.__dimensions.get(cname).size = cdim
+        else:
+            # TODO: 2023-11-13 PAN - This should raise an error
+            pass
 
     @property
     def dimensions(self) -> ParamDimensions:
