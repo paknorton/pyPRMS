@@ -374,11 +374,13 @@ class Parameters(object):
             if cparam in ['nhm_deplcrv']:
                 if self.verbose:
                     con.print(f'[bold]{cparam}[/] is missing but lacks the information to be added')
-                pass
+                continue
 
             self.add(cparam)
+            self.get(cparam).data = self.metadata[cparam].get('default')
 
-            self.get(cparam).data = self.metadata.get('default')
+            if self.verbose:
+                con.print(f'[bold]{cparam}[/] [gold3] parameter added with default value[/]')
 
     def check(self):   # pragma: no cover
         """Check all parameter variables for proper array size.
@@ -807,6 +809,10 @@ class Parameters(object):
         for cparam in name:
             if self.exists(cparam):
                 del self.__parameters[cparam]
+
+                if self.verbose:
+                    con.print(f'[bold]{cparam}[/] [gold3]parameter removed[/]')
+
 
     def remove_poi(self, poi: str):
         """Remove POIs by gage_id.
