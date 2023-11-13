@@ -129,7 +129,7 @@ class TestControl:
         assert control_object.modules == expected
 
     def test_default_additional_modules(self, control_object):
-        assert control_object.additional_modules == ['subbasin']
+        assert control_object.additional_modules == ['basin_sum', 'subbasin']
 
     def test_all_additional_modules(self, control_object):
         expected = ['basin_sum',
