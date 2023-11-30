@@ -9,6 +9,12 @@ from .Parameters import Parameters
 from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM, PTYPE_TO_DTYPE
 from ..prms_helpers import get_file_iter
 
+from rich.console import Console
+from rich import pretty
+
+pretty.install()
+con = Console()
+
 
 class ParameterFile(Parameters):
 
@@ -80,7 +86,7 @@ class ParameterFile(Parameters):
         """
 
         if self.__verbose:   # pragma: no cover
-            print('INFO: Reading parameter file')
+            con.print('INFO: Reading parameter file')
 
         # Read the parameter file into memory and parse it
         it = get_file_iter(self.filename)
@@ -93,8 +99,8 @@ class ParameterFile(Parameters):
             self.__header.append(line)
 
         if self.__verbose:   # pragma: no cover
-            print('INFO: headers:')
-            print(self.__header)
+            # con.print('INFO: headers:')
+            con.print(f'HEADERS: {self.__header}')
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Now process the dimensions
@@ -113,19 +119,19 @@ class ParameterFile(Parameters):
             if line == VAR_DELIM:
                 continue
             varname = line.split(' ')[0]
-            if self.__verbose:   # pragma: no cover
-                print(f'{varname=}')
+            # if self.__verbose:   # pragma: no cover
+            #     print(f'{varname=}')
 
             # Add the parameter
             try:
                 self.add(name=varname)
             except ParameterExistsError:
                 if self.__verbose:   # pragma: no cover
-                    print(f'Parameter, {varname}, updated with new values')
+                    con.print(f'[bold]{varname}[/]: updated with new values')
                 self.__updated_parameters.add(varname)
             except ParameterNotValidError:
                 if self.__verbose:   # pragma: no cover
-                    print(f'Parameter, {varname}, is not a valid parameter; skipping.')
+                    con.print(f'[bold]{varname}[/]: [gold3]is not a valid parameter; skipping. [/]')
 
                 # Skip to the next parameter
                 try:
