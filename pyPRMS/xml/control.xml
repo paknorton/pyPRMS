@@ -1189,19 +1189,19 @@
     <control_param name="dispVar_element" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>ndispGraphs</numvals>
         <desc>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable's dimension size)</desc>
     </control_param>
     <control_param name="dispVar_names" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>ndispGraphs</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
     <control_param name="dispVar_plot" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>ndispGraphs</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
     <control_param name="mapOutVar_names" deprecated="6.0">
