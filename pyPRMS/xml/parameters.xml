@@ -52,7 +52,28 @@
             </dimension>
         </dimensions>
     </parameter>
-    <parameter name="dprst_frac">
+    <parameter name="dprst_area" version="4" deprecated="5">
+        <type>F</type>
+        <units>acres</units>
+        <desc>Aggregate sum of surface-depression storage areas of each HRU (recommend that dprst_frac_hru be used instead of dprst_area)</desc>
+        <help>Aggregate sum of surface-depression storage areas of each HRU (recommend that dprst_frac_hru be used instead of dprst_area)</help>
+        <minimum>0.0</minimum>
+        <maximum>1.0E9</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+            <control>model_mode = PRMS</control>
+        </requires>
+    </parameter>
+    <parameter name="dprst_frac" version="5">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Fraction of each HRU area that has surface depressions</desc>
@@ -71,6 +92,27 @@
         <requires>
             <control>dprst_flag = 1</control>
             <control>model_mode = PRMS5</control>
+        </requires>
+    </parameter>
+    <parameter name="dprst_frac_hru" version="4" deprecated="5">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of each HRU area that has surface depressions</desc>
+        <help>Fraction of each HRU area that has surface depressions (If specified, the parameter dprst_area is ignored if it also is specified, default of -1.0 means use dprst_area)</help>
+        <minimum>-1.0</minimum>
+        <maximum>0.999</maximum>
+        <default>-1.0</default>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+            <control>model_mode = PRMS</control>
         </requires>
     </parameter>
     <parameter name="dprst_frac_open">
@@ -2176,7 +2218,35 @@
             </dimension>
         </dimensions>
     </parameter>
-    <parameter name="tmax_allrain_offset">
+    <parameter name="tmax_allrain" version="4" deprecated="5">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Monthly (January to December) maximum air temperature when precipitation is assumed to be rain</desc>
+        <help>Monthly (January to December) maximum air temperature when precipitation is assumed to be rain; if HRU air temperature is greater than or equal to this value, precipitation is rain</help>
+        <minimum>-8.0</minimum>
+        <maximum>75.0</maximum>
+        <default>38.0</default>
+        <modules>
+            <module>precip_1sta</module>
+            <module>precip_laps</module>
+            <module>precip_dist2</module>
+            <module>precipitation_hru</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+                <default>12</default>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>model_mode = PRMS</control>
+        </requires>
+    </parameter>
+    <parameter name="tmax_allrain_offset" version="5">
         <type>F</type>
         <units>temp_units</units>
         <desc>Precipitation is rain if HRU max temperature &gt;= tmax_allsnow + this value</desc>
@@ -2200,6 +2270,9 @@
                 <default>12</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>model_mode = PRMS5</control>
+        </requires>
     </parameter>
     <parameter name="tmax_allsnow">
         <type>F</type>
@@ -2931,6 +3004,7 @@
         <help>USGS stream gage for each POI gage</help>
         <minimum>0</minimum>
         <maximum>9999999</maximum>
+        <default>0000000</default>
         <modules>
             <module>basin</module>
             <module>prms_summary</module>
@@ -3536,7 +3610,28 @@
             </dimension>
         </dimensions>
     </parameter>
-    <parameter name="soil_moist_init_frac">
+    <parameter name="soil_moist_init" version="4" deprecated="5">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Initial value of available water in the capillary reservoir</desc>
+        <help>Initial value of available water in the capillary reservoir for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>20.0</maximum>
+        <default>3.0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>model_mode = PRMS</control>
+        </requires>
+    </parameter>
+    <parameter name="soil_moist_init_frac" version="5">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Initial fraction available water in the capillary reservoir</desc>
@@ -3575,7 +3670,7 @@
             </dimension>
         </dimensions>
     </parameter>
-    <parameter name="soil_rechr_init_frac">
+    <parameter name="soil_rechr_init_frac" version="5">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Initial fraction of available water in the soil recharge zone within the capillary reservoir</desc>
@@ -3596,7 +3691,49 @@
             <control>model_mode = PRMS5</control>
         </requires>
     </parameter>
-    <parameter name="soil_rechr_max_frac">
+    <parameter name="soil_rechr_init" version="4" deprecated="5">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Initial storage for soil recharge zone within the capillary reservoir</desc>
+        <help>Initial storage for soil recharge zone (upper part of capillary reservoir where losses occur as both evaporation and transpiration) for each HRU; must be less than or equal to soil_moist_init</help>
+        <minimum>0.0</minimum>
+        <maximum>20.0</maximum>
+        <default>1.0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>model_mode = PRMS</control>
+        </requires>
+    </parameter>
+    <parameter name="soil_rechr_max" version="4" deprecated="5">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Maximum storage for soil recharge zone in capillary reservoir</desc>
+        <help>Maximum storage for soil recharge zone (upper portion of capillary reservoir where losses occur as both evaporation and transpiration); must be less than or equal to soil_moist_max</help>
+        <minimum>0.00001</minimum>
+        <maximum>20.0</maximum>
+        <default>1.5</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>model_mode = PRMS</control>
+        </requires>
+    </parameter>
+    <parameter name="soil_rechr_max_frac" version="5">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Fraction of capillary reservoir where losses occur as both evaporation and transpiration (soil recharge zone)</desc>
@@ -3613,6 +3750,30 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>model_mode = PRMS5</control>
+        </requires>
+    </parameter>
+    <parameter name="ssstor_init" version="4" deprecated="5">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Initial storage of the gravity and preferential-flow reservoirs for each HRU</desc>
+        <help>Initial storage of the gravity and preferential-flow reservoirs for each HRU</help>
+        <minimum>0.0</minimum>
+        <maximum>10.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>soilzone</module>
+            <module>convert_params</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>model_mode = PRMS</control>
+        </requires>
     </parameter>
     <parameter name="ssstor_init_frac">
         <type>F</type>
@@ -4015,7 +4176,7 @@
         <default>0.05</default>
         <modules>
             <module>srunoff</module>
-            <module>srunoff_area</module>
+            <module>srunoff_carea</module>
             <module>srunoff_smidx</module>
         </modules>
         <dimensions>
@@ -4034,7 +4195,7 @@
         <default>2.0</default>
         <modules>
             <module>srunoff</module>
-            <module>srunoff_area</module>
+            <module>srunoff_carea</module>
             <module>srunoff_smidx</module>
         </modules>
         <dimensions>
