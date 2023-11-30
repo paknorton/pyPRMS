@@ -153,13 +153,17 @@ class Parameter(object):
                 if data_in.size == 1:
                     data_in = np.repeat(data_in, expected_size)
 
-                # Try to reshape the data to match the dimensionality
-                try:
-                    data_in = data_in.reshape(expected_shape, order='F')
-                except ValueError:
-                    raise IndexError(f'{self.__name}: Shape of incoming data, {data_in.shape}, '
-                                     f'does not match the expected shape, {expected_shape} '
-                                     'and cannot be reshaped to expected shape.')
+                if data_in.size == 12 and expected_shape[1] == 12:
+                    # Expand nmonths to nhru, nmonth
+                    data_in = np.resize(data_in, expected_shape)
+                else:
+                    # Try to reshape the data to match the dimensionality
+                    try:
+                        data_in = data_in.reshape(expected_shape, order='F')
+                    except ValueError:
+                        raise IndexError(f'{self.__name}: Shape of incoming data, {data_in.shape}, '
+                                         f'does not match the expected shape, {expected_shape} '
+                                         'and cannot be reshaped to expected shape.')
 
             if data_in.ndim != len(self.meta['dimensions']):
                 raise IndexError(f'{self.__name}: Number of dimensions do not match ({data_in.ndim} != {len(self.meta["dimensions"])})')
