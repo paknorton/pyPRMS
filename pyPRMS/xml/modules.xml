@@ -1,0 +1,248 @@
+<?xml version="1.0" ?>
+<processes>
+    <process name="basin definition">
+        <modules>
+            <module name="basin">
+                <desc>Defines shared watershed-wide and hydrologic response unit (HRU) physical parameters and variables</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="cascade">
+        <modules>
+            <module name="cascade">
+                <desc>Determines computational order of the HRUs and groundwater reservoirs for routing flow downslope</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="solar table">
+        <modules>
+            <module name="soltab">
+                <desc>Compute potential solar radiation and sunlight hours for each HRU for each day of year</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="time series data">
+        <modules>
+            <module name="obs">
+                <desc>Reads and stores observed data from all specified measurement stations</desc>
+            </module>
+            <module name="dynamic_param_read" version="5.0">
+                <desc>Reads and makes available dynamic parameters by HRU from pre-processed files</desc>
+            </module>
+            <module name="water_use_read" version="5.0">
+                <desc>Reads and makes available water-use data (diversions and gains) from pre-processed files</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="temperature distribution">
+        <modules>
+            <module name="temp_1sta">
+                <desc>Distributes maximum and minimum temperatures to each HRU by using temperature data measured at one station and specified monthly lapse rates. Note, each HRU uses data from a single station, but, multiple stations can be used in a model with each HRU assigned data from one of those stations.</desc>
+            </module>
+            <module name="temp_sta" version="5.0">
+                <desc>Distributes maximum and minimum temperatures to each HRU by using temperature data measured at one station, similar to temp_1sta except there is no lapse rate.</desc>
+            </module>
+            <module name="temp_laps">
+                <desc>Distributes maximum and minimum temperatures to each HRU by computing a daily lapse rate with temperature data measured at a base station and a lapse station with differing altitudes.</desc>
+            </module>
+            <module name="temp_dist2">
+                <desc>Distributes maximum and minimum temperatures to each HRU by using a basin-wide lapse rate applied to the temperature data, adjusted for distance, measured at each station.</desc>
+            </module>
+            <module name="temp_map" version="5.2">
+                <desc>Distributes maximum and minimum temperatures to each HRU by using time series temperature data using an area-weighted method and correction factors to each HRU.</desc>
+            </module>
+            <module name="climate_hru">
+                <desc>Reads distributed minimum and maximum air temperature values for each HRU directly from pre-processed files.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="precipitation distribution">
+        <modules>
+            <module name="precip_1sta">
+                <desc>Determines the form of precipitation and distributes it to each HRU by using monthly correction factors to account for differences in altitude, spatial variation, topography, and measurement gage efficiency and observed data from one station. Note, each HRU uses data from a single station, but, multiple stations can be used in a model with each HRU assigned data from one of those stations.</desc>
+            </module>
+            <module name="precip_laps">
+                <desc>Determines the form of precipitation and distributes it to each HRU by using monthly lapse rates.</desc>
+            </module>
+            <module name="precip_dist2">
+                <desc>Determines the form of precipitation and distributes it to each HRU by using an inverse distance weighting scheme.</desc>
+            </module>
+            <module name="precip_map" version="5.2">
+                <desc>Distributes precipitation and determines form to each HRU by using time series precipitation data using an area-weighted method and correction factors to each HRU.</desc>
+            </module>
+            <module name="climate_hru">
+                <desc>Reads distributed precipitation values for each HRU directly from pre-processed files.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="combined climate distribution">
+        <modules>
+            <module name="ide_dist">
+                <desc>Determines the form of precipitation and distributes precipitation and temperatures to each HRU on the basis of measurements at stations with closest elevation or shortest distance to the respective HRU.</desc>
+            </module>
+            <module name="xyz_dist">
+                <desc>Determines the form of precipitation and distributes precipitation and temperatures to each HRU by using a multiple linear regression of measured data from a group of measurement stations or from atmospheric model simulation.</desc>
+            </module>
+            <module name="climate_hru">
+                <desc>Reads distributed minimum and maximum air temperature and precipitation values for each HRU directly from pre-processed files.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="solar radiation distribution">
+        <modules>
+            <module name="ddsolrad">
+                <desc>Distributes solar radiation to each HRU and estimates missing solar radiation data using a maximum temperature per degree-day relation.</desc>
+            </module>
+            <module name="ccsolrad">
+                <desc>Distributes solar radiation to each HRU and estimates missing solar radiation data using a relation between solar radiation and cloud cover.</desc>
+            </module>
+            <module name="climate_hru">
+                <desc>Reads distributed solar radiation values for each HRU directly from pre-processed files.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="transpiration period">
+        <modules>
+            <module name="transp_frost">
+                <desc>Determines whether the current time step is in a period of  active transpiration by the killing frost method.</desc>
+            </module>
+            <module name="transp_tindex">
+                <desc>Determines whether the current time step is in a period of  active transpiration by the temperature index method.</desc>
+            </module>
+            <module name="climate_hru">
+                <desc>Reads distributed transpiration values for each HRU directly from pre-processed files.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="potential evapotranspiration">
+        <modules>
+            <module name="potet_hamon">
+                <desc>Computes the potential evapotranspiration by using the Hamon formulation (Hamon, 1961).</desc>
+            </module>
+            <module name="potet_jh">
+                <desc>Computes the potential evapotranspiration by using the Jensen-Haise formulation (Jensen and Haise, 1963).</desc>
+            </module>
+            <module name="potet_hs">
+                <desc>Computes the potential evapotranspiration by using the Hargreaves-Samani formulation (Hargreaves and Samani, 1982).</desc>
+            </module>
+            <module name="potet_pt">
+                <desc>Computes the potential evapotranspiration by using the Priestley-Taylor formulation (Priestley and Taylor, 1972).</desc>
+            </module>
+            <module name="potet_pm">
+                <desc>Computes the potential evapotranspiration by using the Penman-Monteith formulation (Penman, 1948; Monteith, 1965); requires windspeed and humidity specified in CBH Files.</desc>
+            </module>
+            <module name="potet_pm_sta" version="5.0">
+                <desc>Computes the potential evapotranspiration by using the Penman-Monteith formulation (Penman, 1948; Monteith, 1965); requires windspeed and humidity specified in the Data File.</desc>
+            </module>
+            <module name="potet_pan">
+                <desc>Computes the potential evapotranspiration for each HRU by using pan-evaporation data.</desc>
+            </module>
+            <module name="climate_hru">
+                <desc>Reads distributed potential evapotranspiration values for each HRU directly from pre-processed files.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="canopy interception">
+        <modules>
+            <module name="intcp">
+                <desc>Computes volume of intercepted precipitation, evaporation from intercepted precipitation, and throughfall that reaches the soil or snowpack.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="snow">
+        <modules>
+            <module name="snowcomp">
+                <desc>Initiates development of a snowpack and simulates snow accumulation and depletion processes by using an energy-budget approach.</desc>
+            </module>
+            <module name="glacr_melt" version="5.2">
+                <desc>Computes glacier dynamics using three linear reservoirs (snow, firn, ice) with time lapses and ability to advance or retreat according to volume-area scaling.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="surface runoff">
+        <modules>
+            <module name="srunoff_smidx">
+                <desc>Computes surface runoff and infiltration for each HRU by using a nonlinear variable-source-area method allowing for cascading flow.</desc>
+            </module>
+            <module name="srunoff_carea">
+                <desc>Computes surface runoff and infiltration for each HRU by using a linear variable-source-area method allowing for cascading flow.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="soil zone">
+        <modules>
+            <module name="soilzone">
+                <desc>Computes inflows to and outflows from the soil zone of each HRU and includes inflows from infiltration, groundwater, and upslope HRUs, and outflows to gravity drainage, interflow, and surface runoff to down-slope HRUs.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="groundwater">
+        <modules>
+            <module name="gwflow">
+                <desc>Sums inflow to and outflow from PRMS groundwater reservoirs; outflow can be routed to downslope groundwater reservoirs and stream segments.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="streamflow">
+        <modules>
+            <module name="muskingum">
+                <desc>Computes flow in the stream network using the Muskingum routing method (Linsley and others, 1982).</desc>
+            </module>
+            <module name="muskingum_lake" version="5.0">
+                <desc>Computes flow in the stream network using the Muskingum routing method and flow and storage in on-channel lake using several methods.</desc>
+            </module>
+            <module name="muskingum_mann" version="5.1.0">
+                <desc>Computes flow in the stream network using the Muskingum routing method with Manning’s N equation.</desc>
+            </module>
+            <module name="routing">
+                <desc>Computes common segment routing flows for modules strmflow_in_out and Muskingum.</desc>
+            </module>
+            <module name="stream_temp" version="5.1.0">
+                <desc>Computes daily mean stream temperature for each stream segment in the stream network, module based on the Stream Network Temperature Model (SNTEMP, Theurer and others, 1984).</desc>
+            </module>
+            <module name="strmflow">
+                <desc>Computes daily streamflow as the sum of surface runoff, shallow-subsurface flow (interflow), detention reservoir flow, and groundwater flow.</desc>
+            </module>
+            <module name="strmflow_in_out">
+                <desc>Routes water between segments in the stream network by setting the outflow to the inflow.</desc>
+            </module>
+        </modules>
+    </process>
+    <process name="summary">
+        <modules>
+            <module name="basin_sum">
+                <desc>Computes daily, monthly, yearly, and total flow summaries of volumes and flows for all HRUs.</desc>
+            </module>
+            <module name="basin_summary" version="5.0">
+                <desc>Write user-selected results for variables of dimension one to separate CSV Files at daily, monthly, mean monthly, mean yearly, and yearly total time steps when control parameter basinOutON_OFF is specified equal to 1.</desc>
+            </module>
+            <module name="convert_params" version="5.0">
+                <desc>Writes values for new PRMS-V parameters to a file based on a PRMS-IV Parameter File when control parameter model_mode is specified equal to CONVERT. Writes values for old PRMS-IV parameters to a file based on a PRMS-V Parameter File when control parameter model_mode is specified equal to CONVERT4.</desc>
+            </module>
+            <module name="frost_date">
+                <desc>Writes a parameter file of the last spring frost and first fall frost for each HRU based on the simulation time period and distributed temperature as required by the transp_frost module; land, subsurface, and stream processes are not computed.</desc>
+            </module>
+            <module name="map_results">
+                <desc>Writes HRU summaries to a user specified target map at weekly, monthly, yearly, and total time steps.</desc>
+            </module>
+            <module name="nhru_summary">
+                <desc>Writes user-selected results dimensioned by the value of dimension nhru to separate CSV Files at daily, monthly, mean monthly, mean yearly, and yearly total time steps when control parameter nhruOutON_OFF is specified equal to 1 or 2.</desc>
+            </module>
+            <module name="nsegment_summary" version="5.0">
+                <desc>Writes user-selected results dimensioned by the value of dimension nsegment to separate CSV Files at daily, monthly, mean monthly, mean yearly, and yearly total time steps when control parameter nsegmentOutON_OFF is specified equal to 1 or 2.</desc>
+            </module>
+            <module name="nsub_summary" version="5.0">
+                <desc>Writes user-selected results dimensioned by the value of dimension nsub to separate CSV Files at daily, monthly, mean monthly, mean yearly, and yearly total time steps when control parameter nsubOutON_OFF is specified equal to 1 or 2.</desc>
+            </module>
+            <module name="prms_summary">
+                <desc>Writes selected basin area-weighted results to a Comma-Seperated Values (CSV) File when control parameter csvON_OFF is specified equal to 1.</desc>
+            </module>
+            <module name="subbasin">
+                <desc>Computes streamflow at internal basin nodes and variables by subbasin.</desc>
+            </module>
+            <module name="write_climate_hru">
+                <desc>Writes climate-by-HRU Files of user-selected climate variables on the basis of distributed climate; land, subsurface, and stream processes are not computed.</desc>
+            </module>
+        </modules>
+    </process>
+</processes>
