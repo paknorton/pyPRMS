@@ -287,7 +287,7 @@ class TestParameter:
         assert (aparam.unique() == unique_vals).all()
 
     def test_param_dunder_str(self, metadata_instance):
-        expected_str = "----- Parameter -----\nname: tmax_adj\ndatatype: float32\ndescription: HRU maximum temperature adjustment\nhelp: Adjustment to maximum temperature for each HRU, estimated on the basis of slope and aspect\nunits: temp_units\ndefault: 0.0\nminimum: -10.0\nmaximum: 10.0\ndimensions: ['nhru', 'nmonths']\nmodules: ['temp_1sta', 'temp_laps', 'temp_dist2', 'ide_dist', 'xyz_dist']\n"
+        expected_str = "----- Parameter -----\nname: tmax_adj\ndatatype: float32\ndescription: HRU maximum temperature adjustment\nhelp: Adjustment to maximum temperature for each HRU, estimated on the basis of slope and aspect\nunits: temp_units\ndefault: 0.0\nminimum: -10.0\nmaximum: 10.0\ndimensions: ['nhru', 'nmonths']\nmodules: ['temp_1sta', 'temp_sta', 'temp_laps', 'temp_dist2', 'ide_dist', 'xyz_dist']\n"
 
         aparam = Parameter(name='tmax_adj', meta=metadata_instance)
         assert aparam.__str__() == expected_str

@@ -35,7 +35,7 @@
             <variable name="basinOut_freq"/>
         </related_variables>
     </control_param>
-    <control_param name="basinOut_freq" deprecated="6.0">
+    <control_param name="basinOut_freq" version="5.0" deprecated="6.0">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -304,7 +304,7 @@
         <numvals>1</numvals>
         <desc>Pathname of the log file that summarizes dynamic parameter changes for all dynamic parameter input</desc>
     </control_param>
-    <control_param name="external_transferON_OFF">
+    <control_param name="external_transferON_OFF" version="5.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -325,7 +325,7 @@
             <value name="3">groundwater flow goes to stream segment specified using parameter hru_segment</value>
         </values>
     </control_param>
-    <control_param name="gwr_transferON_OFF">
+    <control_param name="gwr_transferON_OFF" version="5.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -446,7 +446,7 @@
             <variable name="nhruOutON_OFF"/>
         </related_variables>
     </control_param>
-    <control_param name="outputSelectDatesON_OFF" version="5.2" deprecated="6.0">
+    <control_param name="outputSelectDatesON_OFF" version="5.2.0" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -472,7 +472,7 @@
             <variable name="nhruOut_format"/>
         </related_variables>
     </control_param>
-    <control_param name="selectDatesFileName" version="5.2" deprecated="6.0">
+    <control_param name="selectDatesFileName" version="5.2.0" deprecated="6.0">
         <default>selectDates.in</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -686,7 +686,7 @@
             <value name="2">CSV format</value>
         </values>
     </control_param>
-    <control_param name="stream_temp_shade_flag">
+    <control_param name="stream_temp_shade_flag" version="5.2">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -696,7 +696,7 @@
             <value name="1">Specified constant</value>
         </values>
     </control_param>
-    <control_param name="strmtemp_humidity_flag">
+    <control_param name="strmtemp_humidity_flag" version="5.1.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -893,7 +893,7 @@
         <numvals>1</numvals>
         <desc>String to define the prefix for each nhru summary output file</desc>
     </control_param>
-    <control_param name="nsegmentOutBaseFileName" deprecated="6.0">
+    <control_param name="nsegmentOutBaseFileName" version="5.0" deprecated="6.0">
         <default>nsegment_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -1264,7 +1264,7 @@
             <value name="1">On</value>
         </values>
     </control_param>
-    <control_param name="albedo_cbh_flag" version="5.2.0">
+    <control_param name="albedo_cbh_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -1274,13 +1274,13 @@
             <value name="1">Yes</value>
         </values>
     </control_param>
-    <control_param name="albedo_day" version="5.2.0">
+    <control_param name="albedo_day" version="5.2.1">
         <default>albedo.day</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the CBH file of pre-processed snowpack albedo input data for each HRU to specify variable albedo_hru (units: decimal fraction)</desc>
     </control_param>
-    <control_param name="cloud_cover_cbh_flag" version="5.2.0">
+    <control_param name="cloud_cover_cbh_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -1290,13 +1290,13 @@
             <value name="1">Yes</value>
         </values>
     </control_param>
-    <control_param name="cloud_cover_day" version="5.2.0">
+    <control_param name="cloud_cover_day" version="5.2.1">
         <default>cloudcover.day</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the CBH file of pre-processed snowpack albedo input data for each HRU to specify variable albedo_hru (units: decimal fraction)</desc>
     </control_param>
-    <control_param name="humidity_cbh_flag" version="5.2.0">
+    <control_param name="humidity_cbh_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -1306,7 +1306,7 @@
             <value name="1">Yes</value>
         </values>
     </control_param>
-    <control_param name="snow_cloudcover_flag" version="5.2.0">
+    <control_param name="snow_cloudcover_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -1316,7 +1316,7 @@
             <value name="1">Yes</value>
         </values>
     </control_param>
-    <control_param name="windspeed_cbh_flag" version="5.2.0">
+    <control_param name="windspeed_cbh_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
