@@ -1076,13 +1076,12 @@ class Parameters(object):
                     #          because flatten with 'A' was only honoring the Fortran memory layout
                     #          if the array was contiguous which isn't always the
                     #          case if the arrays have been altered in size.
-                    for xx in vv.data.flatten(order='F'):
-                        if datatype in [2, 3]:
+                    for xx in vv.data.ravel(order='F'):
+                        if vv.meta.get('datatype', 'null') in ['float32', 'float64']:
                             # Float and double types have to be formatted specially so
                             # they aren't written in exponential notation or with
                             # extraneous zeroes
-                            tmp = f'{xx:<20f}'.rstrip('0 ')
-                            # tmp = '{:<20f}'.format(xx).rstrip('0 ')
+                            tmp = f'{xx:<20.7f}'.rstrip('0 ')
                             if tmp[-1] == '.':
                                 tmp += '0'
 
