@@ -2,8 +2,6 @@ import re
 import numpy as np
 import pandas as pd   # type: ignore
 
-# from pyPRMS.prms_helpers import dparse
-
 TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
 
 
@@ -31,6 +29,15 @@ class Streamflow(object):
         self.load_file(self.filename)
 
     @property
+    def data(self):
+        """Pandas dataframe of the observed streamflow for each POI"""
+
+        if self.__selectedStations is None:
+            return self.__rawdata
+        else:
+            return self.__rawdata.ix[:, self.__selectedStations]
+
+    @property
     def headercount(self):
         """Number of rows to skip before data begins"""
 
@@ -43,31 +50,6 @@ class Streamflow(object):
         return self.__metaheader
 
     @property
-    def stations(self):
-        """List of streamgage IDs from streamflow data file"""
-
-        return self.__stations
-
-    # @property
-    # def timecolcnt(self):
-    #     return self.__timecols
-
-    # @property
-    # def types(self):
-    #     if not self.__isloaded:
-    #         self.load_file(self.filename)
-    #     return self.__types
-
-    @property
-    def data(self):
-        """Pandas dataframe of the observed streamflow for each POI"""
-
-        if self.__selectedStations is None:
-            return self.__rawdata
-        else:
-            return self.__rawdata.ix[:, self.__selectedStations]
-
-    @property
     def numdays(self):
         """The number of days in the period of record"""
 
@@ -77,6 +59,12 @@ class Streamflow(object):
     def size(self):
         """Number of streamgages"""
         return len(self.stations)
+
+    @property
+    def stations(self):
+        """List of streamgage IDs from streamflow data file"""
+
+        return self.__stations
 
     @property
     def units(self):
@@ -187,6 +175,16 @@ class Streamflow(object):
         self.__rawdata.replace(to_replace=self.__missing, value=np.nan, inplace=True)
 
         self.__isloaded = True
+
+    # @property
+    # def timecolcnt(self):
+    #     return self.__timecols
+
+    # @property
+    # def types(self):
+    #     if not self.__isloaded:
+    #         self.load_file(self.filename)
+    #     return self.__types
 
     # def get_data_by_type(self, thetype):
     #     """Returns data selected type (e.g. runoff)"""
