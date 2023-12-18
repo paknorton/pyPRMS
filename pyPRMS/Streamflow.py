@@ -164,7 +164,7 @@ class Streamflow(object):
         # We use a custom date parser to convert the date information to a datetime
         # NOTE: 2023-03-21 skiprows option seems to be off by 1; test data starts
         #       at line 26, but skiprows=25 skips the first row of data.
-        self.__rawdata = pd.read_csv(self.filename, skiprows=self.__headercount-1, sep='\s+',
+        self.__rawdata = pd.read_csv(self.filename, skiprows=self.__headercount-1, sep=r'\s+',
                                      header=0, names=thecols, engine='c', skipinitialspace=True,
                                      parse_dates={'time': ['year', 'month', 'day', 'hour', 'min', 'sec']},
                                      index_col='time')

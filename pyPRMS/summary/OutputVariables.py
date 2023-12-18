@@ -177,7 +177,7 @@ class OutputVariables(object):
     @staticmethod
     def _read_streamflow_ascii(filename, field_names):
         """Read the simulated streamflow from a PRMS CSV model output file"""
-        df = pd.read_csv(filename, sep='\s+', header=None, skiprows=2, parse_dates={'time': [0, 1, 2]},
+        df = pd.read_csv(filename, sep=r'\s+', header=None, skiprows=2, parse_dates={'time': [0, 1, 2]},
                          index_col='time')
 
         df.rename(columns=field_names, inplace=True)
