@@ -7,7 +7,7 @@ from typing import Any, cast, Dict, List, NamedTuple, Optional, Union
 import xml.etree.ElementTree as xmlET
 
 # from pyPRMS.Exceptions_custom import ConcatError
-from ..constants import DATA_TYPES, DATATYPE_TO_DTYPE, NEW_PTYPE_TO_DTYPE
+from ..constants import NEW_PTYPE_TO_DTYPE
 from ..dimensions.Dimensions import ParamDimensions
 
 # ParamDataType = Union[List, npt.NDArray, pd.Series, np.int32, np.float32, np.float64, np.str_]
