@@ -21,19 +21,113 @@ import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas
 
-def read_gis(filename: str, layer_name: str):
-    """Read a shapefile or geodatabase that corresponds to HRUs.
+def get_figsize(extent, init_size=(10, 10), **kwargs):
+    # init_size: tuple of width, height
+    init_width, init_height = init_size
+    minx, maxx, miny, maxy = extent
 
-    :param filename: name of shapefile or geodatabase
+    wh_ratio = init_width / init_height
+    hw_ratio = init_height / init_width
+
+    xrng = maxx - minx
+    yrng = maxy - miny
+    xy_ratio = xrng / yrng
+    yx_ratio = yrng / xrng
+    # print(f'{xrng=}, {yrng=}')
+    # print(f'{xy_ratio=}, {yx_ratio=}')
+
+    if xy_ratio < 1.0:
+        init_width *= xy_ratio
+    elif yx_ratio < 1.0:
+        init_height *= yx_ratio
+    # print(f'{init_width=}, {init_height=}')
+
+    return init_width, init_height
+
+def get_extent(shapefile: str,
+               layer_name: Optional[str] = None,
+               driver: Optional[str] = 'ESRI Shapefile'):
+    """Get the extent from a shapefile.
+
+    :param shapefile: name of shapefile or geodatabase
+    :param layer_name: name of geodatabase layer
+    :param driver: name of GDAL driver to use
     """
 
-    gis_obj = geopandas.read_file(filename, layer=layer_name)
+    # Get extent information from the national HRUs shapefile
 
-    if gis_obj.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
-        print('Overriding USGS aea crs with EPSG:5070')
-        gis_obj.crs = 'EPSG:5070'
-    return gis_obj
+    # Use gdal/ogr to get the extent information
+    # Shapefile can be in projected coordinates
+    # Driver can be: OpenFileGDB or ESRI Shapefile
+    in_driver = ogr.GetDriverByName(driver)
+    in_data_source = in_driver.Open(shapefile, 0)
 
+    if layer_name is None:
+        in_layer = in_data_source.GetLayer()
+    else:
+        in_layer = in_data_source.GetLayerByName(layer_name)
+
+    extent = in_layer.GetExtent()
+
+    # Get the spatial reference information from the shapefile
+    spatial_ref = in_layer.GetSpatialRef()
+
+    # Create transformation object using projection information from the shapefile
+    xform = prj.Proj(spatial_ref.ExportToProj4())
+
+    west, east, south, north = extent
+    # pad = 100000.    # amount to pad the extent values with (in meters)
+    # east += pad
+    # west -= pad
+    # south -= pad
+    # north += pad
+
+    ll_lon, ll_lat = xform(west, south, inverse=True)
+    ur_lon, ur_lat = xform(east, north, inverse=True)
+    print('\tExtent: ({0:f}, {1:f}, {2:f}, {3:f})'.format(west, east, south, north))
+    print('\tExtent: (LL: [{}, {}], UR: [{}, {}])'.format(ll_lon, ll_lat, ur_lon, ur_lat))
+
+    extent_dms = [ll_lon, ur_lon, ll_lat, ur_lat]
+
+    # Matplotlib basemap requires the map center (lon_0, lat_0) be in decimal degrees
+    # and yet the corners of the extent can be in projected coordinates
+    cen_lon, cen_lat = xform((east+west)/2, (south+north)/2, inverse=True)
+
+    print('cen_lon: {}'.format(cen_lon))
+    print('cen_lat: {}'.format(cen_lat))
+
+    return extent_dms
+
+def get_projection(gdf: geopandas.GeoDataFrame):
+    """Get projection of geodataframe.
+
+    :param gdf: GeoDataFrame
+    """
+
+    aa = {}
+    for yy in gdf.crs.coordinate_operation.params:
+        aa[yy.name] = yy.value
+
+    if '9822' in gdf.crs.coordinate_operation.method_code:
+        # Albers Equal Area
+        crs_proj = ccrs.AlbersEqualArea(central_longitude=aa['Longitude of false origin'],
+                                        central_latitude=aa['Latitude of false origin'],
+                                        standard_parallels=(aa['Latitude of 1st standard parallel'],
+                                                            aa['Latitude of 2nd standard parallel']),
+                                        false_easting=aa['Easting at false origin'],
+                                        false_northing=aa['Northing at false origin'])
+    elif '9802' in gdf.crs.coordinate_operation.method_code:
+        # Lambert Conformal Conic
+        crs_proj = ccrs.LambertConformal(central_latitude=aa['Latitude of false origin'],
+                                         central_longitude=aa['Longitude of false origin'],
+                                         standard_parallels=(aa['Latitude of 1st standard parallel'],
+                                                             aa['Latitude of 2nd standard parallel']),
+                                         false_easting=aa['Easting at false origin'],
+                                         false_northing=aa['Northing at false origin'])
+    else:
+        # We're gonna crash
+        crs_proj = None
+    return crs_proj
 
 def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_width=False, vary_color=True, colors=None,
                          alpha=1.0, linewidth=1.0, **kwargs):
@@ -101,117 +195,18 @@ def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, # face
     ax.autoscale_view()
     return patches
 
+def read_gis(filename: str, layer_name: str):
+    """Read a shapefile or geodatabase that corresponds to HRUs.
 
-def get_figsize(extent, init_size=(10, 10), **kwargs):
-    # init_size: tuple of width, height
-    init_width, init_height = init_size
-    minx, maxx, miny, maxy = extent
-
-    wh_ratio = init_width / init_height
-    hw_ratio = init_height / init_width
-
-    xrng = maxx - minx
-    yrng = maxy - miny
-    xy_ratio = xrng / yrng
-    yx_ratio = yrng / xrng
-    # print(f'{xrng=}, {yrng=}')
-    # print(f'{xy_ratio=}, {yx_ratio=}')
-
-    if xy_ratio < 1.0:
-        init_width *= xy_ratio
-    elif yx_ratio < 1.0:
-        init_height *= yx_ratio
-    # print(f'{init_width=}, {init_height=}')
-
-    return init_width, init_height
-
-
-def get_projection(gdf: geopandas.GeoDataFrame):
-    """Get projection of geodataframe.
-
-    :param gdf: GeoDataFrame
+    :param filename: name of shapefile or geodatabase
     """
 
-    aa = {}
-    for yy in gdf.crs.coordinate_operation.params:
-        aa[yy.name] = yy.value
+    gis_obj = geopandas.read_file(filename, layer=layer_name)
 
-    if '9822' in gdf.crs.coordinate_operation.method_code:
-        # Albers Equal Area
-        crs_proj = ccrs.AlbersEqualArea(central_longitude=aa['Longitude of false origin'],
-                                        central_latitude=aa['Latitude of false origin'],
-                                        standard_parallels=(aa['Latitude of 1st standard parallel'],
-                                                            aa['Latitude of 2nd standard parallel']),
-                                        false_easting=aa['Easting at false origin'],
-                                        false_northing=aa['Northing at false origin'])
-    elif '9802' in gdf.crs.coordinate_operation.method_code:
-        # Lambert Conformal Conic
-        crs_proj = ccrs.LambertConformal(central_latitude=aa['Latitude of false origin'],
-                                         central_longitude=aa['Longitude of false origin'],
-                                         standard_parallels=(aa['Latitude of 1st standard parallel'],
-                                                             aa['Latitude of 2nd standard parallel']),
-                                         false_easting=aa['Easting at false origin'],
-                                         false_northing=aa['Northing at false origin'])
-    else:
-        # We're gonna crash
-        crs_proj = None
-    return crs_proj
-
-
-def get_extent(shapefile: str,
-               layer_name: Optional[str] = None,
-               driver: Optional[str] = 'ESRI Shapefile'):
-    """Get the extent from a shapefile.
-
-    :param shapefile: name of shapefile or geodatabase
-    :param layer_name: name of geodatabase layer
-    :param driver: name of GDAL driver to use
-    """
-
-    # Get extent information from the national HRUs shapefile
-
-    # Use gdal/ogr to get the extent information
-    # Shapefile can be in projected coordinates
-    # Driver can be: OpenFileGDB or ESRI Shapefile
-    in_driver = ogr.GetDriverByName(driver)
-    in_data_source = in_driver.Open(shapefile, 0)
-
-    if layer_name is None:
-        in_layer = in_data_source.GetLayer()
-    else:
-        in_layer = in_data_source.GetLayerByName(layer_name)
-
-    extent = in_layer.GetExtent()
-
-    # Get the spatial reference information from the shapefile
-    spatial_ref = in_layer.GetSpatialRef()
-
-    # Create transformation object using projection information from the shapefile
-    xform = prj.Proj(spatial_ref.ExportToProj4())
-
-    west, east, south, north = extent
-    # pad = 100000.    # amount to pad the extent values with (in meters)
-    # east += pad
-    # west -= pad
-    # south -= pad
-    # north += pad
-
-    ll_lon, ll_lat = xform(west, south, inverse=True)
-    ur_lon, ur_lat = xform(east, north, inverse=True)
-    print('\tExtent: ({0:f}, {1:f}, {2:f}, {3:f})'.format(west, east, south, north))
-    print('\tExtent: (LL: [{}, {}], UR: [{}, {}])'.format(ll_lon, ll_lat, ur_lon, ur_lat))
-
-    extent_dms = [ll_lon, ur_lon, ll_lat, ur_lat]
-
-    # Matplotlib basemap requires the map center (lon_0, lat_0) be in decimal degrees
-    # and yet the corners of the extent can be in projected coordinates
-    cen_lon, cen_lat = xform((east+west)/2, (south+north)/2, inverse=True)
-
-    print('cen_lon: {}'.format(cen_lon))
-    print('cen_lat: {}'.format(cen_lat))
-
-    return extent_dms
-
+    if gis_obj.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
+        print('Overriding USGS aea crs with EPSG:5070')
+        gis_obj.crs = 'EPSG:5070'
+    return gis_obj
 
 def set_colormap(the_var: str,
                  param_data: pd.DataFrame,

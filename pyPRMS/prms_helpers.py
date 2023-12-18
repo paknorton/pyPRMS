@@ -1,7 +1,6 @@
 
 from collections import namedtuple
 
-# from datetime import datetime
 from typing import List, NamedTuple, Optional, Union, Sequence
 
 import calendar
@@ -18,18 +17,6 @@ from .constants import Version
 cond_check = {'=': operator.eq,
               '>': operator.gt,
               '<': operator.lt}
-
-def read_xml(filename: str) -> xmlET.Element:
-    """Returns the root of the xml tree for a given file.
-
-    :param filename: XML filename
-
-    :returns: Root of the xml tree
-    """
-
-    # Open and parse an xml file and return the root of the tree
-    xml_tree = xmlET.parse(filename)
-    return xml_tree.getroot()
 
 def flex_type(val):
     if isinstance(val, str):
@@ -70,6 +57,17 @@ def get_file_iter(filename):
 
     return iter(rawdata)
 
+def read_xml(filename: str) -> xmlET.Element:
+    """Returns the root of the xml tree for a given file.
+
+    :param filename: XML filename
+
+    :returns: Root of the xml tree
+    """
+
+    # Open and parse an xml file and return the root of the tree
+    xml_tree = xmlET.parse(filename)
+    return xml_tree.getroot()
 
 def set_date(adate: Union[datetime.datetime, datetime.date, str]) -> datetime.datetime:
     """Return datetime object given a datetime or string of format YYYY-MM-DD
@@ -86,7 +84,6 @@ def set_date(adate: Union[datetime.datetime, datetime.date, str]) -> datetime.da
         return datetime.datetime(*adate)
     else:
         return datetime.datetime(*[int(x) for x in re.split('[- :]', adate)])  # type: ignore
-
 
 def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> Version:
     """Given a version string (MM.mm.rr) returns a named tuple of version values
