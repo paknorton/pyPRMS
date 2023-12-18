@@ -15,14 +15,12 @@ class ParamDb(Parameters):
     def __init__(self, paramdb_dir: str,
                  metadata,
                  verbose: Optional[bool] = False):
-                 # verify: Optional[bool] = True):
         """Initialize ParamDb object.
 
         This object handles the monolithic parameter database.
 
         :param paramdb_dir: Path to the ParamDb directory
         :param verbose: Output additional debug information
-        :param verify: Whether to load the master parameters (default=True)
         """
 
         super(ParamDb, self).__init__(metadata=metadata, verbose=verbose)
