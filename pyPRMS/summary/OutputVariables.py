@@ -1,5 +1,4 @@
 
-import datetime
 import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas   # type: ignore
@@ -7,18 +6,15 @@ import geopandas   # type: ignore
 import io
 import pandas as pd   # type: ignore
 import pkgutil
-# import xarray as xr
 import xml.etree.ElementTree as xmlET
 
 from functools import cached_property
 from typing import List, Optional, Tuple, Union
-# from itertools import (takewhile, repeat)
 
 import matplotlib.pyplot as plt     # type: ignore
-# import matplotlib.colors as colors
 import matplotlib as mpl        # type: ignore
 
-from ..plot_helpers import set_colormap, get_projection, plot_line_collection, \
+from ..plot_helpers import set_colormap, get_projection, \
     plot_polygon_collection, read_gis
 
 # - pass control object
@@ -207,25 +203,6 @@ class OutputVariables(object):
             self.__seg_poly = read_gis(filename, seg_layer)
             self.__seg_shape_key = seg_key
 
-    # @staticmethod
-    # def nearest(items, pivot):
-    #     return min(items, key=lambda x: abs(x - pivot))
-    #
-    # def read_netcdf(self):
-    #     """Read model output file stored in netCDF format."""
-    #
-    #     self.__data = xr.open_dataset(self.__filename, chunks={})
-    #
-    #     try:
-    #         self.__data = self.__data.assign_coords(nhru=self.__data.nhm_id)
-    #     except AttributeError:
-    #         pass
-    #
-    #     try:
-    #         self.__data = self.__data.assign_coords(nsegment=self.__data.nhm_seg)
-    #     except AttributeError:
-    #         pass
-
     def plot(self, name: str,
              output_dir: Optional[str] = None,
              limits: Optional[Union[str, List[float], Tuple[float, float]]] = 'valid',
@@ -286,6 +263,25 @@ class OutputVariables(object):
 
         col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
                                       **dict(kwargs, cmap=cmap, norm=norm))
+
+    # @staticmethod
+    # def nearest(items, pivot):
+    #     return min(items, key=lambda x: abs(x - pivot))
+    #
+    # def read_netcdf(self):
+    #     """Read model output file stored in netCDF format."""
+    #
+    #     self.__data = xr.open_dataset(self.__filename, chunks={})
+    #
+    #     try:
+    #         self.__data = self.__data.assign_coords(nhru=self.__data.nhm_id)
+    #     except AttributeError:
+    #         pass
+    #
+    #     try:
+    #         self.__data = self.__data.assign_coords(nsegment=self.__data.nhm_seg)
+    #     except AttributeError:
+    #         pass
 
     # def __init__(self, src_path=None, prefix=None):
     #     self.__src_path = src_path
