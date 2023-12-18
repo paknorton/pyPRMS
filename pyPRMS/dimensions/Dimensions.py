@@ -1,13 +1,10 @@
 
-# from collections import OrderedDict
-
-from typing import Any, cast, Dict, Optional, Union   # , OrderedDict as OrderedDictType, Union
+from typing import Any, Dict, Optional, Union   # , OrderedDict as OrderedDictType, Union
 
 import xml.etree.ElementTree as xmlET
 
 from .Dimension import Dimension
 from ..constants import MetaDataType
-from ..prms_helpers import read_xml
 
 
 class Dimensions(object):
@@ -45,20 +42,6 @@ class Dimensions(object):
         #         self.add(name=cdim, meta=self.metadata)
         #
 
-    def __str__(self) -> str:
-        """Pretty-print dimensions.
-
-        :returns: Pretty-print string of dimensions
-        """
-
-        outstr = ''
-        if len(self.__dimensions) == 0:
-            outstr = '<empty>'
-        else:
-            for kk, vv in self.__dimensions.items():
-                outstr += f'{vv}\n'
-        return outstr
-
     def __getattr__(self, name: str) -> Any:
         """Get named dimension.
 
@@ -76,6 +59,20 @@ class Dimensions(object):
         :returns: Dimension object
         """
         return self.__dimensions[item]
+
+    def __str__(self) -> str:
+        """Pretty-print dimensions.
+
+        :returns: Pretty-print string of dimensions
+        """
+
+        outstr = ''
+        if len(self.__dimensions) == 0:
+            outstr = '<empty>'
+        else:
+            for kk, vv in self.__dimensions.items():
+                outstr += f'{vv}\n'
+        return outstr
 
     @property
     def dimensions(self) -> Dict[str, Dimension]:
@@ -127,40 +124,6 @@ class Dimensions(object):
         #     # TODO: Should this raise an error?
         #     print('Dimension {} already exists...skipping add name'.format(name))
 
-    # TODO: 20230707 PAN - figured out if this is still needed/used
-    # def add_from_xml(self, filename: str):
-    #     """Add one or more dimensions from an xml file.
-    #
-    #     :param filename: Name of xml file to read
-    #     """
-    #
-    #     # Add dimensions and grow dimension sizes from xml information for a parameter
-    #     # This information is found in xml files for each region for each parameter
-    #     # No attempt is made to verify whether each region for a given parameter
-    #     # has the same or same number of dimensions.
-    #     xml_root = read_xml(filename)
-    #
-    #     # TODO: We can't guarantee the order of the dimensions in the xml file
-    #     #       so we should make sure dimensions are added in the correct order
-    #     #       dictated by the position attribute.
-    #     #       1) read all dimensions in the correct 'position'-dictated order into a list
-    #     #       2) add dimensions in list to the dimensions ordereddict
-    #     for cdim in xml_root.findall('./dimensions/dimension'):
-    #         name = cast(str, cdim.get('name'))
-    #         size = cast(int, cdim.get('size'))
-    #         # name = cdim.get('name')
-    #         # size = int(cdim.get('size'))
-    #
-    #         if name not in self.__dimensions:
-    #             try:
-    #                 self.__dimensions[name] = Dimension(name=name, size=size)
-    #             except ValueError as err:
-    #                 print(err)
-    #         else:
-    #             if name not in ['nmonths', 'ndays', 'one']:
-    #                 # NOTE: This will always try to grow a dimension if it already exists!
-    #                 self.__dimensions[name].size += size
-
     def exists(self, name: str) -> bool:
         """Check if dimension exists.
 
@@ -204,6 +167,40 @@ class Dimensions(object):
         for kk, vv in self.dimensions.items():
             dims[kk] = {'size': vv.size}
         return dims
+
+    # TODO: 20230707 PAN - figured out if this is still needed/used
+    # def add_from_xml(self, filename: str):
+    #     """Add one or more dimensions from an xml file.
+    #
+    #     :param filename: Name of xml file to read
+    #     """
+    #
+    #     # Add dimensions and grow dimension sizes from xml information for a parameter
+    #     # This information is found in xml files for each region for each parameter
+    #     # No attempt is made to verify whether each region for a given parameter
+    #     # has the same or same number of dimensions.
+    #     xml_root = read_xml(filename)
+    #
+    #     # TODO: We can't guarantee the order of the dimensions in the xml file
+    #     #       so we should make sure dimensions are added in the correct order
+    #     #       dictated by the position attribute.
+    #     #       1) read all dimensions in the correct 'position'-dictated order into a list
+    #     #       2) add dimensions in list to the dimensions ordereddict
+    #     for cdim in xml_root.findall('./dimensions/dimension'):
+    #         name = cast(str, cdim.get('name'))
+    #         size = cast(int, cdim.get('size'))
+    #         # name = cdim.get('name')
+    #         # size = int(cdim.get('size'))
+    #
+    #         if name not in self.__dimensions:
+    #             try:
+    #                 self.__dimensions[name] = Dimension(name=name, size=size)
+    #             except ValueError as err:
+    #                 print(err)
+    #         else:
+    #             if name not in ['nmonths', 'ndays', 'one']:
+    #                 # NOTE: This will always try to grow a dimension if it already exists!
+    #                 self.__dimensions[name].size += size
 
 
 class ParamDimensions(Dimensions):
@@ -254,6 +251,41 @@ class ParamDimensions(Dimensions):
         # Restrict number of dimensions for parameters
         super().add(name, size)
 
+    def get_dimsize_by_index(self, index: int) -> int:
+        """Return size of dimension at the given index.
+
+        :param index: The 0-based position of the dimension
+        :returns: Size of the dimension
+
+        :raises ValueError: if index is greater than number dimensions for the parameter
+        """
+
+        if index < len(self.dimensions.items()):
+            return list(self.dimensions.items())[index][1].size
+        raise IndexError(f'Parameter has no dimension at index {index}')
+
+    def get_position(self, name: str) -> int:
+        """Get 0-based index position of a dimension.
+
+        :param name: name of the dimension
+
+        :returns: Zero-based Index position of dimension
+        """
+
+        # TODO: method name should be index() ??
+        return list(self.dimensions.keys()).index(name)
+
+    def tostructure(self) -> Dict[str, Dict[str, int]]:
+        """Get dictionary structure of the dimensions.
+
+        :returns: dictionary of Dimensions names, sizes, and positions
+        """
+
+        ldims = super(ParamDimensions, self).tostructure()
+        for kk, vv in ldims.items():
+            vv['position'] = self.get_position(kk)
+        return ldims
+
     # TODO: 20230707 PAN - figured out if this is still needed/used
     # def add_from_xml(self, filename: str):
     #     """Add one or more dimensions from an xml file.
@@ -296,37 +328,3 @@ class ParamDimensions(Dimensions):
     #                     self.dimensions[name].size += size
 
     # noinspection PyUnresolvedReferences
-    def get_dimsize_by_index(self, index: int) -> int:
-        """Return size of dimension at the given index.
-
-        :param index: The 0-based position of the dimension
-        :returns: Size of the dimension
-
-        :raises ValueError: if index is greater than number dimensions for the parameter
-        """
-
-        if index < len(self.dimensions.items()):
-            return list(self.dimensions.items())[index][1].size
-        raise IndexError(f'Parameter has no dimension at index {index}')
-
-    def get_position(self, name: str) -> int:
-        """Get 0-based index position of a dimension.
-
-        :param name: name of the dimension
-
-        :returns: Zero-based Index position of dimension
-        """
-
-        # TODO: method name should be index() ??
-        return list(self.dimensions.keys()).index(name)
-
-    def tostructure(self) -> Dict[str, Dict[str, int]]:
-        """Get dictionary structure of the dimensions.
-
-        :returns: dictionary of Dimensions names, sizes, and positions
-        """
-
-        ldims = super(ParamDimensions, self).tostructure()
-        for kk, vv in ldims.items():
-            vv['position'] = self.get_position(kk)
-        return ldims

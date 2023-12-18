@@ -44,6 +44,62 @@ class Dimension(object):
         else:
             self.size = size
 
+    def __iadd__(self, other: int):
+        """Add a number to dimension size.
+
+        :param other: Integer value
+
+        :returns: Dimension size
+
+        :raises ValueError: if type of parameter is not an integer
+        """
+
+        # Augment in-place addition so the instance plus a number results
+        # in a change to self.__size
+        if not isinstance(other, int):
+            raise ValueError('Dimension size type must be an integer')
+        self.size += other
+        return self
+
+    def __isub__(self, other: int):
+        """Subtracts integer from dimension size.
+
+        :param other: Integer value
+
+        :returns: Dimension size
+
+        :raises ValueError: if type of parameter is not an integer
+        :raises ValeuError: if parameter is not a positive integer
+        """
+
+        # Augment in-place addition so the instance minus a number results
+        # in a change to self.__size
+        if not isinstance(other, int):
+            raise ValueError('Dimension size type must be an integer')
+        self.size -= other
+        return self
+
+    def __repr__(self) -> str:
+        """String respresentation of dimension.
+
+        :returns: string with name and size of dimension
+        """
+        return f"Dimension(name='{self.name}', meta={self.meta}, size={self.size}, strict=False)"
+
+    def __str__(self) -> str:
+        """Return friendly string representation of dimension
+        """
+        outstr = f'----- Dimension -----\n'
+        outstr += f'name: {self.name}\n'
+
+        for kk, vv in self.meta.items():
+            if kk != 'size':
+                outstr += f'{kk}: {vv}\n'
+
+        outstr += f'size: {self.size}\n'
+
+        return outstr
+
     @property
     def is_fixed(self):
         return self.meta.get('is_fixed', False)
@@ -98,58 +154,3 @@ class Dimension(object):
             # TODO: 2023-06-07 PAN - should the metadata size also get changed?
             self.meta['size'] = self.__size
 
-    def __repr__(self) -> str:
-        """String respresentation of dimension.
-
-        :returns: string with name and size of dimension
-        """
-        return f"Dimension(name='{self.name}', meta={self.meta}, size={self.size}, strict=False)"
-
-    def __str__(self) -> str:
-        """Return friendly string representation of dimension
-        """
-        outstr = f'----- Dimension -----\n'
-        outstr += f'name: {self.name}\n'
-
-        for kk, vv in self.meta.items():
-            if kk != 'size':
-                outstr += f'{kk}: {vv}\n'
-
-        outstr += f'size: {self.size}\n'
-
-        return outstr
-
-    def __iadd__(self, other: int):
-        """Add a number to dimension size.
-
-        :param other: Integer value
-
-        :returns: Dimension size
-
-        :raises ValueError: if type of parameter is not an integer
-        """
-
-        # Augment in-place addition so the instance plus a number results
-        # in a change to self.__size
-        if not isinstance(other, int):
-            raise ValueError('Dimension size type must be an integer')
-        self.size += other
-        return self
-
-    def __isub__(self, other: int):
-        """Subtracts integer from dimension size.
-
-        :param other: Integer value
-
-        :returns: Dimension size
-
-        :raises ValueError: if type of parameter is not an integer
-        :raises ValeuError: if parameter is not a positive integer
-        """
-
-        # Augment in-place addition so the instance minus a number results
-        # in a change to self.__size
-        if not isinstance(other, int):
-            raise ValueError('Dimension size type must be an integer')
-        self.size -= other
-        return self
