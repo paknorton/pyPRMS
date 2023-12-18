@@ -12,7 +12,7 @@ import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
 from functools import cached_property
-from typing import cast, Optional, Sequence, Union, Dict, List, Set, Tuple
+from typing import Optional, Sequence, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
 from ..control.Control import Control
@@ -20,7 +20,7 @@ from ..dimensions.Dimensions import Dimensions
 from ..Exceptions_custom import ParameterError, ParameterExistsError, ParameterNotValidError
 from .Parameter import Parameter
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
-from ..prms_helpers import cond_check, float_to_str, flex_type
+from ..prms_helpers import cond_check, flex_type
 from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, MetaDataType, NETCDF_DATATYPES,
                          NEW_PTYPE_TO_DTYPE, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML, VAR_DELIM)
 
@@ -140,108 +140,6 @@ class Parameters(object):
         return pset.difference(set(self.parameters.keys()))
 
     @property
-    def unneeded_parameters(self) -> Set:
-        """Get set of parameters that are defined but not needed by any of the
-        modules selected in the control file"""
-
-        if self.verbose:
-            con.print('-'*20, 'unneeded_parameters', '-'*20)
-
-        pset = self._required_parameters()
-        return set(self.parameters.keys()).difference(pset)
-
-    def _required_parameters(self) -> Set:
-        """Return set of parameters required by modules selected in control file"""
-        if self.__control is None:
-            # TODO: 20230727 PAN - this should raise an exception
-            return set()
-
-        modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
-
-        # -------------------------------
-        # Get set of parameters required by the modules used
-        pset = set()
-        for kk, vv in self.metadata.items():
-            for mm in vv['modules']:
-                if mm in modules_used:
-                    pset.add(kk)
-
-        # Remove parameters that do not meet secondary requirements defined
-        # in the metadata
-        return self._trim_req_params(pset)
-
-    # TODO: 20230719 PAN - not sure this is needed anymore
-    # def get_params_for_modules(self, modules: Sequence[str]) -> Set[str]:
-    #     """Get list of unique parameters required for a given list of modules.
-    #
-    #     :param modules: List of PRMS modules
-    #
-    #     :returns: Set of parameter names
-    #     """
-    #
-    #     params_by_module = set()
-    #
-    #     for xx in self.parameters.values():
-    #         for mm in xx.meta.get('modules', []):
-    #             if mm in modules:
-    #                 params_by_module.add(xx.name)
-    #     return params_by_module
-
-    def _condition_check_ctl(self, cstr: str) -> bool:
-        """Takes a string of the form '<control_var> <op> <value>' and checks
-        if the condition is True
-        """
-
-        # if len(cstr) == 0:
-        #     return False
-        var, op, value = cstr.split(' ')
-
-        cdtype = NEW_PTYPE_TO_DTYPE[self.control.get(var).meta['datatype']]
-        ctl_val = self.control.get(var).values
-        value = cdtype(value)
-
-        return cond_check[op](ctl_val, value)
-
-    def _condition_check_dim(self, cstr: str) -> bool:
-        """Takes a string of the form '<dimension> <op> <value>' and checks
-        if the condition is True
-        """
-
-        # if len(cstr) == 0:
-        #     return False
-        var, op, value = cstr.split(' ')
-        value = int(value)  # type: ignore
-
-        if self.dimensions.exists(var):
-            return cond_check[op](self.dimensions.get(var).size, value)
-        return False
-
-    def _trim_req_params(self, param_set: Set) -> Set:
-        """Remove parameters from a set of parameters that do not meet secondary requirements"""
-        remove_set = set()
-
-        for cparam in param_set:
-            for xx in self.metadata[cparam].get('requires_control', []):
-                if not self._condition_check_ctl(xx):
-                    remove_set.add(cparam)
-                    if self.verbose:   # pragma: no cover
-                        con.print(f'[bold]{cparam}[/]: Control condition ({xx}) not met')
-
-            for xx in self.metadata[cparam].get('requires_dimension', []):
-                if not self._condition_check_dim(xx):
-                    remove_set.add(cparam)
-                    if self.verbose:   # pragma: no cover
-                        con.print(f'[bold]{cparam}[/]: Dimension condition ({xx}) not met')
-
-        for vv in remove_set:
-            param_set.remove(vv)
-
-        return param_set
-
-    # =========================================================================
-    # =========================================================================
-
-    @property
     def parameters(self) -> Dict[str, Parameter]:
         """Returns an ordered dictionary of parameter objects.
 
@@ -283,6 +181,17 @@ class Parameters(object):
             # Non-routed HRUs have a seg key = zero
             self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
         return self.__seg_to_hru
+
+    @property
+    def unneeded_parameters(self) -> Set:
+        """Get set of parameters that are defined but not needed by any of the
+        modules selected in the control file"""
+
+        if self.verbose:
+            con.print('-'*20, 'unneeded_parameters', '-'*20)
+
+        pset = self._required_parameters()
+        return set(self.parameters.keys()).difference(pset)
 
     @property
     def xml_global_dimensions(self) -> xmlET.Element:
@@ -381,6 +290,26 @@ class Parameters(object):
 
             if self.verbose:
                 con.print(f'[bold]{cparam}[/] [gold3] parameter added with default value[/]')
+
+    def adjust_bounded_parameters(self):
+        """Adjust the valid upper and lower values for a bounded parameter.
+
+        :param name: name of parameter
+        """
+
+        for cparam in self.parameters.values():
+            cmeta = cparam.meta
+
+            if cmeta.get('maximum') in list(self.dimensions.keys()):
+                # if isinstance(cmeta.get('maximum'), str):
+                try:
+                    cmeta['maximum'] = self.dimensions.get(cmeta.get('maximum')).size
+
+                    if self.verbose:   # pragma: no cover
+                        con.print(f'[bold]{cparam.name}[/]: valid upper bound adjusted to {cmeta["maximum"]}')
+                except ValueError:
+                    print(f'{cparam.name} has bad valid uppper bound value')
+                    raise
 
     def check(self):   # pragma: no cover
         """Check all parameter variables for proper array size.
@@ -813,7 +742,6 @@ class Parameters(object):
                 if self.verbose:
                     con.print(f'[bold]{cparam}[/] [gold3]parameter removed[/]')
 
-
     def remove_poi(self, poi: str):
         """Remove POIs by gage_id.
 
@@ -936,17 +864,6 @@ class Parameters(object):
                 cparam.update_element(idx0[0], value)
 
         # TODO: Add handling for other dimensions
-
-    def write_parameters_xml(self, output_dir: str):
-        """Write global parameters.xml file.
-
-        :param output_dir: output path for parameters.xml file
-        """
-
-        # Write the global parameters xml file
-        xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_parameters)).toprettyxml(indent='    ')
-        with open(f'{output_dir}/{PARAMETERS_XML}', 'w') as ff:
-            ff.write(xmlstr)
 
     def write_dimensions_xml(self, output_dir: str):
         """Write global dimensions.xml file.
@@ -1235,31 +1152,110 @@ class Parameters(object):
         df = pd.DataFrame.from_records(out_list, columns=col_names)
         df.to_csv(filename, sep='\t', index=False)
 
-    def adjust_bounded_parameters(self):
-        """Adjust the valid upper and lower values for a bounded parameter.
+    def write_parameters_xml(self, output_dir: str):
+        """Write global parameters.xml file.
 
-        :param name: name of parameter
+        :param output_dir: output path for parameters.xml file
         """
 
-        for cparam in self.parameters.values():
-            cmeta = cparam.meta
+        # Write the global parameters xml file
+        xmlstr = minidom.parseString(xmlET.tostring(self.xml_global_parameters)).toprettyxml(indent='    ')
+        with open(f'{output_dir}/{PARAMETERS_XML}', 'w') as ff:
+            ff.write(xmlstr)
 
-            if cmeta.get('maximum') in list(self.dimensions.keys()):
-                # if isinstance(cmeta.get('maximum'), str):
-                try:
-                    cmeta['maximum'] = self.dimensions.get(cmeta.get('maximum')).size
+    def _condition_check_ctl(self, cstr: str) -> bool:
+        """Takes a string of the form '<control_var> <op> <value>' and checks
+        if the condition is True
+        """
 
-                    if self.verbose:   # pragma: no cover
-                        con.print(f'[bold]{cparam.name}[/]: valid upper bound adjusted to {cmeta["maximum"]}')
-                except ValueError:
-                    print(f'{cparam.name} has bad valid uppper bound value')
-                    raise
+        # if len(cstr) == 0:
+        #     return False
+        var, op, value = cstr.split(' ')
+
+        cdtype = NEW_PTYPE_TO_DTYPE[self.control.get(var).meta['datatype']]
+        ctl_val = self.control.get(var).values
+        value = cdtype(value)
+
+        return cond_check[op](ctl_val, value)
+
+    def _condition_check_dim(self, cstr: str) -> bool:
+        """Takes a string of the form '<dimension> <op> <value>' and checks
+        if the condition is True
+        """
+
+        # if len(cstr) == 0:
+        #     return False
+        var, op, value = cstr.split(' ')
+        value = int(value)  # type: ignore
+
+        if self.dimensions.exists(var):
+            return cond_check[op](self.dimensions.get(var).size, value)
+        return False
 
     def _read(self):
         """Abstract function for reading parameters into Parameters object.
         """
 
         assert False, 'Parameters._read() must be defined by child class'
+
+    def _required_parameters(self) -> Set:
+        """Return set of parameters required by modules selected in control file"""
+        if self.__control is None:
+            # TODO: 20230727 PAN - this should raise an exception
+            return set()
+
+        modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
+
+        # -------------------------------
+        # Get set of parameters required by the modules used
+        pset = set()
+        for kk, vv in self.metadata.items():
+            for mm in vv['modules']:
+                if mm in modules_used:
+                    pset.add(kk)
+
+        # Remove parameters that do not meet secondary requirements defined
+        # in the metadata
+        return self._trim_req_params(pset)
+
+    def _trim_req_params(self, param_set: Set) -> Set:
+        """Remove parameters from a set of parameters that do not meet secondary requirements"""
+        remove_set = set()
+
+        for cparam in param_set:
+            for xx in self.metadata[cparam].get('requires_control', []):
+                if not self._condition_check_ctl(xx):
+                    remove_set.add(cparam)
+                    if self.verbose:   # pragma: no cover
+                        con.print(f'[bold]{cparam}[/]: Control condition ({xx}) not met')
+
+            for xx in self.metadata[cparam].get('requires_dimension', []):
+                if not self._condition_check_dim(xx):
+                    remove_set.add(cparam)
+                    if self.verbose:   # pragma: no cover
+                        con.print(f'[bold]{cparam}[/]: Dimension condition ({xx}) not met')
+
+        for vv in remove_set:
+            param_set.remove(vv)
+
+        return param_set
+
+    # TODO: 20230719 PAN - not sure this is needed anymore
+    # def get_params_for_modules(self, modules: Sequence[str]) -> Set[str]:
+    #     """Get list of unique parameters required for a given list of modules.
+    #
+    #     :param modules: List of PRMS modules
+    #
+    #     :returns: Set of parameter names
+    #     """
+    #
+    #     params_by_module = set()
+    #
+    #     for xx in self.parameters.values():
+    #         for mm in xx.meta.get('modules', []):
+    #             if mm in modules:
+    #                 params_by_module.add(xx.name)
+    #     return params_by_module
 
     # def remove_by_global_id(self, hrus: Optional[List[int]] = None,
     #                         segs: Optional[List[int]] = None):
