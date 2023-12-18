@@ -128,8 +128,6 @@ class Parameters(object):
 
         return self.__hru_to_seg
 
-    # =========================================================================
-    # =========================================================================
     @property
     def missing_params(self) -> Set:
         """Get set of parameters that are required for the modules selected
