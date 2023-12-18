@@ -7,8 +7,6 @@ import pkgutil
 import re
 import xml.etree.ElementTree as xmlET
 
-# from collections import OrderedDict
-
 from typing import Dict, List, Optional, Sequence, Union   # OrderedDict as OrderedDictType,
 
 from ..prms_helpers import version_info
@@ -55,6 +53,32 @@ class Control(object):
         :returns: ControlVariable object
         """
         return self.get(item)
+
+    @property
+    def additional_modules(self) -> List[str]:
+        """Get list of summary modules in PRMS
+        """
+
+        # TODO: module_requirements should be added to metadata?
+        # NOTE: 20231109 PAN - we always want basin_sum included since the
+        #                      print_debug could be set to 4 (which uses the basin_sum module)
+        module_requirements = {'basin_sum': 'print_debug < 100',
+                               # 'basin_sum': 'print_debug = 4',
+                               'basin_summary': 'basinOutON_OFF > 0',
+                               'map_results': 'mapOutON_OFF > 0',
+                               'nhru_summary': 'nhruOutON_OFF > 0',
+                               'nsegment_summary': 'nsegmentOutON_OFF > 0',
+                               'nsub_summary': 'nsubOutON_OFF > 0',
+                               'stream_temp': 'stream_temp_flag > 0',
+                               'subbasin': 'subbasin_flag = 1'}
+
+        active_modules = []
+
+        for cmod, cond in module_requirements.items():
+            if self._check_condition(cond):
+                active_modules.append(cmod)
+
+        return active_modules
 
     @property
     def control_variables(self) -> Dict[str, ControlVariable]:
@@ -145,45 +169,6 @@ class Control(object):
                 mod_dict[mtype] = mname
 
         return mod_dict
-
-    @property
-    def additional_modules(self) -> List[str]:
-        """Get list of summary modules in PRMS
-        """
-
-        # TODO: module_requirements should be added to metadata?
-        # NOTE: 20231109 PAN - we always want basin_sum included since the
-        #                      print_debug could be set to 4 (which uses the basin_sum module)
-        module_requirements = {'basin_sum': 'print_debug < 100',
-                               # 'basin_sum': 'print_debug = 4',
-                               'basin_summary': 'basinOutON_OFF > 0',
-                               'map_results': 'mapOutON_OFF > 0',
-                               'nhru_summary': 'nhruOutON_OFF > 0',
-                               'nsegment_summary': 'nsegmentOutON_OFF > 0',
-                               'nsub_summary': 'nsubOutON_OFF > 0',
-                               'stream_temp': 'stream_temp_flag > 0',
-                               'subbasin': 'subbasin_flag = 1'}
-
-        active_modules = []
-
-        for cmod, cond in module_requirements.items():
-            if self._check_condition(cond):
-                active_modules.append(cmod)
-
-        return active_modules
-
-    def _check_condition(self, cstr: str) -> bool:
-        """Takes a string of the form '<control_var> <op> <value>' and checks
-        if the condition is True
-        """
-        # if len(cstr) == 0:
-        #     return True
-
-        var, op, value = cstr.split(' ')
-        value = int(value)
-
-        if self.exists(var):
-            return cond_check[op](self.get(var).values, value)
 
     def add(self, name: str, meta=None):
         """Add a control variable by name.
@@ -294,6 +279,19 @@ class Control(object):
 
 
         outfile.close()
+
+    def _check_condition(self, cstr: str) -> bool:
+        """Takes a string of the form '<control_var> <op> <value>' and checks
+        if the condition is True
+        """
+        # if len(cstr) == 0:
+        #     return True
+
+        var, op, value = cstr.split(' ')
+        value = int(value)
+
+        if self.exists(var):
+            return cond_check[op](self.get(var).values, value)
 
     def _read(self):
         """Abstract function for reading.

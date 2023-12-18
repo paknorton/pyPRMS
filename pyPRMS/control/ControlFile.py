@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-# import io
-# import pkgutil
-# import xml.etree.ElementTree as xmlET
-# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 import numpy as np
 
 from typing import Optional, Union
@@ -30,7 +26,6 @@ class ControlFile(Control):
         self.__verbose = verbose
         self.__isloaded = False
         self.filename = filename
-
 
     @property
     def filename(self) -> str:
