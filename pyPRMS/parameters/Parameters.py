@@ -724,7 +724,7 @@ class Parameters(object):
             else:
                 print('Non-plottable parameter')
 
-    def remove(self, name: Union[str, Sequence[str]]):
+    def remove(self, name: Union[str, Sequence[str], Set[str]]):
         """Delete one or more parameters if they exist.
 
         :param name: parameter or list of parameters to remove
