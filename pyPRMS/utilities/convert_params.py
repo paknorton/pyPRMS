@@ -5,7 +5,6 @@ import os
 
 from pyPRMS import ParamDb
 from pyPRMS.metadata.metadata import MetaData
-# from pyPRMS import ControlFile
 from pyPRMS import ParameterFile
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'

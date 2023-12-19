@@ -4,7 +4,6 @@ import numpy as np
 from typing import List, Optional, Set
 
 from ..Exceptions_custom import ParameterExistsError, ParameterNotValidError
-# from .ParameterSet import ParameterSet
 from .Parameters import Parameters
 from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM, PTYPE_TO_DTYPE
 from ..prms_helpers import get_file_iter
@@ -99,7 +98,6 @@ class ParameterFile(Parameters):
             self.__header.append(line)
 
         if self.__verbose:   # pragma: no cover
-            # con.print('INFO: headers:')
             con.print(f'HEADERS: {self.__header}')
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
