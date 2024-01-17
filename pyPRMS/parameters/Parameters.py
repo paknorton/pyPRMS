@@ -34,6 +34,7 @@ import geopandas    # type: ignore
 pretty.install()
 con = Console()
 
+
 class Parameters(object):
     """Container of multiple pyPRMS.Parameter objects.
     """
@@ -337,7 +338,8 @@ class Parameters(object):
                     #       f'the valid range of ({pp.minimum}, {pp.maximum})')
                 elif valid_min == 'bounded':
                     # TODO: Handling bounded parameters needs improvement
-                    con.print(f'    [dark_orange3]WARNING[/]: Bounded parameter value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
+                    con.print(f'    [dark_orange3]WARNING[/]: Bounded parameter value(s) '
+                              f'(range: {pp_stats.min}, {pp_stats.max}) outside ' +
                               f'the valid range of ({pp.default}, {valid_max})')
 
             if pp.all_equal():
@@ -487,7 +489,8 @@ class Parameters(object):
         cparam = self.__parameters[name]
 
         param_data = self.get_dataframe(name)
-        bad_value_ids = param_data[(param_data[name] < cparam.meta['minimum']) | (param_data[name] > cparam.meta['maximum'])].index.tolist()
+        bad_value_ids = param_data[(param_data[name] < cparam.meta['minimum']) |
+                                   (param_data[name] > cparam.meta['maximum'])].index.tolist()
 
         return bad_value_ids
 
@@ -571,7 +574,8 @@ class Parameters(object):
                     geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
 
                     # print('Writing first plot')
-                    df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True, how='left')
+                    df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key,
+                                                  right_index=True, how='left')
 
                     fig_width, fig_height = get_figsize([minx, maxx, miny, maxy], **dict(kwargs))
                     kwargs.pop('init_size', None)
@@ -644,8 +648,8 @@ class Parameters(object):
                                 if mask_defaults is not None:
                                     param_data = param_data.mask(param_data == cparam.meta['default'])
 
-                                df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key, right_index=True,
-                                                              how='left')
+                                df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key,
+                                                              right_index=True, how='left')
 
                                 ax.set_title(f'Variable: {name},  Month: {tt+1}')
                                 col.set_array(df_mrg[name])
