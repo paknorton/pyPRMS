@@ -170,8 +170,8 @@ class CbhNetcdf(object):
 
         # Remove _FillValue from coordinate variables
         for vv in list(ds.coords):
-            ds[vv].encoding.update({'_FillValue': None,
-                                    'contiguous': True})
+            ds[vv].encoding.update({'_FillValue': None})
+                                    # 'contiguous': True})
 
         ds['crs'] = self.__dataset['crs']
         ds['crs'].encoding.update({'_FillValue': None,
