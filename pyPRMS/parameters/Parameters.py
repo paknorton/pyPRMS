@@ -167,7 +167,7 @@ class Parameters(object):
 
     @cached_property
     def seg_to_hru(self) -> Dict[int, int]:
-        """Returns an ordered dictionary mapping HRU segment IDs to HRU IDs.
+        """Returns an ordered dictionary mapping HRU global segment IDs to global HRU IDs.
 
         :returns: dictionary mapping hru_segment_nhm to nhm_id
         """
