@@ -68,10 +68,10 @@ class CbhNetcdf(object):
                 #       see https://github.com/pydata/xarray/issues/2436
 
                 # Open the remote multi-file dataset
-                ds = xr.open_mfdataset(xfiles, chunks={'hruid': 1040}, combine='by_coords',
+                ds = xr.open_mfdataset(xfiles, chunks={}, combine='by_coords',
                                        decode_cf=True, engine='netcdf4')
             except ValueError:
-                ds = xr.open_mfdataset(xfiles, chunks={'hru': 1040}, combine='by_coords',
+                ds = xr.open_mfdataset(xfiles, chunks={}, combine='by_coords',
                                        decode_cf=True, engine='netcdf4')
         else:
             ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
