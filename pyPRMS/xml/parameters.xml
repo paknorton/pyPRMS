@@ -2244,7 +2244,6 @@
         </dimensions>
         <requires>
             <control>model_mode = PRMS</control>
-            <control>model_mode = GSFLOW</control>
         </requires>
     </parameter>
     <parameter name="tmax_allrain_offset" version="5.0">
@@ -2273,7 +2272,6 @@
         </dimensions>
         <requires>
             <control>model_mode = PRMS5</control>
-            <control>model_mode = GSFLOW5</control>
         </requires>
     </parameter>
     <parameter name="tmax_allsnow">
@@ -4633,9 +4631,6 @@
                 <position>1</position>
             </dimension>
         </dimensions>
-        <requires>
-            <control>stream_temp_flag = 1</control>
-        </requires>
     </parameter>
     <parameter name="seg_slope" version="5.1.0">
         <type>F</type>
@@ -4655,9 +4650,6 @@
                 <position>1</position>
             </dimension>
         </dimensions>
-        <requires>
-            <control>stream_temp_flag = 1</control>
-        </requires>
     </parameter>
     <parameter name="segshade_sum" version="5.1.0">
         <type>F</type>
