@@ -74,7 +74,7 @@ class TestControl:
                     'transpend_dynamic': 'dyn_transp_end.param', 'var_init_file': 'prms_ic.in',
                     'var_save_file': 'prms_ic.out', 'windspeed_day': 'windspeed.day',
                     'wrain_intcp_dynamic': 'dyn_wrain_intcp.param', 'aniOutVar_names': 'none',
-                    'basinOutVar_names': 'basin_summary_', 'data_file': 'sf_data', 'dispVar_element': 'none',
+                    'basinOutVar_names': 'none', 'data_file': 'sf_data', 'dispVar_element': 'none',
                     'dispVar_names': 'none', 'dispVar_plot': 'none', 'mapOutVar_names': 'none',
                     'nsegmentOutVar_names': 'none', 'nsubOutVar_names': 'none', 'statVar_element': 'none',
                     'statVar_names': 'none', 'snarea_curve_flag': 0, 'soilzone_aet_flag': 0, 'stream_temp_flag': 0,
