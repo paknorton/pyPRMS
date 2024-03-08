@@ -98,7 +98,6 @@ class CbhNetcdf(object):
             # print(self.__nhm_hrus, type(self.__nhm_hrus))
             try:
                 data = self.__dataset[var].sel(time=slice(self.__stdate, self.__endate), nhru=self.__nhm_hrus).to_pandas()
-                # data = self.__dataset[var].loc[self.__stdate:self.__endate, self.__nhm_hrus].to_pandas()
             except IndexError:
                 print(f'ERROR: Indices (time, nhru) were used to subset {var} which expects' +
                       f'indices ({" ".join(map(str, self.__dataset[var].coords))})')

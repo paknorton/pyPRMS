@@ -3,6 +3,9 @@
 import os
 import pandas as pd     # type: ignore
 from typing import cast, Optional
+import io
+import pkgutil
+import xml.etree.ElementTree as xmlET
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
 
 from ..prms_helpers import read_xml
@@ -27,6 +30,12 @@ class ParamDb(Parameters):
         self.__paramdb_dir = paramdb_dir
         self.__verbose = verbose
 
+        # When restricted is false the package parameter xml file is used
+        # otherwise the parameter database xml file is used.
+        # TODO: 2023-03-28 not currently settable on init; not sure if we even need an option
+        #       or if the package xml should always be used.
+        self.__restricted = False
+
         # Read the parameters from the parameter database
         self._read()
 
@@ -36,11 +45,22 @@ class ParamDb(Parameters):
 
         # Get the parameters available from the parameter database
         # Returns a dictionary of parameters and associated units and types
-        global_params_file = f'{self.__paramdb_dir}/{PARAMETERS_XML}'
-        global_dimens_file = f'{self.__paramdb_dir}/{DIMENSIONS_XML}'
 
-        # Read in the parameters.xml and dimensions.xml file
-        params_root = read_xml(global_params_file)
+        # Read the parameters XML file
+        if self.__restricted:
+            global_params_file = f'{self.__paramdb_dir}/{PARAMETERS_XML}'
+            params_root = read_xml(global_params_file)
+        else:
+            # Read the full list of possible parameters
+            res = pkgutil.get_data('pyPRMS', 'xml/parameters.xml')
+
+            assert res is not None
+            xml_fh = io.StringIO(res.decode('utf-8'))
+            self.__xml_tree = xmlET.parse(xml_fh)
+            params_root = self.__xml_tree.getroot()
+
+        # Read in the dimensions.xml file
+        global_dimens_file = f'{self.__paramdb_dir}/{DIMENSIONS_XML}'
         dimens_root = read_xml(global_dimens_file)
 
         # Populate the global dimensions from the xml file

@@ -1,6 +1,6 @@
 major = 0
 minor = 9
-micro = 3
+micro = 4
 __version__ = f"{major}.{minor}.{micro}"
 
 __pakname__ = "pyPRMS"

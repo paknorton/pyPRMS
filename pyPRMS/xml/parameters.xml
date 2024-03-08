@@ -2824,7 +2824,7 @@
         <units>none</units>
         <desc>The NHM index of the downstream segment</desc>
         <help>NHM index of downstream segment to which the segment streamflow flows, for segments that do not flow to another segment enter 0</help>
-        <minimum>-11</minimum>
+        <minimum>0</minimum>
         <maximum>1000000</maximum>
         <default>0</default>
         <modules>
