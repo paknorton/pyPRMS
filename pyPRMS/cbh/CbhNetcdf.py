@@ -68,15 +68,14 @@ class CbhNetcdf(object):
                 #       see https://github.com/pydata/xarray/issues/2436
 
                 # Open the remote multi-file dataset
-                ds = xr.open_mfdataset(xfiles, chunks={'hruid': 1040}, combine='by_coords',
+                ds = xr.open_mfdataset(xfiles, chunks={}, combine='by_coords',
                                        decode_cf=True, engine='netcdf4')
             except ValueError:
-                # self.__dataset = xr.open_mfdataset(self.__src_path, chunks={'hru': 1040}, combine='by_coords')
-                ds = xr.open_mfdataset(xfiles, chunks={'hru': 1040}, combine='by_coords',
+                ds = xr.open_mfdataset(xfiles, chunks={}, combine='by_coords',
                                        decode_cf=True, engine='netcdf4')
         else:
             ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
-                                   decode_cf=True, engine='netcdf4')
+                                   data_vars='minimal', decode_cf=True, engine='netcdf4')
 
         if self.__stdate is None and self.__endate is None:
             # If a date range is not specified then use the daterange from the dataset
@@ -172,8 +171,8 @@ class CbhNetcdf(object):
 
         # Remove _FillValue from coordinate variables
         for vv in list(ds.coords):
-            ds[vv].encoding.update({'_FillValue': None,
-                                    'contiguous': True})
+            ds[vv].encoding.update({'_FillValue': None})
+                                    # 'contiguous': True})
 
         ds['crs'] = self.__dataset['crs']
         ds['crs'].encoding.update({'_FillValue': None,
