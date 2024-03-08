@@ -1,16 +1,39 @@
 <?xml version="1.0" ?>
 <dimensions>
+    <dimension name="four" version="5.2">
+        <desc>Number of glacier variables in integer array</desc>
+        <size>4</size>
+        <default>4</default>
+        <is_fixed>1</is_fixed>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </dimension>
+    <dimension name="mxnsos">
+        <desc>Maximum number of storage/outflow table values for storage-detention reservoirs and lakes connected to the stream network using Puls routing</desc>
+        <size>0</size>
+        <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
+    </dimension>
     <dimension name="ncascade">
         <desc>Number of HRU links for cascading flow</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>cascade_flag > 0</control>
+        </requires>
     </dimension>
     <dimension name="ncascdgw">
         <desc>Number of GWR links for cascading flow</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>cascadegw_flag > 0</control>
+        </requires>
     </dimension>
-    <dimension name="nconsumed">
+    <dimension name="nconsumed" version="5.0">
         <desc>Number of consumptive water-use destinations</desc>
         <size>0</size>
         <default>0</default>
@@ -19,6 +42,7 @@
         <desc>Maximum number of days in a year</desc>
         <size>366</size>
         <default>366</default>
+        <is_fixed>1</is_fixed>
     </dimension>
     <dimension name="ndepl">
         <desc>Number of snow-depletion curves</desc>
@@ -34,31 +58,81 @@
         <desc>Number of pan-evaporation data sets</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>et_module = potet_pan</control>
+        </requires>
     </dimension>
-    <dimension name="nexternal">
+    <dimension name="nexternal" version="5.0">
         <desc>Number of external water-use sources or destinations</desc>
         <size>0</size>
         <default>0</default>
     </dimension>
+    <dimension name="ngate">
+        <desc>Maximum number of reservoir gate-opening values (columns) for lake rating table 1</desc>
+        <size>0</size>
+        <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
+    </dimension>
+    <dimension name="ngate2">
+        <desc>Maximum number of reservoir gate-opening values (columns) for lake rating table 2</desc>
+        <size>0</size>
+        <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
+    </dimension>
+    <dimension name="ngate3">
+        <desc>Maximum number of reservoir gate-opening values (columns) for lake rating table 3</desc>
+        <size>0</size>
+        <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
+    </dimension>
+    <dimension name="ngate4">
+        <desc>Maximum number of reservoir gate-opening values (columns) for lake rating table 4</desc>
+        <size>0</size>
+        <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
+    </dimension>
+    <dimension name="nglres" version="5.2">
+        <desc>Number of reservoirs in a glacier</desc>
+        <size>3</size>
+        <default>3</default>
+        <is_fixed>1</is_fixed>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </dimension>
     <dimension name="ngw">
         <desc>Number of GWRs</desc>
         <size>0</size>
-        <default>0</default>
+        <default>1</default>
     </dimension>
     <dimension name="ngwcell">
         <desc>Number of spatial units in the target map for mapped results</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </dimension>
     <dimension name="nhru">
         <desc>Number of HRUs</desc>
         <size>0</size>
-        <default>0</default>
+        <default>1</default>
     </dimension>
     <dimension name="nhrucell">
         <desc>Number of unique intersections between HRUs and spatial units of a target map for mapped results</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>mapOutON_OFF = 1</control>
+        </requires>
     </dimension>
     <dimension name="nhumid">
         <desc>Number of relative humidity measurement stations</desc>
@@ -74,18 +148,46 @@
         <desc>Maximum number of lake elevations for any rating table data set</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
+    </dimension>
+    <dimension name="nlake_hrus">
+        <desc>Number of lake HRUs</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nlapse">
+        <desc>Number of lapse rates in X, Y, and Z directions</desc>
+        <size>3</size>
+        <default>3</default>
+        <is_fixed>1</is_fixed>
+        <requires>
+            <control>precip_module = xyz_dist</control>
+        </requires>
+    </dimension>
+    <dimension name="nmap" version="5.2">
+        <desc>Number of spatial units in mapped climate</desc>
+        <size>0</size>
+        <default>0</default>
+    </dimension>
+    <dimension name="nmap2hru" version="5.2">
+        <desc>Number of intersections between HRUs and spatial units in mapped climate</desc>
+        <size>0</size>
+        <default>0</default>
     </dimension>
     <dimension name="nmonths">
         <desc>Number of months in a year</desc>
         <size>12</size>
         <default>12</default>
+        <is_fixed>1</is_fixed>
     </dimension>
     <dimension name="nobs">
         <desc>Number of streamflow-measurement stations</desc>
         <size>0</size>
         <default>0</default>
     </dimension>
-    <dimension name="npoigages">
+    <dimension name="npoigages" version="5.0">
         <desc>Number of POI gages</desc>
         <size>0</size>
         <default>0</default>
@@ -99,6 +201,9 @@
         <desc>Number of rating-table data sets for lake elevations</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
     </dimension>
     <dimension name="nsegment">
         <desc>Number of stream-channel segments</desc>
@@ -118,12 +223,47 @@
     <dimension name="nssr">
         <desc>Number of subsurface reservoirs</desc>
         <size>0</size>
+        <default>1</default>
+    </dimension>
+    <dimension name="nstage">
+        <desc>Maximum number of lake elevations values (rows) for lake rating table 1</desc>
+        <size>0</size>
         <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
+    </dimension>
+    <dimension name="nstage2">
+        <desc>Maximum number of lake elevations values (rows) for lake rating table 2</desc>
+        <size>0</size>
+        <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
+    </dimension>
+    <dimension name="nstage3">
+        <desc>Maximum number of lake elevations values (rows) for lake rating table 3</desc>
+        <size>0</size>
+        <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
+    </dimension>
+    <dimension name="nstage4">
+        <desc>Maximum number of lake elevations values (rows) for lake rating table 4</desc>
+        <size>0</size>
+        <default>0</default>
+        <requires>
+            <control>strmflow_module = muskingum_lake</control>
+        </requires>
     </dimension>
     <dimension name="nsub">
         <desc>Number of internal subbasins</desc>
         <size>0</size>
         <default>0</default>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </dimension>
     <dimension name="ntemp">
         <desc>Number of air-temperature-measurement stations</desc>
@@ -144,10 +284,15 @@
         <desc>Dimension of scalar parameters and variables</desc>
         <size>1</size>
         <default>1</default>
+        <is_fixed>1</is_fixed>
     </dimension>
-    <dimension name="nlapse">
-        <desc>Number of lapse rates in X, Y, and Z directions</desc>
-        <size>0</size>
-        <default>0</default>
+    <dimension name="seven" version="5.2">
+        <desc>Number of glacier variables in real array</desc>
+        <size>7</size>
+        <default>7</default>
+        <is_fixed>1</is_fixed>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
     </dimension>
 </dimensions>

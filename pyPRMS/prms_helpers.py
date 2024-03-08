@@ -1,25 +1,32 @@
 
 from collections import namedtuple
-from datetime import datetime
+
 from typing import List, NamedTuple, Optional, Union, Sequence
 
 import calendar
+import datetime
 import decimal
+import operator
 import pandas as pd   # type: ignore
+import numpy as np
+import re
 import xml.etree.ElementTree as xmlET
 
-def read_xml(filename: str) -> xmlET.Element:
-    """Returns the root of the xml tree for a given file.
+from .constants import Version
 
-    :param filename: XML filename
+cond_check = {'=': operator.eq,
+              '>': operator.gt,
+              '<': operator.lt}
 
-    :returns: Root of the xml tree
-    """
-
-    # Open and parse an xml file and return the root of the tree
-    xml_tree = xmlET.parse(filename)
-    return xml_tree.getroot()
-
+def flex_type(val):
+    if isinstance(val, str):
+        return val
+    else:
+        try:
+            return float_to_str(val)
+        except decimal.InvalidOperation:
+            print(f'Caused by: {val}')
+            raise
 
 def float_to_str(f: float) -> str:
     """Convert the given float to a string, without resorting to scientific notation.
@@ -50,71 +57,99 @@ def get_file_iter(filename):
 
     return iter(rawdata)
 
+def read_xml(filename: str) -> xmlET.Element:
+    """Returns the root of the xml tree for a given file.
 
-def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
+    :param filename: XML filename
 
-    Version = namedtuple('Version', ['major', 'minor', 'revision'])
-    flds = [None, None, None]
+    :returns: Root of the xml tree
+    """
 
-    # if version_str is None:
-    #     return Version(0, 0, 0)
+    # Open and parse an xml file and return the root of the tree
+    xml_tree = xmlET.parse(filename)
+    return xml_tree.getroot()
+
+def set_date(adate: Union[datetime.datetime, datetime.date, str]) -> datetime.datetime:
+    """Return datetime object given a datetime or string of format YYYY-MM-DD
+
+    :param adate: Datetime object or string (YYYY-MM-DD)
+    :returns: Datetime object
+    """
+    if isinstance(adate, datetime.date):
+        return datetime.datetime.combine(adate, datetime.time.min)
+        # return adate
+    elif isinstance(adate, datetime.datetime):
+        return adate
+    elif isinstance(adate, np.ndarray):
+        return datetime.datetime(*adate)
+    else:
+        return datetime.datetime(*[int(x) for x in re.split('[- :]', adate)])  # type: ignore
+
+def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> Version:
+    """Given a version string (MM.mm.rr) returns a named tuple of version values
+    """
+
+    # Version = NamedTuple('Version', [('major', Union[int, None]),
+    #                                  ('minor', Union[int, None]),
+    #                                  ('revision', Union[int, None])])
+    flds: List[Union[int, None]] = [None, None, None]
+
     if version_str is not None:
         for ii, kk in enumerate(version_str.split(delim)):
             flds[ii] = int(kk)
-    # flds = [int(kk) for kk in version_str.split(delim)]
 
     return Version(flds[0], flds[1], flds[2])
 
 
-    def str_to_float(data: Union[List[str], str]) -> List[float]:
-        """Convert strings to floats.
+# def str_to_float(data: Union[List[str], str]) -> List[float]:
+#     """Convert strings to floats.
+#
+#     :param data: data value(s)
+#
+#     :returns: Array of floats
+#     """
+#
+#     # Convert provided list of data to float
+#     if isinstance(data, str):
+#         return [float(data)]
+#     elif isinstance(data, list):
+#         try:
+#             return [float(vv) for vv in data]
+#         except ValueError as ve:
+#             print(ve)
 
-        :param data: data value(s)
-
-        :returns: Array of floats
-        """
-
-        # Convert provided list of data to float
-        if isinstance(data, str):
-            return [float(data)]
-        elif isinstance(data, list):
-            try:
-                return [float(vv) for vv in data]
-            except ValueError as ve:
-                print(ve)
-
-
-    def str_to_int(data: Union[List[str], str]) -> List[int]:
-        """Converts strings to integers.
-
-        :param data: data value(s)
-
-        :returns: array of integers
-        """
-
-        if isinstance(data, str):
-            return [int(data)]
-        elif isinstance(data, list):
-            # Convert list of data to integer
-            try:
-                return [int(vv) for vv in data]
-            except ValueError as ve:
-                print(ve)
+# def str_to_int(data: Union[List[str], str]) -> List[int]:
+#     """Converts strings to integers.
+#
+#     :param data: data value(s)
+#
+#     :returns: array of integers
+#     """
+#
+#     if isinstance(data, str):
+#         return [int(data)]
+#     elif isinstance(data, list):
+#         # Convert list of data to integer
+#         try:
+#             return [int(vv) for vv in data]
+#         except ValueError as ve:
+#             print(ve)
 
 
-    def str_to_str(data: Union[List[str], str]) -> List[str]:
-        """Null op for string-to-string conversion.
+# def str_to_str(data: Union[List[str], str]) -> List[str]:
+#     """Null op for string-to-string conversion.
+#
+#     :param data: data value(s)
+#
+#     :returns: unmodified array of data
+#     """
+#
+#     # nop for list of strings
+#     if isinstance(data, str):
+#         data = [data]
+#
+#     return data
 
-        :param data: data value(s)
-
-        :returns: unmodified array of data
-        """
-
-        # nop for list of strings
-        if isinstance(data, str):
-            data = [data]
-
-        return data
 # def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
 #
 #     Version = namedtuple('Version', ['major', 'minor', 'revision'])

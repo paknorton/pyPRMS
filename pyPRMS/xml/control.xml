@@ -35,7 +35,7 @@
             <variable name="basinOut_freq"/>
         </related_variables>
     </control_param>
-    <control_param name="basinOut_freq" deprecated="6.0">
+    <control_param name="basinOut_freq" version="5.0" deprecated="6.0">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -304,7 +304,7 @@
         <numvals>1</numvals>
         <desc>Pathname of the log file that summarizes dynamic parameter changes for all dynamic parameter input</desc>
     </control_param>
-    <control_param name="external_transferON_OFF">
+    <control_param name="external_transferON_OFF" version="5.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -325,7 +325,7 @@
             <value name="3">groundwater flow goes to stream segment specified using parameter hru_segment</value>
         </values>
     </control_param>
-    <control_param name="gwr_transferON_OFF">
+    <control_param name="gwr_transferON_OFF" version="5.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -446,7 +446,7 @@
             <variable name="nhruOutON_OFF"/>
         </related_variables>
     </control_param>
-    <control_param name="outputSelectDatesON_OFF" version="5.2" deprecated="6.0">
+    <control_param name="outputSelectDatesON_OFF" version="5.2.0" deprecated="6.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -472,7 +472,7 @@
             <variable name="nhruOut_format"/>
         </related_variables>
     </control_param>
-    <control_param name="selectDatesFileName" version="5.2" deprecated="6.0">
+    <control_param name="selectDatesFileName" version="5.2.0" deprecated="6.0">
         <default>selectDates.in</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -686,7 +686,7 @@
             <value name="2">CSV format</value>
         </values>
     </control_param>
-    <control_param name="stream_temp_shade_flag">
+    <control_param name="stream_temp_shade_flag" version="5.2">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -696,7 +696,7 @@
             <value name="1">Specified constant</value>
         </values>
     </control_param>
-    <control_param name="strmtemp_humidity_flag">
+    <control_param name="strmtemp_humidity_flag" version="5.1.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -893,7 +893,7 @@
         <numvals>1</numvals>
         <desc>String to define the prefix for each nhru summary output file</desc>
     </control_param>
-    <control_param name="nsegmentOutBaseFileName" deprecated="6.0">
+    <control_param name="nsegmentOutBaseFileName" version="5.0" deprecated="6.0">
         <default>nsegment_summary_</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -1169,15 +1169,15 @@
         <desc>Pathname of the time series of pre-processed values for dynamic parameter wrain_intcp </desc>
     </control_param>
     <control_param name="aniOutVar_names" deprecated="6.0">
-        <default>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</default>
+        <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>naniOutVars</numvals>
         <desc>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</desc>
     </control_param>
     <control_param name="basinOutVar_names" version="5.0" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>basinOutVars</numvals>
         <desc>List of variable names for which output is written to basin summary Comma Separated Values (CSV) output file(s). Each variable is written to files in the order specified in basinOutVars with the prefix of each file equal to the value of basinOutBaseFileName. The suffix of the files is based on the value of basinOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
     </control_param>
     <control_param name="data_file">
@@ -1187,51 +1187,51 @@
         <desc>Pathname(s) for measured input Data File(s), typically a single Data File is specified</desc>
     </control_param>
     <control_param name="dispVar_element" deprecated="6.0">
-        <default>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable’s dimension size)</default>
+        <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>ndispGraphs</numvals>
         <desc>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable's dimension size)</desc>
     </control_param>
     <control_param name="dispVar_names" deprecated="6.0">
-        <default>List of variable names for which plots are output to the runtime graph</default>
+        <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>ndispGraphs</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
     <control_param name="dispVar_plot" deprecated="6.0">
-        <default>List of variable names for which plots are output to the runtime graph</default>
+        <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>ndispGraphs</numvals>
         <desc>List of variable names for which plots are output to the runtime graph</desc>
     </control_param>
     <control_param name="mapOutVar_names" deprecated="6.0">
-        <default>List of variable names for which output is written to mapped output files(s); variables must be of type real or double</default>
+        <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nmapOutVars</numvals>
         <desc>List of variable names for which output is written to mapped output files(s); variables must be of type real or double.</desc>
     </control_param>
     <control_param name="nsegmentOutVar_names" version="5.0" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nsegmentOutVars</numvals>
         <desc>List of variable names for which output is written to nsegment summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsegmentOutBaseFileName; variables must be of type real or double; the suffix of the files is based on the value of nsegmentOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv</desc>
     </control_param>
     <control_param name="nsubOutVar_names" version="5.0" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nsubOutVars</numvals>
         <desc>List of variable names for which output is written to nsub summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName. The suffix of the files is based on the value of nsubOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
     </control_param>
     <control_param name="statVar_element" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nstatVars</numvals>
         <desc>List of identification numbers corresponding to variables specified in statVar_names list (1 to variable's dimension size)</desc>
     </control_param>
     <control_param name="statVar_names" deprecated="6.0">
         <default>none</default>
         <type>4</type>
-        <numvals>1</numvals>
+        <numvals>nstatVars</numvals>
         <desc>List of variable names for which output is written to Statistics Variables File</desc>
     </control_param>
     <control_param name="snarea_curve_flag" version="5.1.0">
@@ -1264,7 +1264,7 @@
             <value name="1">On</value>
         </values>
     </control_param>
-    <control_param name="albedo_cbh_flag" version="5.2.0">
+    <control_param name="albedo_cbh_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -1274,13 +1274,13 @@
             <value name="1">Yes</value>
         </values>
     </control_param>
-    <control_param name="albedo_day" version="5.2.0">
+    <control_param name="albedo_day" version="5.2.1">
         <default>albedo.day</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the CBH file of pre-processed snowpack albedo input data for each HRU to specify variable albedo_hru (units: decimal fraction)</desc>
     </control_param>
-    <control_param name="cloud_cover_cbh_flag" version="5.2.0">
+    <control_param name="cloud_cover_cbh_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -1290,13 +1290,13 @@
             <value name="1">Yes</value>
         </values>
     </control_param>
-    <control_param name="cloud_cover_day" version="5.2.0">
+    <control_param name="cloud_cover_day" version="5.2.1">
         <default>cloudcover.day</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the CBH file of pre-processed snowpack albedo input data for each HRU to specify variable albedo_hru (units: decimal fraction)</desc>
     </control_param>
-    <control_param name="humidity_cbh_flag" version="5.2.0">
+    <control_param name="humidity_cbh_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -1306,7 +1306,7 @@
             <value name="1">Yes</value>
         </values>
     </control_param>
-    <control_param name="snow_cloudcover_flag" version="5.2.0">
+    <control_param name="snow_cloudcover_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -1316,7 +1316,7 @@
             <value name="1">Yes</value>
         </values>
     </control_param>
-    <control_param name="windspeed_cbh_flag" version="5.2.0">
+    <control_param name="windspeed_cbh_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>

@@ -2,18 +2,19 @@
 import xarray as xr
 from typing import Optional
 
-from .ParameterSet import ParameterSet
+from .Parameters import Parameters
 
 
 NCF_TO_NHM_TYPES = {'int32': 1, 'float32': 2, 'float64': 3, '|S1': 4}
 
 
-class ParameterNetCDF(ParameterSet):
+class ParameterNetCDF(Parameters):
     """Read parameter database stored in netCDF format"""
 
-    def __init__(self, filename: str,
-                 verbose: Optional[bool] = False,
-                 verify: Optional[bool] = True):
+    def __init__(self,
+                 filename: str,
+                 metadata,
+                 verbose: Optional[bool] = False):
         """Initialize ParamDb object.
 
         :param filename: Path the ParamDb netcdf file
@@ -21,7 +22,7 @@ class ParameterNetCDF(ParameterSet):
         :param verify: Verify parameters against master list
         """
 
-        super(ParameterNetCDF, self).__init__(verbose=verbose, verify=verify)
+        super(ParameterNetCDF, self).__init__(metadata=metadata, verbose=verbose)
         self.__filename = filename
         self.__verbose = verbose
 
@@ -42,28 +43,15 @@ class ParameterNetCDF(ParameterSet):
 
         # Now add the parameters
         for var in xr_df.variables.keys():
-            if self.__verbose:
+            if self.__verbose:   # pragma: no cover
                 print(str(var))
 
             cparam = xr_df[var].T
 
-            if self.master_parameters is not None:
-                self.parameters.add(name=str(var), info=self.master_parameters[var])
-            else:
-                self.parameters.add(name=str(var),
-                                    datatype=NCF_TO_NHM_TYPES[cparam.encoding['dtype']],
-                                    units=cparam.attrs['units'],
-                                    description=cparam.attrs['description'],
-                                    minimum=cparam.attrs['valid_min'],
-                                    maximum=cparam.attrs['valid_max'])
-
-            # Add the dimensions for the parameter
-            if len(cparam.dims) == 0:
-                # Scalar
-                self.parameters.get(str(var)).dimensions.add(name='one', size=1)
-            else:
-                for dim in cparam.dims:
-                    self.parameters.get(str(var)).dimensions.add(name=dim, size=self.dimensions.get(dim).size)
+            # Add the parameter
+            self.add(name=str(var))
 
             # Add the data
-            self.parameters.get(str(var)).data = cparam.values
+            self.get(str(var)).data = cparam.values
+
+        self.adjust_bounded_parameters()

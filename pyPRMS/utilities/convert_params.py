@@ -4,7 +4,7 @@ import argparse
 import os
 
 from pyPRMS import ParamDb
-from pyPRMS import ParamDbRegion
+from pyPRMS.metadata.metadata import MetaData
 from pyPRMS import ParameterFile
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
@@ -13,62 +13,46 @@ __author__ = 'Parker Norton (pnorton@usgs.gov)'
 def main():
     parser = argparse.ArgumentParser(description='Convert parameter files to different formats')
     parser.add_argument('--src', help='Source file or directory')
+    parser.add_argument('--fmt', help='Output format', choices=['paramdb', 'classic', 'netcdf'],
+                        default='paramdb')
     parser.add_argument('--dst', help='Destination file or directory')
-    parser.add_argument('--byregion', help='paramdb in region format', action='store_true')
 
     args = parser.parse_args()
 
-    output_netcdf = False
-    output_classic = False
-    output_paramdb = False
-
-    # Check the destination
-    # print('dst path:', os.path.splitext(args.dst)[0])
-    if os.path.splitext(args.dst)[1] == '.nc':
-        print('- output to netcdf')
-        output_netcdf = True
-    elif os.path.splitext(args.dst)[1] == '.param':
-        print('- output to parameter file')
-        output_classic = True
-    elif os.path.basename(args.dst) == 'paramdb':
-        print('- output to paramdb')
-        output_paramdb = True
-    else:
-        print('Currently only netcdf, paramdb, or parameter file output is supported.')
-        exit()
-
     # Check and read the source
     print('Reading source parameters')
+
+    prms_meta = MetaData(verbose=False).metadata
+
     if os.path.isdir(args.src):
         # If a directory is provided for the source we assume it is a
-        # paramdb format.
-        if args.byregion:
-            params = ParamDbRegion(args.src)
-        else:
-            params = ParamDb(args.src)
+        pdb = ParamDb(args.src, metadata=prms_meta)
     elif os.path.isfile(args.src):
         # A parameter file in either classic format or netcdf format
         if os.path.splitext(args.src)[1] == '.param':
             # Classic parameter file
-            params = ParameterFile(args.src)
+            pdb = ParameterFile(args.src, metadata=prms_meta, verbose=False)
         else:
-            print('Only classic parameter files are currently supported for source files')
+            print('Only parameter databases and classic parameter files are currently supported for source files')
             exit()
     else:
         print('Source argument is neither a file or directory')
         exit()
 
     # Try to write the file out
-    if output_netcdf:
+    if args.fmt == 'netcdf':
         print('Writing parameters to netcdf format')
-        params.write_netcdf(args.dst)
-    elif output_paramdb:
+        pdb.write_netcdf(args.dst)
+    elif args.fmt == 'paramdb':
         print('Writing parameters to paramdb format')
-        params.write_paramdb(args.dst)
-    elif output_classic:
+        pdb.write_paramdb(args.dst)
+    elif args.fmt == 'classic':
         print('Writing parameters to parameter file')
         header = ['Written by pyPRMS.convert_params']
-        params.write_parameter_file(args.dst, header=header)
+        pdb.write_parameter_file(args.dst, header=header)
+    else:
+        print('Currently only netcdf, paramdb, or parameter file output is supported.')
+        exit()
     print('Done.')
 
 

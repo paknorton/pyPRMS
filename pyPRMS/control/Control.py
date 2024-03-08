@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 
 import io
+import numpy as np
 import operator
 import pkgutil
+import re
 import xml.etree.ElementTree as xmlET
 
-import numpy as np
-from collections import OrderedDict
-
-from typing import Dict, List, Optional, OrderedDict as OrderedDictType, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Union   # OrderedDict as OrderedDictType,
 
 from ..prms_helpers import version_info
 from .ControlVariable import ControlVariable
 from ..Exceptions_custom import ControlError
-from ..constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, VAR_DELIM
+from ..constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, MetaDataType, VAR_DELIM, PTYPE_TO_PRMS_TYPE
 
 cond_check = {'=': operator.eq,
               '>': operator.gt,
@@ -27,68 +26,25 @@ class Control(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-18
 
-    def __init__(self, verbose: Optional[bool] = False, version: Optional[Union[str, int]] = 5):
+    def __init__(self, metadata: MetaDataType, verbose: Optional[bool] = False, version: Optional[Union[str, int]] = 5):
         """Create Control object.
         """
 
         # Container to hold dicionary of ControlVariables
-        self.__control_vars = OrderedDict()
-        self.__header = None
+        # self.__control_vars = OrderedDict()
+        self.__control_vars: Dict = {}
+        self.__header: Optional[List[str]] = None
         self.__verbose = verbose
 
-        # First read control.xml from the library
-        # This makes sure any missing variables from the control file
-        # end up with default values
-        xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', 'xml/control.xml').decode('utf-8'))
-        xml_tree = xmlET.parse(xml_fh)
-        xml_root = xml_tree.getroot()
+        # Create an entry for each variable in the control section of
+        # the metadata dictionary
+        # for cvar, cvals in metadata['control'].items():
+        #     self.add(name=cvar, meta=cvals)
+        for cvar in metadata['control'].keys():
+            self.add(name=cvar, meta=metadata['control'])
 
-        for elem in xml_root.findall('control_param'):
-            var_version = version_info(elem.attrib.get('version'))
-            depr_version = version_info(elem.attrib.get('deprecated'))
-            name = elem.attrib.get('name')
-
-            if (var_version.major is not None and var_version.major > version):
-                if self.__verbose:
-                    print(f'{name} rejected by version')
-                continue
-            if (depr_version.major is not None and depr_version.major <= version):
-                if self.__verbose:
-                    print(f'{name} rejected by deprecation version')
-                continue
-
-            datatype = int(elem.find('type').text)
-
-            self.add(name=name, datatype=datatype)
-
-            # TODO: this shouldn't be here
-            if name in ['start_time', 'end_time']:
-                # Hack to handle PRMS approach to dates
-                dt = elem.find('default').text.split('-')
-                if len(dt) < 6:
-                    # pad short date with zeros for hms
-                    dt.extend(['0' for _ in range(6 - len(dt))])
-                self.get(name).default = dt
-            else:
-                # print('{}: {} {}'.format(name, type(elem.find('default').text), elem.find('default').text))
-                self.get(name).default = elem.find('default').text
-
-            self.get(name).description = elem.find('desc').text
-
-            if elem.find('force_default') is not None:
-                self.get(name).force_default = elem.find('force_default').text
-
-            # Possible valid values for variable
-            outvals = {}
-            for cvals in elem.findall('./values'):
-                self.get(name).value_repr = cvals.attrib.get('type')
-
-                for cv in cvals.findall('./value'):
-                    outvals[cv.attrib.get('name')] = []
-
-                    for xx in cv.text.split(','):
-                        outvals[cv.attrib.get('name')].append(xx)
-            self.get(name).valid_values = outvals
+        if verbose:
+            print('Pre-populate control variables done')
 
     def __getitem__(self, item: str) -> ControlVariable:
         """Get ControlVariable object for a variable.
@@ -99,100 +55,15 @@ class Control(object):
         return self.get(item)
 
     @property
-    def control_variables(self) -> OrderedDictType[str, ControlVariable]:
-        """Get control variable objects.
-
-        :returns: control variable objects
-        """
-        return self.__control_vars
-
-    @property
-    def dynamic_parameters(self) -> List[str]:
-        """Get list parameter names for which a dynamic flag set.
-
-        :returns: list of parameter names
-        """
-
-        dyn_params = []
-
-        for dv in self.__control_vars.keys():
-            cvar = self.get(dv)
-
-            if cvar.value_repr == 'parameter' and (isinstance(cvar.values, np.int32) or isinstance(cvar.values, np.int64)):
-                # Dynamic parameter flags should always be integers
-                if cvar.values > 0:
-                    dyn_params.extend(cvar.associated_values)
-                    # dyn_params.append(self.get(dv).associated_values)
-        return dyn_params
-
-    @property
-    def has_dynamic_parameters(self) -> bool:
-        """Indicates if any dynamic parameters have been requested.
-
-        :returns: True if dynamic parameters are required
-        """
-        return len(self.dynamic_parameters) > 0
-
-    @property
-    def header(self) -> Union[List[str], None]:
-        """Get header information defined for a control object.
-
-        This is typically taken from the first two lines of a control file.
-
-        :returns: Header information from control file
-        """
-        return self.__header
-
-    @header.setter
-    def header(self, info: Union[Sequence[str], str]):
-        """Set the header information.
-
-        :param info: list or string of header line(s)
-        """
-
-        if isinstance(info, list):
-            self.__header = info
-        else:
-            self.__header = [info]
-
-    @property
-    def modules(self) -> Dict[str, str]:
-        """Get the modules defined in the control file.
-
-        :returns: dictionary of control variable, module name pairs
-        """
-
-        mod_dict = {}
-
-        for xx in ctl_variable_modules:
-            if self.exists(xx):
-                if xx == 'precip_module':
-                    if self.get(xx).values == 'climate_hru':
-                        mod_dict[xx] = 'precipitation_hru'
-                    else:
-                        mod_dict[xx] = str(self.get(xx).values)
-                elif xx == 'temp_module':
-                    if self.get(xx).values == 'climate_hru':
-                        mod_dict[xx] = 'temperature_hru'
-                    else:
-                        mod_dict[xx] = str(self.get(xx).values)
-                else:
-                    mod_dict[xx] = str(self.get(xx).values)
-
-        # Add the modules that are implicitly included
-        for xx in ctl_implicit_modules:
-            if xx not in mod_dict:
-                mod_dict[xx] = ctl_implicit_modules[xx]
-
-        return mod_dict
-
-    @property
     def additional_modules(self) -> List[str]:
         """Get list of summary modules in PRMS
         """
 
         # TODO: module_requirements should be added to metadata?
-        module_requirements = {'basin_sum': '',
+        # NOTE: 20231109 PAN - we always want basin_sum included since the
+        #                      print_debug could be set to 4 (which uses the basin_sum module)
+        module_requirements = {'basin_sum': 'print_debug < 100',
+                               # 'basin_sum': 'print_debug = 4',
                                'basin_summary': 'basinOutON_OFF > 0',
                                'map_results': 'mapOutON_OFF > 0',
                                'nhru_summary': 'nhruOutON_OFF > 0',
@@ -209,21 +80,97 @@ class Control(object):
 
         return active_modules
 
-    def _check_condition(self, cstr: str) -> bool:
-        """Takes a string of the form '<control_var> <op> <value>' and checks
-        if the condition is True
+    @property
+    def control_variables(self) -> Dict[str, ControlVariable]:
+    # def control_variables(self) -> OrderedDictType[str, ControlVariable]:
+        """Get control variable objects.
+
+        :returns: control variable objects
         """
-        if len(cstr) == 0:
-            return True
+        return self.__control_vars
 
-        var, op, value = cstr.split(' ')
-        value = int(value)
+    @property
+    def dynamic_parameters(self) -> List[str]:
+        """Get list of parameter names for which a dynamic flag set.
 
-        if self.exists(var):
-            return cond_check[op](self.get(var).values, value)
-        return False
+        :returns: list of parameter names
+        """
 
-    def add(self, name: str, datatype: int):
+        dyn_params: List[str] = []
+
+        for dv in self.__control_vars.keys():
+            cvar = self.get(dv)
+
+            if (cvar.meta.get('valid_value_type', '') == 'parameter' and
+                    (isinstance(cvar.values, np.int32) or isinstance(cvar.values, np.int64))):
+                # Dynamic parameter flags should always be integers
+                if cvar.values > 0:
+                    dyn_params.extend(cvar.dyn_param_meaning)
+                    # dyn_params.append(self.get(dv).associated_values)
+        return dyn_params
+
+    @property
+    def has_dynamic_parameters(self) -> bool:
+        """Indicates if any dynamic parameters have been requested.
+
+        :returns: True if dynamic parameters are required
+        """
+        return len(self.dynamic_parameters) > 0
+
+    @property
+    def header(self) -> Optional[Sequence[str]]:
+        """Get header information defined for a control object.
+
+        This is typically taken from the first two lines of a control file.
+
+        :returns: Header information from control file
+        """
+        return self.__header
+
+    @header.setter
+    def header(self, info: Union[Sequence[str], str, None]):
+        """Set the header information.
+
+        :param info: list or string of header line(s)
+        """
+
+        if info is None:
+            self.__header = None
+        elif isinstance(info, list):
+            self.__header = info
+        elif isinstance(info, str):
+            self.__header = [info]
+
+    @property
+    def modules(self) -> Dict[str, str]:
+        """Get the modules defined in the control file.
+
+        :returns: dictionary of control variable, module name pairs
+        """
+
+        mod_dict = {}
+
+        for vv in self.control_variables.values():
+            if vv.meta.get('valid_value_type', '') == 'module':
+                mname = vv.values
+
+                if vv.name == 'precip_module':
+                    if vv.values == 'climate_hru':
+                        mname = 'precipitation_hru'
+                if vv.name == 'temp_module':
+                    if vv.values == 'climate_hru':
+                        mname = 'temperature_hru'
+
+                mod_dict[vv.name] = str(mname)
+
+        # Add the modules that are implicitly included
+        for mtype, mname in ctl_implicit_modules.items():
+            if mtype not in mod_dict:
+                mod_dict[mtype] = mname
+
+        return mod_dict
+
+    def add(self, name: str, meta=None):
         """Add a control variable by name.
 
         :param name: Name of the control variable
@@ -234,7 +181,8 @@ class Control(object):
 
         if self.exists(name):
             raise ControlError("Control variable already exists")
-        self.__control_vars[name] = ControlVariable(name=name, datatype=datatype)
+        self.__control_vars[name] = ControlVariable(name=name, meta=meta)
+        # self.__control_vars[name] = ControlVariable(name=name, datatype=datatype, meta=meta)
 
     def exists(self, name: str) -> bool:
         """Checks if control variable exists.
@@ -266,6 +214,11 @@ class Control(object):
         if self.exists(name):
             del self.__control_vars[name]
 
+    def to_dict(self):
+        """Dictionary of data for each control variable"""
+
+        return {kk: vv.values for (kk, vv) in self.__control_vars.items()}
+
     def write(self, filename: str):
         """Write a control file.
 
@@ -274,8 +227,9 @@ class Control(object):
 
         outfile = open(filename, 'w')
 
-        for hh in self.__header:
-            outfile.write(f'{hh}\n')
+        if self.__header is not None:
+            for hh in self.__header:
+                outfile.write(f'{hh}\n')
 
         order = ['datatype', 'values']
 
@@ -293,25 +247,51 @@ class Control(object):
                 outfile.write(f'{kk}\n')
 
                 for item in order:
-                    if item == 'datatype':
-                        outfile.write(f'{cvar.size}\n')
-                        outfile.write(f'{cvar.datatype}\n')
-                    if item == 'values':
-                        if cvar.size == 1:
-                            # Single-values (e.g. int, float, str)
-                            # print(type(cvar.values))
-                            if isinstance(cvar.values, np.bytes_):
-                                print("BYTES")
-                                outfile.write(f'{cvar.values.decode()}\n')
+                    if cvar.meta['datatype'] == 'datetime':
+                        date_tmp = [int(xx) for xx in re.split(r'[-T:.]+', str(cvar.values))[0:6]]
+
+                        if item == 'datatype':
+                            outfile.write(f'{len(date_tmp)}\n')
+                            outfile.write(f'{PTYPE_TO_PRMS_TYPE[cvar.meta["datatype"]]}\n')
+                        if item == 'values':
+                            for cval in date_tmp:
+                                outfile.write(f'{cval}\n')
+                    else:
+                        if item == 'datatype':
+                            outfile.write(f'{cvar.size}\n')
+                            outfile.write(f'{PTYPE_TO_PRMS_TYPE[cvar.meta["datatype"]]}\n')
+                        if item == 'values':
+                            if cvar.meta['context'] == 'scalar':
+                                # Single-values (e.g. int, float, str)
+                                # print(type(cvar.values))
+                                if isinstance(cvar.values, np.bytes_):
+                                    print("BYTES")
+                                    outfile.write(f'{cvar.values.decode()}\n')
+                                else:
+                                    outfile.write(f'{cvar.values}\n')
                             else:
-                                outfile.write(f'{cvar.values}\n')
-                        else:
-                            # Multiple-values
-                            if isinstance(cvar.values, np.ndarray):
-                                for cval in cvar.values:
-                                    outfile.write(f'{cval}\n')
+                                # Multiple-values
+                                if isinstance(cvar.values, np.ndarray):
+                                    for cval in cvar.values:
+                                        outfile.write(f'{cval}\n')
+                                else:
+                                    outfile.write(f'{cvar.values}\n')
+
 
         outfile.close()
+
+    def _check_condition(self, cstr: str) -> bool:
+        """Takes a string of the form '<control_var> <op> <value>' and checks
+        if the condition is True
+        """
+        # if len(cstr) == 0:
+        #     return True
+
+        var, op, value = cstr.split(' ')
+        value = int(value)
+
+        if self.exists(var):
+            return cond_check[op](self.get(var).values, value)
 
     def _read(self):
         """Abstract function for reading.

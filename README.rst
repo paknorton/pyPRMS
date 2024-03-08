@@ -21,6 +21,5 @@ To update from the development branch type::
     pip install git+https://github.com/paknorton/pyPRMS.git@development --upgrade
 
 To uninstall pyPRMS type::
+
     pip uninstall pyPRMS
-
-

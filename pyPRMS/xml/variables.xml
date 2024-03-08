@@ -103,6 +103,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="basin_cfs_tot">
         <type>D</type>
@@ -116,6 +119,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="basin_cfs_yr">
         <type>D</type>
@@ -129,6 +135,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="basin_gwflow_mo">
         <type>D</type>
@@ -393,7 +402,7 @@
     <variable name="basin_runoff_ratio">
         <type>D</type>
         <units>decimal fraction</units>
-        <desc>Basin area-weighted average discharge/precipitation</desc>
+        <desc>Basin area-weighted average discharge/precipitation ratio</desc>
         <modules>
             <module>basin_sum</module>
         </modules>
@@ -402,11 +411,14 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="basin_runoff_ratio_mo">
         <type>D</type>
         <units>decimal fraction</units>
-        <desc>Monthly area-weighted average discharge/precipitation</desc>
+        <desc>Monthly area-weighted average discharge/precipitation ratio</desc>
         <modules>
             <module>basin_sum</module>
         </modules>
@@ -415,6 +427,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="basin_snowmelt_mo">
         <type>D</type>
@@ -545,6 +560,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="basin_stflow_tot">
         <type>D</type>
@@ -558,6 +576,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="basin_stflow_yr">
         <type>D</type>
@@ -571,6 +592,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="basin_storage">
         <type>D</type>
@@ -623,6 +647,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug = 1</control>
+        </requires>
     </variable>
     <variable name="obs_runoff_mo">
         <type>D</type>
@@ -636,6 +663,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="obs_runoff_tot">
         <type>D</type>
@@ -649,6 +679,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="obs_runoff_yr">
         <type>D</type>
@@ -662,6 +695,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="obsq_inches">
         <type>D</type>
@@ -675,6 +711,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="obsq_inches_mo">
         <type>D</type>
@@ -688,6 +727,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="obsq_inches_tot">
         <type>D</type>
@@ -701,6 +743,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="obsq_inches_yr">
         <type>D</type>
@@ -714,6 +759,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="watbal_sum">
         <type>D</type>
@@ -798,7 +846,7 @@
         <units>inches</units>
         <desc>Basin volume-weighted average storage for all lakes using broad-crested weir or gate opening routing</desc>
         <modules>
-            <module>climateflow</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -823,19 +871,6 @@
         <type>F</type>
         <units>inches</units>
         <desc>Storage for recharge zone (upper portion) of the capillary reservoir that is available for both evaporation and transpiration</desc>
-        <modules>
-            <module>climateflow</module>
-        </modules>
-        <dimensions>
-            <dimension name="nhru">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="soil_rechr_max">
-        <type>F</type>
-        <units>inches</units>
-        <desc>Maximum storage for soil recharge zone (upper portion of capillary reservoir where losses occur as both evaporation and transpiration)</desc>
         <modules>
             <module>climateflow</module>
         </modules>
@@ -911,6 +946,19 @@
             </dimension>
         </dimensions>
     </variable>
+    <variable name="tmax">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Maximum air temperature at each measurement station</desc>
+        <dimensions>
+            <dimension name="ntemp">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <dimension>ntemp > 0</dimension>
+        </requires>
+    </variable>
     <variable name="tmaxc">
         <type>F</type>
         <units>degrees Celsius</units>
@@ -937,6 +985,33 @@
             </dimension>
         </dimensions>
     </variable>
+    <variable name="tmax_rain_sta">
+        <type>F</type>
+        <units>degrees Fahrenheit</units>
+        <desc>Maximum air temperature distributed to the precipitation stations</desc>
+        <modules>
+            <module>ide_dist</module>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="tmin">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Minimum air temperature at each measurement station</desc>
+        <dimensions>
+            <dimension name="ntemp">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <dimension>ntemp > 0</dimension>
+        </requires>
+    </variable>
     <variable name="tminc">
         <type>F</type>
         <units>degrees Celsius</units>
@@ -959,6 +1034,20 @@
         </modules>
         <dimensions>
             <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="tmin_rain_sta">
+        <type>F</type>
+        <units>degrees Fahrenheit</units>
+        <desc>Minimum air temperature distributed to the precipitation stations</desc>
+        <modules>
+            <module>ide_dist</module>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
                 <position>1</position>
             </dimension>
         </dimensions>
@@ -1033,7 +1122,7 @@
         <units>acre-feet</units>
         <desc>Basin area-weighted average of lake-bed seepage to GWRs</desc>
         <modules>
-            <module>gwflow</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -1046,13 +1135,16 @@
         <units>feet</units>
         <desc>Surface elevation of each lake</desc>
         <modules>
-            <module>gwflow</module>
+            <module>muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nratetbl > 0</dimension>
+        </requires>
     </variable>
     <variable name="gw_in_soil">
         <type>D</type>
@@ -1085,10 +1177,10 @@
         <units>acre-feet</units>
         <desc>Groundwater discharge to any associated lake for each GWR</desc>
         <modules>
-            <module>gwflow</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
-            <dimension name="nlake">
+            <dimension name="ngw">
                 <position>1</position>
             </dimension>
         </dimensions>
@@ -1105,6 +1197,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascadegw_flag = 1</control>
+            <dimension>ncascdgw > 0</dimension>
+        </requires>
     </variable>
     <variable name="gwres_flow">
         <type>F</type>
@@ -1183,6 +1279,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascadegw_flag = 1</control>
+            <dimension>ncascdgw > 0</dimension>
+        </requires>
     </variable>
     <variable name="hru_lateral_flow">
         <type>D</type>
@@ -1228,7 +1328,7 @@
         <units>acre-feet</units>
         <desc>Lake-bed seepage from each lake to associated GWRs</desc>
         <modules>
-            <module>gwflow</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1241,7 +1341,7 @@
         <units>inches</units>
         <desc>Net lake-bed seepage to associated GWRs</desc>
         <modules>
-            <module>gwflow</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="ngw">
@@ -1254,7 +1354,7 @@
         <units>acre-feet</units>
         <desc>Storage in each lake using broad-crested weir or gate opening routing</desc>
         <modules>
-            <module>gwflow</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1262,7 +1362,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="basin_hru_apply">
+    <variable name="basin_hru_apply" version="5.0">
         <type>D</type>
         <units>inches</units>
         <desc>Basin area-weighted average canopy_gain</desc>
@@ -1274,6 +1374,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
     <variable name="basin_intcp_evap">
         <type>D</type>
@@ -1301,7 +1404,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="basin_net_apply">
+    <variable name="basin_net_apply" version="5.0">
         <type>D</type>
         <units>inches</units>
         <desc>Basin area-weighted average net_apply</desc>
@@ -1313,6 +1416,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
     <variable name="basin_net_ppt">
         <type>D</type>
@@ -1444,7 +1550,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="net_apply">
+    <variable name="net_apply" version="5.0">
         <type>F</type>
         <units>inches</units>
         <desc>canopy_gain minus interception</desc>
@@ -1456,6 +1562,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
     <variable name="net_ppt">
         <type>F</type>
@@ -1501,7 +1610,7 @@
         <units>inches</units>
         <desc>Basin volume-weighted average streamflow from each lake with a second outlet</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -1514,7 +1623,7 @@
         <units>cfs</units>
         <desc>Inflow from the previous time step to each lake using Puls or linear storage routing</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1527,7 +1636,7 @@
         <units>cfs</units>
         <desc>Total seepage from each lake using broad-crested weir or gate opening routing</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1547,13 +1656,16 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nlake > 0</dimension>
+        </requires>
     </variable>
     <variable name="lake_gwflow">
         <type>D</type>
         <units>cfs</units>
         <desc>Total groundflow into each lake</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1566,7 +1678,7 @@
         <units>cfs</units>
         <desc>Total inflow to each lake</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1579,7 +1691,7 @@
         <units>cfs</units>
         <desc>Total interflow into each lake</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1592,7 +1704,7 @@
         <units>acre-feet</units>
         <desc>Inflow to each lake using broad-crested weir or gate opening routing</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1605,7 +1717,7 @@
         <units>cfs</units>
         <desc>Lateral inflow to each lake</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1618,7 +1730,7 @@
         <units>cfs</units>
         <desc>Streamflow leaving each lake (includes any second outlet flow)</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1631,7 +1743,7 @@
         <units>cms</units>
         <desc>Streamflow leaving each lake (includes any second outlet flow)</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1644,7 +1756,7 @@
         <units>cfs</units>
         <desc>Evaporation and seepage from each lake</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1657,7 +1769,7 @@
         <units>cfs</units>
         <desc>Streamflow from second outlet for each lake with a second outlet</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1670,7 +1782,7 @@
         <units>acre-inches</units>
         <desc>Outflow from each lake using broad-crested weir or gate opening routing</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1683,7 +1795,7 @@
         <units>acre-inches</units>
         <desc>Outflow from each lake using broad-crested weir or gate opening routing for the time step</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1709,7 +1821,7 @@
         <units>cfs</units>
         <desc>Total seepage into each lake using broad-crested weir or gate opening routing</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1721,21 +1833,21 @@
         <type>D</type>
         <units>cfs</units>
         <desc>Total surface runoff into each lake</desc>
-        <modules>
-            <module>muskingum_lake</module>
-        </modules>
         <dimensions>
             <dimension name="nlake">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+        </requires>
     </variable>
     <variable name="lake_sto">
         <type>D</type>
         <units>cfs-days</units>
         <desc>Storage in each lake using Puls or linear storage routing</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1748,7 +1860,7 @@
         <units>cfs</units>
         <desc>Total streamflow into each lake</desc>
         <modules>
-            <module>muskingum_lake</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlake">
@@ -1761,13 +1873,16 @@
         <units>inches</units>
         <desc>Height of the gate opening at each dam with a gate</desc>
         <modules>
-            <module>obs</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nratetbl">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nratetbl > 0</dimension>
+        </requires>
     </variable>
     <variable name="humidity">
         <type>F</type>
@@ -1781,19 +1896,25 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nhumid > 0</dimension>
+        </requires>
     </variable>
     <variable name="lake_elev">
         <type>F</type>
         <units>feet</units>
         <desc>Elevation of each simulated lake surface</desc>
         <modules>
-            <module>obs</module>
+            <module version="5.0">muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nlakeelev">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nlakeelev > 0</dimension>
+        </requires>
     </variable>
     <variable name="pan_evap">
         <type>F</type>
@@ -1807,6 +1928,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nevap > 0</dimension>
+        </requires>
     </variable>
     <variable name="precip">
         <type>F</type>
@@ -1820,6 +1944,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nrain > 0</dimension>
+        </requires>
     </variable>
     <variable name="rain_day">
         <type>I</type>
@@ -1846,6 +1973,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nobs > 0</dimension>
+        </requires>
     </variable>
     <variable name="snowdepth">
         <type>F</type>
@@ -1872,6 +2002,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nsol > 0</dimension>
+        </requires>
     </variable>
     <variable name="streamflow_cfs">
         <type>D</type>
@@ -1885,6 +2018,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nobs > 0</dimension>
+        </requires>
     </variable>
     <variable name="streamflow_cms">
         <type>D</type>
@@ -1898,26 +2034,34 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nobs > 0</dimension>
+        </requires>
     </variable>
     <variable name="wind_speed">
         <type>F</type>
         <units>mph</units>
         <desc>Wind speed at each measurement station</desc>
         <modules>
-            <module>obs</module>
+            <module>potet_pm</module>
         </modules>
         <dimensions>
             <dimension name="nwind">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nwind > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_humidity">
         <type>D</type>
         <units>percentage</units>
         <desc>Basin area-weighted average humidity</desc>
         <modules>
-            <module>potet</module>
+            <module>potet_pm</module>
+            <module version="5.0">potet_pm_sta</module>
+            <module version="5.0">potet_pt</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -1943,7 +2087,8 @@
         <units>percentage</units>
         <desc>Relative humidity of each HRU</desc>
         <modules>
-            <module>potet</module>
+            <module>potet_pm</module>
+            <module>potet_pt</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -1966,10 +2111,11 @@
     </variable>
     <variable name="basin_windspeed">
         <type>D</type>
-        <units>meters/second</units>
+        <units>meters per second</units>
         <desc>Basin area-weighted average wind speed</desc>
         <modules>
             <module>potet_pm</module>
+            <module version="5.0">potet_pm_sta</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -1983,6 +2129,8 @@
         <desc>Net long-wave radiation for each HRU</desc>
         <modules>
             <module>potet_pm</module>
+            <module version="5.0">potet_pm_sta</module>
+            <module version="5.0">potet_pt</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -1996,6 +2144,8 @@
         <desc>Air temperature at dew point for each HRU</desc>
         <modules>
             <module>potet_pm</module>
+            <module version="5.0">potet_pm_sta</module>
+            <module version="5.0">potet_pt</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2009,6 +2159,8 @@
         <desc>Actual vapor pressure for each HRU</desc>
         <modules>
             <module>potet_pm</module>
+            <module version="5.0">potet_pm_sta</module>
+            <module version="5.0">potet_pt</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2022,6 +2174,8 @@
         <desc>Saturation vapor pressure for each HRU</desc>
         <modules>
             <module>potet_pm</module>
+            <module version="5.0">potet_pm_sta</module>
+            <module version="5.0">potet_pt</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2035,6 +2189,8 @@
         <desc>Slope of saturation vapor pressure versus air temperature curve for each HRU</desc>
         <modules>
             <module>potet_pm</module>
+            <module version="5.0">potet_pm_sta</module>
+            <module version="5.0">potet_pt</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2197,6 +2353,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>csvON_OFF = 1</control>
+        </requires>
     </variable>
     <variable name="basin_total_storage">
         <type>D</type>
@@ -2210,13 +2369,18 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>csvON_OFF = 1</control>
+        </requires>
     </variable>
     <variable name="basin_segment_storage">
         <type>D</type>
         <units>inches</units>
         <desc>Basin area-weighted average storage in the stream network</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2229,7 +2393,10 @@
         <units>cfs</units>
         <desc>Total flow out of headwater segments (segment_type=1)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2242,7 +2409,10 @@
         <units>cfs</units>
         <desc>Total flow out into model domain from Great Lakes (segment_type=10)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2255,7 +2425,10 @@
         <units>cfs</units>
         <desc>Total flow into model domain from Mexico or Canada (segment_type=4)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2268,7 +2441,10 @@
         <units>cfs</units>
         <desc>Total flow into region (segment_type=6)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2281,7 +2457,10 @@
         <units>cfs</units>
         <desc>Total flow out of model domain to Mexico or Canada (segment_type=5)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2294,7 +2473,10 @@
         <units>cfs</units>
         <desc>Total flow out of region (segment_type=7)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2307,7 +2489,10 @@
         <units>cfs</units>
         <desc>Total flow out from replacement flow (segment_type=3)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2320,7 +2505,10 @@
         <units>cfs</units>
         <desc>Total flow to terminus segments (segment_type=9)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2333,7 +2521,10 @@
         <units>cfs</units>
         <desc>Total flow to Great Lakes (segment_type=11)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2346,7 +2537,10 @@
         <units>cfs</units>
         <desc>Total flow to lakes (segment_type=2)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2359,7 +2553,10 @@
         <units>cfs</units>
         <desc>Total flow to oceans (segment_type=8)</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -2385,7 +2582,10 @@
         <units>inches</units>
         <desc>Area-weighted average groundwater discharge for each segment from HRUs contributing flow to the segment and upstream HRUs</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2398,7 +2598,10 @@
         <units>inches</units>
         <desc>Area-weighted average surface runoff for each segment from HRUs contributing flow to the segment and upstream HRUs</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2411,7 +2614,10 @@
         <units>inches</units>
         <desc>Area-weighted average interflow for each segment from HRUs contributing flow to the segment and upstream HRUs</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2431,13 +2637,19 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nsegment > 0</dimension>
+        </requires>
     </variable>
     <variable name="seginc_potet">
         <type>D</type>
         <units>inches</units>
         <desc>Area-weighted average potential ET for each segment from HRUs contributing flow to the segment</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2457,6 +2669,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nsegment > 0</dimension>
+        </requires>
     </variable>
     <variable name="seginc_ssflow">
         <type>D</type>
@@ -2470,6 +2685,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nsegment > 0</dimension>
+        </requires>
     </variable>
     <variable name="seginc_swrad">
         <type>D</type>
@@ -2483,13 +2701,18 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nsegment > 0</dimension>
+        </requires>
     </variable>
     <variable name="segment_delta_flow">
         <type>D</type>
         <units>cfs</units>
         <desc>Cummulative flow in minus flow out for each stream segment</desc>
         <modules>
-            <module>routing</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -2539,7 +2762,7 @@
     <variable name="basin_pweqv">
         <type>D</type>
         <units>inches</units>
-        <desc>Basin area-weighted average snowpack water equivalent</desc>
+        <desc>Basin area-weighted average snowpack water equivalent (not including glacier)</desc>
         <modules>
             <module>snowcomp</module>
         </modules>
@@ -2578,7 +2801,7 @@
     <variable name="basin_snowevap">
         <type>D</type>
         <units>inches</units>
-        <desc>Basin area-weighted average evaporation and sublimation from snowpack</desc>
+        <desc>Basin area-weighted average evaporation and sublimation from snowpack (not including glacier)</desc>
         <modules>
             <module>snowcomp</module>
         </modules>
@@ -2591,7 +2814,7 @@
     <variable name="basin_snowmelt">
         <type>D</type>
         <units>inches</units>
-        <desc>Basin area-weighted average snowmelt</desc>
+        <desc>Basin area-weighted average snowmelt (not including glacier)</desc>
         <modules>
             <module>snowcomp</module>
         </modules>
@@ -2942,7 +3165,7 @@
     <variable name="snowmelt">
         <type>F</type>
         <units>inches</units>
-        <desc>Snowmelt from snowpack on each HRU</desc>
+        <desc>Snowmelt from snowpack on each HRU (not including glacier)</desc>
         <modules>
             <module>snowcomp</module>
         </modules>
@@ -3016,6 +3239,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_capwaterin">
         <type>D</type>
@@ -3030,7 +3257,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="basin_cpr_stor_frac">
+    <variable name="basin_cpr_stor_frac" version="4" deprecated="5.0">
         <type>D</type>
         <units>decimal fraction</units>
         <desc>Basin area-weighted average fraction of capillary reservoir storage of the maximum storage</desc>
@@ -3055,6 +3282,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_dndunnianflow">
         <type>D</type>
@@ -3068,6 +3299,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_dninterflow">
         <type>D</type>
@@ -3081,6 +3316,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_dunnian">
         <type>D</type>
@@ -3185,6 +3424,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nlake > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_lakeinsz">
         <type>D</type>
@@ -3198,6 +3440,11 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+            <dimension>nlake > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_lakeprecip">
         <type>D</type>
@@ -3211,6 +3458,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <dimension>nlake > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_perv_et">
         <type>D</type>
@@ -3511,7 +3761,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="cap_upflow_max">
+    <variable name="cap_upflow_max" version="4" deprecated="5.0">
         <type>F</type>
         <units>inches</units>
         <desc>Maximum infiltration and any cascading interflow and Dunnian surface runoff that can be added to capillary reservoir storage for each HRU</desc>
@@ -3537,7 +3787,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="cascade_dunnianflow">
+    <variable name="cascade_dunnianflow" version="4" deprecated="5.0">
         <type>F</type>
         <units>inches</units>
         <desc>Cascading Dunnian flow for each HRU</desc>
@@ -3550,7 +3800,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="cascade_interflow">
+    <variable name="cascade_interflow" version="4" deprecated="5.0">
         <type>F</type>
         <units>inches</units>
         <desc>Cascading interflow for each HRU</desc>
@@ -3563,7 +3813,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="cpr_stor_frac">
+    <variable name="cpr_stor_frac" version="4" deprecated="5.0">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Fraction of capillary reservoir storage of the maximum storage for each HRU</desc>
@@ -3628,7 +3878,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="gvr_stor_frac">
+    <variable name="gvr_stor_frac" version="4" deprecated="5.0">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Fraction of gravity reservoir storage of the maximum storage for each HRU</desc>
@@ -3679,8 +3929,12 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
-    <variable name="interflow_max">
+    <variable name="interflow_max" version="4" deprecated="5.0">
         <type>F</type>
         <units>inches</units>
         <desc>Maximum interflow for each HRU</desc>
@@ -3696,7 +3950,7 @@
     <variable name="lakein_sz">
         <type>D</type>
         <units>inches</units>
-        <desc>Cascading interflow and Dunnian surface runoff to lake HRUs for each upslope HRU</desc>
+        <desc>Cascading interflow and Dunnian surface runoff to lake HRUs from each upslope HRU</desc>
         <modules>
             <module>soilzone</module>
         </modules>
@@ -3705,6 +3959,11 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+            <dimension>nlake > 0</dimension>
+        </requires>
     </variable>
     <variable name="perv_actet">
         <type>F</type>
@@ -3719,7 +3978,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="perv_avail_et">
+    <variable name="perv_avail_et" version="4.0" depcrated="5.0">
         <type>F</type>
         <units>inches</units>
         <desc>Unsatisfied ET available to the capillary reservoir of each HRU</desc>
@@ -3732,7 +3991,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="pfr_stor_frac">
+    <variable name="pfr_stor_frac" version="4" deprecated="5.0">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Fraction of preferential flow reservoir storage of the maximum storage for each HRU</desc>
@@ -3852,7 +4111,7 @@
     <variable name="recharge">
         <type>F</type>
         <units>inches</units>
-        <desc>Recharge to the associated GWR as sum of soil_to_gw and ssr_to_gw for each HRU</desc>
+        <desc>Recharge to the associated GWR as the sum of soil_to_gw, ssr_to_gw, and dprst_seep_hru for each HRU</desc>
         <modules>
             <module>soilzone</module>
         </modules>
@@ -3953,7 +4212,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="soil_moist_frac">
+    <variable name="soil_moist_frac" version="4" deprecated="5.0">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Fraction of soil zone storage of the maximum storage for each HRU</desc>
@@ -3979,7 +4238,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="soil_rechr_ratio">
+    <variable name="soil_rechr_ratio" version="4" deprecated="5.0">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Water content ratio in the recharge zone of the capillary reservoir for each HRU</desc>
@@ -4018,7 +4277,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="soil_zone_max">
+    <variable name="soil_zone_max" version="4.0" deprecated="5.0">
         <type>F</type>
         <units>inches</units>
         <desc>Maximum storage of all soil zone reservoirs</desc>
@@ -4121,6 +4380,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="upslope_interflow">
         <type>D</type>
@@ -4134,6 +4397,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_horad">
         <type>D</type>
@@ -4153,6 +4420,8 @@
         <units>Langleys</units>
         <desc>Basin area-weighted average solar radiation on a horizontal surface</desc>
         <modules>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
             <module>solrad</module>
         </modules>
         <dimensions>
@@ -4192,7 +4461,9 @@
         <units>Langleys</units>
         <desc>Measured or computed solar radiation on a horizontal surface</desc>
         <modules>
-            <module>solrad</module>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+            <module version="6.0">solrad</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -4205,7 +4476,9 @@
         <units>Langleys</units>
         <desc>Solar radiation on a horizontal surface for each HRU</desc>
         <modules>
-            <module>solrad</module>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+            <module version="6.0">solrad</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -4226,7 +4499,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="soltab_horad_potsw">
+    <variable name="soltab_horad_potsw" version="4" deprecated="5.2">
         <type>D</type>
         <units>Langleys</units>
         <desc>Potential solar radiation on a horizontal plane for each Julian Day for each HRU</desc>
@@ -4242,7 +4515,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="soltab_potsw">
+    <variable name="soltab_potsw" version="4" deprecated="5.2">
         <type>D</type>
         <units>Langleys</units>
         <desc>Potential solar radiation for each Julian Day for each HRU</desc>
@@ -4283,6 +4556,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="basin_dprst_seep">
         <type>D</type>
@@ -4296,6 +4572,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="basin_dprst_sroff">
         <type>D</type>
@@ -4309,6 +4588,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="basin_dprst_volcl">
         <type>D</type>
@@ -4322,6 +4604,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="basin_dprst_volop">
         <type>D</type>
@@ -4335,6 +4620,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="basin_hortonian">
         <type>D</type>
@@ -4361,6 +4649,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_imperv_evap">
         <type>D</type>
@@ -4426,6 +4718,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_sroff_upslope">
         <type>D</type>
@@ -4439,6 +4735,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="basin_sroffi">
         <type>D</type>
@@ -4491,6 +4791,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_area_clos_max">
         <type>F</type>
@@ -4504,6 +4807,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_area_open">
         <type>F</type>
@@ -4517,6 +4823,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_area_open_max">
         <type>F</type>
@@ -4530,6 +4839,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_evap_hru">
         <type>F</type>
@@ -4543,6 +4855,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_insroff_hru">
         <type>F</type>
@@ -4556,6 +4871,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_seep_hru">
         <type>D</type>
@@ -4569,6 +4887,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_sroff_hru">
         <type>D</type>
@@ -4582,6 +4903,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_stor_hru">
         <type>D</type>
@@ -4595,6 +4919,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_vol_clos">
         <type>D</type>
@@ -4608,6 +4935,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_vol_clos_frac">
         <type>F</type>
@@ -4621,6 +4951,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_vol_frac">
         <type>F</type>
@@ -4634,6 +4967,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_vol_open">
         <type>D</type>
@@ -4647,6 +4983,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="dprst_vol_open_frac">
         <type>F</type>
@@ -4660,6 +4999,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
     <variable name="hortonian_flow">
         <type>F</type>
@@ -4686,6 +5028,11 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+            <dimension>nlake > 0</dimension>
+        </requires>
     </variable>
     <variable name="hru_hortn_cascflow">
         <type>D</type>
@@ -4699,6 +5046,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="hru_impervevap">
         <type>F</type>
@@ -4816,6 +5167,10 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="upslope_hortonian">
         <type>D</type>
@@ -4829,11 +5184,15 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
-    <variable name="dlit">
+    <variable name="seg_area" version="5.2.1.1">
         <type>F</type>
-        <units>hours</units>
-        <desc>Hours of daylight</desc>
+        <units>square meters</units>
+        <desc>Cross sectional area of flow in each segment</desc>
         <modules>
             <module>stream_temp</module>
         </modules>
@@ -4842,8 +5201,11 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="seg_ccov">
+    <variable name="seg_ccov" version="5.1.0">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Area-weighted average cloud cover fraction for each segment from HRUs contributing flow to the segment</desc>
@@ -4855,8 +5217,43 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="seg_humid">
+    <variable name="seg_daylight" version="5.1.0">
+        <type>F</type>
+        <units>hours</units>
+        <desc>Hours of daylight</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="seg_depth" version="5.2">
+        <type>F</type>
+        <units>meters</units>
+        <desc>Depth of flow in each segment</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="seg_humid" version="5.1.0">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Area-weighted average relative humidity for each segment from HRUs contributing flow to the segment</desc>
@@ -4868,21 +5265,11 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="seg_maxtemp">
-        <type>F</type>
-        <units>degrees Celsius</units>
-        <desc>Area-weighted average maximum air temperature for each segment from HRUs contributing flow to the segment</desc>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="seg_melt">
+    <variable name="seg_melt" version="5.1.0">
         <type>F</type>
         <units>inches</units>
         <desc>Area-weighted average snowmelt for each segment from HRUs contributing flow to the segment</desc>
@@ -4894,8 +5281,11 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="seg_potet">
+    <variable name="seg_potet" version="5.1.0">
         <type>D</type>
         <units>inches</units>
         <desc>Hru area-weighted average potential ET for each segment</desc>
@@ -4907,6 +5297,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
     <variable name="seg_rain">
         <type>F</type>
@@ -4921,7 +5314,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="seg_shade">
+    <variable name="seg_shade" version="5.1.0">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Area-weighted average shade fraction for each segment</desc>
@@ -4933,6 +5326,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
     <variable name="seg_tave_air" version="5.1.0">
         <type>F</type>
@@ -4946,6 +5342,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
     <variable name="seg_tave_lat" version="5.1.0">
         <type>F</type>
@@ -4959,6 +5358,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
     <variable name="seg_tave_gw" version="5.1.0">
         <type>F</type>
@@ -4972,6 +5374,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
     <variable name="seg_tave_sroff" version="5.1.0">
         <type>F</type>
@@ -4998,6 +5403,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
     <variable name="seg_tave_water" version="5.1.0">
         <type>F</type>
@@ -5011,6 +5419,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
     <variable name="seg_tave_upstream" version="5.1.0">
         <type>F</type>
@@ -5024,8 +5435,27 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="seg_width">
+    <variable name="seg_velocity" version="5.2.1.1">
+        <type>F</type>
+        <units>meters per second</units>
+        <desc>Mean velocity of flow in each segment</desc>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="seg_width" version="5.2.1.1">
         <type>F</type>
         <units>meters</units>
         <desc>Width of each segment</desc>
@@ -5037,84 +5467,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
-    </variable>
-    <variable name="t_ground">
-        <type>F</type>
-        <units>degrees C</units>
-        <desc>ground temperature</desc>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="t_gw">
-        <type>F</type>
-        <units>degrees C</units>
-        <desc>groundwater temperature</desc>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="t_roff">
-        <type>F</type>
-        <units>degrees Celsius</units>
-        <desc>Area-weighted average air temperature for each segment from HRUs contributing flow to the segment</desc>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="t_ss">
-        <type>F</type>
-        <units>degrees C</units>
-        <desc>subsurface temperature</desc>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="temp_avg">
-        <type>F</type>
-        <units>degrees Celsius</units>
-        <desc>Average stream temperature based on all inflows and previous temperature for each segment</desc>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="upstrm_temp">
-        <type>F</type>
-        <units>degrees Celsius</units>
-        <desc>Temperature of streamflow entering each segment</desc>
-        <modules>
-            <module>stream_temp</module>
-        </modules>
-        <dimensions>
-            <dimension name="nsegment">
-                <position>1</position>
-            </dimension>
-        </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
     </variable>
     <variable name="basin_cfs">
         <type>D</type>
@@ -5206,13 +5561,19 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug > -2</control>
+        </requires>
     </variable>
     <variable name="flow_out">
         <type>D</type>
         <units>cfs</units>
         <desc>Total flow out of model domain</desc>
         <modules>
-            <module>streamflow</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
@@ -5225,7 +5586,10 @@
         <units>cfs</units>
         <desc>Total flow entering a segment</desc>
         <modules>
-            <module>streamflow</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -5238,7 +5602,10 @@
         <units>cfs</units>
         <desc>Lateral inflow entering a segment</desc>
         <modules>
-            <module>streamflow</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -5251,7 +5618,10 @@
         <units>cfs</units>
         <desc>Streamflow leaving a segment</desc>
         <modules>
-            <module>streamflow</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -5264,7 +5634,10 @@
         <units>cfs</units>
         <desc>Sum of inflow from upstream segments</desc>
         <modules>
-            <module>streamflow</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
@@ -5284,6 +5657,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="sub_cms">
         <type>D</type>
@@ -5297,6 +5673,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="sub_gwflow">
         <type>D</type>
@@ -5310,6 +5689,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="sub_inq">
         <type>D</type>
@@ -5323,6 +5705,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="sub_interflow">
         <type>D</type>
@@ -5336,6 +5721,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="sub_sroff">
         <type>D</type>
@@ -5349,6 +5737,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_actet">
         <type>D</type>
@@ -5362,6 +5753,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_capstor_frac">
         <type>D</type>
@@ -5375,6 +5769,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_deltastor">
         <type>D</type>
@@ -5388,6 +5785,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_gwflow">
         <type>D</type>
@@ -5401,6 +5801,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_interflow">
         <type>D</type>
@@ -5414,6 +5817,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_pkweqv">
         <type>D</type>
@@ -5427,6 +5833,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_potet">
         <type>D</type>
@@ -5440,6 +5849,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_precip">
         <type>D</type>
@@ -5453,6 +5865,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_rain">
         <type>D</type>
@@ -5466,6 +5881,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_recharge">
         <type>D</type>
@@ -5479,6 +5897,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_snow">
         <type>D</type>
@@ -5492,6 +5913,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_snowcov">
         <type>D</type>
@@ -5505,6 +5929,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_snowmelt">
         <type>D</type>
@@ -5518,6 +5945,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_sroff">
         <type>D</type>
@@ -5531,11 +5961,14 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_stor">
         <type>D</type>
         <units>inches</units>
-        <desc>Area-weighted average total water content in storage reservoirs associated HRUs of each subbasin</desc>
+        <desc>Area-weighted average total water content in storage reservoirs for associated HRUs of each subbasin</desc>
         <modules>
             <module>subbasin</module>
         </modules>
@@ -5544,6 +5977,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_swrad">
         <type>D</type>
@@ -5557,6 +5993,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_szstor_frac">
         <type>D</type>
@@ -5570,6 +6009,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_tavgc">
         <type>D</type>
@@ -5583,6 +6025,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_tmaxc">
         <type>D</type>
@@ -5596,6 +6041,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_tminc">
         <type>D</type>
@@ -5609,6 +6057,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="subinc_wb">
         <type>D</type>
@@ -5622,6 +6073,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>subbasin_flag = 1</control>
+        </requires>
     </variable>
     <variable name="basin_lapse_max">
         <type>F</type>
@@ -5688,58 +6142,6 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="tmax_hru">
-        <type>F</type>
-        <units>degC</units>
-        <desc>Maximum air temperature distributed to each HRU</desc>
-        <modules>
-            <module>temperature</module>
-        </modules>
-        <dimensions>
-            <dimension name="nhru">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="tmin_hru">
-        <type>F</type>
-        <units>degC</units>
-        <desc>Minimum air temperature distributed to each HRU</desc>
-        <modules>
-            <module>temperature</module>
-        </modules>
-        <dimensions>
-            <dimension name="nhru">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="tmax_sta">
-        <type>F</type>
-        <units>degC</units>
-        <desc>Maximum air temperature at each measurement station</desc>
-        <modules>
-            <module>temperature</module>
-        </modules>
-        <dimensions>
-            <dimension name="ntemp">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
-    <variable name="tmin_sta">
-        <type>F</type>
-        <units>degC</units>
-        <desc>Minimum air temperature at each measurement station</desc>
-        <modules>
-            <module>temperature</module>
-        </modules>
-        <dimensions>
-            <dimension name="ntemp">
-                <position>1</position>
-            </dimension>
-        </dimensions>
-    </variable>
     <variable name="basin_transp_on">
         <type>I</type>
         <units>none</units>
@@ -5778,6 +6180,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug = 1</control>
+        </requires>
     </variable>
     <variable name="basin_dprst_wb">
         <type>D</type>
@@ -5791,6 +6196,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug = 1</control>
+        </requires>
     </variable>
     <variable name="basin_gravity_wb">
         <type>D</type>
@@ -5804,6 +6212,9 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug = 1</control>
+        </requires>
     </variable>
     <variable name="basin_soilzone_wb">
         <type>D</type>
@@ -5817,536 +6228,1690 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>print_debug = 1</control>
+        </requires>
     </variable>
-    <variable name="canopy_gain">
+    <variable name="canopy_gain" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to the canopy reservoir for each HRU for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="canopy_gain_tot">
+    <variable name="canopy_gain_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to the canopy reservoir for each HRU for the simulation</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+            <dimension>nconsumed > 0</dimension>
+        </requires>
     </variable>
-    <variable name="consumed_gain">
+    <variable name="consumed_gain" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate to each water-use comsumption destination for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nconsumed">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+            <dimension>nconsumed > 0</dimension>
+        </requires>
     </variable>
-    <variable name="consumed_gain_tot">
+    <variable name="consumed_gain_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate to each water-use comsumption destination for the simulation</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nconsumed">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+            <dimension>nconsumed > 0</dimension>
+        </requires>
     </variable>
-    <variable name="dprst_gain">
+    <variable name="dprst_gain" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to surface-depression storage for each HRU for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_transferON_OFF = 1</control>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="dprst_gain_tot">
+    <variable name="dprst_gain_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to surface-depression storage for each HRU for the simulation</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_transferON_OFF = 1</control>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="dprst_transfer">
+    <variable name="dprst_transfer" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from surface-depression storage for each HRU for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_transferON_OFF = 1</control>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="dprst_transfer_tot">
+    <variable name="dprst_transfer_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from surface-depression storage for each HRU for the simulation</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_transferON_OFF = 1</control>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="external_gain">
+    <variable name="external_gain" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to each external location for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nexternal">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>external_transferON_OFF = 1</control>
+            <dimension>nexternal > 1</dimension>
+        </requires>
     </variable>
-    <variable name="external_gain_tot">
+    <variable name="external_gain_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to each external location for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nexternal">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>external_transferON_OFF = 1</control>
+            <dimension>nexternal > 1</dimension>
+        </requires>
     </variable>
-    <variable name="external_transfer">
+    <variable name="external_transfer" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from each external source for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nexternal">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>external_transferON_OFF = 1</control>
+            <dimension>nexternal > 1</dimension>
+        </requires>
     </variable>
-    <variable name="external_transfer_tot">
+    <variable name="external_transfer_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from each external source for the simulation</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nexternal">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>external_transferON_OFF = 1</control>
+            <dimension>nexternal > 1</dimension>
+        </requires>
     </variable>
-    <variable name="gwr_gain">
+    <variable name="gain_inches" version="5.2.1">
+        <type>F</type>
+        <units>inches</units>
+        <desc>canopy_gain as depth in canopy</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="gain_inches_hru" version="5.2.1">
+        <type>F</type>
+        <units>inches</units>
+        <desc>canopy_gain in canopy as depth over the HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="gwr_gain" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to the groundwater reservoir of each HRU for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="gwr_gain_tot">
+    <variable name="gwr_gain_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to the groundwater reservoir of each HRU for the simulation</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="gwr_transfer">
+    <variable name="gwr_transfer" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from the groundwater reservoir of each HRU for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>gwr_transferON_OFF = 1</control>
+        </requires>
     </variable>
-    <variable name="gwr_transfer_tot">
+    <variable name="gwr_transfer_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from the groundwater reservoir of each HRU for the simulation</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>gwr_transferON_OFF = 1</control>
+        </requires>
     </variable>
-    <variable name="lake_gain">
+    <variable name="lake_gain" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to each lake HRU for each time step</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="lake_gain_tot">
+    <variable name="lake_gain_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain to each lake HRU for the simulation</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="lake_transfer">
+    <variable name="lake_transfer" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from each lake HRU for each time step</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>lake_transferON_OFF = 1</control>
+        </requires>
     </variable>
-    <variable name="lake_transfer_tot">
+    <variable name="lake_transfer_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from each lake HRU for the simulation</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>lake_transferON_OFF = 1</control>
+        </requires>
     </variable>
-    <variable name="segment_gain">
+    <variable name="segment_gain" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain for each stream segment for each time step</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="segment_gain_tot">
+    <variable name="segment_gain_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer gain for each stream segment for the simulation</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="segment_transfer">
+    <variable name="segment_transfer" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from each stream segment for each time step</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>segment_transferON_OFF = 1</control>
+        </requires>
     </variable>
-    <variable name="segment_transfer_tot">
+    <variable name="segment_transfer_tot" version="5.0">
         <type>F</type>
         <units>cfs</units>
         <desc>Transfer flow rate from each stream segment for the simulation</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="nsegment">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>segment_transferON_OFF = 1</control>
+        </requires>
     </variable>
-    <variable name="soilzone_gain">
+    <variable name="soilzone_gain" version="5.0">
         <type>F</type>
         <units>cfs</units>
-        <desc>Transfer gain to the capillary reservoir within the soilzone for each HRU for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
+        <desc>Transfer gains to the capillary reservoir within the soilzone for each HRU for each time step</desc>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="soilzone_gain_tot">
+    <variable name="soilzone_gain_hru" version="5.2.1">
         <type>F</type>
-        <units>cfs</units>
-        <desc>Transfer gain to the capillary reservoir within the soilzone for each HRU for the simulation</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
+        <units>inches</units>
+        <desc>Irrigation added to soilzone as depth over each HRU</desc>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_canopy_gain">
+    <variable name="soilzone_gain_tot" version="5.0">
+        <type>F</type>
+        <units>cfs</units>
+        <desc>Transfer gains to the capillary reservoir within the soilzone for each HRU for the simulation</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="total_canopy_gain" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer gains to all canopy reservoirs for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_consumed_gain">
+    <variable name="total_consumed_gain" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer flow rates to all water-use comsumption destinations for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_dprst_gain">
+    <variable name="total_dprst_gain" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer gains to all surface-depression storage for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_dprst_transfer">
+    <variable name="total_dprst_transfer" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer flow rates from all surface-depression storage for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>dprst_transferON_OFF = 1</control>
+            <control>dprst_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_external_gain">
+    <variable name="total_external_gain" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer gains to all external locations for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_external_transfer">
+    <variable name="total_external_transfer" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer flow rates from all external sources for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>external_transferON_OFF = 1</control>
+            <dimension>nexternal > 1</dimension>
+        </requires>
     </variable>
-    <variable name="total_gwr_gain">
+    <variable name="total_gwr_gain" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Flow to all groundwater reservoirs for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_gwr_transfer">
+    <variable name="total_gwr_transfer" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer flow rates from all groundwater reservoirs for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+            <control>gwr_transferON_OFF = 1</control>
+        </requires>
     </variable>
-    <variable name="total_lake_gain">
+    <variable name="total_lake_gain" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer gains to all lake HRUs for each time step</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_lake_transfer">
+    <variable name="total_lake_transfer" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer flow rates from all lake HRUs for each time step</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum_lake</module>
         </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>lake_transferON_OFF = 1</control>
+        </requires>
     </variable>
-    <variable name="total_segment_gain">
+    <variable name="total_segment_gain" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer gains to all stream segments for each time step</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum</module>
+            <module>muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_segment_transfer">
+    <variable name="total_segment_transfer" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer flow rates from all stream segments for each time step</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>muskingum</module>
+            <module>muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
         </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_soilzone_gain">
+    <variable name="total_soilzone_gain" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer gains to all capillary reservoirs for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
     </variable>
-    <variable name="total_transfers">
+    <variable name="total_transfers" version="5.0">
         <type>D</type>
         <units>cfs</units>
         <desc>Transfer of all water-use transfers for each time step</desc>
-        <modules>
-            <module>water_use_read</module>
-        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="transfer_rate" version="5.0">
+        <type>D</type>
+        <units>cfs</units>
+        <desc>Transfer of each water-use transfer for each time step</desc>
+        <dimensions>
+            <dimension name="nwateruse">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>water_use_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_changeover" version="5.0">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Basin area-weighted average water released from a change over of canopy cover type</desc>
         <dimensions>
             <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>
     </variable>
-    <variable name="transfer_rate">
+    <variable name="intcp_changeover" version="5.0">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Water released from a change over of canopy cover type for each HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="alt_above_ela" version="5.2">
+        <type>F</type>
+        <units>elev_units</units>
+        <desc>Altitude above equilibrium line altitude (ELA)</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="ann_tempc" version="5.2">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Current average year air temperature over HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="av_basal_slope" version="5.2">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Glacier average basal slope at flowline location, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="av_fgrad" version="5.2">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Glacier average HRU mass balance gradient with elevation at flowline at end of each hydrological year, Ngl of these</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basal_elev" version="5.2">
+        <type>F</type>
+        <units>elev_units</units>
+        <desc>Glacier basal elevation mean over HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basal_slope" version="5.2">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Glacier basal slope down flowline mean over HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_gl_area" version="5.2">
+        <type>D</type>
+        <units>decimal fraction</units>
+        <desc>Basin area-weighted average glacier-covered area</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_gl_cfs" version="5.2">
         <type>D</type>
         <units>cfs</units>
-        <desc>Transfer of each water-use transfer for each time step</desc>
+        <desc>Basin glacier surface melt (rain, snow, ice) leaving the basin through the stream network</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_gl_ice_melt" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Basin area-weighted glacier ice (firn) melt coming out of termini of all glaciers and glacierettes</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_gl_storage" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Basin area-weighted average storage change in glacier reservoirs</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_gl_storstart" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Basin area-weighted average storage estimated start in glacier reservoirs</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_gl_storvol" version="5.2">
+        <type>D</type>
+        <units>acre-inches</units>
+        <desc>Basin storage volume in glacier storage reservoirs</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_gl_top_gain" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Basin area-weighted glacier surface gain (snow and rain minus evap) for all glaciers and glacierettes</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_gl_top_melt" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Basin area-weighted glacier surface melt (snow, ice and rain) coming out of termini of all glaciers and glacierettes</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_glacrb_melt" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Basin area-weighted average basal melt of glacier, goes to soil</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_glacrevap" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Basin area-weighted average glacier ice evaporation and sublimation</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="basin_snowicecov" version="5.2">
+        <type>D</type>
+        <units>decimal fraction</units>
+        <desc>Basin area-weighted average snow and glacier and glacierette covered area</desc>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="cfgi" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>Continuous Frozen Ground Index for each HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>frozen_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="cfgi_prev" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>Continuous Frozen Ground Index from previous time step for each HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>frozen_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="delta_volyr" version="5.2">
+        <type>D</type>
+        <units>inches cubed</units>
+        <desc>Year total volume change for each glacier, indexed by glacr_tag for each HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="ela" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>HRU number at ELA corresponding to each top in each glacier, ntp of these</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="frozen" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>Flag for frozen ground for each HRU (0=no; 1=yes)</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>frozen_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="gl_area" version="5.2">
+        <type>D</type>
+        <units>acres</units>
+        <desc>Area of each glacier, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="gl_ice_melt" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Amount of glacier ice (firn) melt coming out of terminus of glacier, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="gl_mb_cumul" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Cumulative mass balance for each glacier since start day, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="gl_mb_yrcumul" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Yearly mass balance for each glacier, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="gl_top_melt" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Amount of glacier surface melt (snow, ice, rain) coming out of terminus of glacier, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacier_frac" version="5.2">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of glaciation (0=none; 1=100%)</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_5avsnow" version="5.2">
+        <type>F</type>
+        <units>inches/year</units>
+        <desc>Current 5-yr average snow over glacier or glacierette HRUs</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_5avsnow1" version="5.2">
+        <type>F</type>
+        <units>inches/year</units>
+        <desc>First 5-yr average snow over glacier or glacierette HRUs</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_air_5avtemp" version="5.2">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Current 5-yr average summer (June July Aug) air temperature over glacier or glacierette HRUs</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_air_5avtemp1" version="5.2">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>First 5-yr average summer temperature over glacier or glacierette HRUs</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_air_deltemp" version="5.2">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Change in 5-yr average air temperature over glacier or glacierette HRUs from first time step</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_albedo" version="5.2">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Ice surface albedo or the fraction of radiation reflected from the icepack surface for each glacier HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_delsnow" version="5.2">
+        <type>F</type>
+        <units>inches/year</units>
+        <desc>Change in 5-yr average snow over glacier or glacierette for each HRU from first time step</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_elev_init" version="5.2">
+        <type>F</type>
+        <units>elev_units</units>
+        <desc>Glacier surface elevation mean over each HRU at initiation extrapolating to 100% glacierized HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_evap" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Evaporation and sublimation from icepack on each glacier HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_flow" version="5.2">
+        <type>F</type>
+        <units>inches cubed</units>
+        <desc>Glacier melt and rain from HRU to stream network, only nonzero at termini HRUs and snowfield HRUs</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_freeh2o" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Storage of free liquid water in the icepack on each glacier HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_freeh2o_capm" version="5.2">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Free-water holding capacity of glacier ice, changes to 0 if active layer melts</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_pk_def" version="5.2">
+        <type>F</type>
+        <units>Langleys</units>
+        <desc>Heat deficit, amount of heat necessary to make the glacier snowpack isothermal at 0 degrees Celsius</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_pk_den" version="5.2">
+        <type>F</type>
+        <units>gm/cm3</units>
+        <desc>Density of the icepack on each glacier HRU, hard-coded to equal 0.917</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_pk_depth" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Depth of icepack on each glacier HRU, make essentially infinite</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_pk_ice" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Storage of frozen water in the icepack on each glacier HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_pk_temp" version="5.2">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Temperature of the glacier on each HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_pkwater_ante" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Antecedent icepack water equivalent on each glacier HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_pkwater_equiv" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Icepack water equivalent on each glacier HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_pss" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Previous glacier pack water equivalent plus new ice</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_pst" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>While a icepack exists, glacr_pst tracks the maximum ice water equivalent of that icepack</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_slope_init" version="5.2">
+        <type>F</type>
+        <units>elev_units</units>
+        <desc>Glacier surface slope mean over HRU at initiation extrapolating to 100% glacierized HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacr_tag" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>Identifies which glacier each HRU belongs to</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacrb_melt" version="5.2">
+        <type>F</type>
+        <units>inches/day</units>
+        <desc>Glacier basal melt, goes to soil</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacrcov_area" version="5.2">
+        <type>F</type>
+        <units>decimal_fraction</units>
+        <desc>Ice-covered area on each glacier HRU or HRU with glacierette at start of time step</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glacrmelt" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Melt from icepack on each glacier HRU, includes rain water that does not absorb</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glnet_ar_delta" version="5.2">
+        <type>D</type>
+        <units>acres</units>
+        <desc>Sum of area change of each glacier since start year, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glrette_frac" version="5.2">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of snow field (too small for glacier dynamics)</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="glrette_melt" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Amount of glacierette surface melt (snow, ice, rain) from an HRU</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="hru_elev_ts" version="5.2">
+        <type>F</type>
+        <units>elev_units</units>
+        <desc>HRU elevation for timestep, which can change for glaciers; used in computations in modules: ide_dist, xyz_dist, precip_laps, temp_1sta, temp_laps, and temp_dist2</desc>
         <modules>
-            <module>water_use_read</module>
+            <module>ide_dist</module>
+            <module>xyz_dist</module>
+            <module>precip_laps</module>
+            <module>temp_1sta</module>
+            <module>temp_laps</module>
+            <module>temp_dist2</module>
         </modules>
         <dimensions>
-            <dimension name="nwateruse">
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="hru_glres_melt" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Amount of glacier surface melt (snow, ice, rain) from an HRU that goes into reservoirs</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="hru_mb_yrcumul" version="5.2">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Mass balance for a glacier HRU, cumulative for year</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="hru_mb_yrend" version="5.2">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Glacier HRU mass balance at end of previous hydrological year</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="hru_slope_ts" version="5.2">
+        <type>F</type>
+        <units>decimal_fraction</units>
+        <desc>HRU slope for timestep, which can change for glaciers</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="ikeep_gl" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>Glacier integer variables keeping from first year</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="keep_gl" version="5.2">
+        <type>F</type>
+        <units>none</units>
+        <desc>Glacier real variables keeping from first year</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="nhrugl" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>Number of at least partially glacierized HRUs at initiation</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="ode_glacrva_coef" version="5.2">
+        <type>F</type>
+        <units>m**(3-2*glacrva_exp)</units>
+        <desc>Estimate of glacrva_coef from ODE basal topography of each glacier, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="order_flowline" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>Order flowlines belong together as glaciers, ntp of these</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="prev_area" version="5.2">
+        <type>F</type>
+        <units>inches squared</units>
+        <desc>Previous year glacier-covered area above this HRU where all branches of the glacier are included</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nglres">
+                <position>2</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="prev_out" version="5.2">
+        <type>F</type>
+        <units>inches cubed</units>
+        <desc>Antecedent outflow of the 3 reservoirs in each glacier, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="prev_outi" version="5.2">
+        <type>F</type>
+        <units>inches cubed</units>
+        <desc>Antecedent outflow of the 3 reservoirs in each glacier for only ice (firn) melt, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="prev_vol" version="5.2">
+        <type>F</type>
+        <units>inches cubed</units>
+        <desc>Previous volume of each glacier, indexed by glacr_tag</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="term" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>HRU number at terminus of each glacier, ngl of these</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="top" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>HRU number at tops of each glacier, ntp of these</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="top_tag" version="5.2">
+        <type>I</type>
+        <units>none</units>
+        <desc>Identifies which glacier top this HRU is fed by. If = -1, then has multiple feeders</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="yrdays5" version="5.2">
+        <type>I</type>
+        <units>days</units>
+        <desc>Number of days since last 5 year mark</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>glacier_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="soil_saturated" version="5.1.0">
+        <type>I</type>
+        <units>none</units>
+        <desc>Flag set if infiltration saturates capillary reservoir (0=no, 1=yes)</desc>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="lakein_gwflow" version="5.2">
+        <type>D</type>
+        <units>acre-inches</units>
+        <desc>Groundwater flow received from upslope GWRs for each Lake GWR</desc>
+        <dimensions>
+            <dimension name="nlake">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <dimension>nlake > 0</dimension>
+        </requires>
+    </variable>
+    <variable name="is_rain_day">
+        <type>I</type>
+        <units>none</units>
+        <desc>Flag to indicate if it is raining anywhere in the basin </desc>
+        <modules>
+            <module>ide_dist</module>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
                 <position>1</position>
             </dimension>
         </dimensions>

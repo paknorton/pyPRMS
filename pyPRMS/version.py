@@ -5,8 +5,7 @@ __version__ = f"{major}.{minor}.{micro}"
 
 __pakname__ = "pyPRMS"
 
-# edit author dictionary as necessary (
-# in order of commits after Bakker and Post
+# edit author dictionary as necessary (in order of commits after Bakker and Post)
 author_dict = {
     "Parker Norton": "pnorton@usgs.gov",
 }

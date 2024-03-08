@@ -197,4 +197,3 @@ class CbhNetcdf(object):
                 ds.attrs[kk] = vv
 
         ds.to_netcdf(filename)
-

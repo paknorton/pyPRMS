@@ -1,20 +1,28 @@
 
 # from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
+import numpy as np
 from typing import List, Optional, Set
 
-from ..Exceptions_custom import ParameterError
-from .ParameterSet import ParameterSet
-from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM
+from ..Exceptions_custom import ParameterExistsError, ParameterNotValidError
+from .Parameters import Parameters
+from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM, PTYPE_TO_DTYPE
 from ..prms_helpers import get_file_iter
 
+from rich.console import Console
+from rich import pretty
 
-class ParameterFile(ParameterSet):
+pretty.install()
+con = Console()
+
+
+class ParameterFile(Parameters):
 
     """Class to handle reading PRMS parameter file format."""
 
     def __init__(self, filename: str,
-                 verbose: Optional[bool] = False,
-                 verify: Optional[bool] = True):
+                 metadata,
+                 verbose: Optional[bool] = False):
+                 # verify: Optional[bool] = True):
         """Create the ParameterFile object.
 
         :param filename: name of parameter file
@@ -22,7 +30,7 @@ class ParameterFile(ParameterSet):
         :param verify: whether to load the master parameters (default=True)
         """
 
-        super(ParameterFile, self).__init__(verbose=verbose, verify=verify)
+        super(ParameterFile, self).__init__(metadata=metadata, verbose=verbose)
 
         # self.__filename = None
         # self.__header = None
@@ -76,16 +84,11 @@ class ParameterFile(ParameterSet):
         """Read parameter file.
         """
 
-        if self.__verbose:
-            print('INFO: Reading parameter file')
+        if self.__verbose:   # pragma: no cover
+            con.print('INFO: Reading parameter file')
 
         # Read the parameter file into memory and parse it
         it = get_file_iter(self.filename)
-        # infile = open(self.filename, 'r', encoding='ascii')
-        # rawdata = infile.read().splitlines()
-        # infile.close()
-        #
-        # it = iter(rawdata)
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Grab the header stuff first
@@ -94,9 +97,8 @@ class ParameterFile(ParameterSet):
                 break
             self.__header.append(line)
 
-        if self.__verbose:
-            print('INFO: headers:')
-            print(self.__header)
+        if self.__verbose:   # pragma: no cover
+            con.print(f'HEADERS: {self.__header}')
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Now process the dimensions
@@ -107,34 +109,27 @@ class ParameterFile(ParameterSet):
                 continue
 
             # Add dimension - all dimensions are scalars
-            self.dimensions.add(line, int(next(it)))
+            self.dimensions.add(name=line, size=int(next(it)))
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Lastly process the parameters
-        bounded_parameters = []
-
         for line in it:
             if line == VAR_DELIM:
                 continue
             varname = line.split(' ')[0]
+            # if self.__verbose:   # pragma: no cover
+            #     print(f'{varname=}')
 
             # Add the parameter
             try:
-                if self.master_parameters is not None:
-                    self.parameters.add(varname, info=self.master_parameters[varname])
-
-                    if self.master_parameters[varname].minimum == 'bounded':
-                        # TODO: The min and max of bounded parameter values will be adjusted later
-                        bounded_parameters.append(varname)
-                else:
-                    self.parameters.add(varname)
-            except ParameterError:
-                if self.__verbose:
-                    print(f'Parameter, {varname}, updated with new values')
+                self.add(name=varname)
+            except ParameterExistsError:
+                if self.__verbose:   # pragma: no cover
+                    con.print(f'[bold]{varname}[/]: updated with new values')
                 self.__updated_parameters.add(varname)
-            except ValueError:
-                if self.__verbose:
-                    print(f'Parameter, {varname}, is not a valid parameter; skipping.')
+            except ParameterNotValidError:
+                if self.__verbose:   # pragma: no cover
+                    con.print(f'[bold]{varname}[/]: [gold3]is not a valid parameter; skipping. [/]')
 
                 # Skip to the next parameter
                 try:
@@ -153,56 +148,43 @@ class ParameterFile(ParameterSet):
             # the declared global dimensions.
             dim_size = int(next(it))
 
-            self.parameters.get(varname).datatype = int(next(it))
+            # The datatype
+            param_dtype = int(next(it))
 
-            # Add the dimensions to the parameter, dimension size is looked up from the global Dimensions object
-            for dd in dim_names:
-                self.parameters.get(varname).dimensions.add(dd, self.dimensions.get(dd).size)
-
-            # if numval != dim_size:
-            if dim_size != self.parameters.get(varname).size:
-                # The declared total size doesn't match the total size of the declared dimensions
-                print(f'{varname}: Declared total size for parameter does not match the total size of the ' +
-                      f'declared dimension(s) ({dim_size} != {self.parameters.get(varname).size}); skipping')
-
-                # Still have to read all the values to skip this properly
-                try:
-                    while True:
-                        cval = next(it)
-
-                        if cval == VAR_DELIM or cval.strip() == '':
-                            break
-                except StopIteration:
-                    # Hit the end of the file
-                    pass
-                self.parameters.remove(varname)
+            if self.get(varname).is_scalar:
+                vals = np.array(next(it), dtype=PTYPE_TO_DTYPE[param_dtype])
             else:
-                # Check if number of values written match the number of values declared
-                vals = []
-                try:
-                    # Read in the data values
-                    while True:
-                        cval = next(it)
-
-                        if cval[0:4] == VAR_DELIM or cval.strip() == '':
-                            break
-                        vals.append(cval)
-                except StopIteration:
-                    # Hit the end of the file
-                    pass
-
-                if len(vals) != dim_size:
-                    print(f'{varname}: number of values does not match declared dimension size ' +
-                          f'({len(vals)} != {dim_size}); skipping')
-
-                    # Remove the parameter from the dictionary
-                    self.parameters.remove(varname)
+                # Arrays of strings should be objects
+                if param_dtype == 4:
+                    vals = np.zeros(dim_size, dtype=object)
                 else:
-                    # Convert the values to the correct datatype
-                    # Ignore the type until https://github.com/python/mypy/issues/3004 is fixed
-                    self.parameters.get(varname).data = vals    # type: ignore
+                    vals = np.zeros(dim_size, dtype=PTYPE_TO_DTYPE[param_dtype])
 
-        for pp in bounded_parameters:
-            self._adjust_bounded(pp)
+                for idx in range(0, dim_size):
+                    # NOTE: string-float to int works but float to int does not
+                    vals[idx] = next(it)
 
+            # Make sure there are not any more values in the file
+            try:
+                cnt = dim_size
+                while True:
+                    cval = next(it)
+                    if cval[0:4] == VAR_DELIM or cval.strip() == '':
+                        break
+                    cnt += 1
+
+                if cnt > dim_size:
+                    print(f'WARNING: Too many values specified for {varname}')
+                    print(f'         {dim_size} expected, {cnt} given')
+                    print('          Removing parameter')
+
+                    self.remove(varname)
+                    continue
+            except StopIteration:
+                # Hit the end of the file
+                pass
+
+            self.get(varname).data = vals    # type: ignore
+
+        self.adjust_bounded_parameters()
         self.__isloaded = True

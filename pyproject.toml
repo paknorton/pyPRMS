@@ -9,20 +9,13 @@ readme = "README.rst"
 dynamic = ["version"]
 requires-python = ">=3.9"
 license = {file = "LICENSE"}
-authors = [
-    {name = "Parker Norton", email = "pnorton@usgs.gov"},
-]
-maintainers = [
-    {name = "Parker Norton", email = "pnorton@usgs.gov"},
-]
+authors = [{name = "Parker Norton", email = "pnorton@usgs.gov"}, ]
+maintainers = [{name = "Parker Norton", email = "pnorton@usgs.gov"}, ]
 keywords = ["PRMS", "NHM", "streamflow", "hydrology", "surface"]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Programming Language :: Python :: 3",
-]
+classifiers = ["Development Status :: 3 - Alpha",
+               "Programming Language :: Python :: 3", ]
 
-dependencies = [
-    "cartopy",
+dependencies = ["cartopy",
     "geopandas",
     "matplotlib",
     "netCDF4",
@@ -31,19 +24,14 @@ dependencies = [
     "pandas<2",
     "pyproj",
     "shapely",
-    "xarray",
-]
+    "xarray", ]
 
 [project.optional-dependencies]
-dev = [
-#    "jupyterlab",
-#    "jupyterlab_server",
-    "mypy",
-    "mypy_extensions",
-    "pytest",
-    "pytest-cov",
-    "pytest-xdist",
-]
+dev = ["mypy",
+       "mypy_extensions",
+       "pytest",
+       "pytest-cov",
+       "pytest-xdist",]
 
 [project.urls]
 Repository = "https://github.com/paknorton/pyPRMS.git"
@@ -64,9 +52,3 @@ include = ["pyPRMS", "pyPRMS.*"]
 
 [tool.setuptools.package-data]
 "pyPRMS.xml" = ["*.xml"]
-
-#[tool.setuptools.packages.find]
-#where = ["xml"]
-#
-#[tool.setuptools.package-data]
-#pyPRMS = ["*.xml"]
