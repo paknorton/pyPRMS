@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from pathlib import Path
 from typing import Optional, Union
 from ..constants import DATA_TYPES, PTYPE_TO_DTYPE, VAR_DELIM
 from ..prms_helpers import get_file_iter
@@ -19,7 +20,7 @@ class ControlFile(Control):
     # Description: Class object to handle reading and writing PRMS
     #              control files.
 
-    def __init__(self, filename: str, metadata, verbose: Optional[bool] = False,
+    def __init__(self, filename: Union[str, Path], metadata, verbose: Optional[bool] = False,
                  version:Optional[Union[str, int]] = 5):
         super(ControlFile, self).__init__(metadata=metadata, verbose=verbose, version=version)
 
@@ -28,7 +29,7 @@ class ControlFile(Control):
         self.filename = filename
 
     @property
-    def filename(self) -> str:
+    def filename(self) -> Union[str, Path]:
         """Get control filename.
 
         :returns: Name of control file
@@ -36,7 +37,7 @@ class ControlFile(Control):
         return self.__filename
 
     @filename.setter
-    def filename(self, filename: str):
+    def filename(self, filename: Union[str, Path]):
         """Set the name of the control file and read it in.
 
         :param filename: Name of the control file
