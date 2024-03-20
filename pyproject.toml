@@ -23,6 +23,7 @@ dependencies = ["cartopy",
     "numpy",
     "pandas<2",
     "pyproj",
+    "rich",
     "shapely",
     "xarray", ]
 
