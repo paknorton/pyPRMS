@@ -2,7 +2,7 @@ import re
 import numpy as np
 import pandas as pd   # type: ignore
 
-TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
+# TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
 
 
 class Streamflow(object):
@@ -154,7 +154,8 @@ class Streamflow(object):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Data section
         # The first 6 columns are [year month day hour minute seconds]
-        thecols = ['year', 'month', 'day', 'hour', 'min', 'sec']
+        thecols = ['year', 'month', 'day', 'hour', 'minute', 'second']
+        timecols = thecols.copy()
 
         # Add the remaining columns to the list
         for xx in self.__stations:
@@ -165,11 +166,11 @@ class Streamflow(object):
         # NOTE: 2023-03-21 skiprows option seems to be off by 1; test data starts
         #       at line 26, but skiprows=25 skips the first row of data.
         self.__rawdata = pd.read_csv(self.filename, skiprows=self.__headercount-1, sep=r'\s+',
-                                     header=0, names=thecols, engine='c', skipinitialspace=True,
-                                     parse_dates={'time': ['year', 'month', 'day', 'hour', 'min', 'sec']},
-                                     index_col='time')
+                                     header=0, names=thecols, engine='c', skipinitialspace=True)
 
-        self.__rawdata.index = pd.to_datetime(self.__rawdata.index, exact=True, cache=True, format=TS_FORMAT)
+        self.__rawdata['time'] = pd.to_datetime(self.__rawdata[timecols], yearfirst=True)
+        self.__rawdata.drop(columns=timecols, inplace=True)
+        self.__rawdata.set_index('time', inplace=True)
 
         # Convert the missing data (-999.0) to NaNs
         self.__rawdata.replace(to_replace=self.__missing, value=np.nan, inplace=True)
