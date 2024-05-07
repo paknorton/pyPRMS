@@ -38,7 +38,7 @@ class ParameterNetCDF(Parameters):
         # Populate the dimensions first
         self.dimensions.add(name='one', size=1)
 
-        for dn, ds in xr_df.dims.items():
+        for dn, ds in dict(xr_df.sizes).items():
             self.dimensions.add(name=str(dn), size=ds)
 
         # Now add the parameters
