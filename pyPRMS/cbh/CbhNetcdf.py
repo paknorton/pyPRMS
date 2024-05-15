@@ -75,7 +75,8 @@ class CbhNetcdf(object):
                                        decode_cf=True, engine='netcdf4')
         else:
             ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
-                                   data_vars='minimal', decode_cf=True, engine='netcdf4')
+                                   data_vars='minimal', decode_cf=True, engine='netcdf4',
+                                   parallel=True)
 
         if self.__stdate is None and self.__endate is None:
             # If a date range is not specified then use the daterange from the dataset
