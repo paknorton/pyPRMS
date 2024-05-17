@@ -76,7 +76,7 @@ class CbhNetcdf(object):
                 ds = xr.open_mfdataset(xfiles, chunks={}, combine='by_coords',
                                        decode_cf=True, engine='netcdf4')
         else:
-            if os.path.splitext(config.cbh_dir)[1] == '.json':
+            if os.path.splitext(self.__src_path)[1] == '.json':
                 fs = fsspec.filesystem("reference", fo=self.__src_path)
                 m = fs.get_mapper("")
 
