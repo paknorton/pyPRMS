@@ -1,5 +1,7 @@
 import datetime
+import fsspec
 import numpy as np
+import os
 import pandas as pd   # type: ignore
 import netCDF4 as nc   # type: ignore
 import xarray as xr
@@ -74,9 +76,15 @@ class CbhNetcdf(object):
                 ds = xr.open_mfdataset(xfiles, chunks={}, combine='by_coords',
                                        decode_cf=True, engine='netcdf4')
         else:
-            ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
-                                   data_vars='minimal', decode_cf=True, engine='netcdf4',
-                                   parallel=True)
+            if os.path.splitext(config.cbh_dir)[1] == '.json':
+                fs = fsspec.filesystem("reference", fo=self.__src_path)
+                m = fs.get_mapper("")
+
+                ds = xr.open_dataset(m, engine="zarr", chunks={}, backend_kwargs={'consolidated':False})
+            else:
+                ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
+                                       data_vars='minimal', decode_cf=True, engine='netcdf4',
+                                       parallel=True)
 
         if self.__stdate is None and self.__endate is None:
             # If a date range is not specified then use the daterange from the dataset
@@ -197,4 +205,16 @@ class CbhNetcdf(object):
             for kk, vv in global_attrs.items():
                 ds.attrs[kk] = vv
 
-        ds.to_netcdf(filename)
+        encoding = {}
+
+        for cvar in ds.variables:
+            if ds[cvar].ndim > 1:
+                encoding[cvar] = dict(_FillValue=ds[cvar].encoding['_FillValue'],
+                                      compression='zlib',
+                                      complevel=2,
+                                      fletcher32=True)
+            else:
+                encoding[cvar] = dict(_FillValue=None,
+                                      contiguous=True)
+
+        ds.load().to_netcdf(filename, engine='netcdf4', format='NETCDF4', encoding=encoding)
