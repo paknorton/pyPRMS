@@ -298,6 +298,54 @@ class TestParameter:
         xmlstr = minidom.parseString(xmlET.tostring(aparam.xml)).toprettyxml(indent='')
         assert xmlstr == expected
 
+    @pytest.mark.parametrize('name, data', [('poi_gage_id', np.array(['01234567', '12345678', '23456789'], dtype=np.str_))])
+    def test_remove_by_index_1(self, metadata_instance, name, data):
+        aparam = Parameter(name=name, meta=metadata_instance)
+        aparam.data = data
+
+        aparam.remove_by_index('npoigages', [1])
+        expected_data = np.array(['01234567', '23456789'], dtype=np.str_)
+        assert (aparam.data == expected_data).all()
+        assert (aparam.dimensions.get('npoigages').size == 2)
+
+    @pytest.mark.parametrize('name, data, dim, expected_data', [('cov_type',
+                                                                 np.array([0, 1, 0, 0], dtype=np.int32),
+                                                                 'nhru',
+                                                                 np.array([0], dtype=np.int32)),
+                                                                ('poi_gage_id',
+                                                                 np.array(['01234567', '12345678', '23456789'], dtype=np.str_),
+                                                                 'npoigages',
+                                                                 np.array([], dtype=np.str_))])
+    def test_remove_by_index_2(self, metadata_instance, name, data, dim, expected_data):
+        aparam = Parameter(name=name, meta=metadata_instance)
+        aparam.data = data
+
+        aparam.remove_by_index(dim, [0, 1, 2])
+        # expected_data = np.array([], dtype=np.str_)
+        assert (aparam.data == expected_data).all()
+        assert (aparam.dimensions.get(dim).size == expected_data.size)
+
+    @pytest.mark.parametrize('name, data, dim', [('cov_type',
+                                                  np.array([0, 1, 0], dtype=np.int32),
+                                                  'nhru'),
+                                                 ('poi_gage_id',
+                                                  np.array(['01234567', '12345678', '23456789'], dtype=np.str_),
+                                                  'npoigages')])
+    def test_remove_by_index_3(self, metadata_instance, name, data, dim):
+        aparam = Parameter(name=name, meta=metadata_instance)
+        aparam.data = data
+
+        with pytest.raises(IndexError):
+            assert aparam.remove_by_index(dim, [0, 1, 2, 3])
+
+    @pytest.mark.parametrize('name, dim', [('poi_gage_id', 'npoigages')])
+    def test_remove_by_index_4(self, metadata_instance, name, dim):
+        aparam = Parameter(name=name, meta=metadata_instance)
+
+        with pytest.raises(TypeError):
+            assert aparam.remove_by_index(dim, [0])
+
+
     # def test_add_data_with_no_dimensions_raises(self):
     #     aparam = Parameter(name='someparam')
     #
