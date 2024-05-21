@@ -389,9 +389,8 @@ class Parameter(object):
             indices = list(indices)
 
         if self.__data is not None:
-            if self.__data.size == 1:
-                print(f'{self.name}: Cannot reduce array of size one')
-                return
+            if len(indices) > self.__data.size:
+                raise IndexError(f'{self.name}: Cannot remove more values than exist')
 
             self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
             assert self.__data is not None  # Needed so mypy doesn't fail on next line
