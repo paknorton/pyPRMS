@@ -496,7 +496,7 @@ class Parameters(object):
 
     def plot(self, name: str,
              output_dir: Optional[str] = None,
-             limits: Optional[Union[str, List[float], Tuple[float, float]]] = 'valid',
+             limits: Optional[Union[str, List[float], Tuple[float, float]]] = 'absolute',
              mask_defaults: Optional[str] = None,
              **kwargs):   # pragma: no cover
         """Plot a parameter.
@@ -749,11 +749,14 @@ class Parameters(object):
                 if self.verbose:
                     con.print(f'[bold]{cparam}[/] [gold3]parameter removed[/]')
 
-    def remove_poi(self, poi: str):
+    def remove_poi(self, poi: Union[str, List[str]]):
         """Remove POIs by gage_id.
 
         :param poi: POI id to remove
         """
+
+        if isinstance(poi, str):
+            poi = [poi]
 
         # First get array of poi_gage_id indices matching the specified POI IDs
         poi_ids = self.get('poi_gage_id').data
@@ -769,10 +772,15 @@ class Parameters(object):
             # We're trying to remove all the POIs
             for pp in poi_parameters:
                 self.remove(pp)
+
+            self.dimensions.get('npoigages').size = 0
         else:
             # Remove the matching poi gage entries from each of the poi-related parameters
             for pp in poi_parameters:
                 self.get(pp).remove_by_index('npoigages', poi_del_indices)
+
+            # Update the global npoigages dimension
+            self.dimensions.get('npoigages').size -= poi_del_indices.size
 
     def shapefile_hrus(self, filename: str,
                        layer_name: Optional[str] = None,
