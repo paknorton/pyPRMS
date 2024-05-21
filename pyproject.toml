@@ -16,6 +16,8 @@ classifiers = ["Development Status :: 3 - Alpha",
                "Programming Language :: Python :: 3", ]
 
 dependencies = ["cartopy",
+    "dask",
+    "fsspec",
     "geopandas",
     "matplotlib",
     "netCDF4",
