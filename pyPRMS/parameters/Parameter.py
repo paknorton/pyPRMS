@@ -385,7 +385,7 @@ class Parameter(object):
         :param dim_name: Name of dimension to reduce
         :param indices: List of indices to remove"""
 
-        if isinstance(indices, type(Dict().values())):
+        if isinstance(indices, type(dict().values())):
             indices = list(indices)
 
         if self.__data is not None:
@@ -471,7 +471,7 @@ class Parameter(object):
         :param dim_name: name of dimension
         :param indices: indices of HRUs or segments to extract"""
 
-        if isinstance(indices, type(Dict().values())):
+        if isinstance(indices, type(dict().values())):
             indices = list(indices)
 
         if self.__data is not None:
