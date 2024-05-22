@@ -759,28 +759,36 @@ class Parameters(object):
             poi = [poi]
 
         # First get array of poi_gage_id indices matching the specified POI IDs
-        poi_ids = self.get('poi_gage_id').data
-        sorter = np.argsort(poi_ids)
-        poi_del_indices = sorter[np.searchsorted(poi_ids, poi, sorter=sorter)]
+        poi_ids = self.get('poi_gage_id').data.tolist()
+        poi_del_indices = []
+        for xx in poi:
+            # We silently ignore missing POIs
+            if xx in poi_ids:
+                poi_del_indices.append(poi_ids.index(xx))
+
+        # poi_ids = self.get('poi_gage_id').data
+        # sorter = np.argsort(poi_ids)
+        # poi_del_indices = sorter[np.searchsorted(poi_ids, poi, sorter=sorter)]
 
         poi_parameters = ['poi_gage_id', 'poi_gage_segment', 'poi_type']
 
         # print(f'POIs to delete: {poi}')
         # print(f'Current POIs: {poi_ids}')
         # print(f'Size of poi_del_indices: {poi_del_indices.size}')
-        if self.get('poi_gage_id').dimensions.get('npoigages').size == poi_del_indices.size:
-            # We're trying to remove all the POIs
-            for pp in poi_parameters:
-                self.remove(pp)
+        if len(poi_del_indices) > 0:
+            if self.get('poi_gage_id').dimensions.get('npoigages').size == len(poi_del_indices):
+                # We're trying to remove all the POIs
+                for pp in poi_parameters:
+                    self.remove(pp)
 
-            self.dimensions.get('npoigages').size = 0
-        else:
-            # Remove the matching poi gage entries from each of the poi-related parameters
-            for pp in poi_parameters:
-                self.get(pp).remove_by_index('npoigages', poi_del_indices)
+                self.dimensions.get('npoigages').size = 0
+            else:
+                # Remove the matching poi gage entries from each of the poi-related parameters
+                for pp in poi_parameters:
+                    self.get(pp).remove_by_index('npoigages', poi_del_indices)
 
-            # Update the global npoigages dimension
-            self.dimensions.get('npoigages').size -= poi_del_indices.size
+                # Update the global npoigages dimension
+                self.dimensions.get('npoigages').size -= len(poi_del_indices)
 
     def shapefile_hrus(self, filename: str,
                        layer_name: Optional[str] = None,
