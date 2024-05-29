@@ -789,6 +789,7 @@ class Parameters(object):
 
                 # Update the global npoigages dimension
                 self.dimensions.get('npoigages').size -= len(poi_del_indices)
+                self.dimensions.get('nobs').size -= len(poi_del_indices)
 
     def shapefile_hrus(self, filename: str,
                        layer_name: Optional[str] = None,
