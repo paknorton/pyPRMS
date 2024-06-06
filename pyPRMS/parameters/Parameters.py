@@ -11,6 +11,7 @@ import sys
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
+from collections import defaultdict
 from functools import cached_property
 from typing import Optional, Sequence, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
@@ -271,6 +272,22 @@ class Parameters(object):
                 raise KeyError(f'Global dimension, {cdim}, does not exist')
 
         self.__parameters[name] = Parameter(name=name, meta=self.metadata, global_dims=self.__dimensions)
+
+    def add_metadata(self, name: str, metadata: Dict):
+        """Add a new parameter entry to the parameter metadata. This is useful for adding ad-hoc parameters.
+
+        :param name: Name of the parameter
+        :param metadata: Dictionary of metadata for the parameter
+        """
+
+        # entry_items = dict(datatype='float32', description='something new today', help='get your own help',
+        #                    units='dontmatter', default=0.0, minimum=0.0, maximum=100.0, dimensions=['nhru'])
+        new_entry = defaultdict(list)
+
+        for kk, vv in metadata.items():
+            new_entry[kk] = vv
+
+        self.metadata[name] = new_entry
 
     def add_missing_parameters(self):
         """Add missing parameters that are required by the selected modules
