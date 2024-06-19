@@ -81,6 +81,8 @@ class CbhNetcdf(object):
                 m = fs.get_mapper("")
 
                 ds = xr.open_dataset(m, engine="zarr", chunks={}, backend_kwargs={'consolidated':False})
+            elif os.path.splitext(self.__src_path)[1] == '.zarr':
+                ds = xr.open_zarr(self.__src_path, consolidated=True)
             else:
                 ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
                                        data_vars='minimal', decode_cf=True, engine='netcdf4',
