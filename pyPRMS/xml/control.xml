@@ -742,10 +742,10 @@
         <desc>Root pathname for Animation Files(s) to which a filename suffix based on dimension name associated with selected variables is appended</desc>
     </control_param>
     <control_param name="basinOutBaseFileName" version="5.0" deprecated="6.0">
-        <default>String to define the prefix for each basin summary output file</default>
+        <default>basinout_path</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>String to define the prefix for each basin summary output file.</desc>
+        <desc>String to define the prefix for each basin summary output file</desc>
     </control_param>
     <control_param name="covden_sum_dynamic" version="5.0">
         <default>dyn_covden_sum.param</default>
