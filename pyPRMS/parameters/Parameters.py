@@ -12,6 +12,7 @@ import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
 from collections import defaultdict
+from collections.abc import KeysView
 from functools import cached_property
 from typing import Optional, Sequence, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
@@ -21,7 +22,7 @@ from ..dimensions.Dimensions import Dimensions
 from ..Exceptions_custom import ParameterError, ParameterExistsError, ParameterNotValidError
 from .Parameter import Parameter
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
-from ..prms_helpers import cond_check, flex_type
+from ..prms_helpers import cond_check, flex_type, get_streamnet_subset
 from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, MetaDataType, NETCDF_DATATYPES,
                          NEW_PTYPE_TO_DTYPE, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML, VAR_DELIM)
 
@@ -136,6 +137,8 @@ class Parameters(object):
         in the control file but are missing in the current set of parameters.
         """
 
+        # TODO: 20240726 PAN - raise warning/error when certain parameters
+        #                      like hru_segment_nhm, etc are missing
         pset = self._required_parameters()
         return pset.difference(set(self.parameters.keys()))
 
@@ -511,6 +514,62 @@ class Parameters(object):
 
         return bad_value_ids
 
+    def poi_upstream_hrus(self, poi: Union[str, List[str], KeysView]) -> Dict[str, List[int]]:
+        """Returns a dictionary of POI to upstream global HRU IDs.
+
+        :param poi: POI ID or list of POI IDs
+
+        :returns: Dictionary of POI to upstream global HRU IDs
+        """
+
+        if isinstance(poi, str):
+            poi = [poi]
+        elif isinstance(poi, KeysView):
+            poi = list(poi)
+
+        poi_hrus = {}
+        nhm_seg = self.get('nhm_seg').data
+        pois_dict = self.poi_to_seg
+
+        # Generate stream network for the model
+        dag_streamnet = self.stream_network()
+
+        for cpoi in poi:
+            # Lookup global segment id for the current POI
+            dsmost_seg = [nhm_seg[pois_dict[cpoi] - 1]]
+
+            poi_hrus[cpoi] = self._upstream_hrus(dag_streamnet, dsmost_seg)
+
+        return poi_hrus
+
+    def poi_upstream_segments(self, poi: Union[str, List[str], KeysView]) -> Dict[str, List[int]]:
+        """Returns a dictionary of POI to upstream global segment IDs.
+
+        :param poi: POI ID or list of POI IDs
+
+        :returns: Dictionary of POI to upstream global segment IDs
+        """
+
+        if isinstance(poi, str):
+            poi = [poi]
+        elif isinstance(poi, KeysView):
+            poi = list(poi)
+
+        poi_segs = {}
+        nhm_seg = self.get('nhm_seg').data
+        pois_dict = self.poi_to_seg0
+
+        # Generate stream network for the model
+        dag_streamnet = self.stream_network()
+
+        for cpoi in poi:
+            # Lookup global segment id for the current POI
+            dsmost_seg = [nhm_seg[pois_dict[cpoi]].item()]
+
+            poi_segs[cpoi] = self._upstream_segments(dag_streamnet, dsmost_seg)
+
+        return poi_segs
+
     def plot(self, name: str,
              output_dir: Optional[str] = None,
              limits: Optional[Union[str, List[float], Tuple[float, float]]] = 'absolute',
@@ -807,6 +866,60 @@ class Parameters(object):
                 # Update the global npoigages dimension
                 self.dimensions.get('npoigages').size -= len(poi_del_indices)
                 self.dimensions.get('nobs').size -= len(poi_del_indices)
+
+    def segment_upstream_hrus(self, segs: Union[int, List[int], KeysView]) -> Dict[int, List[int]]:
+        """Returns a dictionary of segment to upstream global HRU IDs.
+
+        :param segs: Global segment ID or list of global segment IDs
+
+        :returns: Dictionary of global segment ID to upstream global HRU IDs
+        """
+
+        if isinstance(segs, int):
+            segs = [segs]
+        elif isinstance(segs, KeysView):
+            segs = list(segs)
+
+        seg_hrus = {}
+
+        # Generate stream network for the model
+        dag_streamnet = self.stream_network()
+
+        for cseg in segs:
+            # Lookup segment for the current POI
+            dsmost_seg = [cseg]
+
+            seg_hrus[cseg] = self._upstream_hrus(dag_streamnet, dsmost_seg)
+
+        return seg_hrus
+
+    def segment_upstream_segments(self, segs: Union[int, List[int], KeysView]) -> Dict[int, List[int]]:
+        """Returns a dictionary of global segment IDs to upstream global segment IDs.
+
+        :param segs: global segment IDs or list of global segment IDs
+
+        :returns: Dictionary of global segment ID to upstream global segment IDs
+        """
+
+        if isinstance(segs, int):
+            segs = [segs]
+        elif isinstance(segs, KeysView):
+            segs = list(segs)
+
+        us_segs = {}
+
+        # Generate stream network for the model
+        dag_streamnet = self.stream_network()
+
+        for cseg in segs:
+            # Lookup segment for the current segment
+            if isinstance(cseg, np.int32):
+                cseg = cseg.item()
+
+            dsmost_seg = [cseg]
+            us_segs[cseg] = self._upstream_segments(dag_streamnet, dsmost_seg)
+
+        return us_segs
 
     def shapefile_hrus(self, filename: str,
                        layer_name: Optional[str] = None,
@@ -1147,7 +1260,7 @@ class Parameters(object):
         # Close the netcdf file
         nc_hdl.close()
 
-    def write_parameters_metadata_csv(self, filename: str):
+    def write_parameters_metadata_csv(self, filename: str, sep: str = '\t'):
         """Writes the parameter metadata to a CSV file"""
 
         out_list = []
@@ -1168,6 +1281,8 @@ class Parameters(object):
 
             dims = ', '.join(list(pp.dimensions.keys()))
 
+            # TODO: 20230719 PAN - precipitation_hru and temperature_hru should be changed to climate_hru
+
             try:
                 act_min = pp.data.min()
                 act_max = pp.data.max()
@@ -1186,12 +1301,15 @@ class Parameters(object):
                              dims,
                              modules])
 
-        col_names = ['parameter', 'datatype', 'units', 'description',
+        col_names = ['parameter_name', 'datatype', 'units', 'description',
                      'valid_minimum', 'valid_maximum', 'actual_minimum',
-                     'actual_maximum', 'default', 'dimensions', 'modules']
+                     'actual_maximum', 'default', 'dimension', 'modules']
 
         df = pd.DataFrame.from_records(out_list, columns=col_names)
-        df.to_csv(filename, sep='\t', index=False)
+        if sep == ',':
+            df.to_csv(filename, sep=sep, quotechar='"', index=False)
+        else:
+            df.to_csv(filename, sep=sep, index=False)
 
     def write_parameters_xml(self, output_dir: str):
         """Write global parameters.xml file.
@@ -1280,6 +1398,52 @@ class Parameters(object):
             param_set.remove(vv)
 
         return param_set
+
+    def _upstream_hrus(self, streamnet: nx.DiGraph, dsmost_seg: List[int]) -> List[int]:
+        """Get list of HRUs that contribute to the given stream segments.
+
+        :param streamnet: Directed, Acyclic Graph (DAG) of stream network
+        :param dsmost_seg: list of downstream-most segment IDs
+
+        :returns: list of HRUs that contribute to the stream segments
+        """
+
+        # Get subset of stream network for given segment
+        dag_ds_subset = get_streamnet_subset(streamnet, set(), dsmost_seg)
+
+        # Create list of segments in the subset
+        toseg_idx = list(set(xx[0] for xx in dag_ds_subset.edges))
+
+        # Build list of HRUs that contribute to the POI
+        final_hru_list = []
+
+        for xx in toseg_idx:
+            try:
+                for yy in self.seg_to_hru[xx]:
+                    final_hru_list.append(yy)
+            except KeyError:
+                # Not all segments have HRUs connected to them
+                print(f'Segment {xx} has no HRUs connected to it')
+
+        final_hru_list.sort()
+        return final_hru_list
+
+    def _upstream_segments(self, streamnet: nx.DiGraph, dsmost_seg: List[int]):
+        """Get list of segments that contribute to the given stream segments.
+
+        :param streamnet: Directed, Acyclic Graph (DAG) of stream network
+        :param dsmost_seg: list of downstream-most segment IDs
+
+        :returns: list of segments that contribute to the stream segments
+        """
+
+        # Get subset of stream network for given POI
+        dag_ds_subset = get_streamnet_subset(streamnet, set(), dsmost_seg)
+
+        # Create list of segments in the subset
+        toseg_idx = list(set(xx[0] for xx in dag_ds_subset.edges))
+
+        return toseg_idx
 
     # TODO: 20230719 PAN - not sure this is needed anymore
     # def get_params_for_modules(self, modules: Sequence[str]) -> Set[str]:
