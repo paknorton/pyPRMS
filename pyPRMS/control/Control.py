@@ -3,6 +3,7 @@
 import io
 import numpy as np
 import operator
+import pandas as pd
 import pkgutil
 import re
 import xml.etree.ElementTree as xmlET
@@ -279,6 +280,42 @@ class Control(object):
 
 
         outfile.close()
+
+    def write_metadata_csv(self, filename: str, sep: str = '\t'):
+        """Writes the control metadata to a CSV file"""
+
+        out_list = []
+
+        # <control_param name="soilrechr_dynamic" version="5.0">
+        #     <default>dyn_soil_rechr.param</default>
+        #     <force_default>1</force_default>
+        #     <type>4</type>
+        #     <numvals>1</numvals>
+        #     <desc>Pathname of the time series of pre-processed values for dynamic parameter soil_rechr_max_frac</desc>
+        # </control_param>
+
+        for pk in sorted(list(self.__control_vars.keys())):
+            cvar = self.get(pk)
+            md = cvar.meta
+
+            if pk in ['start_time', 'end_time']:
+                out_list.append([cvar.name,
+                                 'int32',
+                                 md.get('description', ''),
+                                 pd.Timestamp(md.get('default')).strftime('%-Y,%-m,%-d,%-H,%-M,%-S')])
+            else:
+                out_list.append([cvar.name,
+                                 md.get('datatype', ''),
+                                 md.get('description', ''),
+                                 md.get('default')])
+
+        col_names = ['variable_name', 'datatype', 'description', 'default']
+
+        df = pd.DataFrame.from_records(out_list, columns=col_names)
+        if sep == ',':
+            df.to_csv(filename, sep=sep, quotechar='"', index=False)
+        else:
+            df.to_csv(filename, sep=sep, index=False)
 
     def _check_condition(self, cstr: str) -> bool:
         """Takes a string of the form '<control_var> <op> <value>' and checks
