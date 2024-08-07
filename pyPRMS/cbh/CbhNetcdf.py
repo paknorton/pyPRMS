@@ -44,6 +44,8 @@ class CbhNetcdf(object):
 
     def read_netcdf(self) -> xr.Dataset:
         """Read CBH files stored in netCDF format.
+
+        :returns: xarray dataset
         """
 
         if self.__thredds:
