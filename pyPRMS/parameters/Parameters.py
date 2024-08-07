@@ -62,8 +62,10 @@ class Parameters(object):
         self.__hru_to_seg: Dict = dict()
         self.metadata = metadata['parameters']
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str):
         """Not sure what to write yet.
+
+        :param name: Name of the attribute
         """
 
         # Undefined attributes will look up the given parameter
@@ -94,7 +96,7 @@ class Parameters(object):
 
     @property
     def control(self) -> Optional[Control]:
-        """Get Control object
+        """Get Control object.
 
         :returns: Control object
         """
@@ -153,18 +155,18 @@ class Parameters(object):
 
     @property
     def poi_to_seg(self) -> Dict[str, int]:
-        """Returns a dictionary mapping poi_id to poi_seg.
+        """Returns a dictionary mapping poi_id to local poi_seg.
 
-        :returns: dictionary mapping poi_id to poi_seg"""
+        :returns: dictionary mapping poi_id to local poi_seg"""
 
         return dict(zip(self.__parameters['poi_gage_id'].tolist(),
                         self.__parameters['poi_gage_segment'].tolist()))
 
     @property
     def poi_to_seg0(self):
-        """Returns a dictionary mapping poi_id to zero-based poi_seg.
+        """Returns a dictionary mapping poi_id to local, zero-based poi_seg.
 
-        :returns: dictionary mapping poi_id to zero-based poi_seg"""
+        :returns: dictionary mapping poi_id to local, zero-based poi_seg"""
 
         return dict(zip(self.__parameters['poi_gage_id'].data,
                         self.__parameters['poi_gage_segment'].data - 1))
@@ -188,7 +190,10 @@ class Parameters(object):
     @property
     def unneeded_parameters(self) -> Set:
         """Get set of parameters that are defined but not needed by any of the
-        modules selected in the control file"""
+        modules selected in the control file.
+
+        :returns: set of unneeded parameter names
+        """
 
         if self.verbose:
             con.print('-'*20, 'unneeded_parameters', '-'*20)
@@ -255,7 +260,6 @@ class Parameters(object):
     # =========================================================================
     # Methods
     def add(self, name: str):
-
         """Add a new parameter by name.
 
         :param name: A valid PRMS parameter name
@@ -293,7 +297,7 @@ class Parameters(object):
         self.metadata[name] = new_entry
 
     def add_missing_parameters(self):
-        """Add missing parameters that are required by the selected modules
+        """Add missing parameters that are required by the selected modules.
         """
         if self.verbose:
             con.print('-'*20, 'add_missing_parameters', '-'*20)
@@ -311,9 +315,7 @@ class Parameters(object):
                 con.print(f'[bold]{cparam}[/] [gold3] parameter added with default value[/]')
 
     def adjust_bounded_parameters(self):
-        """Adjust the valid upper and lower values for a bounded parameter.
-
-        :param name: name of parameter
+        """Adjust the valid upper and lower values for bounded parameters.
         """
 
         for cparam in self.parameters.values():
@@ -957,8 +959,7 @@ class Parameters(object):
 
     def stream_network(self, tosegment: Optional[str] = 'tosegment_nhm',
                        seg_id: Optional[str] = 'nhm_seg') -> Union[nx.DiGraph, None]:
-        """
-        Create Directed, Acyclic Graph (DAG) of stream network.
+        """Create Directed, Acyclic Graph (DAG) of stream network.
 
         :param tosegment: name of parameter to use for HRU tosegment
         :param seg_id: name of parameter to use for the segment IDs
@@ -1062,11 +1063,11 @@ class Parameters(object):
     def write_parameter_file(self, filename: str,
                              header: Optional[List[str]] = None,
                              prms_version: Optional[int] = 5):
-        """Write a parameter file.
+        """Write a PRMS parameter file.
 
         :param filename: name of parameter file
         :param header: list of header lines
-        :param prms_version: Output either version 5 or 5 parameter files
+        :param prms_version: Output either version 5 or 6 parameter files
         """
 
         # Write the parameters out to a file
@@ -1261,7 +1262,11 @@ class Parameters(object):
         nc_hdl.close()
 
     def write_parameters_metadata_csv(self, filename: str, sep: str = '\t'):
-        """Writes the parameter metadata to a CSV file"""
+        """Writes the parameter metadata to a CSV file.
+
+        :param filename: output filename
+        :param sep: separator character
+        """
 
         out_list = []
 
@@ -1324,7 +1329,10 @@ class Parameters(object):
 
     def _condition_check_ctl(self, cstr: str) -> bool:
         """Takes a string of the form '<control_var> <op> <value>' and checks
-        if the condition is True
+        if the condition is True.
+
+        :param cstr: string of the form '<control_var> <op> <value>'
+        :returns: True if the condition is met, False otherwise
         """
 
         # if len(cstr) == 0:
@@ -1339,7 +1347,10 @@ class Parameters(object):
 
     def _condition_check_dim(self, cstr: str) -> bool:
         """Takes a string of the form '<dimension> <op> <value>' and checks
-        if the condition is True
+        if the condition is True.
+
+        :param cstr: string of the form '<dimension> <op> <value>'
+        :returns: True if the condition is met, False otherwise
         """
 
         # if len(cstr) == 0:
@@ -1358,7 +1369,10 @@ class Parameters(object):
         assert False, 'Parameters._read() must be defined by child class'
 
     def _required_parameters(self) -> Set:
-        """Return set of parameters required by modules selected in control file"""
+        """Return set of parameters required by modules selected in control file.
+
+        :returns: set of required parameter names
+        """
         if self.__control is None:
             # TODO: 20230727 PAN - this should raise an exception
             return set()
@@ -1378,7 +1392,12 @@ class Parameters(object):
         return self._trim_req_params(pset)
 
     def _trim_req_params(self, param_set: Set) -> Set:
-        """Remove parameters from a set of parameters that do not meet secondary requirements"""
+        """Remove parameters from a set of parameters that do not meet secondary requirements.
+
+        :param param_set: set of parameter names
+        :returns: set of parameter names that meet secondary requirements
+        """
+
         remove_set = set()
 
         for cparam in param_set:
