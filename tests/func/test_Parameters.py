@@ -25,7 +25,8 @@ class TestParameters:
     @pytest.mark.parametrize('name, size', [('nhru', 4),
                                             ('nmonths', 12),
                                             ('one', 1),
-                                            ('npoigages', 4)])
+                                            ('npoigages', 4),
+                                            ('nobs', 4)])
     def test_add_global_dimensions(self, pdb_instance, name, size):
         pdb_instance.dimensions.add(name=name, size=size)
 
