@@ -47,7 +47,7 @@ class TestControl:
                     'end_time': np.datetime64('1980-12-31T00:00:00.000000'),
                     'start_time': np.datetime64('1980-01-01T00:00:00.000000'), 'initial_deltat': 24.0,
                     'ani_output_file': 'animation.out',
-                    'basinOutBaseFileName': 'String to define the prefix for each basin summary output file',
+                    'basinOutBaseFileName': 'basinout_path',
                     'covden_sum_dynamic': 'dyn_covden_sum.param', 'covden_win_dynamic': 'dyn_covden_win.param',
                     'covtype_dynamic': 'dyn_cov_type.param', 'csv_output_file': 'prms_summary.csv',
                     'dprst_depth_dynamic': 'dyn_dprst_depth.param', 'dprst_frac_dynamic': 'dyn_dprst_frac.param',
