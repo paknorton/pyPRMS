@@ -9,6 +9,7 @@ import xml.etree.ElementTree as xmlET
 # from pyPRMS.Exceptions_custom import ConcatError
 from ..constants import NEW_PTYPE_TO_DTYPE
 from ..dimensions.Dimensions import ParamDimensions
+from ..Exceptions_custom import FixedDimensionError
 
 # ParamDataType = Union[List, npt.NDArray, pd.Series, np.int32, np.float32, np.float64, np.str_]
 ParamDataType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_]
@@ -53,6 +54,7 @@ class Parameter(object):
 
                         if global_dims is not None:
                             self.__dimensions[cname].size = global_dims.get(cname).size
+                            self.__dimensions[cname].meta = global_dims[cname].meta
                 else:
                     raise ValueError(f'`{self.name}` does not exist in metadata')
             else:
@@ -83,12 +85,12 @@ class Parameter(object):
         :returns: dataframe of parameter data
         """
 
-        if len(self.data.shape) == 2:
-            df = pd.DataFrame(self.data)
+        if len(self.data_raw.shape) == 2:
+            df = pd.DataFrame(self.data_raw)
             df.rename(columns=lambda xx: '{}_{}'.format(self.name, df.columns.get_loc(xx) + 1), inplace=True)
         else:
             # Assuming 1D array
-            df = pd.DataFrame(self.data, columns=[self.name])
+            df = pd.DataFrame(self.data_raw, columns=[self.name])
 
         df.rename(index={k: k + 1 for k in df.index}, inplace=True)
 
@@ -113,6 +115,8 @@ class Parameter(object):
 
         # TODO: Best way to prevent modification of data elements?
         if self.__data is not None:
+            if self.is_scalar:
+                return self.__data.item()
             return self.__data
         raise ValueError(f'Parameter, {self.__name}, has no data')
 
@@ -132,13 +136,14 @@ class Parameter(object):
             if isinstance(data_in, np.ndarray):
                 if data_in.size > 1:
                     raise IndexError(f'{self.__name}: parameter expects a scalar but incoming data has size={data_in.size}')
+
                 if data_in.dtype == NEW_PTYPE_TO_DTYPE[self.meta['datatype']]:
                     self.__data = data_in
                 else:
                     # Attempt to convert to correct datatype
                     self.__data = np.array(data_in, dtype=NEW_PTYPE_TO_DTYPE[self.meta['datatype']])
             else:
-                self.__data = NEW_PTYPE_TO_DTYPE[self.meta['datatype']](data_in)
+                self.__data = np.array([data_in], dtype=NEW_PTYPE_TO_DTYPE[self.meta['datatype']])
 
             if self.__dimensions.get('one').size == 0:
                 self.__dimensions.get('one').size = 1
@@ -187,6 +192,16 @@ class Parameter(object):
         else:
             # TODO: 2023-11-13 PAN - This should raise an error
             pass
+
+    @property
+    def data_raw(self) -> ParamDataType:
+        """Returns the raw data associated with the parameter.
+
+        :returns: parameter data
+        """
+        if self.__data is not None:
+            return self.__data
+        raise TypeError(f'Parameter, {self.__name}, has no data')
 
     @property
     def dimensions(self) -> ParamDimensions:
@@ -280,12 +295,11 @@ class Parameter(object):
 
         :returns true if all values are equal
         """
-        # if self.__data is not None:
-        if self.data.size > 1:
-            return (self.__data == self.__data[0]).all()   # type: ignore
+
+        if self.data_raw.size > 1:
+            return (self.data_raw == self.data_raw[0]).all()   # type: ignore
+
         return True  # scalar
-        # else:
-        #     raise TypeError('Parameter data is not initialized')
 
     def check(self) -> str:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) size
@@ -315,9 +329,9 @@ class Parameter(object):
         if minval is not None and maxval is not None:
             # Check both ends of the range
             if not(isinstance(minval, str) or isinstance(maxval, str)):
-                return bool((self.data >= minval).all() and (self.data <= maxval).all())
+                return bool((self.data_raw >= minval).all() and (self.data_raw <= maxval).all())
             elif minval == 'bounded':
-                return bool((self.data >= self.meta.get('default')).all())
+                return bool((self.data_raw >= self.meta.get('default')).all())
         return True
         # else:
         #     raise TypeError('Parameter data is not initialized')
@@ -333,7 +347,7 @@ class Parameter(object):
         for dd in self.dimensions.keys():
             total_size *= self.dimensions.get(dd).size
 
-        return self.data.size == total_size
+        return self.data_raw.size == total_size
 
     def is_hru_param(self) -> bool:
         """Test if parameter is dimensioned by HRU.
@@ -398,51 +412,51 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
-    def reshape(self, new_dims: Dict):
-        """Reshape a parameter, broadcasting existing values as necessary.
-
-        :param new_dims: Dimension names and sizes that will be used to reshape the parameter data
-        """
-
-        if self.__data is None:
-            # Reshape has no meaning if there is no data to reshape
-            return
-
-        if self.dimensions.ndim == 1:
-            if 'one' in self.dimensions.keys():
-                # Reshaping from a scalar to a 1D or 2D array
-                # print('Scalar to 1D or 2D')
-                new_sizes = [vv.size for vv in new_dims.values()]
-                tmp_data = np.broadcast_to(self.__data, new_sizes)
-
-                # Remove the original dimension
-                self.dimensions.remove('one')
-
-                # Add the new ones
-                for kk, vv in new_dims.items():
-                    self.dimensions.add(kk, vv.size)
-
-                self.__data = tmp_data
-            elif set(self.dimensions.keys()).issubset(set(new_dims.keys())):
-                # Reschaping a 1D to a 2D
-                if len(new_dims) == 1:
-                    print('ERROR: Cannot reshape from 1D array to 1D array')
-                else:
-                    # print('1D array to 2D array')
-                    new_sizes = [vv.size for vv in new_dims.values()]
-                    try:
-                        tmp_data = np.broadcast_to(self.__data, new_sizes)
-                    except ValueError:
-                        # operands could not be broadcast together with remapped shapes
-                        tmp_data = np.broadcast_to(self.__data, new_sizes[::-1]).T
-
-                    old_dim = list(self.dimensions.keys())[0]
-                    self.dimensions.remove(old_dim)
-
-                    for kk, vv in new_dims.items():
-                        self.dimensions.add(kk, vv.size)
-
-                    self.__data = tmp_data
+    # def reshape(self, new_dims: Dict):
+    #     """Reshape a parameter, broadcasting existing values as necessary.
+    #
+    #     :param new_dims: Dimension names and sizes that will be used to reshape the parameter data
+    #     """
+    #
+    #     if self.__data is None:
+    #         # Reshape has no meaning if there is no data to reshape
+    #         return
+    #
+    #     if self.dimensions.ndim == 1:
+    #         if 'one' in self.dimensions.keys():
+    #             # Reshaping from a scalar to a 1D or 2D array
+    #             # print('Scalar to 1D or 2D')
+    #             new_sizes = [vv.size for vv in new_dims.values()]
+    #             tmp_data = np.broadcast_to(self.__data, new_sizes)
+    #
+    #             # Remove the original dimension
+    #             self.dimensions.remove('one')
+    #
+    #             # Add the new ones
+    #             for kk, vv in new_dims.items():
+    #                 self.dimensions.add(kk, vv.size)
+    #
+    #             self.__data = tmp_data
+    #         elif set(self.dimensions.keys()).issubset(set(new_dims.keys())):
+    #             # Reschaping a 1D to a 2D
+    #             if len(new_dims) == 1:
+    #                 print('ERROR: Cannot reshape from 1D array to 1D array')
+    #             else:
+    #                 # print('1D array to 2D array')
+    #                 new_sizes = [vv.size for vv in new_dims.values()]
+    #                 try:
+    #                     tmp_data = np.broadcast_to(self.__data, new_sizes)
+    #                 except ValueError:
+    #                     # operands could not be broadcast together with remapped shapes
+    #                     tmp_data = np.broadcast_to(self.__data, new_sizes[::-1]).T
+    #
+    #                 old_dim = list(self.dimensions.keys())[0]
+    #                 self.dimensions.remove(old_dim)
+    #
+    #                 for kk, vv in new_dims.items():
+    #                     self.dimensions.add(kk, vv.size)
+    #
+    #                 self.__data = tmp_data
 
     def stats(self) -> Optional[NamedTuple]:
         """Returns basic statistics on parameter values.
@@ -451,40 +465,33 @@ class Parameter(object):
         """
         Stats = namedtuple('Stats', ['name', 'min', 'max', 'mean', 'median'])
 
-        # if self.__name in ['poi_gage_id']:
-        #     return Stats(self.__name, '', '', '', '')
-
-        if self.__data is None:
-            return None
-
         try:
-            return Stats(self.__name, np.min(self.__data), np.max(self.__data),
-                         np.mean(self.__data), np.median(self.__data))
+            return Stats(self.__name, np.min(self.data_raw), np.max(self.data_raw),
+                         np.mean(self.data_raw), np.median(self.data_raw))
         except TypeError:
             # This happens with string data
             return None
 
     def subset_by_index(self, dim_name: str, indices):
-        """Reduce columns (nhru or nsegment) from data array given a list of indices.
+        """Reduce array by axis (nhru or nsegment) a list of local indices.
 
         :param dim_name: name of dimension
-        :param indices: indices of HRUs or segments to extract"""
+        :param indices: local indices of HRUs or segments to extract"""
 
         if isinstance(indices, type(dict().values())):
             indices = list(indices)
 
-        if self.__data is not None:
-            if self.__data.size == 1:
-                print(f'{self.name}: Cannot reduce array of size one')
-                return
+        if self.dimensions[dim_name].is_fixed:
+            raise FixedDimensionError(f'{self.name}: Cannot reduce array on a fixed dimension {dim_name}')
 
-            self.__data = self.__data[indices]
-            assert self.__data is not None  # Needed so mypy doesn't fail on next line
-            self.dimensions[dim_name].size = self.__data.shape[self.dimensions.get_position(dim_name)]
-            # self.__data = np.take(self.__data, indices, axis=0)
-            # self.__data = np.delete(self.__data, indices, axis=self.dimensions.get_position(dim_name))
-        else:
-            raise TypeError('Parameter data is not initialized')
+        # First get the index position of the given dimension name so data
+        # won't be changed if the dimension name does not exist
+        dim_idx = self.dimensions.get_position(dim_name)
+
+        # We can't use the data setter when modifying the shape of parameter data
+        self.__data = np.take(self.data_raw, indices, axis=dim_idx)
+        assert self.data_raw is not None  # Needed so mypy doesn't fail on next line
+        self.dimensions[dim_name].size = self.data_raw.shape[dim_idx]
 
     def tolist(self) -> List[Union[int, float, str]]:
         """Returns the parameter data as a list.
@@ -494,10 +501,7 @@ class Parameter(object):
 
         # TODO: is this correct for snarea_curve?
         # Return a list of the data
-        if self.__data is not None:
-            return self.__data.ravel(order='F').tolist()
-        else:
-            raise TypeError('Parameter data is not initialized')
+        return self.data_raw.ravel(order='F').tolist()
 
     def toparamdb(self) -> str:
         """Outputs parameter data in the paramDb csv format.
@@ -505,27 +509,24 @@ class Parameter(object):
         :returns: parameter data in the paramDb CSV format
         """
 
-        if self.__data is not None:
-            outstr = '$id,{}\n'.format(self.name)
+        outstr = '$id,{}\n'.format(self.name)
 
-            ii = 0
-            # Do not use self.tolist() here because it causes minor changes
-            # to the values for floats.
-            for dd in self.__data.ravel(order='F'):
-                if self.meta.get('datatype', 'null') in ['float32', 'float64']:
-                    # Float and double types have to be formatted specially so
-                    # they aren't written in exponential notation or with
-                    # extraneous zeroes
-                    tmp = f'{dd:<20.7f}'.rstrip('0 ')
-                    if tmp[-1] == '.':
-                        tmp += '0'
-                    outstr += f'{ii+1},{tmp}\n'
-                else:
-                    outstr += f'{ii+1},{dd}\n'
-                ii += 1
-            return outstr
-        else:
-            raise TypeError('Parameter data and/or metadata is not initialized')
+        ii = 0
+        # Do not use self.tolist() here because it causes minor changes
+        # to the values for floats.
+        for dd in self.data_raw.ravel(order='F'):
+            if self.meta.get('datatype', 'null') in ['float32', 'float64']:
+                # Float and double types have to be formatted specially so
+                # they aren't written in exponential notation or with
+                # extraneous zeroes
+                tmp = f'{dd:<20.7f}'.rstrip('0 ')
+                if tmp[-1] == '.':
+                    tmp += '0'
+                outstr += f'{ii+1},{tmp}\n'
+            else:
+                outstr += f'{ii+1},{dd}\n'
+            ii += 1
+        return outstr
 
     def tostructure(self) -> dict:
         """Returns a dictionary structure of the parameter.
@@ -547,14 +548,11 @@ class Parameter(object):
 
         :returns: Array of unique values
         """
-        if self.__data is None:
-            return None
-
-        return np.unique(self.__data)
+        return np.unique(self.data_raw)
 
     def update_element(self, index: int, value: Union[int, float, List[int], List[float]]):
         """Update single value or row of values (e.g. nhru by nmonths) for a
-        given zero-based index in the parameter data array.
+        given local zero-based index in the parameter data array.
 
         :param index: scalar, zero-based array index
         :param value: updated value(s)
@@ -565,10 +563,41 @@ class Parameter(object):
         # parameter data array.
         if self.__data is not None:
             if self.is_scalar:
-                if self.__data != value:
-                    self.__data = value   # type: ignore
+                if isinstance(value, list):
+                    if len(value) > 1:
+                        raise TypeError(f'{self.name}: Cannot update scalar with list containing multiple values')
+                    value = value[0]
+                elif isinstance(value, np.ndarray):
+                    if value.size > 1:
+                        raise TypeError(f'{self.name}: Cannot update scalar with array containing multiple values')
+                    value = value.item()
+
+                if self.data != value:
+                    # We use the data setter to make sure the new scalar is cast to a numpy array internally
+                    self.data = value   # type: ignore
                     self.__modified = True
             else:
+                if self.data_raw.ndim == 1:
+                    if isinstance(value, list):
+                        if len(value) > 1:
+                            raise TypeError(f'{self.name}: Cannot update single element with list containing multiple values')
+                        value = value[0]
+                    elif isinstance(value, np.ndarray):
+                        if value.size > 1:
+                            raise TypeError(f'{self.name}: Cannot update single element with array containing multiple values')
+                        value = value.item()
+                elif self.data_raw.ndim == 2:
+                    if isinstance(value, list):
+                        if len(value) == 1:
+                            value = value[0]
+                        elif len(value) != self.data_raw.shape[1]:
+                            raise TypeError(f'{self.name}: Cannot update row with list of incorrect size')
+                    elif isinstance(value, np.ndarray):
+                        if value.size == 1:
+                            value = value.item()
+                        elif value.size != self.data_raw.shape[1]:
+                            raise TypeError(f'{self.name}: Cannot update row with array of incorrect size')
+
                 if not np.array_equal(self.__data[index], value):   # type: ignore
                     # Change the element only if the incoming value is different
                     # from the existing value
