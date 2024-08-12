@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import os
+import pandas as pd
 from distutils import dir_util
 from pyPRMS import ControlFile
 from pyPRMS import ParameterFile
@@ -50,6 +51,53 @@ class TestParameterFile:
         expected_headers = ['Written by Bandit version 0.8.7',
                            'ParamDb revision: https///code.usgs.gov/wma/national-iwaas/nhm/nhm-applications/nhm-v1.1-conus/paramdb_v1.1_gridmet_CONUS/commit/1ffad3a9e33473290efaaa472a90b42a12e28e1f']
         assert pdb.headers == expected_headers
+
+    def test_parameters_unneeded_parameters(self, datadir):
+        control_file = datadir.join('control.default.bandit')
+        parameter_file = datadir.join('myparam.param')
+
+        prms_meta = MetaData(verbose=True).metadata
+
+        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
+        pdb = ParameterFile(parameter_file, metadata=prms_meta)
+        pdb.control = ctl
+
+        expected_headers = ['Written by Bandit version 0.8.7',
+                           'ParamDb revision: https///code.usgs.gov/wma/national-iwaas/nhm/nhm-applications/nhm-v1.1-conus/paramdb_v1.1_gridmet_CONUS/commit/1ffad3a9e33473290efaaa472a90b42a12e28e1f']
+        assert pdb.headers == expected_headers
+
+        assert pdb.unneeded_parameters == {'lat_temp_adj', 'azrh', 'width_alpha', 'alte', 'seg_lat', 'vow',
+                                           'albedo', 'seg_elev', 'width_m', 'altw', 'stream_tave_init', 'vce',
+                                           'maxiter_sntemp', 'voe', 'vdemn', 'vdwmn', 'vhw', 'seg_humidity',
+                                           'gw_tau', 'vcw', 'ss_tau', 'vdemx', 'vhe', 'melt_temp', 'vdwmx'}
+
+    def test_add_missing_parameters(self, datadir):
+        control_file = datadir.join('control.default.bandit')
+        parameter_file = datadir.join('myparam.param')
+
+        prms_meta = MetaData(verbose=True).metadata
+
+        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
+        pdb = ParameterFile(parameter_file, metadata=prms_meta)
+        pdb.control = ctl
+
+        missing = pdb.missing_params
+        print(missing)
+
+        intial_params = set(pdb.parameters.keys())
+
+        pdb.add_missing_parameters()
+
+        assert set(pdb.parameters.keys()) == intial_params.union(missing - {'nhm_deplcrv'})
+
+    def test_parameters_remove_unneeded(self, pdb_instance):
+        remove_list = pdb_instance.unneeded_parameters
+        initial_params = set(pdb_instance.parameters.keys())
+
+        pdb_instance.remove(remove_list)
+
+        assert set(pdb_instance.parameters.keys()) == initial_params - remove_list
+
 
     def test_read_parameter_file_dup_entry(self, datadir):
         control_file = datadir.join('control.default.bandit')
@@ -176,4 +224,118 @@ class TestParameterFile:
         pdb_instance.remove(remove_list)
         assert not pdb_instance.exists(name)
 
+    # ==========================================
+    # Tests for Parameters class
+    def test_poi_upstream_hrus(self, pdb_instance):
+        assert pdb_instance.poi_upstream_hrus('06469400') == {'06469400': [57863, 57864, 57867, 57868, 57869, 57872, 57873,
+                                                                           57874, 57877, 57878, 57879, 57880, 57881, 57882]}
 
+        # Test with all POIs (only one in this case)
+        all_pois = pdb_instance.poi_to_seg.keys()
+        assert pdb_instance.poi_upstream_hrus(all_pois) == {'06469400': [57863, 57864, 57867, 57868, 57869, 57872, 57873,
+                                                                         57874, 57877, 57878, 57879, 57880, 57881, 57882]}
+
+    def test_poi_upstream_segments(self, pdb_instance):
+        assert pdb_instance.poi_upstream_segments('06469400') == {'06469400': [30113, 30114, 30115, 30116, 30117, 30118, 30119]}
+
+        # Test with all POIs (only one in this case)
+        all_pois = pdb_instance.poi_to_seg.keys()
+        assert pdb_instance.poi_upstream_segments(all_pois) == {'06469400': [30113, 30114, 30115, 30116, 30117, 30118, 30119]}
+
+    def test_segment_upstream_segments(self, pdb_instance):
+        assert pdb_instance.segment_upstream_segments(30115) == {30115: [30113, 30114, 30115, 30116, 30117, 30118]}
+
+        # Test with all segments
+        all_segs = pdb_instance.get('nhm_seg').data
+        assert pdb_instance.segment_upstream_segments(all_segs) == {30113: [30113, 30114, 30116, 30117],
+                                                                    30114: [30114],
+                                                                    30115: [30113, 30114, 30115, 30116, 30117, 30118],
+                                                                    30116: [30114, 30116],
+                                                                    30117: [30114, 30116, 30117],
+                                                                    30118: [30113, 30114, 30116, 30117, 30118],
+                                                                    30119: [30113, 30114, 30115, 30116, 30117, 30118, 30119]}
+
+    def test_segment_upstream_hrus(self, pdb_instance):
+        assert pdb_instance.segment_upstream_hrus(30115) == {30115: [57867, 57868, 57869, 57872, 57873, 57874, 57877, 57878, 57879, 57880, 57881, 57882]}
+
+        # Test with all POIs (only one in this case)
+        all_segs = pdb_instance.get('nhm_seg').data
+        assert pdb_instance.segment_upstream_hrus(all_segs) == {30113: [57873, 57874, 57877, 57878, 57879, 57880, 57881, 57882],
+                                                                30114: [57877, 57880],
+                                                                30115: [57867, 57868, 57869, 57872, 57873, 57874, 57877, 57878, 57879, 57880, 57881, 57882],
+                                                                30116: [57877, 57878, 57879, 57880],
+                                                                30117: [57877, 57878, 57879, 57880, 57881, 57882],
+                                                                30118: [57868, 57869, 57873, 57874, 57877, 57878, 57879, 57880, 57881, 57882],
+                                                                30119: [57863, 57864, 57867, 57868, 57869, 57872, 57873, 57874, 57877, 57878, 57879, 57880, 57881, 57882]}
+
+    def test_parameters_update_element(self, pdb_instance):
+        assert (pdb_instance.get('melt_look').data == np.array([90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90], dtype=np.int32)).all()
+
+        pdb_instance.update_element('melt_look', 57873, 85)
+        assert (pdb_instance.get('melt_look').data == np.array([90, 90, 90, 90, 90, 90, 85, 90, 90, 90, 90, 90, 90, 90], dtype=np.int32)).all()
+
+        assert (pdb_instance.get('seg_depth').data == np.array([1.192112, 0.894294, 1.244646, 0.968989, 1.015976, 1.1965, 1.286962], dtype=np.float32)).all()
+
+        pdb_instance.update_element('seg_depth', 30117, 0.25)
+        assert (pdb_instance.get('seg_depth').data == np.array([1.192112, 0.894294, 1.244646, 0.968989, 0.25, 1.1965, 1.286962], dtype=np.float32)).all()
+
+        assert pdb_instance.get('albset_sna').data == np.float32(0.05)
+
+        pdb_instance.update_element('albset_sna', 0, 0.07)
+        assert pdb_instance.get('albset_sna').data == np.float32(0.07)
+
+    def test_get_dataframe_bad_param(self, pdb_instance):
+        """Test that a KeyError is raised when a bad parameter name is passed to get_dataframe"""
+        with pytest.raises(KeyError):
+            pdb_instance.get_dataframe('bad_param')
+
+    def test_get_dataframe(self, pdb_instance):
+        """Test the return of a dataframe with global IDs index for a parameter"""
+        df = pdb_instance.get_dataframe('gwflow_coef')
+        expected_df = pd.DataFrame({'gwflow_coef': np.array([0.072118, 0.096741, 0.074658, 0.071941, 0.091905], dtype=np.float32),
+                                    'nhm_id': np.array([57863, 57864, 57867, 57868, 57869], dtype=np.int32)}).set_index('nhm_id')
+
+        pd.testing.assert_frame_equal(df.head(), expected_df.head())
+
+    def test_get_dataframe_for_global_ids(self, pdb_instance):
+        """Test the return of local indices for index when nhm_id or nhm_seg selected"""
+        df = pdb_instance.get_dataframe('nhm_id')
+        expected_df = pd.DataFrame({'nhm_id': np.array([57863, 57864, 57867, 57868, 57869], dtype=np.int32),
+                                    'model_hru_idx': np.array([1, 2, 3, 4, 5], dtype=np.int64)}).set_index('model_hru_idx')
+
+        pd.testing.assert_frame_equal(df.head(), expected_df.head())
+
+        df = pdb_instance.get_dataframe('nhm_seg')
+        expected_df = pd.DataFrame({'nhm_seg': np.array([30113, 30114, 30115, 30116, 30117], dtype=np.int32),
+                                    'model_seg_idx': np.array([1, 2, 3, 4, 5], dtype=np.int64)}).set_index('model_seg_idx')
+
+        pd.testing.assert_frame_equal(df.head(), expected_df.head())
+
+    def test_get_dataframe_snarea_curve(self, pdb_instance):
+        df = pdb_instance.get_dataframe('snarea_curve')
+        expected_df = pd.DataFrame({'curve_index': np.array([1], dtype=np.int64),
+                                    1: np.array([0.0], dtype=np.float32),
+                                    2: np.array([0.22], dtype=np.float32),
+                                    3: np.array([0.43], dtype=np.float32),
+                                    4: np.array([0.62], dtype=np.float32),
+                                    5: np.array([0.77], dtype=np.float32),
+                                    6: np.array([0.88], dtype=np.float32),
+                                    7: np.array([0.95], dtype=np.float32),
+                                    8: np.array([0.99], dtype=np.float32),
+                                    9: np.array([1.0], dtype=np.float32),
+                                    10: np.array([1.0], dtype=np.float32),
+                                    11: np.array([1.0], dtype=np.float32),}).set_index('curve_index')
+        expected_df.columns = np.arange(1, 12, dtype=np.int64)
+
+        pd.testing.assert_frame_equal(df, expected_df)
+
+    def test_get_dataframe_no_global(self, pdb_instance):
+        """Test return of local indices when global IDs are not available"""
+        pdb_instance.remove('nhm_id')
+        pdb_instance.remove('nhm_seg')
+
+        df = pdb_instance.get_dataframe('gwflow_coef')
+        expected_df = pd.DataFrame({'gwflow_coef': np.array([0.072118, 0.096741, 0.074658, 0.071941, 0.091905], dtype=np.float32),
+                                    'model_hru_idx': np.array([1, 2, 3, 4, 5], dtype=np.int64)}).set_index('model_hru_idx')
+
+        pd.testing.assert_frame_equal(df.head(), expected_df.head())
