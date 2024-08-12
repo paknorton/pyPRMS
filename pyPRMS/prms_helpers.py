@@ -21,14 +21,17 @@ cond_check = {'=': operator.eq,
 
 
 def flex_type(val):
+    if isinstance(val, (np.float32, np.float64, np.int32, np.str_)):
+        val = val.item()
+
     if isinstance(val, str):
         return val
-    else:
-        try:
-            return float_to_str(val)
-        except decimal.InvalidOperation:
-            print(f'Caused by: {val}')
-            raise
+
+    try:
+        return float_to_str(val)
+    except decimal.InvalidOperation:
+        print(f'Caused by: {val}')
+        raise
 
 
 def float_to_str(f: float) -> str:
