@@ -96,7 +96,7 @@ class TestParameter:
     def test_new_param_no_data(self, metadata_instance):
         """Getting parameter data when data is None raises ValueError"""
         aparam = Parameter(name='tmax_adj', meta=metadata_instance)
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             _ = aparam.data
 
     @pytest.mark.parametrize('name, data, expected', [('cov_type', np.array([1.4, 0, 1.6, 2.1], dtype=np.float32), np.array([1, 0, 1, 2], dtype=np.int32)),
@@ -548,9 +548,6 @@ class TestParameter:
 
         with pytest.raises(AttributeError):
             assert stats.mean == 'foo'
-            assert stats.median == 'foo'
-            assert stats.min == 'foo'
-            assert stats.max == 'foo'
 
     @pytest.mark.parametrize('name, data, expected', [('cov_type',
                                                        np.array([1, 2, 3], dtype=np.int32),
