@@ -80,7 +80,7 @@ class Parameter(object):
 
     @property
     def as_dataframe(self) -> pd.DataFrame:
-        """Returns the parameter data as a pandas DataFrame.
+        """Returns the parameter data as a pandas DataFrame with local model indices as the index.
 
         :returns: dataframe of parameter data
         """
@@ -118,7 +118,7 @@ class Parameter(object):
             if self.is_scalar:
                 return self.__data.item()
             return self.__data
-        raise ValueError(f'Parameter, {self.__name}, has no data')
+        raise TypeError(f'Parameter, {self.__name}, has no data')
 
     @data.setter
     def data(self, data_in: ParamDataType):
@@ -561,52 +561,49 @@ class Parameter(object):
         # NOTE: index is zero-based
         # Update a single element or single row (e.g. nhru x nmonth) in the
         # parameter data array.
-        if self.__data is not None:
-            if self.is_scalar:
+        if self.is_scalar:
+            if isinstance(value, list):
+                if len(value) > 1:
+                    raise TypeError(f'{self.name}: Cannot update scalar with list containing multiple values')
+                value = value[0]
+            elif isinstance(value, np.ndarray):
+                if value.size > 1:
+                    raise TypeError(f'{self.name}: Cannot update scalar with array containing multiple values')
+                value = value.item()
+
+            if self.data != value:
+                # We use the data setter to make sure the new scalar is cast to a numpy array internally
+                self.data = value   # type: ignore
+                self.__modified = True
+        else:
+            if self.data_raw.ndim == 1:
                 if isinstance(value, list):
                     if len(value) > 1:
-                        raise TypeError(f'{self.name}: Cannot update scalar with list containing multiple values')
+                        raise TypeError(f'{self.name}: Cannot update single element with list containing multiple values')
                     value = value[0]
                 elif isinstance(value, np.ndarray):
                     if value.size > 1:
-                        raise TypeError(f'{self.name}: Cannot update scalar with array containing multiple values')
+                        raise TypeError(f'{self.name}: Cannot update single element with array containing multiple values')
                     value = value.item()
-
-                if self.data != value:
-                    # We use the data setter to make sure the new scalar is cast to a numpy array internally
-                    self.data = value   # type: ignore
-                    self.__modified = True
-            else:
-                if self.data_raw.ndim == 1:
-                    if isinstance(value, list):
-                        if len(value) > 1:
-                            raise TypeError(f'{self.name}: Cannot update single element with list containing multiple values')
+            elif self.data_raw.ndim == 2:
+                if isinstance(value, list):
+                    if len(value) == 1:
                         value = value[0]
-                    elif isinstance(value, np.ndarray):
-                        if value.size > 1:
-                            raise TypeError(f'{self.name}: Cannot update single element with array containing multiple values')
+                    elif len(value) != self.data_raw.shape[1]:
+                        raise TypeError(f'{self.name}: Cannot update row with list of incorrect size')
+                elif isinstance(value, np.ndarray):
+                    if value.size == 1:
                         value = value.item()
-                elif self.data_raw.ndim == 2:
-                    if isinstance(value, list):
-                        if len(value) == 1:
-                            value = value[0]
-                        elif len(value) != self.data_raw.shape[1]:
-                            raise TypeError(f'{self.name}: Cannot update row with list of incorrect size')
-                    elif isinstance(value, np.ndarray):
-                        if value.size == 1:
-                            value = value.item()
-                        elif value.size != self.data_raw.shape[1]:
-                            raise TypeError(f'{self.name}: Cannot update row with array of incorrect size')
+                    elif value.size != self.data_raw.shape[1]:
+                        raise TypeError(f'{self.name}: Cannot update row with array of incorrect size')
 
-                if not np.array_equal(self.__data[index], value):   # type: ignore
-                    # Change the element only if the incoming value is different
-                    # from the existing value
-                    self.__data[index] = value   # type: ignore
-                    self.__modified = True
-        else:
-            raise TypeError('Parameter data is not initialized')
+            if not np.array_equal(self.__data[index], value):   # type: ignore
+                # Change the element only if the incoming value is different
+                # from the existing value
+                self.__data[index] = value   # type: ignore
+                self.__modified = True
 
-    def _value_index(self, value: Union[int, float, str]) -> Union[npt.NDArray, None]:
+    def _value_index_1d(self, value: Union[int, float, str]) -> Union[npt.NDArray, None]:
         """Given a scalar value return the indices where there is a match.
 
         :param value: The value to find in the parameter data array
@@ -614,13 +611,11 @@ class Parameter(object):
         :returns: Array of zero-based indices matching the given value
         """
 
-        if self.ndim > 1:
-            # TODO: 2021-03-24 PAN - add support for 2D arrays
-            print(f'{self.name}: _value_index() does not support 2D arrays yet')
-            return None
-        else:
+        if self.ndim == 1:
             # Returns a list of indices where the data elements match value
-            return np.where(self.__data == value)[0]
+            return np.argwhere(self.data_raw == value)[:, 0]   # .tolist()
+            # return np.where(self.data_raw == value)[0]
+        return None
 
     # def concat(self, data_in):
     #     """Takes a list of parameter data and concatenates it to the end of the existing parameter data.
