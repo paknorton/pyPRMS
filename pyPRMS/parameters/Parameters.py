@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt     # type: ignore
 import netCDF4 as nc    # type: ignore
 import networkx as nx   # type: ignore
 import numpy as np
+import numpy.typing as npt
 import pandas as pd     # type: ignore
 import sys
 import xml.dom.minidom as minidom
@@ -195,7 +196,7 @@ class Parameters(object):
         :returns: set of unneeded parameter names
         """
 
-        if self.verbose:
+        if self.verbose:   # pragma: no cover
             con.print('-'*20, 'unneeded_parameters', '-'*20)
 
         pset = self._required_parameters()
@@ -300,18 +301,18 @@ class Parameters(object):
         """Add missing parameters that are required by the selected modules.
         """
         if self.verbose:
-            con.print('-'*20, 'add_missing_parameters', '-'*20)
+            con.print('-'*20, 'add_missing_parameters', '-'*20)   # pragma: no cover
 
-        for cparam in list(self.missing_params):
+        for cparam in self.missing_params:
             if cparam in ['nhm_deplcrv']:
-                if self.verbose:
+                if self.verbose:   # pragma: no cover
                     con.print(f'[bold]{cparam}[/] is missing but lacks the information to be added')
                 continue
 
             self.add(cparam)
             self.get(cparam).data = self.metadata[cparam].get('default')
 
-            if self.verbose:
+            if self.verbose:   # pragma: no cover
                 con.print(f'[bold]{cparam}[/] [gold3] parameter added with default value[/]')
 
     def adjust_bounded_parameters(self):
@@ -367,20 +368,16 @@ class Parameters(object):
             if pp.all_equal():
                 dims = list(pp.dimensions.keys())
 
-                if pp.data.ndim == 2:
+                if pp.is_scalar:
+                    con.print(f'    INFO: Scalar; value = {pp.data}')
+                elif pp.data.ndim == 2:
                     con.print(f'    INFO: dimensioned {dims}; all values by {dims[0]} are equal to {pp.data[0]}')
                     # con.print('    INFO: dimensioned [{1}, {2}]; all values by {1} are equal to {0}'.format(pp.data[0],
                     #                                                                                         *list(pp.dimensions.keys())))
                 elif pp.data.ndim == 1:
-                    if 'one' in dims:
-                        con.print(f'    INFO: Scalar; value = {pp.data}')
-                    else:
-                        con.print(f'    INFO: dimensioned {dims}; all values are equal to {pp.data[0]}')
-                        # con.print('    INFO: dimensioned [{1}]; all values are equal to {0}'.format(pp.data[0],
-                        #                                                                             *list(pp.dimensions.keys())))
-                else:
-                    # Scalars
-                    con.print(f'    INFO: Scalar; value = {pp.data}')
+                    con.print(f'    INFO: dimensioned {dims}; all values are equal to {pp.data[0]}')
+                    # con.print('    INFO: dimensioned [{1}]; all values are equal to {0}'.format(pp.data[0],
+                    #                                                                             *list(pp.dimensions.keys())))
 
             if pp.name == 'snarea_curve':
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
@@ -410,8 +407,8 @@ class Parameters(object):
     def get_dataframe(self, name: str) -> pd.DataFrame:
         """Returns a pandas DataFrame for a parameter.
 
-        If the parameter dimensions includes either nhrus or nsegment then the
-        respective national ids are included, if they exist, as the index in the
+        If the parameter dimensions include either nhru or nsegment then the
+        respective national ids (nhm_seg, nhm_id) are included, if they exist, as the index in the
         returned dataframe.
 
         :param name: The name of the parameter
@@ -419,37 +416,31 @@ class Parameters(object):
         """
 
         if not self.exists(name):
-            raise ValueError(f'Parameter, {name}, has no associated data')
+            raise KeyError(f'Parameter, {name}, does not exist')
 
         cparam = self.__parameters[name]
         param_data = cparam.as_dataframe
 
         if cparam.is_hru_param():
             if name != 'nhm_id':
-                try:
+                if self.exists('nhm_id'):
                     param_id = self.__parameters['nhm_id'].as_dataframe
 
                     # Create a DataFrame of the parameter
                     param_data = param_data.merge(param_id, left_index=True, right_index=True)
                     param_data.set_index('nhm_id', inplace=True)
                     param_data.index.name = 'nhm_id'
-                except KeyError:
-                    # If there is no nhm_id parameter then just return the
-                    # requested parameter by itself
-                    pass
             else:
                 param_data = self.__parameters['nhm_id'].as_dataframe
         elif cparam.is_seg_param():
             if name != 'nhm_seg':
-                try:
+                if self.exists('nhm_seg'):
                     param_id = self.__parameters['nhm_seg'].as_dataframe
 
                     # Create a DataFrame of the parameter
                     param_data = param_data.merge(param_id, left_index=True, right_index=True)
                     param_data.set_index('nhm_seg', inplace=True)
                     param_data.index.name = 'nhm_seg'
-                except KeyError:
-                    pass
             else:
                 param_data = self.__parameters['nhm_seg'].as_dataframe
         elif name == 'snarea_curve':
@@ -462,7 +453,7 @@ class Parameters(object):
         return param_data
 
     def get_subset(self, name: str, global_ids: List[int]) -> pd.DataFrame:
-        """Returns a subset for a parameter based on the global_ids (e.g. nhm).
+        """Returns a subset for a parameter based on the global_ids (e.g. nhm_id, nhm_seg).
 
         :param name: Name of the parameter
         :param global_ids: List of global IDs to extract
@@ -824,7 +815,7 @@ class Parameters(object):
             if self.exists(cparam):
                 del self.__parameters[cparam]
 
-                if self.verbose:
+                if self.verbose:   # pragma: no cover
                     con.print(f'[bold]{cparam}[/] [gold3]parameter removed[/]')
 
     def remove_poi(self, poi: Union[str, List[str]]):
@@ -869,7 +860,7 @@ class Parameters(object):
                 self.dimensions.get('npoigages').size -= len(poi_del_indices)
                 self.dimensions.get('nobs').size -= len(poi_del_indices)
 
-    def segment_upstream_hrus(self, segs: Union[int, List[int], KeysView]) -> Dict[int, List[int]]:
+    def segment_upstream_hrus(self, segs: Union[int, List[int], KeysView, npt.NDArray]) -> Dict[int, List[int]]:
         """Returns a dictionary of segment to upstream global HRU IDs.
 
         :param segs: Global segment ID or list of global segment IDs
@@ -881,6 +872,8 @@ class Parameters(object):
             segs = [segs]
         elif isinstance(segs, KeysView):
             segs = list(segs)
+        elif isinstance(segs, np.ndarray):
+            segs = segs.tolist()
 
         seg_hrus = {}
 
@@ -895,7 +888,7 @@ class Parameters(object):
 
         return seg_hrus
 
-    def segment_upstream_segments(self, segs: Union[int, List[int], KeysView]) -> Dict[int, List[int]]:
+    def segment_upstream_segments(self, segs: Union[int, List[int], KeysView, npt.NDArray]) -> Dict[int, List[int]]:
         """Returns a dictionary of global segment IDs to upstream global segment IDs.
 
         :param segs: global segment IDs or list of global segment IDs
@@ -907,6 +900,8 @@ class Parameters(object):
             segs = [segs]
         elif isinstance(segs, KeysView):
             segs = list(segs)
+        elif isinstance(segs, np.ndarray):
+            segs = segs.tolist()
 
         us_segs = {}
 
@@ -915,9 +910,6 @@ class Parameters(object):
 
         for cseg in segs:
             # Lookup segment for the current segment
-            if isinstance(cseg, np.int32):
-                cseg = cseg.item()
-
             dsmost_seg = [cseg]
             us_segs[cseg] = self._upstream_segments(dag_streamnet, dsmost_seg)
 
@@ -985,7 +977,7 @@ class Parameters(object):
                        id1: int,
                        value: Union[int, float, List[int], List[float]]):
         """Update single value or row of values (e.g. nhru by nmonths) for a
-        given nhm_id or nhm_seg.
+        given nhm_id, nhm_seg, or 0 (for scalars).
 
         :param name: name of parameter to update
         :param id1: scalar nhm_id or nhm_seg
@@ -994,31 +986,25 @@ class Parameters(object):
 
         # NOTE: id1 is either an nhm_id or nhm_seg (both are 1-based)
         cparam = self.get(name)
+        idx0 = None
 
-        if cparam.is_hru_param():
-            # Lookup index for nhm_id
-            idx0 = self.get('nhm_id')._value_index(id1)
+        try:
+            if cparam.is_hru_param():
+                # Lookup index for nhm_id
+                idx0 = self.get('nhm_id')._value_index_1d(id1).item()
+            elif cparam.is_seg_param():
+                # Lookup index for nhm_seg
+                idx0 = self.get('nhm_seg')._value_index_1d(id1).item()
+            elif cparam.is_scalar:
+                idx0 = 0
+        except ValueError:
+            raise ValueError(f'Exactly one index should be found for {id1}')
 
-            if idx0 is None:
-                raise TypeError(f'nhm_id _value_index returned NoneType instead of ndarray')
+        if idx0 is None:
+            raise TypeError(f'{name} _value_index_1d() returned NoneType instead of ndarray')
 
-            if len(idx0) > 1:
-                raise ValueError(f'nhm_id values should be unique')
-            else:
-                cparam.update_element(idx0[0], value)
-        elif cparam.is_seg_param():
-            # Lookup index for nhm_seg
-            idx0 = self.get('nhm_seg')._value_index(id1)
-
-            if idx0 is None:
-                raise TypeError(f'nhm_seg _value_index returned NoneType instead of ndarray')
-
-            if len(idx0) > 1:
-                raise ValueError(f'nhm_seg values should be unique')
-            else:
-                cparam.update_element(idx0[0], value)
-
-        # TODO: Add handling for other dimensions
+        # This will raise a ValueError if more than one index is found
+        cparam.update_element(idx0, value)
 
     def write_dimensions_xml(self, output_dir: str):
         """Write global dimensions.xml file.
