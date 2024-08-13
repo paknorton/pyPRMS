@@ -1,18 +1,30 @@
 import functools
 import numpy as np
-import numpy.typing as npt   # This cannot be accessed from numpy directly
+import numpy.typing as npt
 import pandas as pd     # type: ignore
-from collections import namedtuple  # , OrderedDict
 from typing import Any, cast, Dict, List, NamedTuple, Optional, Union
 import xml.etree.ElementTree as xmlET
 
-# from pyPRMS.Exceptions_custom import ConcatError
 from ..constants import NEW_PTYPE_TO_DTYPE
 from ..dimensions.Dimensions import ParamDimensions
 from ..Exceptions_custom import FixedDimensionError
 
-# ParamDataType = Union[List, npt.NDArray, pd.Series, np.int32, np.float32, np.float64, np.str_]
-ParamDataType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_]
+ParamDataRawType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_]
+ParamDataType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_, int, float, str]
+
+
+class Outliers(NamedTuple):
+    name: str
+    under: int
+    over: int
+
+
+class Stats(NamedTuple):
+    name: str
+    min: Optional[npt.DTypeLike]
+    max: Optional[npt.DTypeLike]
+    mean: Optional[npt.DTypeLike]
+    median: Optional[npt.DTypeLike]
 
 
 class Parameter(object):
@@ -61,7 +73,7 @@ class Parameter(object):
                 # The meta must be supplied as an adhoc dictionary
                 self.meta = meta
 
-        self.__data: Optional[ParamDataType] = None
+        self.__data: Optional[ParamDataRawType] = None
         self.__modified = False
 
     def __str__(self) -> str:
@@ -87,10 +99,11 @@ class Parameter(object):
 
         if len(self.data_raw.shape) == 2:
             df = pd.DataFrame(self.data_raw)
-            df.rename(columns=lambda xx: '{}_{}'.format(self.name, df.columns.get_loc(xx) + 1), inplace=True)
+            df.rename(columns=lambda xx: '{}_{}'.format(self.name,
+                                                        df.columns.get_loc(xx) + 1), inplace=True)   # type: ignore
         else:
             # Assuming 1D array
-            df = pd.DataFrame(self.data_raw, columns=[self.name])
+            df = pd.DataFrame(self.data_raw, columns=[self.name])   # type: ignore
 
         df.rename(index={k: k + 1 for k in df.index}, inplace=True)
 
@@ -121,7 +134,7 @@ class Parameter(object):
         raise TypeError(f'Parameter, {self.__name}, has no data')
 
     @data.setter
-    def data(self, data_in: ParamDataType):
+    def data(self, data_in: ParamDataRawType):
         """Sets the data for the parameter.
 
         :param data_in: A list containing the parameter data
@@ -129,13 +142,12 @@ class Parameter(object):
         :raises ValueError: if the number of dimensions for the parameter is greater than 2
         """
 
-        data_np: Union[npt.NDArray, None] = None
-
         # Metadata required: datatype, dimensions
         if self.is_scalar:
             if isinstance(data_in, np.ndarray):
                 if data_in.size > 1:
-                    raise IndexError(f'{self.__name}: parameter expects a scalar but incoming data has size={data_in.size}')
+                    raise IndexError(f'{self.__name}: parameter expects a scalar but '
+                                     f'incoming data has size={data_in.size}')
 
                 if data_in.dtype == NEW_PTYPE_TO_DTYPE[self.meta['datatype']]:
                     self.__data = data_in
@@ -170,20 +182,14 @@ class Parameter(object):
                                          'and cannot be reshaped to expected shape.')
 
             if data_in.ndim != len(self.meta['dimensions']):
-                raise IndexError(f'{self.__name}: Number of dimensions do not match ({data_in.ndim} != {len(self.meta["dimensions"])})')
-
-            # if self.__data is not None:
-            #     # Make sure shapes match
-            #     if data_in.shape != self.__data.shape:
-            #         raise IndexError(f'{self.__name}: Shape of incoming data, {data_in.shape}, '
-            #                          f'does not match shape of existing data, {self.__data.shape}')
+                raise IndexError(f'{self.__name}: Number of dimensions do not match '
+                                 f'({data_in.ndim} != {len(self.meta["dimensions"])})')
 
             if data_in.dtype == NEW_PTYPE_TO_DTYPE[self.meta['datatype']]:
                 self.__data = data_in
             else:
                 # Attempt to convert to correct datatype
                 self.__data = np.array(data_in, dtype=NEW_PTYPE_TO_DTYPE[self.meta['datatype']])
-                # raise ValueError(f'{self.__name}: incoming datatype, {data_in.dtype}, does not match expected, {NEW_PTYPE_TO_DTYPE[self.meta["datatype"]]}')
 
             if expected_size == 0:
                 # Set the dimension size(s) if existing dimension sizes are zero
@@ -194,7 +200,7 @@ class Parameter(object):
             pass
 
     @property
-    def data_raw(self) -> ParamDataType:
+    def data_raw(self) -> ParamDataRawType:
         """Returns the raw data associated with the parameter.
 
         :returns: parameter data
@@ -328,13 +334,12 @@ class Parameter(object):
 
         if minval is not None and maxval is not None:
             # Check both ends of the range
-            if not(isinstance(minval, str) or isinstance(maxval, str)):
-                return bool((self.data_raw >= minval).all() and (self.data_raw <= maxval).all())
+            if not (isinstance(minval, str) or isinstance(maxval, str)):
+                return (self.data_raw >= minval).all() and (self.data_raw <= maxval).all().item()
             elif minval == 'bounded':
-                return bool((self.data_raw >= self.meta.get('default')).all())
+                return (self.data_raw >= self.meta.get('default')).all().item()   # type: ignore
+
         return True
-        # else:
-        #     raise TypeError('Parameter data is not initialized')
 
     def has_correct_size(self) -> bool:
         """Verifies the total size of the data for the parameter matches the total declared dimension(s) sizes.
@@ -372,24 +377,21 @@ class Parameter(object):
 
         return not set(self.meta.get('dimensions', [])).isdisjoint({'nsegment'})
 
-    def outliers(self) -> NamedTuple:
+    def outliers(self) -> Outliers:
         """Returns the number of values less than or greater than the valid range
 
         :returns: NamedTuple containing count of values less than and values greater than valid range
         """
-        Outliers = namedtuple('Outliers', ['name', 'under', 'over'])
+        # Outliers = namedtuple('Outliers', ['name', 'under', 'over'])
 
         values_under = 0
         values_over = 0
 
-        if self.__data is not None:
-            if self.meta.get('minimum', None) is not None:
-                values_under = np.count_nonzero(self.__data < self.meta.get('minimum'))
-                # values_under = len(self.__data[self.__data < self.__minimum])
+        if self.meta.get('minimum', None) is not None:
+            values_under = np.count_nonzero(self.data_raw < self.meta.get('minimum'))   # type: ignore
 
-            if self.meta.get('maximum', None) is not None:
-                values_over = np.count_nonzero(self.__data > self.meta.get('maximum'))
-                # values_over = len(self.__data[self.__data > self.__maximum])
+        if self.meta.get('maximum', None) is not None:
+            values_over = np.count_nonzero(self.data_raw > self.meta.get('maximum'))   # type: ignore
 
         return Outliers(self.__name, values_under, values_over)
 
@@ -458,19 +460,19 @@ class Parameter(object):
     #
     #                 self.__data = tmp_data
 
-    def stats(self) -> Optional[NamedTuple]:
+    def stats(self) -> Stats:
         """Returns basic statistics on parameter values.
 
         :returns: None (for strings or no data) or NamedTuple containing min, max, mean, and median of parameter values
         """
-        Stats = namedtuple('Stats', ['name', 'min', 'max', 'mean', 'median'])
+        # Stats = namedtuple('Stats', ['name', 'min', 'max', 'mean', 'median'])
 
         try:
             return Stats(self.__name, np.min(self.data_raw), np.max(self.data_raw),
-                         np.mean(self.data_raw), np.median(self.data_raw))
+                         np.mean(self.data_raw), np.median(self.data_raw))   # type: ignore
         except TypeError:
             # This happens with string data
-            return None
+            return Stats(self.__name, None, None, None, None)
 
     def subset_by_index(self, dim_name: str, indices):
         """Reduce array by axis (nhru or nsegment) a list of local indices.
@@ -579,11 +581,13 @@ class Parameter(object):
             if self.data_raw.ndim == 1:
                 if isinstance(value, list):
                     if len(value) > 1:
-                        raise TypeError(f'{self.name}: Cannot update single element with list containing multiple values')
+                        raise TypeError(f'{self.name}: Cannot update single element with list '
+                                        f'containing multiple values')
                     value = value[0]
                 elif isinstance(value, np.ndarray):
                     if value.size > 1:
-                        raise TypeError(f'{self.name}: Cannot update single element with array containing multiple values')
+                        raise TypeError(f'{self.name}: Cannot update single element with array '
+                                        f'containing multiple values')
                     value = value.item()
             elif self.data_raw.ndim == 2:
                 if isinstance(value, list):
@@ -616,55 +620,3 @@ class Parameter(object):
             return np.argwhere(self.data_raw == value)[:, 0]   # .tolist()
             # return np.where(self.data_raw == value)[0]
         return None
-
-    # def concat(self, data_in):
-    #     """Takes a list of parameter data and concatenates it to the end of the existing parameter data.
-    #
-    #     This is useful when reading 2D parameter data by region where
-    #     the ordering of the data must be correctly maintained in the final
-    #     dataset
-    #
-    #     :param list data_in: Data to concatenate (or append) to existing parameter data
-    #     :raises TypeError: if the datatype for the parameter is invalid
-    #     :raises ValueError: if the number of dimensions for the parameter is greater than 2
-    #     :raises ConcatError: if concatenation is attempted with a parameter of dimension 'one' (e.g. scalar)
-    #     """
-    #
-    #     if not self.ndim:
-    #         raise ValueError(f'No dimensions have been defined for {self.name}. Unable to concatenate data')
-    #
-    #     if self.__data is None:
-    #         # Don't bother with the concatenation if there is no pre-existing data
-    #         self.data = data_in
-    #         return
-    #
-    #     # Convert datatype first
-    #     datatype_conv = {1: self.__str_to_int, 2: self.__str_to_float,
-    #                      3: self.__str_to_float, 4: self.__str_to_str}
-    #
-    #     if self.__datatype in DATA_TYPES.keys():
-    #         data_in = datatype_conv[self.__datatype](data_in)
-    #     else:
-    #         raise TypeError(f'Defined datatype {self.__datatype} for parameter {self.__name} is not valid')
-    #
-    #     # Convert list to np.array
-    #     if self.ndim == 2:
-    #         data_np = np.array(data_in).reshape((-1, self.dimensions.get_dimsize_by_index(1),), order='F')
-    #     elif self.ndim == 1:
-    #         data_np = np.array(data_in)
-    #     else:
-    #         raise ValueError(f'Number of dimensions, {self.ndim}, is not supported')
-    #
-    #     if 'one' in self.__dimensions.dimensions.keys():
-    #         # A parameter with the dimension 'one' should never have more
-    #         # than 1 value. Output warning if the incoming value is different
-    #         # from a pre-existing value
-    #         if data_np[0] != self.__data[0]:
-    #             raise ConcatError(f'Parameter, {self.__name}, with dimension "one" already ' +
-    #                               f'has assigned value = {self.__data[0]}; ' +
-    #                               f'Cannot concatenate additional value(s), {data_np[0]}')
-    #             # print('WARNING: {} with dimension "one" has different '.format(self.__name) +
-    #             #       'value ({}) from current ({}). Keeping current value.'.format(data_np[0], self.__data[0]))
-    #     else:
-    #         self.__data = np.concatenate((self.__data, data_np))
-    #         # self.__data = data_np
