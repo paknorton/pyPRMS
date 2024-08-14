@@ -15,13 +15,13 @@ import xml.etree.ElementTree as xmlET
 from collections import defaultdict
 from collections.abc import KeysView
 from functools import cached_property
-from typing import Optional, Sequence, Union, Dict, List, Set, Tuple
+from typing import Any, Optional, Sequence, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
 from ..control.Control import Control
 from ..dimensions.Dimensions import Dimensions
 from ..Exceptions_custom import ParameterError, ParameterExistsError, ParameterNotValidError
-from .Parameter import Parameter
+from .Parameter import Parameter, ParamDataRawType
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
 from ..prms_helpers import cond_check, flex_type, get_streamnet_subset
 from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, MetaDataType, NETCDF_DATATYPES,
@@ -56,9 +56,9 @@ class Parameters(object):
         self.verbose = verbose
         self.__control: Optional[Control] = None
         self.__hru_poly = None
-        self.__hru_shape_key = None
+        self.__hru_shape_key: Optional[str] = None
         self.__seg_poly = None
-        self.__seg_shape_key = None
+        self.__seg_shape_key: Optional[str] = None
         self.__seg_to_hru: Dict = dict()
         self.__hru_to_seg: Dict = dict()
         self.metadata = metadata['parameters']
@@ -127,8 +127,8 @@ class Parameters(object):
         """
 
         # Only supported with python >= 3.9
-        hru_segment = self.__parameters['hru_segment_nhm'].tolist()
-        nhm_id = self.__parameters['nhm_id'].tolist()
+        hru_segment = self.get('hru_segment_nhm').tolist()
+        nhm_id = self.get('nhm_id').tolist()
 
         self.__hru_to_seg = dict([(nhm_id[idx], vv) for idx, vv in enumerate(hru_segment)])
 
@@ -160,8 +160,8 @@ class Parameters(object):
 
         :returns: dictionary mapping poi_id to local poi_seg"""
 
-        return dict(zip(self.__parameters['poi_gage_id'].tolist(),
-                        self.__parameters['poi_gage_segment'].tolist()))
+        return dict(zip(self.get('poi_gage_id').data_raw.tolist(),   # type: ignore
+                        self.get('poi_gage_segment').data_raw.tolist()))   # type: ignore
 
     @property
     def poi_to_seg0(self):
@@ -169,8 +169,8 @@ class Parameters(object):
 
         :returns: dictionary mapping poi_id to local, zero-based poi_seg"""
 
-        return dict(zip(self.__parameters['poi_gage_id'].data,
-                        self.__parameters['poi_gage_segment'].data - 1))
+        return dict(zip(self.get('poi_gage_id').data_raw,
+                        self.get('poi_gage_segment').data_raw - 1))
 
     @cached_property
     def seg_to_hru(self) -> Dict[int, int]:
@@ -179,8 +179,8 @@ class Parameters(object):
         :returns: dictionary mapping hru_segment_nhm to nhm_id
         """
 
-        hru_segment = self.__parameters['hru_segment_nhm'].tolist()
-        nhm_id = self.__parameters['nhm_id'].tolist()
+        hru_segment = self.get('hru_segment_nhm').tolist()
+        nhm_id = self.get('nhm_id').tolist()
 
         for ii, vv in enumerate(hru_segment):
             # keys are 1-based, values in arrays are 1-based
@@ -235,8 +235,8 @@ class Parameters(object):
 
         params_xml = xmlET.Element('parameters')
 
-        for pk in sorted(list(self.__parameters.keys())):
-            vv = self.__parameters[pk]
+        for pk in sorted(list(self.parameters.keys())):
+            vv = self.get(pk)
 
             param_sub = xmlET.SubElement(params_xml, 'parameter')
             param_sub.set('name', vv.name)
@@ -338,8 +338,8 @@ class Parameters(object):
         """
 
         # for pp in self.__parameters.values():
-        for pk in sorted(list(self.__parameters.keys())):
-            pp = self.__parameters[pk]
+        for pk in sorted(list(self.parameters.keys())):
+            pp = self.get(pk)
 
             # print(pp.check())
             if pp.has_correct_size():
@@ -352,18 +352,19 @@ class Parameters(object):
                 pp_outliers = pp.outliers()
                 valid_min = pp.meta['minimum']
                 valid_max = pp.meta['maximum']
+                default_val = pp.meta['default']
 
                 if not (isinstance(valid_min, str) or isinstance(valid_max, str)):
-                    con.print(f'    [dark_orange3]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside ' +
-                              f'the valid range of ({valid_min}, {valid_max}); ' +
-                              f'under/over=({pp_outliers.under}, {pp_outliers.over})')
+                    con.print(f'    [dark_orange3]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside '
+                              + f'the valid range of ({valid_min}, {valid_max}); '
+                              + f'under/over=({pp_outliers.under}, {pp_outliers.over})')
                     # print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
                     #       f'the valid range of ({pp.minimum}, {pp.maximum})')
                 elif valid_min == 'bounded':
                     # TODO: Handling bounded parameters needs improvement
                     con.print(f'    [dark_orange3]WARNING[/]: Bounded parameter value(s) '
-                              f'(range: {pp_stats.min}, {pp_stats.max}) outside ' +
-                              f'the valid range of ({pp.default}, {valid_max})')
+                              + f'(range: {pp_stats.min}, {pp_stats.max}) outside '
+                              + f'the valid range of ({default_val}, {valid_max})')
 
             if pp.all_equal():
                 dims = list(pp.dimensions.keys())
@@ -380,7 +381,7 @@ class Parameters(object):
                     #                                                                             *list(pp.dimensions.keys())))
 
             if pp.name == 'snarea_curve':
-                if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.__parameters['hru_deplcrv'].unique().size:
+                if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.get('hru_deplcrv').unique().size:
                     con.print('  [yellow3]WARNING[/]: snarea_curve has more entries than needed by hru_deplcrv')
 
     def exists(self, name) -> bool:
@@ -418,50 +419,50 @@ class Parameters(object):
         if not self.exists(name):
             raise KeyError(f'Parameter, {name}, does not exist')
 
-        cparam = self.__parameters[name]
+        cparam = self.get(name)
         param_data = cparam.as_dataframe
 
         if cparam.is_hru_param():
             if name != 'nhm_id':
                 if self.exists('nhm_id'):
-                    param_id = self.__parameters['nhm_id'].as_dataframe
+                    param_id = self.get('nhm_id').as_dataframe
 
                     # Create a DataFrame of the parameter
                     param_data = param_data.merge(param_id, left_index=True, right_index=True)
                     param_data.set_index('nhm_id', inplace=True)
                     param_data.index.name = 'nhm_id'
             else:
-                param_data = self.__parameters['nhm_id'].as_dataframe
+                param_data = self.get('nhm_id').as_dataframe
         elif cparam.is_seg_param():
             if name != 'nhm_seg':
                 if self.exists('nhm_seg'):
-                    param_id = self.__parameters['nhm_seg'].as_dataframe
+                    param_id = self.get('nhm_seg').as_dataframe
 
                     # Create a DataFrame of the parameter
                     param_data = param_data.merge(param_id, left_index=True, right_index=True)
                     param_data.set_index('nhm_seg', inplace=True)
                     param_data.index.name = 'nhm_seg'
             else:
-                param_data = self.__parameters['nhm_seg'].as_dataframe
+                param_data = self.get('nhm_seg').as_dataframe
         elif name == 'snarea_curve':
             # Special handling for snarea_curve parameter
             param_data = pd.DataFrame(cparam.as_dataframe.values.reshape((-1, 11)))
-            param_data.rename(columns={k: k+1 for k in param_data.columns},
+            param_data.rename(columns={k: k+1 for k in param_data.columns},   # type: ignore
                               index={k: k+1 for k in param_data.index},
                               inplace=True)
             param_data.index.name = 'curve_index'
         return param_data
 
-    def get_subset(self, name: str, global_ids: List[int]) -> pd.DataFrame:
+    def get_subset(self, name: str, global_ids: List[int]) -> ParamDataRawType:
         """Returns a subset for a parameter based on the global_ids (e.g. nhm_id, nhm_seg).
 
         :param name: Name of the parameter
         :param global_ids: List of global IDs to extract
-        :returns: Dataframe of extracted values
+        :returns: Array of extracted values
         """
         param = self.get(name)
         dim_set = set(param.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw', 'nsegment', 'ndeplval'})
-        id_index_map = {}
+        id_index_map: Union[Dict[Any, int], None] = {}
         cdim = dim_set.pop()
 
         if cdim in ['nhru', 'nssr', 'ngw', 'ndeplval']:
@@ -472,15 +473,18 @@ class Parameters(object):
             id_index_map = self.get('nhm_seg').index_map
 
         # Zero-based indices in order of global_ids
+        assert id_index_map is not None
         nhm_idx0 = [id_index_map[kk] for kk in global_ids]
 
-        if name in ['hru_deplcrv', 'snarea_curve']:
-            init_data = self.get('hru_deplcrv').data[tuple(nhm_idx0), ]
-            uniq_deplcrv = np.unique(init_data).tolist()
-
         if param.dimensions.ndim == 2:
-            return param.data[tuple(nhm_idx0), :]
+            return np.take(param.data_raw, nhm_idx0, axis=0)    # axis: 0 rows, 1 columns
+            # return param.data_raw[tuple(nhm_idx0), :]
         else:
+            if name in ['hru_deplcrv', 'snarea_curve']:
+                init_data = np.take(self.get('hru_deplcrv').data_raw, nhm_idx0, axis=0)
+                # init_data = self.get('hru_deplcrv').data_raw[tuple(nhm_idx0), ]
+                uniq_deplcrv = np.unique(init_data).tolist()
+
             if name == 'hru_deplcrv':
                 # Renumber the hru_deplcrv indices for the subset
                 uniq_dict = {xx: ii+1 for ii, xx in enumerate(uniq_deplcrv)}
@@ -489,17 +493,18 @@ class Parameters(object):
                 return np.array([uniq_dict[xx] for xx in init_data])
             elif name == 'snarea_curve':
                 uniq_deplcrv0 = [xx - 1 for xx in uniq_deplcrv]
-                return param.data.reshape((-1, 11))[tuple(uniq_deplcrv0), :].reshape((-1))
-
+                return param.data_raw.reshape((-1, 11))[tuple(uniq_deplcrv0), :].reshape((-1))
             else:
-                return param.data[tuple(nhm_idx0), ]
+                # All other 1D arrays
+                return np.take(param.data_raw, nhm_idx0, axis=0)    # axis: 0 rows, 1 columns
+                # return param.data_raw[tuple(nhm_idx0), ]
 
     def outlier_ids(self, name) -> List[int]:
         """Returns list of HRU or segment IDs of invalid parameter values
 
         :returns: List of HRU or segment IDs
         """
-        cparam = self.__parameters[name]
+        cparam = self.get(name)
 
         param_data = self.get_dataframe(name)
         bad_value_ids = param_data[(param_data[name] < cparam.meta['minimum']) |
@@ -521,7 +526,8 @@ class Parameters(object):
             poi = list(poi)
 
         poi_hrus = {}
-        nhm_seg = self.get('nhm_seg').data
+        nhm_seg = self.get('nhm_seg').data_raw
+        assert type(nhm_seg) is np.ndarray
         pois_dict = self.poi_to_seg
 
         # Generate stream network for the model
@@ -549,7 +555,8 @@ class Parameters(object):
             poi = list(poi)
 
         poi_segs = {}
-        nhm_seg = self.get('nhm_seg').data
+        nhm_seg = self.get('nhm_seg').data_raw
+        assert type(nhm_seg) is np.ndarray
         pois_dict = self.poi_to_seg0
 
         # Generate stream network for the model
@@ -582,7 +589,7 @@ class Parameters(object):
         time_index = None
 
         if self.exists(name):
-            cparam = self.__parameters[name]
+            cparam = self.get(name)
 
             if set(cparam.dimensions.keys()).intersection({'nmonths'}):
                 # Need 12 monthly plots of parameter
@@ -603,18 +610,18 @@ class Parameters(object):
                     # Use the defined valid range of possible values
                     if valid_min == 'bounded':
                         # Parameters with bounded values need to always use the actual range of values
-                        drange = [cparam.data.min().min(), cparam.data.max().max()]
+                        drange = [cparam.data_raw.min().min(), cparam.data_raw.max().max()]
                     elif name == 'jh_coef':
                         drange = [-0.05, 0.05]
                     else:
                         drange = [valid_min, valid_max]
                 elif limits == 'centered':
                     # Use the maximum range of the actual data values
-                    lim = max(abs(cparam.data.min().min()), abs(cparam.data.max().max()))
+                    lim = max(abs(cparam.data_raw.min().min()), abs(cparam.data_raw.max().max()))
                     drange = [-lim, lim]
                 elif limits == 'absolute':
                     # Use the min and max of the data values
-                    drange = [cparam.data.min().min(), cparam.data.max().max()]
+                    drange = [cparam.data_raw.min().min(), cparam.data_raw.max().max()]
                 else:
                     raise ValueError('String argument for limits must be "valid", "centered", or "absolute"')
             elif isinstance(limits, (list, tuple)):
@@ -828,7 +835,8 @@ class Parameters(object):
             poi = [poi]
 
         # First get array of poi_gage_id indices matching the specified POI IDs
-        poi_ids = self.get('poi_gage_id').data.tolist()
+        poi_ids = self.get('poi_gage_id').data_raw.tolist()
+        assert type(poi_ids) is list
         poi_del_indices = []
         for xx in poi:
             # We silently ignore missing POIs
@@ -875,6 +883,8 @@ class Parameters(object):
         elif isinstance(segs, np.ndarray):
             segs = segs.tolist()
 
+        assert type(segs) is list
+
         seg_hrus = {}
 
         # Generate stream network for the model
@@ -902,6 +912,8 @@ class Parameters(object):
             segs = list(segs)
         elif isinstance(segs, np.ndarray):
             segs = segs.tolist()
+
+        assert type(segs) is list
 
         us_segs = {}
 
@@ -949,8 +961,8 @@ class Parameters(object):
             self.__seg_poly.crs = 'EPSG:5070'
         self.__seg_shape_key = shape_key
 
-    def stream_network(self, tosegment: Optional[str] = 'tosegment_nhm',
-                       seg_id: Optional[str] = 'nhm_seg') -> Union[nx.DiGraph, None]:
+    def stream_network(self, tosegment: str = 'tosegment_nhm',
+                       seg_id: str = 'nhm_seg') -> Union[nx.DiGraph, None]:
         """Create Directed, Acyclic Graph (DAG) of stream network.
 
         :param tosegment: name of parameter to use for HRU tosegment
@@ -958,20 +970,19 @@ class Parameters(object):
         :returns: directed-acyclic-graph (DAG)
         """
 
-        if self.exists(tosegment) and self.exists(seg_id):
-            seg = self.__parameters.get(seg_id).tolist()
-            toseg = self.__parameters.get(tosegment).tolist()
+        seg = self.get(seg_id).tolist()
+        toseg = self.get(tosegment).tolist()
+        assert type(seg) is list and type(toseg) is list
 
-            dag_ds = nx.DiGraph()
-            for ii, vv in enumerate(toseg):
-                #     dag_ds.add_edge(ii+1, vv)
-                if vv == 0:
-                    dag_ds.add_edge(seg[ii], 'Out_{}'.format(seg[ii]))
-                else:
-                    dag_ds.add_edge(seg[ii], vv)
+        dag_ds = nx.DiGraph()
+        for ii, vv in enumerate(toseg):
+            #     dag_ds.add_edge(ii+1, vv)
+            if vv == 0:
+                dag_ds.add_edge(seg[ii], 'Out_{}'.format(seg[ii]))
+            else:
+                dag_ds.add_edge(seg[ii], vv)
 
-            return dag_ds
-        return None
+        return dag_ds
 
     def update_element(self, name: str,
                        id1: int,
@@ -986,7 +997,7 @@ class Parameters(object):
 
         # NOTE: id1 is either an nhm_id or nhm_seg (both are 1-based)
         cparam = self.get(name)
-        idx0 = None
+        idx0 = 0
 
         try:
             if cparam.is_hru_param():
@@ -999,9 +1010,6 @@ class Parameters(object):
                 idx0 = 0
         except ValueError:
             raise ValueError(f'Exactly one index should be found for {id1}')
-
-        if idx0 is None:
-            raise TypeError(f'{name} _value_index_1d() returned NoneType instead of ndarray')
 
         # This will raise a ValueError if more than one index is found
         cparam.update_element(idx0, value)
@@ -1256,10 +1264,11 @@ class Parameters(object):
 
         out_list = []
 
+        assert self.__control is not None
         modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
 
-        for pk in sorted(list(self.__parameters.keys())):
-            pp = self.__parameters.get(pk)
+        for pk in sorted(list(self.parameters.keys())):
+            pp = self.get(pk)
             md = pp.meta
 
             modules = ', '.join(list(modules_used.intersection(set(md.get('modules')))))
@@ -1275,9 +1284,9 @@ class Parameters(object):
             # TODO: 20230719 PAN - precipitation_hru and temperature_hru should be changed to climate_hru
 
             try:
-                act_min = pp.data.min()
-                act_max = pp.data.max()
-            except np.core._exceptions.UFuncTypeError:
+                act_min = pp.data_raw.min()
+                act_max = pp.data_raw.max()
+            except np.core._exceptions.UFuncTypeError:   # type: ignore
                 act_min = ''
                 act_max = ''
 
@@ -1321,12 +1330,12 @@ class Parameters(object):
         :returns: True if the condition is met, False otherwise
         """
 
-        # if len(cstr) == 0:
-        #     return False
+        assert self.control is not None
         var, op, value = cstr.split(' ')
 
         cdtype = NEW_PTYPE_TO_DTYPE[self.control.get(var).meta['datatype']]
         ctl_val = self.control.get(var).values
+        assert ctl_val is not None
         value = cdtype(value)
 
         return cond_check[op](ctl_val, value)
@@ -1339,8 +1348,6 @@ class Parameters(object):
         :returns: True if the condition is met, False otherwise
         """
 
-        # if len(cstr) == 0:
-        #     return False
         var, op, value = cstr.split(' ')
         value = int(value)  # type: ignore
 
@@ -1414,7 +1421,7 @@ class Parameters(object):
         """
 
         # Get subset of stream network for given segment
-        dag_ds_subset = get_streamnet_subset(streamnet, set(), dsmost_seg)
+        dag_ds_subset = get_streamnet_subset(streamnet, [], dsmost_seg)
 
         # Create list of segments in the subset
         toseg_idx = list(set(xx[0] for xx in dag_ds_subset.edges))
@@ -1433,7 +1440,7 @@ class Parameters(object):
         final_hru_list.sort()
         return final_hru_list
 
-    def _upstream_segments(self, streamnet: nx.DiGraph, dsmost_seg: List[int]):
+    def _upstream_segments(self, streamnet: nx.DiGraph, dsmost_seg: List[int]) -> List[int]:
         """Get list of segments that contribute to the given stream segments.
 
         :param streamnet: Directed, Acyclic Graph (DAG) of stream network
@@ -1443,317 +1450,9 @@ class Parameters(object):
         """
 
         # Get subset of stream network for given POI
-        dag_ds_subset = get_streamnet_subset(streamnet, set(), dsmost_seg)
+        dag_ds_subset = get_streamnet_subset(streamnet, [], dsmost_seg)
 
         # Create list of segments in the subset
         toseg_idx = list(set(xx[0] for xx in dag_ds_subset.edges))
 
         return toseg_idx
-
-    # TODO: 20230719 PAN - not sure this is needed anymore
-    # def get_params_for_modules(self, modules: Sequence[str]) -> Set[str]:
-    #     """Get list of unique parameters required for a given list of modules.
-    #
-    #     :param modules: List of PRMS modules
-    #
-    #     :returns: Set of parameter names
-    #     """
-    #
-    #     params_by_module = set()
-    #
-    #     for xx in self.parameters.values():
-    #         for mm in xx.meta.get('modules', []):
-    #             if mm in modules:
-    #                 params_by_module.add(xx.name)
-    #     return params_by_module
-
-    # def remove_by_global_id(self, hrus: Optional[List[int]] = None,
-    #                         segs: Optional[List[int]] = None):
-    #     """Removes data-by-id (nhm_seg, nhm_id) from all parameters.
-    #
-    #     :param hrus: list of national HRU ids
-    #     :param segs: list of national segment ids
-    #     """
-    #
-    #     if segs is not None:
-    #         # TODO: 2022-07-07 PAN - need code for removing segments
-    #         pass
-    #
-    #     if hrus is not None:
-    #         # Map original nhm_id to their index
-    #         nhm_idx = dict((hid, ii) for ii, hid in enumerate(self.get('nhm_id').data.tolist()))
-    #         nhm_seg = self.get('nhm_seg').tolist()
-    #
-    #         print(list(nhm_idx.keys())[0:10])
-    #         print(list(nhm_idx.values())[0:10])
-    #
-    #         for xx in list(nhm_idx.keys()):
-    #             if xx in hrus:
-    #                 del nhm_idx[xx]
-    #
-    #         print('-'*40)
-    #         print(list(nhm_idx.keys())[0:10])
-    #         print(list(nhm_idx.values())[0:10])
-    #
-    #         # [hru_segment_nhm[yy] for yy in nhm_idx.values()]
-    #         self.get('nhm_id').subset_by_index('nhru', nhm_idx.values())
-    #
-    #         # Update hru_segment_nhm then go back and make sure the referenced nhm_segs are valid
-    #         # NOTE: See https://github.com/python/mypy/issues/3004 for the discussion about
-    #         #       supporting asymmetrical getter/setter properties.
-    #         self.get('hru_segment_nhm').subset_by_index('nhru', nhm_idx.values())
-    #         proc_list = self.get('hru_segment_nhm').tolist()
-    #         self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk == 0 else -1
-    #                                             for kk in self.get('hru_segment_nhm').tolist()]   # type: ignore
-    #
-    #         # Now do the local hru_segment
-    #         # NOTE: See https://github.com/python/mypy/issues/3004 for the discussion about
-    #         #       supporting asymmetrical getter/setter properties.
-    #         self.get('hru_segment').subset_by_index('nhru', nhm_idx.values())
-    #         self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk == 0 else -1
-    #                                         for kk in self.get('hru_segment_nhm').tolist()]   # type: ignore
-    #
-    #         # # First remove the HRUs from nhm_id and hru_segment_nhm
-    #         # id_to_seg = np.column_stack((self.get('nhm_id').data, self.get('hru_segment_nhm').data))
-    #         #
-    #         # # Create ordered dictionary to reindex hru_segment
-    #         # nhm_id_to_hru_segment_nhm = OrderedDict((nhm, hseg) for nhm, hseg in id_to_seg)
-    #         #
-    #         # nhm_seg = self.get('nhm_seg').data.tolist()
-    #         #
-    #         # self.get('nhm_id').data = [xx for xx in nhm_id_to_hru_segment_nhm.keys()]
-    #         # # self.get('nhm_id').remove_by_index('nhru', hrus)
-    #         #
-    #         # self.get('hru_segment_nhm').data = [kk if kk in nhm_seg else 0 if kk == 0 else -1
-    #         #                                     for kk in nhm_id_to_hru_segment_nhm.values()]
-    #         #
-    #         # self.get('hru_segment').data = [nhm_seg.index(kk)+1 if kk in nhm_seg else 0 if kk == 0 else -1
-    #         #                                 for kk in nhm_id_to_hru_segment_nhm.values()]
-    #
-    #         for pp in self.__parameters.values():
-    #             if pp.name not in ['nhm_id', 'hru_segment_nhm', 'hru_segment']:
-    #                 dim_set = set(pp.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw'})
-    #
-    #                 if bool(dim_set):
-    #                     if len(dim_set) > 1:
-    #                         raise ValueError('dim_set > 1 for {}'.format(pp.name))
-    #                     else:
-    #                         cdim = dim_set.pop()
-    #                         pp.subset_by_index(cdim, nhm_idx.values())
-    #
-    #                         if pp.name == 'hru_deplcrv':
-    #                             # Save the list of snow indices for reducing the snarea_curve later
-    #                             uniq_deplcrv_idx = list(set(pp.data.tolist()))
-    #                             uniq_dict = {}
-    #                             for ii, xx in enumerate(uniq_deplcrv_idx):
-    #                                 uniq_dict[xx] = ii + 1
-    #
-    #                             uniq_deplcrv_idx0 = [xx - 1 for xx in uniq_deplcrv_idx]
-    #
-    #                             # Renumber the hru_deplcrv indices
-    #                             data_copy = pp.data.copy()
-    #                             with np.nditer(data_copy, op_flags=[['readwrite']]) as it:
-    #                                 for xx in it:
-    #                                     xx[...] = uniq_dict[int(xx)]
-    #
-    #                             pp.data = data_copy
-    #
-    #                             # Handle snarea_curve
-    #                             tmp = self.__parameters['snarea_curve'].data.reshape((-1, 11))[tuple(uniq_deplcrv_idx0), :].reshape((-1))
-    #                             print(f'{pp.name}: {tmp.size=}, {tmp.ndim=}')
-    #                             self.__parameters['snarea_curve'].dimensions['ndeplval'].size = tmp.size
-    #                             self.__parameters['snarea_curve'].data = tmp   # .ravel()
-    #
-    #         # Need to reduce the snarea_curve array to match the number of indices in hru_deplcrv
-    #         # new_deplcrv = pp['hru_deplcrv'].data.tolist()
-
-    # TODO: 20230724 PAN - is this still needed?
-    # @staticmethod
-    # def _get_upstream_subset(dag_ds: nx.DiGraph,
-    #                          cutoff_segs: List[int],
-    #                          outlet_segs: List[int]):
-    #     """Create upstream stream network bounded by downstream segment(s) and upstream cutoff(s).
-    #
-    #     :param dag_ds: stream network
-    #     :param cutoff_segs: list of nhm_seg IDs above which the network is truncated
-    #     :param outlet_segs: list of nhm_seg IDs for the downstream-most segments
-    #     """
-    #
-    #     # Create the upstream graph.
-    #     dag_us = dag_ds.reverse()
-    #     # bandit_helper_log.debug('Number of NHM upstream nodes: {}'.format(dag_us.number_of_nodes()))
-    #     # bandit_helper_log.debug('Number of NHM upstream edges: {}'.format(dag_us.number_of_edges()))
-    #
-    #     # Trim the u/s graph to remove segments above the u/s cutoff segments
-    #     try:
-    #         for xx in cutoff_segs:
-    #             try:
-    #                 dag_us.remove_nodes_from(nx.dfs_predecessors(dag_us, xx))
-    #
-    #                 # Also remove the cutoff segment itself
-    #                 dag_us.remove_node(xx)
-    #             except KeyError:
-    #                 print('WARNING: nhm_segment {} does not exist in stream network'.format(xx))
-    #     except TypeError:
-    #         # bandit_helper_log.error('\nSelected cutoffs should at least be an empty list instead of NoneType.')
-    #         exit(200)
-    #
-    #     # bandit_helper_log.debug('Number of NHM upstream nodes (trimmed): {}'.format(dag_us.number_of_nodes()))
-    #     # bandit_helper_log.debug('Number of NHM upstream edges (trimmed): {}'.format(dag_us.number_of_edges()))
-    #
-    #     # =======================================
-    #     # Given a d/s segment (dsmost_seg) create a subset of u/s segments
-    #
-    #     # Get all unique segments u/s of the starting segment
-    #     uniq_seg_us: Set[int] = set()
-    #     if outlet_segs:
-    #         for xx in outlet_segs:
-    #             try:
-    #                 pred = nx.dfs_predecessors(dag_us, xx)
-    #                 uniq_seg_us = uniq_seg_us.union(set(pred.keys()).union(set(pred.values())))
-    #             except KeyError:
-    #                 # bandit_helper_log.error('KeyError: Segment {} does not exist in stream network'.format(xx))
-    #                 print(f'\nKeyError: Segment {xx} does not exist in stream network')
-    #
-    #         # Get a subgraph in the dag_ds graph and return the edges
-    #         dag_ds_subset = dag_ds.subgraph(uniq_seg_us).copy()
-    #
-    #         # 2018-02-13 PAN: It is possible to have outlets specified which are not truly
-    #         #                 outlets in the most conservative sense (e.g. a point where
-    #         #                 the stream network exits the study area). This occurs when
-    #         #                 doing headwater extractions where all segments for a headwater
-    #         #                 are specified in the configuration file. Instead of creating
-    #         #                 output edges for all specified 'outlets' the set difference
-    #         #                 between the specified outlets and nodes in the graph subset
-    #         #                 which have no edges is performed first to reduce the number of
-    #         #                 outlets to the 'true' outlets of the system.
-    #         node_outlets = [ee[0] for ee in dag_ds_subset.edges()]
-    #         true_outlets = set(outlet_segs).difference(set(node_outlets))
-    #         # bandit_helper_log.debug('node_outlets: {}'.format(','.join(map(str, node_outlets))))
-    #         # bandit_helper_log.debug('true_outlets: {}'.format(','.join(map(str, true_outlets))))
-    #
-    #         # Add the downstream segments that exit the subgraph
-    #         for xx in true_outlets:
-    #             nhm_outlet = list(dag_ds.neighbors(xx))[0]
-    #             dag_ds_subset.add_node(nhm_outlet, style='filled', fontcolor='white', fillcolor='grey')
-    #             dag_ds_subset.add_edge(xx, nhm_outlet)
-    #             dag_ds_subset.nodes[xx]['style'] = 'filled'
-    #             dag_ds_subset.nodes[xx]['fontcolor'] = 'white'
-    #             dag_ds_subset.nodes[xx]['fillcolor'] = 'blue'
-    #     else:
-    #         # No outlets specified so pull the CONUS
-    #         dag_ds_subset = dag_ds
-    #
-    #     return dag_ds_subset
-
-    # def replace_values(self, varname, newvals, newdims=None):
-    #     """Replaces all values for a given variable/parameter. Size of old and new arrays/values must match."""
-    #     if not self.__isloaded:
-    #         self.load_file()
-    #
-    #     # parent = self.__paramdict['Parameters']
-    #     thevar = self.get_var(varname)
-    #
-    #     # NOTE: Need to figure out whether this function should expect row-major ordering
-    #     #       or column-major ordering when called. Right it expects column-major ordering
-    #     #       for newvals, which means no re-ordering of the array is necessary when
-    #     #       replacing values.
-    #     if newdims is None:
-    #         # We are not changing dimensions of the variable/parameter, just the values
-    #         # Check if size of newvals array matches the oldvals array
-    #         if isinstance(newvals, list) and len(newvals) == thevar['values'].size:
-    #             # Size of arrays match so replace the oldvals with the newvals
-    #             # Lookup dimension size for each dimension name
-    #             arr_shp = [self.__paramdict['Dimensions'][dd] for dd in thevar['dimnames']]
-    #
-    #             thevar['values'][:] = np.array(newvals).reshape(arr_shp)
-    #         elif isinstance(newvals, np.ndarray) and newvals.size == thevar['values'].size:
-    #             # newvals is a numpy ndarray
-    #             # Size of arrays match so replace the oldvals with the newvals
-    #             # Lookup dimension size for each dimension name
-    #             arr_shp = [self.  __paramdict['Dimensions'][dd] for dd in thevar['dimnames']]
-    #
-    #             thevar['values'][:] = newvals.reshape(arr_shp)
-    #         # NOTE: removed the following because even scalars should be stored as numpy array
-    #         # elif thevar['values'].size == 1:
-    #         #     # This is a scalar value
-    #         #     if isinstance(newvals, float):
-    #         #         thevar['values'] = [newvals]
-    #         #     elif isinstance(newvals, int):
-    #         #         thevar['values'] = [newvals]
-    #         else:
-    #             print("ERROR: Size of oldval array and size of newval array don't match")
-    #     else:
-    #         # The dimensions are being changed and new values provided
-    #
-    #         # Use the dimension sizes from the parameter file to check the size
-    #         # of the newvals array. If the size of the newvals array doesn't match the
-    #         # parameter file's dimensions sizes we have a problem.
-    #         size_check = 1
-    #         for dd in newdims:
-    #             size_check *= self.get_dim(dd)
-    #
-    #         if isinstance(newvals, list) and len(newvals) == size_check:
-    #             # Size of arrays match so replace the oldvals with the newvals
-    #             thevar['values'] = newvals
-    #             thevar['dimnames'] = newdims
-    #         elif isinstance(newvals, np.ndarray) and newvals.size == size_check:
-    #             # newvals is a numpy ndarray
-    #             # Size of arrays match so replace the oldvals with the newvals
-    #             thevar['values'] = newvals
-    #             thevar['dimnames'] = newdims
-    #         elif thevar['values'].size == 1:
-    #             # This is a scalar value
-    #             thevar['dimnames'] = newdims
-    #             if isinstance(newvals, float):
-    #                 thevar['values'] = [newvals]
-    #             elif isinstance(newvals, int):
-    #                 thevar['values'] = [newvals]
-    #         else:
-    #             print("ERROR: Size of newval array doesn't match dimensions in parameter file")
-    #
-    # def resize_dim(self, dimname, newsize):
-    #     """Changes the size of the given dimension.
-    #        This does *not* check validity of parameters that use the dimension.
-    #        Check variable integrity before writing parameter file."""
-    #
-    #     # Some dimensions are related to each other.
-    #     related_dims = {'ndepl': 'ndeplval', 'nhru': ['nssr', 'ngw'],
-    #                     'nssr': ['nhru', 'ngw'], 'ngw': ['nhru', 'nssr']}
-    #
-    #     if not self.__isloaded:
-    #         self.load_file()
-    #
-    #     parent = self.__paramdict['Dimensions']
-    #
-    #     if dimname in parent:
-    #         parent[dimname] = newsize
-    #
-    #         # Also update related dimensions
-    #         if dimname in related_dims:
-    #             if dimname == 'ndepl':
-    #                 parent[related_dims[dimname]] = parent[dimname] * 11
-    #             elif dimname in ['nhru', 'nssr', 'ngw']:
-    #                 for dd in related_dims[dimname]:
-    #                     parent[dd] = parent[dimname]
-    #         return True
-    #     else:
-    #         return False
-    #
-    # def update_values_by_hru(self, varname, newvals, hru_index):
-    #     """Updates parameter/variable with new values for a a given HRU.
-    #        This is used when merging data from an individual HRU into a region"""
-    #     if not self.__isloaded:
-    #         self.load_file()
-    #
-    #     # parent = self.__paramdict['Parameters']
-    #     thevar = self.get_var(varname)
-    #
-    #     if len(newvals) == 1:
-    #         thevar['values'][(hru_index - 1)] = newvals
-    #     elif len(newvals) == 2:
-    #         thevar['values'][(hru_index - 1), :] = newvals
-    #     elif len(newvals) == 3:
-    #         thevar['values'][(hru_index - 1), :, :] = newvals
-
-# ***** END of class parameters()
