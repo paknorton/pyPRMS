@@ -16,7 +16,8 @@ from typing import List, Optional, Tuple, Union
 import matplotlib as mpl        # type: ignore
 import matplotlib.pyplot as plt     # type: ignore
 
-from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize, read_gis
+from ..plot_helpers import (set_colormap, get_projection, plot_line_collection, plot_polygon_collection,
+                            get_figsize, read_gis)
 
 # - pass control object
 # - list available variables
@@ -41,15 +42,18 @@ class OutputVariables(object):
         self.__model_dir = model_dir
 
         # Read the output variables metadata
-        xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', 'xml/variables.xml').decode('utf-8'))
+        xml_src = pkgutil.get_data('pyPRMS', 'xml/variables.xml')
+        assert xml_src is not None
+
+        xml_fh = io.StringIO(xml_src.decode('utf-8'))
         xml_tree = xmlET.parse(xml_fh)
         self.__xml_root = xml_tree.getroot()
 
         self.__data = None
         self.__hru_poly = None
-        self.__hru_shape_key = None
+        self.__hru_shape_key: Optional[str] = None
         self.__seg_poly = None
-        self.__seg_shape_key = None
+        self.__seg_shape_key: Optional[str] = None
         self.__verbose = verbose
 
     @cached_property
@@ -238,53 +242,53 @@ class OutputVariables(object):
         cmap, norm = set_colormap(name, var_data, min_val=drange[0],
                                   max_val=drange[1], **kwargs)
 
-        # Get extent information
-        minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
+        if self.__hru_poly is not None:
+            # Get extent information
+            minx, miny, maxx, maxy = self.__hru_poly.geometry.total_bounds
 
-        crs_proj = get_projection(self.__hru_poly)
+            crs_proj = get_projection(self.__hru_poly)
 
-        # Takes care of multipolygons that are in the NHM geodatabase/shapefile
-        geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
+            # Takes care of multipolygons that are in the NHM geodatabase/shapefile
+            geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
 
-        # print('Writing first plot')
-        df_mrg = geoms_exploded.merge(var_data, left_on=self.__hru_shape_key, right_index=True, how='left')
+            # print('Writing first plot')
+            df_mrg = geoms_exploded.merge(var_data, left_on=self.__hru_shape_key, right_index=True, how='left')
 
-        fig_width, fig_height = get_figsize([minx, maxx, miny, maxy], **dict(kwargs))
-        kwargs.pop('init_size', None)
+            fig_width, fig_height = get_figsize([minx, maxx, miny, maxy], **dict(kwargs))
+            kwargs.pop('init_size', None)
 
-        fig = plt.figure(figsize=(fig_width, fig_height))
+            fig = plt.figure(figsize=(fig_width, fig_height))
 
-        ax = plt.axes(projection=crs_proj)
+            ax = plt.axes(projection=crs_proj)
 
-        # fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
+            # fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
 
-        ax = plt.axes(projection=crs_proj)
+            ax = plt.axes(projection=crs_proj)
 
-        try:
-            ax.coastlines()
-        except AttributeError:
-            pass
+            try:
+                ax.coastlines()
+            except AttributeError:
+                pass
 
+            gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
+            gl.top_labels = None
+            gl.right_labels = None
+            gl.xformatter = LONGITUDE_FORMATTER
+            gl.yformatter = LATITUDE_FORMATTER
+            # ax.gridlines()
+            ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
 
-        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
-        gl.top_labels = None
-        gl.right_labels = None
-        gl.xformatter = LONGITUDE_FORMATTER
-        gl.yformatter = LATITUDE_FORMATTER
-        # ax.gridlines()
-        ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
+            mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+            mapper.set_array(df_mrg[name])
+            cax = fig.add_axes((ax.get_position().x1 + 0.01,
+                                ax.get_position().y0, 0.02,
+                                ax.get_position().height))
 
-        mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-        mapper.set_array(df_mrg[name])
-        cax = fig.add_axes([ax.get_position().x1 + 0.01,
-                            ax.get_position().y0, 0.02,
-                            ax.get_position().height])
+            plt.colorbar(mapper, cax=cax)   # , label=cparam.units)
+            plt.title(f'Variable: {name}')
 
-        plt.colorbar(mapper, cax=cax)   # , label=cparam.units)
-        plt.title(f'Variable: {name}')
-
-        col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
-                                      **dict(kwargs, cmap=cmap, norm=norm))
+            col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
+                                          **dict(kwargs, cmap=cmap, norm=norm))
 
     # @staticmethod
     # def nearest(items, pivot):
