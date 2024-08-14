@@ -3,19 +3,20 @@ import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas   # type: ignore
 
+import cartopy.crs as ccrs  # type: ignore
 import io
 import pandas as pd   # type: ignore
 import pkgutil
 import xml.etree.ElementTree as xmlET
 
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 from functools import cached_property
 from typing import List, Optional, Tuple, Union
 
-import matplotlib.pyplot as plt     # type: ignore
 import matplotlib as mpl        # type: ignore
+import matplotlib.pyplot as plt     # type: ignore
 
-from ..plot_helpers import set_colormap, get_projection, \
-    plot_polygon_collection, read_gis
+from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize, read_gis
 
 # - pass control object
 # - list available variables
@@ -211,7 +212,7 @@ class OutputVariables(object):
         """Plot an output variable.
         """
 
-        var_data = self.get_var(name).iloc[0, :].to_frame(name=name)
+        var_data = self.get(name).iloc[0, :].to_frame(name=name)
 
         if isinstance(limits, str):
             # if limits == 'valid':
@@ -248,17 +249,38 @@ class OutputVariables(object):
         # print('Writing first plot')
         df_mrg = geoms_exploded.merge(var_data, left_on=self.__hru_shape_key, right_index=True, how='left')
 
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
+        fig_width, fig_height = get_figsize([minx, maxx, miny, maxy], **dict(kwargs))
+        kwargs.pop('init_size', None)
+
+        fig = plt.figure(figsize=(fig_width, fig_height))
 
         ax = plt.axes(projection=crs_proj)
-        ax.coastlines()
-        ax.gridlines()
+
+        # fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(30, 20))
+
+        ax = plt.axes(projection=crs_proj)
+
+        try:
+            ax.coastlines()
+        except AttributeError:
+            pass
+
+
+        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
+        gl.top_labels = None
+        gl.right_labels = None
+        gl.xformatter = LONGITUDE_FORMATTER
+        gl.yformatter = LATITUDE_FORMATTER
+        # ax.gridlines()
         ax.set_extent([minx, maxx, miny, maxy], crs=crs_proj)
 
         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
         mapper.set_array(df_mrg[name])
+        cax = fig.add_axes([ax.get_position().x1 + 0.01,
+                            ax.get_position().y0, 0.02,
+                            ax.get_position().height])
 
-        plt.colorbar(mapper, shrink=0.6)   # , label=cparam.units)
+        plt.colorbar(mapper, cax=cax)   # , label=cparam.units)
         plt.title(f'Variable: {name}')
 
         col = plot_polygon_collection(ax, df_mrg.geometry, values=df_mrg[name],
