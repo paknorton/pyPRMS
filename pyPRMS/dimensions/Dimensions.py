@@ -168,40 +168,6 @@ class Dimensions(object):
             dims[kk] = {'size': vv.size}
         return dims
 
-    # TODO: 20230707 PAN - figured out if this is still needed/used
-    # def add_from_xml(self, filename: str):
-    #     """Add one or more dimensions from an xml file.
-    #
-    #     :param filename: Name of xml file to read
-    #     """
-    #
-    #     # Add dimensions and grow dimension sizes from xml information for a parameter
-    #     # This information is found in xml files for each region for each parameter
-    #     # No attempt is made to verify whether each region for a given parameter
-    #     # has the same or same number of dimensions.
-    #     xml_root = read_xml(filename)
-    #
-    #     # TODO: We can't guarantee the order of the dimensions in the xml file
-    #     #       so we should make sure dimensions are added in the correct order
-    #     #       dictated by the position attribute.
-    #     #       1) read all dimensions in the correct 'position'-dictated order into a list
-    #     #       2) add dimensions in list to the dimensions ordereddict
-    #     for cdim in xml_root.findall('./dimensions/dimension'):
-    #         name = cast(str, cdim.get('name'))
-    #         size = cast(int, cdim.get('size'))
-    #         # name = cdim.get('name')
-    #         # size = int(cdim.get('size'))
-    #
-    #         if name not in self.__dimensions:
-    #             try:
-    #                 self.__dimensions[name] = Dimension(name=name, size=size)
-    #             except ValueError as err:
-    #                 print(err)
-    #         else:
-    #             if name not in ['nmonths', 'ndays', 'one']:
-    #                 # NOTE: This will always try to grow a dimension if it already exists!
-    #                 self.__dimensions[name].size += size
-
 
 class ParamDimensions(Dimensions):
     """Container for parameter dimensions.
@@ -285,46 +251,3 @@ class ParamDimensions(Dimensions):
         for kk, vv in ldims.items():
             vv['position'] = self.get_position(kk)
         return ldims
-
-    # TODO: 20230707 PAN - figured out if this is still needed/used
-    # def add_from_xml(self, filename: str):
-    #     """Add one or more dimensions from an xml file.
-    #
-    #     Add or grow dimensions from XML information. This version also checks dimension position.
-    #
-    #     :param filename: Name of the xml file
-    #
-    #     :raises ValueError: if existing dimension position is altered
-    #     """
-    #
-    #     # Add dimensions and grow dimension sizes from xml information for a parameter
-    #     # This information is found in xml files for each region for each parameter
-    #     # No attempt is made to verify whether each region for a given parameter
-    #     # has the same or same number of dimensions.
-    #     xml_root = read_xml(filename)
-    #
-    #     for cdim in xml_root.findall('./dimensions/dimension'):
-    #         name = cast(str, cdim.get('name'))
-    #         size = cast(int, cdim.get('size'))
-    #         pos = cast(int, cdim.get('position')) - 1
-    #         # name = cdim.get('name')
-    #         # size = int(cdim.get('size'))
-    #         # pos = int(cdim.get('position')) - 1
-    #
-    #         if name not in self.dimensions:
-    #             try:
-    #                 self.dimensions[name] = Dimension(name=name, size=size)
-    #             except ValueError as err:
-    #                 print(err)
-    #         else:
-    #             curr_pos = list(self.dimensions.keys()).index(name)
-    #
-    #             if curr_pos != pos:
-    #                 # This indicates a problem in one of the paramdb files
-    #                 raise ValueError(f'{name}: Attempted position change from {curr_pos} to {pos}')
-    #             else:
-    #                 if name not in ['nmonths', 'ndays', 'one']:
-    #                     # NOTE: This will always try to grow a dimension if it already exists!
-    #                     self.dimensions[name].size += size
-
-    # noinspection PyUnresolvedReferences
