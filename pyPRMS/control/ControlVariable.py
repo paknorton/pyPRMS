@@ -158,13 +158,13 @@ class ControlVariable(object):
                 elif isinstance(data, np.ndarray):
                     if data.dtype == cdtype:
                         # TODO: 20230707 PAN - currently never hit with string arrays
-                        self.__values = data
+                        self.__values = data   # pragma: no cover
                     else:
                         # Attempt to convert to correct datatype
                         self.__values = np.array(data, dtype=cdtype)
                 else:
                     # TODO: 20230707 PAN - currently never hit
-                    self.__values = np.array([data], dtype=cdtype)
+                    self.__values = np.array([data], dtype=cdtype)   # pragma: no cover
 
     @property
     def value_meaning(self) -> Union[str, None]:
