@@ -5,7 +5,6 @@ from typing import cast, Optional
 
 from ..prms_helpers import read_xml
 from .Parameters import Parameters
-# from ..constants import DATATYPE_TO_DTYPE, NHM_DATATYPES
 from ..constants import NEW_PTYPE_TO_DTYPE, PARAMETERS_XML, DIMENSIONS_XML
 
 

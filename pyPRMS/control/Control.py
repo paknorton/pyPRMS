@@ -334,6 +334,3 @@ class Control(object):
         """Abstract function for reading.
         """
         assert False, 'Control._read() must be defined by child class'
-
-
-# ***** END class control()
