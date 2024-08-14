@@ -3,10 +3,10 @@
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.colors import Normalize     # , LogNorm, PowerNorm
 from matplotlib.patches import Polygon
-from osgeo import ogr
+from osgeo import ogr   # type: ignore
 from typing import Optional, Sequence, Set, Union
 
-import cartopy.crs as ccrs
+import cartopy.crs as ccrs   # type: ignore
 import copy
 
 import matplotlib as mpl
@@ -15,11 +15,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pyproj as prj
-import shapely
+import shapely   # type: ignore
 
 import os
 os.environ['USE_PYGEOS'] = '0'
-import geopandas
+import geopandas   # type: ignore
 
 def get_figsize(extent, init_size=(10, 10), **kwargs):
     # init_size: tuple of width, height
@@ -210,7 +210,7 @@ def read_gis(filename: str, layer_name: str):
 
 def set_colormap(the_var: str,
                  param_data: pd.DataFrame,
-                 cmap: Optional[Union[str, colors.LinearSegmentedColormap]] = None,
+                 cmap: Optional[Union[str, colors.Colormap]] = None,
                  min_val: Optional[Union[int, float]] = None,
                  max_val: Optional[Union[int, float]] = None,
                  **kwargs):
