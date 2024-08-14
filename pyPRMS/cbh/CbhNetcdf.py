@@ -1,5 +1,5 @@
 import datetime
-import fsspec
+import fsspec   # type: ignore
 import numpy as np
 import os
 import pandas as pd   # type: ignore
@@ -7,8 +7,6 @@ import netCDF4 as nc   # type: ignore
 import xarray as xr
 
 from typing import Dict, List, Optional, Union
-
-# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
@@ -22,14 +20,12 @@ class CbhNetcdf(object):
     def __init__(self, src_path: str,
                  nhm_hrus: List[int],
                  st_date: Optional[datetime.datetime] = None,
-                 en_date: Optional[datetime.datetime] = None,
-                 thredds: Optional[bool] = False):
+                 en_date: Optional[datetime.datetime] = None):
         """
         :param src_path: Full path to netCDF file
         :param st_date: The starting date for restricting CBH results
         :param en_date: The ending date for restricting CBH results
         :param nhm_hrus: List of NHM HRU IDs to extract from CBH
-        :param thredds: If true pull CBH data from THREDDS server (testing only)
         """
         self.__src_path = src_path
         self.__stdate = st_date
@@ -38,7 +34,6 @@ class CbhNetcdf(object):
         self.__date_range = None
         # self.__dataset = None
         self.__final_outorder = None
-        self.__thredds = thredds
 
         self.__dataset = self.read_netcdf()
 
@@ -48,47 +43,17 @@ class CbhNetcdf(object):
         :returns: xarray dataset
         """
 
-        if self.__thredds:
-            # thredds_server = 'http://gdp-netcdfdev.cr.usgs.gov:8080'
-            thredds_server = 'http://localhost:8080'
-            base_opendap = f'{thredds_server}/thredds/dodsC/NHM_CBH_GM/files'
+        if os.path.splitext(self.__src_path)[1] == '.json':
+            fs = fsspec.filesystem('reference', fo=self.__src_path)
+            m = fs.get_mapper('')
 
-            # base_url is used to get a list of files for a product
-            # Until xarray supports ncml parsing the list of files will have to be manually built
-            base_url = f'{thredds_server}/thredds/catalog/NHM_CBH_GM/files/catalog.html'
-
-            full_file_list = pd.read_html(base_url, skiprows=1)[0]['Files']
-
-            # Only include files ending in .nc (sometimes the .ncml files are included and we don't want those)
-            flist = full_file_list[full_file_list.str.match('.*nc$')].tolist()
-            flist.sort()
-
-            # Create list of file URLs
-            xfiles = [f'{base_opendap}/{xx}' for xx in flist]
-
-            try:
-                # NOTE: With a multi-file dataset the time attributes 'units' and
-                #       'calendar' are lost.
-                #       see https://github.com/pydata/xarray/issues/2436
-
-                # Open the remote multi-file dataset
-                ds = xr.open_mfdataset(xfiles, chunks={}, combine='by_coords',
-                                       decode_cf=True, engine='netcdf4')
-            except ValueError:
-                ds = xr.open_mfdataset(xfiles, chunks={}, combine='by_coords',
-                                       decode_cf=True, engine='netcdf4')
+            ds = xr.open_dataset(m, engine='zarr', chunks={}, backend_kwargs={'consolidated':False})
+        elif os.path.splitext(self.__src_path)[1] == '.zarr':
+            ds = xr.open_zarr(self.__src_path, consolidated=True)
         else:
-            if os.path.splitext(self.__src_path)[1] == '.json':
-                fs = fsspec.filesystem("reference", fo=self.__src_path)
-                m = fs.get_mapper("")
-
-                ds = xr.open_dataset(m, engine="zarr", chunks={}, backend_kwargs={'consolidated':False})
-            elif os.path.splitext(self.__src_path)[1] == '.zarr':
-                ds = xr.open_zarr(self.__src_path, consolidated=True)
-            else:
-                ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
-                                       data_vars='minimal', decode_cf=True, engine='netcdf4',
-                                       parallel=True)
+            ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
+                                   data_vars='minimal', decode_cf=True, engine='netcdf4',
+                                   parallel=True)
 
         if self.__stdate is None and self.__endate is None:
             # If a date range is not specified then use the daterange from the dataset
@@ -98,8 +63,7 @@ class CbhNetcdf(object):
         return ds
 
     def get_var(self, var: str) -> pd.DataFrame:
-        """
-        Get a variable from the netCDF file.
+        """Get a variable from the netCDF file.
 
         :param var: Name of the variable
         :returns: dataframe of variable values
@@ -123,7 +87,6 @@ class CbhNetcdf(object):
             data = self.__dataset[var].loc[:, self.__nhm_hrus].to_pandas()
 
         return data
-
 
     def write_ascii(self, filename: str, variable: str):
         """Write CBH data for variable to ASCII formatted file.
@@ -159,8 +122,7 @@ class CbhNetcdf(object):
         else:
             print(f'WARNING: {variable} does not exist in source CBH files..skipping')
 
-
-    def write_netcdf(self, filename: str = None,
+    def write_netcdf(self, filename: str,
                      variables: Optional[List[str]] = None,
                      global_attrs: Optional[Dict] = None):
         """Write CBH to netCDF format file.
@@ -184,7 +146,6 @@ class CbhNetcdf(object):
         # Remove _FillValue from coordinate variables
         for vv in list(ds.coords):
             ds[vv].encoding.update({'_FillValue': None})
-                                    # 'contiguous': True})
 
         ds['crs'] = self.__dataset['crs']
         ds['crs'].encoding.update({'_FillValue': None,
