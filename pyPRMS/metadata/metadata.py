@@ -1,5 +1,4 @@
 import io
-# import numpy as np
 import pkgutil
 import xml.etree.ElementTree as xmlET   # type: ignore
 from collections import defaultdict
@@ -49,7 +48,7 @@ class MetaData(object):
 
     # @staticmethod
     def __control_to_dict(self, xml_root, meta_type, version) -> Dict:
-        """Convert control file metadata to dictionary"""
+        """Convert control variables metadata to dictionary"""
 
         meta_dict: Dict = {}
 
@@ -130,7 +129,7 @@ class MetaData(object):
         return meta_dict
 
     def __parameters_to_dict(self, xml_root, meta_type, version) -> Dict:
-        """Convert control file metadata to dictionary"""
+        """Convert parameter metadata to dictionary"""
 
         meta_dict: Dict = {}
 
@@ -204,7 +203,7 @@ class MetaData(object):
         return meta_dict
 
     def __dimensions_to_dict(self, xml_root, meta_type, version) -> Dict:
-        """Convert control file metadata to dictionary"""
+        """Convert control variables metadata to dictionary"""
 
         meta_dict: Dict = {}
 
@@ -236,7 +235,7 @@ class MetaData(object):
         return meta_dict
 
     def __variables_to_dict(self, xml_root, meta_type, version) -> Dict:
-        """Convert control file metadata to dictionary"""
+        """Convert output variables metadata to dictionary"""
 
         meta_dict: Dict = {}
 
