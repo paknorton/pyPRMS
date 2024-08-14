@@ -30,7 +30,7 @@ class ParameterNetCDF(Parameters):
         self._read()
 
     def _read(self):
-        """Read a paramDb file.
+        """Read a parameter netCDF file.
         """
 
         xr_df = xr.open_dataset(self.__filename, mask_and_scale=False, decode_timedelta=False)
