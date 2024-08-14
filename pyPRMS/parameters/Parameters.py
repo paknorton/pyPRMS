@@ -15,7 +15,7 @@ import xml.etree.ElementTree as xmlET
 from collections import defaultdict
 from collections.abc import KeysView
 from functools import cached_property
-from typing import Any, Optional, Sequence, Union, Dict, List, Set, Tuple
+from typing import Any, Literal, Optional, Sequence, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
 from ..control.Control import Control
@@ -36,6 +36,8 @@ import geopandas    # type: ignore
 
 pretty.install()
 con = Console()
+
+LimitOptions = Literal['valid', 'centered', 'absolute']
 
 
 class Parameters(object):
@@ -59,8 +61,8 @@ class Parameters(object):
         self.__hru_shape_key: Optional[str] = None
         self.__seg_poly = None
         self.__seg_shape_key: Optional[str] = None
-        self.__seg_to_hru: Dict = dict()
-        self.__hru_to_seg: Dict = dict()
+        self.__seg_to_hru: Dict[int, List[int]] = dict()
+        self.__hru_to_seg: Dict[int, int] = dict()
         self.metadata = metadata['parameters']
 
     def __getattr__(self, name: str):
@@ -127,11 +129,10 @@ class Parameters(object):
         """
 
         # Only supported with python >= 3.9
-        hru_segment = self.get('hru_segment_nhm').tolist()
-        nhm_id = self.get('nhm_id').tolist()
+        hru_segment = self.get('hru_segment_nhm').data_raw
+        nhm_id = self.get('nhm_id').data_raw
 
-        self.__hru_to_seg = dict([(nhm_id[idx], vv) for idx, vv in enumerate(hru_segment)])
-
+        self.__hru_to_seg = dict(np.rec.fromarrays([nhm_id, hru_segment]).tolist())
         return self.__hru_to_seg
 
     @property
@@ -160,32 +161,37 @@ class Parameters(object):
 
         :returns: dictionary mapping poi_id to local poi_seg"""
 
-        return dict(zip(self.get('poi_gage_id').data_raw.tolist(),   # type: ignore
-                        self.get('poi_gage_segment').data_raw.tolist()))   # type: ignore
+        gage_ids = self.get('poi_gage_id').data_raw
+        gage_segments = self.get('poi_gage_segment').data_raw
+        return dict(np.rec.fromarrays([gage_ids, gage_segments]).tolist())
 
     @property
-    def poi_to_seg0(self):
+    def poi_to_seg0(self) -> Dict[str, int]:
         """Returns a dictionary mapping poi_id to local, zero-based poi_seg.
 
         :returns: dictionary mapping poi_id to local, zero-based poi_seg"""
-
-        return dict(zip(self.get('poi_gage_id').data_raw,
-                        self.get('poi_gage_segment').data_raw - 1))
+        gage_ids = self.get('poi_gage_id').data_raw   # .tolist()
+        gage_segments = np.subtract(self.get('poi_gage_segment').data_raw, 1)
+        return dict(np.rec.fromarrays([gage_ids, gage_segments]).tolist())
 
     @cached_property
-    def seg_to_hru(self) -> Dict[int, int]:
-        """Returns an ordered dictionary mapping HRU global segment IDs to global HRU IDs.
+    def seg_to_hru(self) -> Dict[int, List[int]]:
+        """Returns a dictionary mapping HRU global segment IDs to global HRU IDs.
+
+        Segment keys equal to zero are for non-routed HRUs. Segment keys greater than
+        zero are global segment IDs.
 
         :returns: dictionary mapping hru_segment_nhm to nhm_id
         """
 
-        hru_segment = self.get('hru_segment_nhm').tolist()
-        nhm_id = self.get('nhm_id').tolist()
+        hru_segment = self.get('hru_segment_nhm').data_raw.tolist()
+        nhm_id = self.get('nhm_id').data_raw
+        assert type(nhm_id) is np.ndarray and nhm_id.dtype == np.int32
 
-        for ii, vv in enumerate(hru_segment):
+        for chru_idx, cseg in enumerate(hru_segment):   # type: ignore
             # keys are 1-based, values in arrays are 1-based
             # Non-routed HRUs have a seg key = zero
-            self.__seg_to_hru.setdefault(vv, []).append(nhm_id[ii])
+            self.__seg_to_hru.setdefault(cseg, []).append(nhm_id[chru_idx].item())
         return self.__seg_to_hru
 
     @property
@@ -373,12 +379,8 @@ class Parameters(object):
                     con.print(f'    INFO: Scalar; value = {pp.data}')
                 elif pp.data.ndim == 2:
                     con.print(f'    INFO: dimensioned {dims}; all values by {dims[0]} are equal to {pp.data[0]}')
-                    # con.print('    INFO: dimensioned [{1}, {2}]; all values by {1} are equal to {0}'.format(pp.data[0],
-                    #                                                                                         *list(pp.dimensions.keys())))
                 elif pp.data.ndim == 1:
                     con.print(f'    INFO: dimensioned {dims}; all values are equal to {pp.data[0]}')
-                    # con.print('    INFO: dimensioned [{1}]; all values are equal to {0}'.format(pp.data[0],
-                    #                                                                             *list(pp.dimensions.keys())))
 
             if pp.name == 'snarea_curve':
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.get('hru_deplcrv').unique().size:
@@ -485,15 +487,28 @@ class Parameters(object):
                 # init_data = self.get('hru_deplcrv').data_raw[tuple(nhm_idx0), ]
                 uniq_deplcrv = np.unique(init_data).tolist()
 
-            if name == 'hru_deplcrv':
-                # Renumber the hru_deplcrv indices for the subset
-                uniq_dict = {xx: ii+1 for ii, xx in enumerate(uniq_deplcrv)}
+                match name:
+                    case 'hru_deplcrv':
+                        # Renumber the hru_deplcrv indices for the subset
+                        uniq_dict = {xx: ii+1 for ii, xx in enumerate(uniq_deplcrv)}
 
-                # Create new hru_deplcrv and renumber
-                return np.array([uniq_dict[xx] for xx in init_data])
-            elif name == 'snarea_curve':
-                uniq_deplcrv0 = [xx - 1 for xx in uniq_deplcrv]
-                return param.data_raw.reshape((-1, 11))[tuple(uniq_deplcrv0), :].reshape((-1))
+                        # Create new hru_deplcrv and renumber
+                        res = np.array([uniq_dict[xx] for xx in init_data])
+                        # return np.array([uniq_dict[xx] for xx in init_data])
+                    case 'snarea_curve':
+                        uniq_deplcrv0 = [xx - 1 for xx in uniq_deplcrv]
+                        res = param.data_raw.reshape((-1, 11))[tuple(uniq_deplcrv0), :].reshape((-1))
+                return res
+
+            # if name == 'hru_deplcrv':
+            #     # Renumber the hru_deplcrv indices for the subset
+            #     uniq_dict = {xx: ii+1 for ii, xx in enumerate(uniq_deplcrv)}
+            #
+            #     # Create new hru_deplcrv and renumber
+            #     return np.array([uniq_dict[xx] for xx in init_data])
+            # elif name == 'snarea_curve':
+            #     uniq_deplcrv0 = [xx - 1 for xx in uniq_deplcrv]
+            #     return param.data_raw.reshape((-1, 11))[tuple(uniq_deplcrv0), :].reshape((-1))
             else:
                 # All other 1D arrays
                 return np.take(param.data_raw, nhm_idx0, axis=0)    # axis: 0 rows, 1 columns
@@ -527,15 +542,16 @@ class Parameters(object):
 
         poi_hrus = {}
         nhm_seg = self.get('nhm_seg').data_raw
-        assert type(nhm_seg) is np.ndarray
-        pois_dict = self.poi_to_seg
+        assert type(nhm_seg) is np.ndarray and nhm_seg.dtype == np.int32
+        poi_seg0_dict = self.poi_to_seg0
 
         # Generate stream network for the model
         dag_streamnet = self.stream_network()
 
         for cpoi in poi:
             # Lookup global segment id for the current POI
-            dsmost_seg = [nhm_seg[pois_dict[cpoi] - 1]]
+            cseg = poi_seg0_dict[cpoi]
+            dsmost_seg = [nhm_seg[cseg].item()]
 
             poi_hrus[cpoi] = self._upstream_hrus(dag_streamnet, dsmost_seg)
 
@@ -572,7 +588,7 @@ class Parameters(object):
 
     def plot(self, name: str,
              output_dir: Optional[str] = None,
-             limits: Optional[Union[str, List[float], Tuple[float, float]]] = 'absolute',
+             limits: Optional[Union[LimitOptions, List[float], Tuple[float, float]]] = 'absolute',
              mask_defaults: Optional[str] = None,
              **kwargs):   # pragma: no cover
         """Plot a parameter.
@@ -581,7 +597,7 @@ class Parameters(object):
 
         :param name: Name of parameter to plot
         :param output_dir: Directory to write plot to (None for write to screen only)
-        :param limits: Limits to use for colorbar. One of 'valid', 'centered', 'absolute', or list of floats. Default is 'valid'.
+        :param limits: Limits to use for colorbar. One of 'valid', 'centered', 'absolute', or list of floats.
         :param mask_defaults: Color for defaults values
         """
 
@@ -687,9 +703,10 @@ class Parameters(object):
                     # Setup the color bar
                     mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                     mapper.set_array(df_mrg[name])
-                    cax = fig.add_axes([ax.get_position().x1 + 0.01,
-                                        ax.get_position().y0, 0.02,
-                                        ax.get_position().height])
+                    cax = fig.add_axes((ax.get_position().x1 + 0.01,
+                                        ax.get_position().y0,
+                                        0.02,
+                                        ax.get_position().height))
 
                     # TODO: 2022-06-17 PAN - Categorical variables require entry in two places.
                     #       The first place is here for labelling and the second place is in
@@ -777,9 +794,9 @@ class Parameters(object):
                     if kwargs.get('vary_color', True):
                         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                         mapper.set_array(df_mrg[name])
-                        cax = fig.add_axes([ax.get_position().x1 + 0.01,
+                        cax = fig.add_axes((ax.get_position().x1 + 0.01,
                                             ax.get_position().y0, 0.02,
-                                            ax.get_position().height])
+                                            ax.get_position().height))
                         plt.colorbar(mapper, cax=cax, label=cparam.meta['units'])   # , shrink=0.6
 
                     if self.__hru_poly is not None:
@@ -788,9 +805,8 @@ class Parameters(object):
                                                            cmap=cmap, norm=norm,
                                                            **dict(kwargs, linewidth=0.5, alpha=0.7))
 
-                    col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name],
-                                               cmap=cmap, norm=norm,
-                                               **dict(kwargs))
+                    col = plot_line_collection(ax, df_mrg.geometry, values=df_mrg[name], cmap=cmap,
+                                               norm=norm, **dict(kwargs))
 
                     if mask_defaults is not None:
                         plt.annotate(f'NOTE: Values = {cparam.meta["default"]} are masked', xy=(0.5, 0.01),
@@ -939,9 +955,9 @@ class Parameters(object):
 
         self.__hru_poly = geopandas.read_file(filename, layer=layer_name)
 
-        if self.__hru_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
+        if self.__hru_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':   # type: ignore
             print('Overriding USGS aea crs with EPSG:5070')
-            self.__hru_poly.crs = 'EPSG:5070'
+            self.__hru_poly.crs = 'EPSG:5070'   # type: ignore
         self.__hru_shape_key = shape_key
 
     def shapefile_segments(self, filename: str,
@@ -956,9 +972,9 @@ class Parameters(object):
 
         self.__seg_poly = geopandas.read_file(filename, layer=layer_name)
 
-        if self.__seg_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':
+        if self.__seg_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':   # type: ignore
             print('Overriding USGS aea crs with EPSG:5070')
-            self.__seg_poly.crs = 'EPSG:5070'
+            self.__seg_poly.crs = 'EPSG:5070'   # type: ignore
         self.__seg_shape_key = shape_key
 
     def stream_network(self, tosegment: str = 'tosegment_nhm',
@@ -1271,7 +1287,10 @@ class Parameters(object):
             pp = self.get(pk)
             md = pp.meta
 
-            modules = ', '.join(list(modules_used.intersection(set(md.get('modules')))))
+            param_modules = md.get('modules')
+            assert type(param_modules) is list
+
+            modules = ', '.join(list(modules_used.intersection(set(param_modules))))
             if modules == '':
                 # We have a parameter that is needed by the declared modules
                 if self.verbose:   # pragma: no cover
