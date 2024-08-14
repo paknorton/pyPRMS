@@ -544,10 +544,11 @@ class TestParameter:
         aparam.data = data
 
         stats = aparam.stats()
-        assert stats is None
-
-        with pytest.raises(AttributeError):
-            assert stats.mean == 'foo'
+        assert stats is not None
+        assert stats.mean is None
+        assert stats.median is None
+        assert stats.min is None
+        assert stats.max is None
 
     @pytest.mark.parametrize('name, data, expected', [('cov_type',
                                                        np.array([1, 2, 3], dtype=np.int32),
