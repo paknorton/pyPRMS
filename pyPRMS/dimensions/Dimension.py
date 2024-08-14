@@ -1,5 +1,4 @@
-
-from typing import Dict, Optional, Union  # , List
+from typing import Dict, Optional, Union
 
 
 class Dimension(object):
@@ -153,4 +152,3 @@ class Dimension(object):
 
             # TODO: 2023-06-07 PAN - should the metadata size also get changed?
             self.meta['size'] = self.__size
-

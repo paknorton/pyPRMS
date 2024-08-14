@@ -1,17 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
-# import datetime
 import glob
-# import netCDF4
 import os
 
 import io
 import pkgutil
 # import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
-
-# import write_output_var as wr
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
