@@ -227,8 +227,8 @@ class Parameter(object):
 
         # FIXME: 20230706 PAN - this is flawed; duplicated values overwrite
         #        index positions.
-        if isinstance(self.__data, np.ndarray) and self.__data.ndim == 1:
-            return dict((val, idx) for idx, val in enumerate(self.__data.tolist()))
+        if self.data_raw.ndim == 1:
+            return dict((val.item(), idx[0]) for idx, val in np.ndenumerate(self.data_raw))
         else:
             return None
 
@@ -607,7 +607,7 @@ class Parameter(object):
                 self.__data[index] = value   # type: ignore
                 self.__modified = True
 
-    def _value_index_1d(self, value: Union[int, float, str]) -> Union[npt.NDArray, None]:
+    def _value_index_1d(self, value: Union[int, float, str]) -> npt.NDArray:
         """Given a scalar value return the indices where there is a match.
 
         :param value: The value to find in the parameter data array
@@ -619,4 +619,5 @@ class Parameter(object):
             # Returns a list of indices where the data elements match value
             return np.argwhere(self.data_raw == value)[:, 0]   # .tolist()
             # return np.where(self.data_raw == value)[0]
-        return None
+        else:
+            raise TypeError(f'{self.name}: Cannot search for value in multi-dimensional array')
