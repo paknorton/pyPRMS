@@ -297,12 +297,16 @@ class Control(object):
         for pk in sorted(list(self.__control_vars.keys())):
             cvar = self.get(pk)
             md = cvar.meta
+            assert md is not None
+
+            meta_default = md.get('default')
+            assert meta_default is not None
 
             if pk in ['start_time', 'end_time']:
                 out_list.append([cvar.name,
                                  'int32',
                                  md.get('description', ''),
-                                 pd.Timestamp(md.get('default')).strftime('%-Y,%-m,%-d,%-H,%-M,%-S')])
+                                 pd.Timestamp(meta_default).strftime('%-Y,%-m,%-d,%-H,%-M,%-S')])
             else:
                 out_list.append([cvar.name,
                                  md.get('datatype', ''),
@@ -323,12 +327,15 @@ class Control(object):
         """
         # if len(cstr) == 0:
         #     return True
+        value: Union[int, str]
 
         var, op, value = cstr.split(' ')
         value = int(value)
 
-        if self.exists(var):
-            return cond_check[op](self.get(var).values, value)
+        ctl_val = self.get(var).values
+        assert ctl_val is not None
+
+        return cond_check[op](ctl_val, value)
 
     def _read(self):
         """Abstract function for reading.
