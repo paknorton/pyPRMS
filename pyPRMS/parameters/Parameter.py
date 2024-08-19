@@ -169,7 +169,8 @@ class Parameter(object):
                 if data_in.size == 1:
                     data_in = np.repeat(data_in, expected_size)
 
-                if data_in.size == 12 and expected_shape[1] == 12:
+                # if data_in.size == 12 and expected_shape[1] == 12:
+                if data_in.size == 12 and 'nmonths' in self.__dimensions.keys():
                     # Expand nmonths to nhru, nmonth
                     data_in = np.resize(data_in, expected_shape)
                 else:
