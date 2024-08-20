@@ -780,7 +780,12 @@ class Parameters(object):
                     fig = plt.figure(figsize=(fig_width, fig_height))
 
                     ax = plt.axes(projection=crs_proj)
-                    ax.coastlines()
+
+                    try:
+                        ax.coastlines()
+                    except AttributeError:
+                        pass
+
                     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
                     gl.top_labels = None
                     gl.right_labels = None
@@ -958,6 +963,9 @@ class Parameters(object):
         if self.__hru_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':   # type: ignore
             print('Overriding USGS aea crs with EPSG:5070')
             self.__hru_poly.crs = 'EPSG:5070'   # type: ignore
+        elif self.__hru_poly.crs.name[0:5] == 'NAD83':
+            self.__hru_poly.to_crs('epsg:4326', inplace=True)
+
         self.__hru_shape_key = shape_key
 
     def shapefile_segments(self, filename: str,
@@ -975,6 +983,9 @@ class Parameters(object):
         if self.__seg_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':   # type: ignore
             print('Overriding USGS aea crs with EPSG:5070')
             self.__seg_poly.crs = 'EPSG:5070'   # type: ignore
+        elif self.__seg_poly.crs.name[0:5] == 'NAD83':
+            self.__seg_poly.to_crs('epsg:4326', inplace=True)
+
         self.__seg_shape_key = shape_key
 
     def stream_network(self, tosegment: str = 'tosegment_nhm',
@@ -1150,7 +1161,7 @@ class Parameters(object):
                             outfile.write(f'{dd.name}\n')
                 elif item == 'datatype':
                     # dimsize (which is computed) must be written before datatype
-                    outfile.write(f'{vv.data.size}\n')
+                    outfile.write(f'{vv.data_raw.size}\n')
                     outfile.write(f'{datatype}\n')
                 elif item == 'data':
                     # Write one value per line
@@ -1158,7 +1169,7 @@ class Parameters(object):
                     #          because flatten with 'A' was only honoring the Fortran memory layout
                     #          if the array was contiguous which isn't always the
                     #          case if the arrays have been altered in size.
-                    for xx in vv.data.ravel(order='F'):
+                    for xx in vv.data_raw.ravel(order='F'):
                         if vv.meta.get('datatype', 'null') in ['float32', 'float64']:
                             # Float and double types have to be formatted specially so
                             # they aren't written in exponential notation or with
