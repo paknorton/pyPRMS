@@ -4,7 +4,9 @@ import os
 import pandas as pd
 from distutils import dir_util
 from pyPRMS import ControlFile
+from pyPRMS import ParamDb
 from pyPRMS import ParameterFile
+from pyPRMS import ParameterNetCDF
 from pyPRMS.Exceptions_custom import ControlError
 from pyPRMS.metadata.metadata import MetaData
 
@@ -52,6 +54,138 @@ class TestParameterFile:
                            'ParamDb revision: https///code.usgs.gov/wma/national-iwaas/nhm/nhm-applications/nhm-v1.1-conus/paramdb_v1.1_gridmet_CONUS/commit/1ffad3a9e33473290efaaa472a90b42a12e28e1f']
         assert pdb.headers == expected_headers
 
+    def test_parameter_file_write(self, datadir, tmp_path):
+        parameter_file = datadir.join('myparam.param')
+
+        prms_meta_orig = MetaData(verbose=True).metadata
+        pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
+
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+        out_file = out_path / 'param_test.param'
+
+        pdb_orig.write_parameter_file(out_file, header=pdb_orig.headers)
+
+        prms_meta_chk = MetaData(version=5, verbose=True).metadata
+        pdb_chk = ParameterFile(out_file, metadata=prms_meta_chk)
+
+        # Same headers?
+        assert pdb_orig.headers == pdb_chk.headers
+
+        # Do they have the same dimensions/sizes?
+        orig_dims = pdb_orig.dimensions
+        chk_dims = pdb_chk.dimensions
+
+        assert len(set(orig_dims.keys()).symmetric_difference(set(chk_dims.keys()))) == 0, 'Different number of dimensions'
+
+        for cdim in orig_dims.keys():
+            assert orig_dims[cdim].size == chk_dims[cdim].size, f'{cdim}: Dimension sizes different'
+
+        # Do they have the parameters/data?
+        orig_params = pdb_orig.parameters
+        chk_params = pdb_chk.parameters
+
+        assert len(set(orig_params.keys()).symmetric_difference(set(chk_params.keys()))) == 0, 'Different number of parameters'
+
+        for cparam in orig_params.keys():
+            # if isinstance(orig_params[cparam].data, np.ndarray):
+            assert (orig_params[cparam].data_raw == chk_params[cparam].data_raw).all(), f'{cparam}: Parameter values different'
+
+    def test_parameter_file_write_header_check(self, datadir, tmp_path):
+        parameter_file = datadir.join('myparam.param')
+
+        prms_meta_orig = MetaData(verbose=True).metadata
+        pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
+
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+        out_file = out_path / 'param_test.param'
+
+        with pytest.raises(ValueError):
+            pdb_orig.write_parameter_file(out_file, header=['line 1', 'line 2', 'line 3'])
+
+        pdb_orig.write_parameter_file(out_file, header=['line 1'])
+        prms_meta_chk = MetaData(version=5, verbose=True).metadata
+        pdb_chk = ParameterFile(out_file, metadata=prms_meta_chk)
+
+        assert pdb_chk.headers == ['Written by pyPRMS', 'line 1'], 'Header not written correctly'
+
+        pdb_orig.write_parameter_file(out_file, header=None)
+        prms_meta_chk = MetaData(version=5, verbose=True).metadata
+        pdb_chk = ParameterFile(out_file, metadata=prms_meta_chk)
+
+        assert pdb_chk.headers == ['Written by pyPRMS', 'Comment: It is all downhill from here'], 'Default header not written correctly'
+
+    def test_paramdb_write(self, datadir, tmp_path):
+        parameter_file = datadir.join('myparam.param')
+
+        prms_meta_orig = MetaData(verbose=True).metadata
+        pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
+
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+        out_file = out_path / 'paramdb_test'
+
+        pdb_orig.write_paramdb(out_file)
+
+        prms_meta_chk = MetaData(version=5, verbose=True).metadata
+        pdb_chk = ParamDb(out_file, metadata=prms_meta_chk)
+
+        # Do they have the same dimensions/sizes?
+        orig_dims = pdb_orig.dimensions
+        chk_dims = pdb_chk.dimensions
+
+        assert len(set(orig_dims.keys()).symmetric_difference(set(chk_dims.keys()))) == 0, 'Different number of dimensions'
+
+        for cdim in orig_dims.keys():
+            assert orig_dims[cdim].size == chk_dims[cdim].size, f'{cdim}: Dimension sizes different'
+
+        # Do they have the parameters/data?
+        orig_params = pdb_orig.parameters
+        chk_params = pdb_chk.parameters
+
+        assert len(set(orig_params.keys()).symmetric_difference(set(chk_params.keys()))) == 0, 'Different number of parameters'
+
+        for cparam in orig_params.keys():
+            # if isinstance(orig_params[cparam].data, np.ndarray):
+            assert (orig_params[cparam].data_raw == chk_params[cparam].data_raw).all(), f'{cparam}: Parameter values different'
+
+    def test_parameter_netcdf_write(self, datadir, tmp_path):
+        parameter_file = datadir.join('myparam.param')
+
+        prms_meta_orig = MetaData(verbose=True).metadata
+        pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
+
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+        out_file = out_path / 'parameter_netcdf_test.nc'
+
+        pdb_orig.write_parameter_netcdf(out_file)
+
+        prms_meta_chk = MetaData(version=5, verbose=True).metadata
+        pdb_chk = ParameterNetCDF(out_file, metadata=prms_meta_chk)
+
+        # Do they have the same dimensions/sizes?
+        orig_dims = pdb_orig.dimensions
+        chk_dims = pdb_chk.dimensions
+
+        print(set(orig_dims.keys()).symmetric_difference(set(chk_dims.keys())))
+        assert len(set(orig_dims.keys()).symmetric_difference(set(chk_dims.keys()))) == 0, 'Different number of dimensions'
+
+        for cdim in orig_dims.keys():
+            assert orig_dims[cdim].size == chk_dims[cdim].size, f'{cdim}: Dimension sizes different'
+
+        # Do they have the parameters/data?
+        orig_params = pdb_orig.parameters
+        chk_params = pdb_chk.parameters
+
+        assert len(set(orig_params.keys()).symmetric_difference(set(chk_params.keys()))) == 0, 'Different number of parameters'
+
+        for cparam in orig_params.keys():
+            # if isinstance(orig_params[cparam].data, np.ndarray):
+            assert (orig_params[cparam].data_raw == chk_params[cparam].data_raw).all(), f'{cparam}: Parameter values different'
+
+
     def test_parameters_unneeded_parameters(self, datadir):
         control_file = datadir.join('control.default.bandit')
         parameter_file = datadir.join('myparam.param')
@@ -97,7 +231,6 @@ class TestParameterFile:
         pdb_instance.remove(remove_list)
 
         assert set(pdb_instance.parameters.keys()) == initial_params - remove_list
-
 
     def test_read_parameter_file_dup_entry(self, datadir):
         control_file = datadir.join('control.default.bandit')
