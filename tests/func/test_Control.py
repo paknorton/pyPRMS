@@ -1,8 +1,28 @@
 import pytest
 import numpy as np
+import os
+from distutils import dir_util
 from pyPRMS import Control
 from pyPRMS import MetaData
 from pyPRMS.Exceptions_custom import ControlError
+
+
+@pytest.fixture
+def datadir(tmpdir, request):
+    """
+    Fixture responsible for searching a folder with the same name of test
+    module and, if available, moving all contents to a temporary directory so
+    tests can use them freely.
+    """
+    # 2023-07-18
+    # https://stackoverflow.com/questions/29627341/pytest-where-to-store-expected-data
+    filename = request.module.__file__
+    test_dir, _ = os.path.splitext(filename)
+
+    if os.path.isdir(test_dir):
+        dir_util.copy_tree(test_dir, str(tmpdir))
+
+    return tmpdir
 
 
 @pytest.fixture(scope='class')
@@ -21,6 +41,23 @@ def metadata_ctl():
 
 
 class TestControl:
+
+    def test_control_default_metadata(self, control_object, datadir, tmp_path):
+        """Test the default control metadata CSV file"""
+        ctl_metadata_orig_file = datadir.join('ctl_metadata_default.csv')
+        with open(ctl_metadata_orig_file, 'r') as f:
+            lines_orig = f.readlines()
+
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+        out_file = out_path / 'ctl_metadata_default_test.csv'
+
+        control_object.write_metadata_csv(out_file)
+
+        with open(out_file, 'r') as f:
+            lines_chk = f.readlines()
+
+        assert lines_orig == lines_chk, 'Control metadata CSV file does not match expected'
 
     def test_getitem(self, control_object):
         assert control_object['print_debug'].values == 0
