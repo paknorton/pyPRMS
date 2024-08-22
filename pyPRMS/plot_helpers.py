@@ -104,29 +104,33 @@ def get_projection(gdf: geopandas.GeoDataFrame):
     :param gdf: GeoDataFrame
     """
 
-    aa = {}
-    for yy in gdf.crs.coordinate_operation.params:
-        aa[yy.name] = yy.value
+    if gdf.crs.is_projected:
+        aa = {}
+        for yy in gdf.crs.coordinate_operation.params:
+            aa[yy.name] = yy.value
 
-    if '9822' in gdf.crs.coordinate_operation.method_code:
-        # Albers Equal Area
-        crs_proj = ccrs.AlbersEqualArea(central_longitude=aa['Longitude of false origin'],
-                                        central_latitude=aa['Latitude of false origin'],
-                                        standard_parallels=(aa['Latitude of 1st standard parallel'],
-                                                            aa['Latitude of 2nd standard parallel']),
-                                        false_easting=aa['Easting at false origin'],
-                                        false_northing=aa['Northing at false origin'])
-    elif '9802' in gdf.crs.coordinate_operation.method_code:
-        # Lambert Conformal Conic
-        crs_proj = ccrs.LambertConformal(central_latitude=aa['Latitude of false origin'],
-                                         central_longitude=aa['Longitude of false origin'],
-                                         standard_parallels=(aa['Latitude of 1st standard parallel'],
-                                                             aa['Latitude of 2nd standard parallel']),
-                                         false_easting=aa['Easting at false origin'],
-                                         false_northing=aa['Northing at false origin'])
+        if '9822' in gdf.crs.coordinate_operation.method_code:
+            # Albers Equal Area
+            crs_proj = ccrs.AlbersEqualArea(central_longitude=aa['Longitude of false origin'],
+                                            central_latitude=aa['Latitude of false origin'],
+                                            standard_parallels=(aa['Latitude of 1st standard parallel'],
+                                                                aa['Latitude of 2nd standard parallel']),
+                                            false_easting=aa['Easting at false origin'],
+                                            false_northing=aa['Northing at false origin'])
+        elif '9802' in gdf.crs.coordinate_operation.method_code:
+            # Lambert Conformal Conic
+            crs_proj = ccrs.LambertConformal(central_latitude=aa['Latitude of false origin'],
+                                             central_longitude=aa['Longitude of false origin'],
+                                             standard_parallels=(aa['Latitude of 1st standard parallel'],
+                                                                 aa['Latitude of 2nd standard parallel']),
+                                             false_easting=aa['Easting at false origin'],
+                                             false_northing=aa['Northing at false origin'])
+        else:
+            # We're gonna crash
+            crs_proj = None
     else:
-        # We're gonna crash
-        crs_proj = None
+        crs_proj = ccrs.PlateCarree()
+
     return crs_proj
 
 def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_width=False, vary_color=True, colors=None,
