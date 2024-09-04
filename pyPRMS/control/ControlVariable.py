@@ -117,9 +117,15 @@ class ControlVariable(object):
         force_default = self.meta.get('force_default', False)
 
         if force_default or self.__values is None:
-            return self.meta.get('default', None)
+            if isinstance(self.meta.get('default', None), np.str_ | np.int32 | np.float32):
+                return self.meta.get('default', None).item()
+            else:
+                return self.meta.get('default', None)
         else:
-            return self.__values
+            if isinstance(self.__values, np.str_ | np.int32 | np.float32):
+                return self.__values.item()
+            else:
+                return self.__values
 
     @values.setter
     def values(self, data: Union[Sequence[str], str, int, float, datetime.datetime]):
