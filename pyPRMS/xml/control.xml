@@ -74,6 +74,16 @@
             <value name="2">GWR cascades are set equal to the HRU cascades and parameters gw_up_id, gw_strmseg_down_in, gw_down_id, and gw_pct_up are not required</value>
         </values>
     </control_param>
+    <control_param name="cbh_active_flag" version="6.0.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to specify whether to input values in CBH files for a specified number of HRUs less than nhru, such as only active HRUs</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
     <control_param name="cbh_binary_flag" deprecated="6.0">
         <default>0</default>
         <type>1</type>
@@ -84,7 +94,7 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="cbh_check_flag" deprecated="6.0">
+    <control_param name="cbh_check_flag" deprecated="6.0.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -94,15 +104,16 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="csvON_OFF" deprecated="6.0">
+    <control_param name="csvON_OFF">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Switch to specify whether or not common-separated values (CSV) summary output files are generated</desc>
+        <desc>Switch to specify whether to output Comma-Separated-Values (CSV) file with simulated flows with 4 decimal places for segments specified by poi_gage_segment and poi_gage_id</desc>
         <values type="flag">
             <value name="0">off</value>
-            <value name="1">on</value>
-            <value name="2" version="5.1.0">only output pairs of simulated and measured flows</value>
+            <value name="1">yes, with date tag year-month-day followed by 51 basin variables and simulated flow as comma separated values</value>
+            <value name="2" version="5.1.0">yes, with date tag year month day followed by simulated flows as a space delimited file</value>
+            <value name="3" version="6.0.0">yes, with date tag year-month-day followed by simulated flows as comma separated values</value>
         </values>
     </control_param>
     <control_param name="dispGraphsBuffSize" deprecated="6.0">
@@ -207,7 +218,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of potential ET coefficient values are input in Dynamic Parameter File potetcoef_dynamic to update coefficients for the specified month for the selected potential ET module specified by control parameter et_module</desc>
+        <desc>Flag to indicate if a time series of potential ET coefficient values are input in Dynamic Parameter File potet_coef_dynamic to update coefficients for the specified month for the selected potential ET module specified by control parameter et_module</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">jh_coef, pt_alpha, hs_krs, hamon_coef, epan_coef, potet_cbh_adj, and pm_n_coef (potet_jh, potet_pt, potet_hs, potet_hamon, potet_pan, climate_hru, and potet_pm modules)</value>
@@ -218,17 +229,17 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if a time series of solar radiation values are input in  Dynamic Parameter File radtrncf_dynamic</desc>
+        <desc>Flag to indicate if a time series of solar radiation values are input in Dynamic Parameter File radtrncf_dynamic</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">rad_trncf</value>
         </values>
     </control_param>
-    <control_param name="dyn_snareathresh_flag">
+    <control_param name="dyn_snareathresh_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Flag to indicate if a time series of snow-area threshold values are input in Dynamic Parameter File snareathresh_dynamic</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">snarea_thresh</value>
@@ -288,11 +299,11 @@
             <value name="3">transp_beg,transp_end</value>
         </values>
     </control_param>
-    <control_param name="dyn_transp_on_flag">
+    <control_param name="dyn_transp_on_flag" version="5.2.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>none</desc>
+        <desc>Flag to indicate if a time series of variable transp_on are input in a Dynamic Parameter File</desc>
         <values type="parameter">
             <value name="0">off</value>
             <value name="1">transp_on</value>
@@ -302,7 +313,13 @@
         <default>dynamic_parameter.out</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Pathname of the log file that summarizes dynamic parameter changes for all dynamic parameter input</desc>
+        <desc>Pathname of the log file that summarizes dynamic parameter changes for parameters not related to soilzone and land surface</desc>
+    </control_param>
+    <control_param name="dynamic_soil_param_log_file" version="6.0.0">
+        <default>dynamic_soil_parameter.out</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>Pathname of the log file that summarizes dynamic parameter changes for soilzone and land surface related parameters</desc>
     </control_param>
     <control_param name="external_transferON_OFF" version="5.0">
         <default>0</default>
@@ -929,7 +946,7 @@
         <numvals>1</numvals>
         <desc>Pathname of the CBH file of pre-processed potential-ET input data for each HRU to specify variable potet-inches </desc>
     </control_param>
-    <control_param name="potetcoef_dynamic" version="5.0">
+    <control_param name="potet_coef_dynamic" version="5.0">
         <default>dyn_potet_coef.param</default>
         <force_default>1</force_default>
         <type>4</type>
@@ -941,6 +958,12 @@
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the CBH file of pre-processed precipitation input data for each HRU to specify variable precip-inches</desc>
+    </control_param>
+    <control_param name="precip_map_file" version="5.2.1">
+        <default>precip.map</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>Pathname of pre-processed precipitation input data to be mapped to each HRU to specify variable precip_map_values (units based on value specified for parameter precip_units)</desc>
     </control_param>
     <control_param name="precip_module">
         <default>precip_1sta</default>
@@ -970,7 +993,7 @@
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed flow rates for transfers from stream segments </desc>
     </control_param>
-    <control_param name="snareathresh_dynamic">
+    <control_param name="snareathresh_dynamic" version="5.2.1">
         <default>dyn_snarea_thresh.param</default>
         <force_default>1</force_default>
         <type>4</type>
@@ -1109,6 +1132,18 @@
         <numvals>1</numvals>
         <desc>Pathname of the CBH file of pre-processed minimum air temperature input data for each HRU to specify variable tminf-degrees Fahrenheit</desc>
     </control_param>
+    <control_param name="tmax_map_file" version="5.2.1">
+        <default>tmax.map</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>Pathname of pre-processed maximum air temperature input data to be mapped to each HRU to specify variable tmax_map_values to set variable tmaxf (units: degrees Fahrenheit)</desc>
+    </control_param>
+    <control_param name="tmin_map_file" version="5.2.1">
+        <default>tmin.map</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>Pathname of pre-processed minimum air temperature input data to be mapped to each HRU to specify variable tmin_map_values to set variable tminf (units: degrees Fahrenheit)</desc>
+    </control_param>
     <control_param name="transp_day">
         <default>transp.day</default>
         <type>4</type>
@@ -1126,11 +1161,12 @@
             <value name="transp_tindex">Determines whether the current time step is in a period of active transpiration by the temperature index method.</value>
         </values>
     </control_param>
-    <control_param name="transp_on_dynamic">
+    <control_param name="transp_on_dynamic" version="5.2.1">
         <default>dyn_transp_on.param</default>
+        <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Pathname of the time series of pre-processed values used to set values of transp_on parameter</desc>
+        <desc>Pathname of the time series of pre-processed values used to set values for dynamic variable transp_on</desc>
     </control_param>
     <control_param name="transpbeg_dynamic" version="5.0">
         <default>dyn_transp_beg.param</default>
@@ -1238,7 +1274,7 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to specify snow depletion curve calculation method.</desc>
+        <desc>Flag to specify snow depletion curve calculation method</desc>
         <values type="method">
             <value name="0">Specify snow depletion curves with parameters hru_deplcrv and snarea_curve</value>
             <value name="1">Compute using parameters snarea_a, snarea_b, snarea_c, and snarea_d</value>
@@ -1294,7 +1330,7 @@
         <default>cloudcover.day</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Pathname of the CBH file of pre-processed snowpack albedo input data for each HRU to specify variable albedo_hru (units: decimal fraction)</desc>
+        <desc>Pathname of the CBH file of pre-processed cloud cover input data for each HRU to specify variable cloud_cover_cbh (units: decimal fraction)</desc>
     </control_param>
     <control_param name="humidity_cbh_flag" version="5.2.1">
         <default>0</default>
@@ -1310,10 +1346,10 @@
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
-        <desc>Flag to indicate if approximation of cloud cover for snowpack computations is computed using HRU-dimensioned variables</desc>
+        <desc>Flag to indicate if radiation transmission is computed based on HRU-based variables or basin-wide variables as is done in previous model versions</desc>
         <values type="flag">
-            <value name="0">No</value>
-            <value name="1">Yes</value>
+            <value name="0">use basin variables</value>
+            <value name="1">use HRU variables</value>
         </values>
     </control_param>
     <control_param name="windspeed_cbh_flag" version="5.2.1">
@@ -1331,6 +1367,16 @@
         <type>1</type>
         <numvals>1</numvals>
         <desc>Flag to indicate if continuous frozen ground index simulation is computed</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="forcing_check_flag" version="6.0.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to indicate performance of precipitation and temperature checks for hru_ppt &lt; 0.0, hru_rain &lt; 0.0, hru_snow &lt; 0.0, tmax &lt; tmin, tminf &lt; -150.0 and tmaxf &gt; 200.0</desc>
         <values type="flag">
             <value name="0">No</value>
             <value name="1">Yes</value>
@@ -1355,6 +1401,36 @@
             <value name="0">No optimization</value>
             <value name="1">Use first year of climate data</value>
             <value name="2">Constant mass balance gradient above and below equilibrium line altitude (ELA)</value>
+        </values>
+    </control_param>
+    <control_param name="no_snow_flag" version="6.0.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to indicate if snow and glacier (if active) computations are computed</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="seg2hru_flag" version="6.0.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to indicate use of segment_to_hru to apply streamflow to capillary reservoir of associated HRUs</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
+        </values>
+    </control_param>
+    <control_param name="write_binary_nhru_flag" version="6.0.0">
+        <default>0</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>Switch to specify whether to output nhru_summary values as binary files</desc>
+        <values type="flag">
+            <value name="0">No</value>
+            <value name="1">Yes</value>
         </values>
     </control_param>
 
