@@ -3,7 +3,7 @@
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.colors import Normalize     # , LogNorm, PowerNorm
 from matplotlib.patches import Polygon
-from osgeo import ogr   # type: ignore
+# from osgeo import ogr
 from typing import Optional, Sequence, Set, Union
 
 import cartopy.crs as ccrs   # type: ignore
@@ -14,12 +14,13 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pyproj as prj
+# import pyproj as prj
 import shapely   # type: ignore
 
 import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas   # type: ignore
+
 
 def get_figsize(extent, init_size=(10, 10), **kwargs):
     # init_size: tuple of width, height
@@ -44,59 +45,59 @@ def get_figsize(extent, init_size=(10, 10), **kwargs):
 
     return init_width, init_height
 
-def get_extent(shapefile: str,
-               layer_name: Optional[str] = None,
-               driver: Optional[str] = 'ESRI Shapefile'):
-    """Get the extent from a shapefile.
-
-    :param shapefile: name of shapefile or geodatabase
-    :param layer_name: name of geodatabase layer
-    :param driver: name of GDAL driver to use
-    """
-
-    # Get extent information from the national HRUs shapefile
-
-    # Use gdal/ogr to get the extent information
-    # Shapefile can be in projected coordinates
-    # Driver can be: OpenFileGDB or ESRI Shapefile
-    in_driver = ogr.GetDriverByName(driver)
-    in_data_source = in_driver.Open(shapefile, 0)
-
-    if layer_name is None:
-        in_layer = in_data_source.GetLayer()
-    else:
-        in_layer = in_data_source.GetLayerByName(layer_name)
-
-    extent = in_layer.GetExtent()
-
-    # Get the spatial reference information from the shapefile
-    spatial_ref = in_layer.GetSpatialRef()
-
-    # Create transformation object using projection information from the shapefile
-    xform = prj.Proj(spatial_ref.ExportToProj4())
-
-    west, east, south, north = extent
-    # pad = 100000.    # amount to pad the extent values with (in meters)
-    # east += pad
-    # west -= pad
-    # south -= pad
-    # north += pad
-
-    ll_lon, ll_lat = xform(west, south, inverse=True)
-    ur_lon, ur_lat = xform(east, north, inverse=True)
-    print('\tExtent: ({0:f}, {1:f}, {2:f}, {3:f})'.format(west, east, south, north))
-    print('\tExtent: (LL: [{}, {}], UR: [{}, {}])'.format(ll_lon, ll_lat, ur_lon, ur_lat))
-
-    extent_dms = [ll_lon, ur_lon, ll_lat, ur_lat]
-
-    # Matplotlib basemap requires the map center (lon_0, lat_0) be in decimal degrees
-    # and yet the corners of the extent can be in projected coordinates
-    cen_lon, cen_lat = xform((east+west)/2, (south+north)/2, inverse=True)
-
-    print('cen_lon: {}'.format(cen_lon))
-    print('cen_lat: {}'.format(cen_lat))
-
-    return extent_dms
+# def get_extent(shapefile: str,
+#                layer_name: Optional[str] = None,
+#                driver: Optional[str] = 'ESRI Shapefile'):
+#     """Get the extent from a shapefile.
+#
+#     :param shapefile: name of shapefile or geodatabase
+#     :param layer_name: name of geodatabase layer
+#     :param driver: name of GDAL driver to use
+#     """
+#
+#     # Get extent information from the national HRUs shapefile
+#
+#     # Use gdal/ogr to get the extent information
+#     # Shapefile can be in projected coordinates
+#     # Driver can be: OpenFileGDB or ESRI Shapefile
+#     in_driver = ogr.GetDriverByName(driver)
+#     in_data_source = in_driver.Open(shapefile, 0)
+#
+#     if layer_name is None:
+#         in_layer = in_data_source.GetLayer()
+#     else:
+#         in_layer = in_data_source.GetLayerByName(layer_name)
+#
+#     extent = in_layer.GetExtent()
+#
+#     # Get the spatial reference information from the shapefile
+#     spatial_ref = in_layer.GetSpatialRef()
+#
+#     # Create transformation object using projection information from the shapefile
+#     xform = prj.Proj(spatial_ref.ExportToProj4())
+#
+#     west, east, south, north = extent
+#     # pad = 100000.    # amount to pad the extent values with (in meters)
+#     # east += pad
+#     # west -= pad
+#     # south -= pad
+#     # north += pad
+#
+#     ll_lon, ll_lat = xform(west, south, inverse=True)
+#     ur_lon, ur_lat = xform(east, north, inverse=True)
+#     print('\tExtent: ({0:f}, {1:f}, {2:f}, {3:f})'.format(west, east, south, north))
+#     print('\tExtent: (LL: [{}, {}], UR: [{}, {}])'.format(ll_lon, ll_lat, ur_lon, ur_lat))
+#
+#     extent_dms = [ll_lon, ur_lon, ll_lat, ur_lat]
+#
+#     # Matplotlib basemap requires the map center (lon_0, lat_0) be in decimal degrees
+#     # and yet the corners of the extent can be in projected coordinates
+#     cen_lon, cen_lat = xform((east+west)/2, (south+north)/2, inverse=True)
+#
+#     print('cen_lon: {}'.format(cen_lon))
+#     print('cen_lat: {}'.format(cen_lat))
+#
+#     return extent_dms
 
 def get_projection(gdf: geopandas.GeoDataFrame):
     """Get projection of geodataframe.
