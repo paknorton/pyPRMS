@@ -117,6 +117,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Install pytest
+        run: |
+          pip install pytest
+
       - name: Install pyPRMS
         run: |
           pip install .
