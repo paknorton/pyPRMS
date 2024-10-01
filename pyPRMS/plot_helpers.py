@@ -3,7 +3,6 @@
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.colors import Normalize     # , LogNorm, PowerNorm
 from matplotlib.patches import Polygon
-from osgeo import ogr   # type: ignore
 from typing import Optional, Sequence, Set, Union
 
 import cartopy.crs as ccrs   # type: ignore
