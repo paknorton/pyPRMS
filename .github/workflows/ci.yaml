@@ -45,9 +45,9 @@ jobs:
         run: |
           pip --verbose install .
 
-      # - name: Print pyPRMS version
-      #   run: |
-      #     python -c "import pyPRMS; print(pywatershed.__version__)"
+      - name: Print pyPRMS version
+        run: |
+          python -c "import pyPRMS; print(pyPRMS.__version__)"
 
       - name: Build pyPRMS, check dist outputs
         run: |
