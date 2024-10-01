@@ -13,7 +13,8 @@ from typing import Dict, List, Optional, Sequence, Union   # OrderedDict as Orde
 from ..prms_helpers import version_info
 from .ControlVariable import ControlVariable
 from ..Exceptions_custom import ControlError
-from ..constants import ctl_order, ctl_variable_modules, ctl_implicit_modules, MetaDataType, VAR_DELIM, PTYPE_TO_PRMS_TYPE
+from ..constants import (ctl_order, ctl_variable_modules, ctl_implicit_modules, internal_module_map,
+                         MetaDataType, VAR_DELIM, PTYPE_TO_PRMS_TYPE)
 
 cond_check = {'=': operator.eq,
               '>': operator.gt,
@@ -146,6 +147,11 @@ class Control(object):
     def modules(self) -> Dict[str, str]:
         """Get the modules defined in the control file.
 
+        Note: climate_hru is changed to precipitation_hru, temperature_hru,
+        potet_hru, or solar_radiation_hru depending on the module type. This
+        makes for easier identification of which process(es) is/are actually using
+        climate_hru. Interally the module type is still climate_hru.
+
         :returns: dictionary of control variable, module name pairs
         """
 
@@ -153,14 +159,7 @@ class Control(object):
 
         for vv in self.control_variables.values():
             if vv.meta.get('valid_value_type', '') == 'module':
-                mname = vv.values
-
-                if vv.name == 'precip_module':
-                    if vv.values == 'climate_hru':
-                        mname = 'precipitation_hru'
-                if vv.name == 'temp_module':
-                    if vv.values == 'climate_hru':
-                        mname = 'temperature_hru'
+                mname = internal_module_map.get(vv.name, {}).get(vv.values, vv.values)
 
                 mod_dict[vv.name] = str(mname)
 
@@ -277,7 +276,6 @@ class Control(object):
                                         outfile.write(f'{cval}\n')
                                 else:
                                     outfile.write(f'{cvar.values}\n')
-
 
         outfile.close()
 
