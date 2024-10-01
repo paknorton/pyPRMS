@@ -7,7 +7,7 @@ name = "pyPRMS"
 description = "Python library for Precipitation-Runoff Modeling System"
 readme = "README.rst"
 dynamic = ["version"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [{name = "Parker Norton", email = "pnorton@usgs.gov"}, ]
 maintainers = [{name = "Parker Norton", email = "pnorton@usgs.gov"}, ]

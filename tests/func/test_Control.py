@@ -1,8 +1,28 @@
 import pytest
 import numpy as np
+import os
+from distutils import dir_util
 from pyPRMS import Control
 from pyPRMS import MetaData
 from pyPRMS.Exceptions_custom import ControlError
+
+
+@pytest.fixture
+def datadir(tmpdir, request):
+    """
+    Fixture responsible for searching a folder with the same name of test
+    module and, if available, moving all contents to a temporary directory so
+    tests can use them freely.
+    """
+    # 2023-07-18
+    # https://stackoverflow.com/questions/29627341/pytest-where-to-store-expected-data
+    filename = request.module.__file__
+    test_dir, _ = os.path.splitext(filename)
+
+    if os.path.isdir(test_dir):
+        dir_util.copy_tree(test_dir, str(tmpdir))
+
+    return tmpdir
 
 
 @pytest.fixture(scope='class')
@@ -21,6 +41,23 @@ def metadata_ctl():
 
 
 class TestControl:
+
+    def test_control_default_metadata(self, control_object, datadir, tmp_path):
+        """Test the default control metadata CSV file"""
+        ctl_metadata_orig_file = datadir.join('ctl_metadata_default.csv')
+        with open(ctl_metadata_orig_file, 'r') as f:
+            lines_orig = f.readlines()
+
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+        out_file = out_path / 'ctl_metadata_default_test.csv'
+
+        control_object.write_metadata_csv(out_file)
+
+        with open(out_file, 'r') as f:
+            lines_chk = f.readlines()
+
+        assert lines_orig == lines_chk, 'Control metadata CSV file does not match expected'
 
     def test_getitem(self, control_object):
         assert control_object['print_debug'].values == 0
@@ -59,7 +96,7 @@ class TestControl:
                     'model_mode': 'PRMS5', 'model_output_file': 'prms.out', 'nhruOutBaseFileName': 'nhru_summary_',
                     'nsegmentOutBaseFileName': 'nsegment_summary_', 'nsubOutBaseFileName': 'nsub_summary_',
                     'param_file': 'prms.params', 'potet_day': 'potet.day', 'potetcoef_dynamic': 'dyn_potet_coef.param',
-                    'precip_day': 'precip.day', 'precip_module': 'precip_1sta',
+                    'precip_day': 'precip.day', 'precip_map_file': 'precip.map', 'precip_module': 'precip_1sta',
                     'radtrncf_dynamic': 'dyn_rad_trncf.param', 'segment_transfer_file': 'seg.transfer',
                     'snareathresh_dynamic': 'dyn_snarea_thresh.param', 'snow_intcp_dynamic': 'dyn_snow_intcp.param',
                     'soilmoist_dynamic': 'dyn_soil_moist.param', 'soilrechr_dynamic': 'dyn_soil_rechr.param',
@@ -68,7 +105,8 @@ class TestControl:
                     'sro2dprst_imperv_dynamic': 'dyn_sro_to_dprst_imperv.param',
                     'sro2dprst_perv_dynamic': 'dyn_sro_to_dprst_perv.param', 'srunoff_module': 'srunoff_smidx',
                     'stat_var_file': 'statvar.out', 'strmflow_module': 'strmflow', 'swrad_day': 'swrad.day',
-                    'temp_module': 'temp_1sta', 'tmax_day': 'tmax.day', 'tmin_day': 'tmin.day',
+                    'temp_module': 'temp_1sta', 'tmax_day': 'tmax.day', 'tmax_map_file': 'tmax.map',
+                    'tmin_day': 'tmin.day', 'tmin_map_file': 'tmin.map',
                     'transp_day': 'transp.day', 'transp_module': 'transp_tindex',
                     'transp_on_dynamic': 'dyn_transp_on.param', 'transpbeg_dynamic': 'dyn_transp_beg.param',
                     'transpend_dynamic': 'dyn_transp_end.param', 'var_init_file': 'prms_ic.in',

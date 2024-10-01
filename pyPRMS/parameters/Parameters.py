@@ -1209,32 +1209,14 @@ class Parameters(object):
             curr_datatype = NETCDF_DATATYPES[PTYPE_TO_PRMS_TYPE[vv.meta.get('datatype')]]
 
             if curr_datatype != 'S1':
-                try:
-                    if vv.dimensions.keys()[0] == 'one':
-                        # Scalar values
-                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
-                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
-                    else:
-                        # The variable dimensions are stored with C-ordering (slowest -> fastest)
-                        # The variables in this library are based on Fortran-ordering (fastest -> slowest)
-                        # so we reverse the order of the dimensions and the arrays for
-                        # writing out to the netcdf file.
-                        # dtmp = vv.dimensions.keys()
-                        # dtmp.reverse()
-                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()[::-1]),
-                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
-                        # curr_param = nc_hdl.createVariable(vv.name, curr_datatype, tuple(vv.dimensions.keys()),
-                        #                                    fill_value=nc.default_fillvals[curr_datatype], zlib=True)
-                except TypeError:
-                    # python 3.x
-                    if list(vv.dimensions.keys())[0] == 'one':
-                        # Scalar values
-                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
-                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
-                    else:
-                        curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
-                                                           tuple(list(vv.dimensions.keys())[::-1]),
-                                                           fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                if list(vv.dimensions.keys())[0] == 'one':
+                    # Scalar values
+                    curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
+                                                       fill_value=nc.default_fillvals[curr_datatype], zlib=True)
+                else:
+                    curr_param = nc_hdl.createVariable(vv.name, curr_datatype,
+                                                       tuple(list(vv.dimensions.keys())[::-1]),
+                                                       fill_value=nc.default_fillvals[curr_datatype], zlib=True)
 
                 # Add the attributes
                 for ck, cmeta in vv.meta.items():

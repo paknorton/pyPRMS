@@ -1,0 +1,163 @@
+<?xml version="1.0" ?>
+<variables>
+    <variable name="albedo_hru" version="5.2.1">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Snowpack albedo of each HRU read from CBH file</desc>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>albedo_cbh_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="cloud_cover_cbh" version="5.2.1">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Cloud cover of each HRU read from CBH file</desc>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <modules>
+            <module>ccsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>cloud_cover_cbh_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="hru_ppt">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Precipitation distributed to each HRU</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="humidity_hru">
+        <type>F</type>
+        <units>percent</units>
+        <desc>Relative humidity of each HRU read from CBH file</desc>
+        <minimum>0.0</minimum>
+        <maximum>100.0</maximum>
+        <modules>
+            <module>potet_pm</module>
+            <module>potet_pt</module>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>humidity_cbh_flag = 1</control>
+        </requires>
+    </variable>
+    <variable name="potet">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Potential ET for each HRU</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="swrad">
+        <type>F</type>
+        <units>Langleys</units>
+        <desc>Shortwave radiation distributed to each HRU</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="tmax">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Maximum air temperature distributed to each HRU</desc>
+        <minimum>-150.0</minimum>
+        <maximum>200.0</maximum>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="tmin">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Minimum air temperature distributed to each HRU</desc>
+        <minimum>-150.0</minimum>
+        <maximum>200.0</maximum>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="transp_on">
+        <type>F</type>
+        <units>none</units>
+        <desc>Flag indicating whether transpiration is occurring (0=no; 1=yes)</desc>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="windspeed_hru">
+        <type>F</type>
+        <units>m s-1</units>
+        <desc>Wind speed for each HRU read from CBH file</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>potet_pm</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>windspeed_cbh_flag = 1</control>
+        </requires>
+    </variable>
+</variables>

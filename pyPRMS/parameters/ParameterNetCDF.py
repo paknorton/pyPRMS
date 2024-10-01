@@ -37,9 +37,26 @@ class ParameterNetCDF(Parameters):
 
         # Populate the dimensions first
         self.dimensions.add(name='one', size=1)
+        # self.dimensions.add(name='ndays')
 
         for dn, ds in dict(xr_df.sizes).items():
             self.dimensions.add(name=str(dn), size=ds)
+
+        # Add ndepl using ndeplval
+        self.dimensions.add(name='ndepl', size=int(xr_df.sizes['ndeplval'] / 11))
+
+        # Add nobs if needed
+        if not self.dimensions.exists('nobs'):
+            if self.dimensions.exists('npoigages'):
+                self.dimensions.add(name='nobs', size=self.dimensions.get('npoigages').size)
+            else:
+                self.dimensions.add(name='nobs', size=0)
+
+        if not self.dimensions.exists('ngw'):
+            self.dimensions.add(name='ngw', size=self.dimensions.get('nhru').size)
+
+        if not self.dimensions.exists('nssr'):
+            self.dimensions.add(name='nssr', size=self.dimensions.get('nhru').size)
 
         # Now add the parameters
         for var in xr_df.variables.keys():

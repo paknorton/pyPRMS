@@ -791,8 +791,8 @@
     <parameter name="potet_cbh_adj">
         <type>F</type>
         <units>decimal fraction</units>
-        <desc>Potential ET adjustment factor, by month for each HRU</desc>
-        <help>Monthly (January to December) adjustment factor to potential evapotranspiration specified in CBH Files for each HRU</help>
+        <desc>Monthly (January to December) multiplicative adjustment factor to potential evapotranspiration specified in CBH Files for each HRU</desc>
+        <help>Monthly (January to December) multiplicative adjustment factor to potential evapotranspiration specified in CBH Files for each HRU</help>
         <minimum>0.5</minimum>
         <maximum>1.5</maximum>
         <default>1.0</default>
@@ -812,8 +812,8 @@
     <parameter name="rain_cbh_adj">
         <type>F</type>
         <units>decimal fraction</units>
-        <desc>Rain adjustment factor, by month for each HRU</desc>
-        <help>Monthly (January to December) adjustment factor to measured precipitation determined to be rain on each HRU to account for differences in elevation, and so forth</help>
+        <desc>Monthly (January to December) multiplicative adjustment factor to measured precipitation determined to be rain on each HRU to account for differences in elevation, and so forth</desc>
+        <help>Monthly (January to December) multiplicative adjustment factor to measured precipitation determined to be rain on each HRU to account for differences in elevation, and so forth</help>
         <minimum>0.5</minimum>
         <maximum>2.0</maximum>
         <default>1.0</default>
@@ -2177,7 +2177,7 @@
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Adjustment factor for rain in a rain/snow mix</desc>
-        <help>Monthly (January to December) factor to adjust rain proportion in a mixed rain/snow event</help>
+        <help>Monthly (January to December) multiplicative factor to adjust rain proportion in a mixed rain/snow event</help>
         <minimum>0.0</minimum>
         <maximum>3.0</maximum>
         <default>1.0</default>
@@ -2400,8 +2400,8 @@
     <parameter name="rain_adj">
         <type>F</type>
         <units>decimal fraction</units>
-        <desc>Monthly rain adjustment factor for each HRU</desc>
-        <help>Monthly (January to December) factor to adjust measured precipitation on each HRU to account for differences in elevation, and so forth</help>
+        <desc>Monthly (January to December) multiplicative factor to adjust measured precipitation on each HRU to account for differences in elevation, and so forth</desc>
+        <help>Monthly (January to December) multiplicative factor to adjust measured precipitation on each HRU to account for differences in elevation, and so forth</help>
         <minimum>0.5</minimum>
         <maximum>10.0</maximum>
         <default>1.0</default>
@@ -2478,8 +2478,8 @@
     <parameter name="psta_mon">
         <type>F</type>
         <units>precip_units</units>
-        <desc>Monthly precipitation for each of the nrain precipitation measurement stations</desc>
-        <help>Monthly (January to December) factor to precipitation at each measured station to adjust precipitation distributed to each HRU to account for differences in elevation, and so forth</help>
+        <desc>Monthly (January to December) factor applied to precipitation at each measured station to adjust precipitation distributed to each HRU to account for differences in elevation, and so forth</desc>
+        <help>Monthly (January to December) factor applied to precipitation at each measured station to adjust precipitation distributed to each HRU to account for differences in elevation, and so forth</help>
         <minimum>0.0000001</minimum>
         <maximum>50.0</maximum>
         <default>1.0</default>
@@ -2587,8 +2587,8 @@
     <parameter name="rain_mon">
         <type>F</type>
         <units>precip_units</units>
-        <desc>Rain adjustment factor, by month for each HRU</desc>
-        <help>Monthly (January to December) factor to rain on each HRU to adjust precipitation distributed to each HRU to account for differences in elevation, and so forth</help>
+        <desc>Monthly (January to December) factor applied to rain on each HRU to adjust precipitation distributed to each HRU to account for differences in elevation, and so forth</desc>
+        <help>Monthly (January to December) factor applied to rain on each HRU to adjust precipitation distributed to each HRU to account for differences in elevation, and so forth</help>
         <minimum>0.0</minimum>
         <maximum>50.0</maximum>
         <default>1.0</default>
@@ -2804,7 +2804,7 @@
         <units>none</units>
         <desc>The index of the downstream segment</desc>
         <help>Index of downstream segment to which the segment streamflow flows, for segments that do not flow to another segment enter 0</help>
-        <minimum>-11</minimum>
+        <minimum>0</minimum>
         <maximum>1000000</maximum>
         <default>0</default>
         <modules>
@@ -3020,9 +3020,9 @@
         <units>none</units>
         <desc>National Hydrologic Model segment ID</desc>
         <help>National Hydrologic Model segment ID</help>
-        <minimum>0</minimum>
+        <minimum>1</minimum>
         <maximum>9999999</maximum>
-        <default>0</default>
+        <default>1</default>
         <modules>
             <module>basin</module>
             <module>setup_param</module>
@@ -6143,8 +6143,8 @@
     <parameter name="adjust_rain">
         <type>F</type>
         <units>decimal_fraction</units>
-        <desc>Monthly (January to December) rain downscaling adjustment factor for each precipitation measurement station</desc>
-        <help>Monthly (January to December) rain downscaling adjustment factor for each precipitation measurement station</help>
+        <desc>Monthly (January to December) multiplicative rain downscaling adjustment factor for each precipitation measurement station</desc>
+        <help>Monthly (January to December) multiplicative rain downscaling adjustment factor for each precipitation measurement station</help>
         <minimum>-0.5</minimum>
         <maximum>3.0</maximum>
         <default>-0.4</default>
@@ -6165,8 +6165,8 @@
     <parameter name="adjust_snow">
         <type>F</type>
         <units>decimal_fraction</units>
-        <desc>Monthly (January to December) snow downscaling adjustment factor for each precipitation measurement station</desc>
-        <help>Monthly (January to December) snow downscaling adjustment factor for each precipitation measurement station</help>
+        <desc>Monthly (January to December) multiplicative snow downscaling adjustment factor for each precipitation measurement station</desc>
+        <help>Monthly (January to December) multiplicative snow downscaling adjustment factor for each precipitation measurement station</help>
         <minimum>-0.5</minimum>
         <maximum>3.0</maximum>
         <default>-0.4</default>
@@ -6736,6 +6736,20 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+    </parameter>
+    <parameter name="cbh_hru_id" version="6.0.0">
+        <type>I</type>
+        <units>none</units>
+        <desc>HRU identification number associated with each value in CBH File</desc>
+        <minimum>bounded</minimum>
+        <maximum>nhru</maximum>
+        <default>1</default>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <requires>
+            <control>cbh_active_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="conv_flag">
         <type>I</type>

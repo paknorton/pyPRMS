@@ -1,5 +1,5 @@
 import pytest
-# import numpy as np
+import numpy as np
 import os
 from distutils import dir_util
 from pyPRMS import ControlFile
@@ -74,3 +74,35 @@ class TestControlFile:
         ctl = ControlFile(control_file, metadata=prms_meta, verbose=True, version=5)
 
         assert ctl.get('print_debug').values == 4
+
+    def test_write_control_file(self, datadir, tmp_path):
+        """Test if a control file can be written and read back in with the same values"""
+        control_file = datadir.join('control.default')
+
+        prms_meta = MetaData(verbose=True).metadata
+
+        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
+        ctl_vars_orig = ctl.control_variables.keys()
+
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+        out_file = out_path / 'control.new'
+
+        ctl.write(out_file)
+
+        prms_meta_chk = MetaData(verbose=True).metadata
+        ctl_chk = ControlFile(out_file, metadata=prms_meta_chk, verbose=True, version=5)
+        ctl_vars_chk = ctl_chk.control_variables.keys()
+
+        # Do both control files have the same variables?
+        assert len(set(ctl_vars_orig).symmetric_difference(set(ctl_vars_chk))) == 0
+
+        # Are the values the same for all the variables?
+        for cvar in ctl_vars_orig:
+            if isinstance(ctl.get(cvar).values, np.ndarray):
+                assert (ctl.get(cvar).values == ctl_chk.get(cvar).values).all()
+            else:
+                assert ctl.get(cvar).values == ctl_chk.get(cvar).values
+
+
+
