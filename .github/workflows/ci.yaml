@@ -88,98 +88,47 @@ jobs:
   #     - name: Format
   #       run: ruff format --check .
 
-  # test:
-  #   name: ${{ matrix.os }} py${{ matrix.python-version }}
-  #   runs-on: ${{ matrix.os }}
-  #   defaults:
-  #     run:
-  #       shell: bash -l {0}
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
-  #       python-version: ["3.10", "3.11"]
+  test:
+    name: ${{ matrix.os }} py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
+        python-version: ["3.10", "3.11"]
 
-  #   steps:
+    steps:
 
-  #     - name: Free Disk Space (Ubuntu)
-  #       if: runner.os == 'Linux'
-  #       uses: jlumbroso/free-disk-space@main
-  #       with:
-  #         tool-cache: false
-  #         android: true
-  #         dotnet: true
-  #         haskell: true
-  #         large-packages: true
-  #         docker-images: true
-  #         swap-storage: true
+      - name: Free Disk Space (Ubuntu)
+        if: runner.os == 'Linux'
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
 
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-  #     - name: Setup gfortran
-  #       uses: fortran-lang/setup-fortran@v1
-  #       with:
-  #         compiler: gcc
-  #         version: 11
+      - name: Install pyPRMS
+        run: |
+          pip install .
 
-  #     - name: Link gfortran dylibs on Mac
-  #       if: runner.os == 'macOS'
-  #       run: .github/scripts/symlink_gfortran_mac.sh
+      - name: Version info
+        run: |
+          pip -V
+          pip list
 
-  #     - name: Install Dependencies via Micromamba
-  #       uses: mamba-org/setup-micromamba@v1.9.0
-  #       with:
-  #         micromamba-version: '1.5.10-0'
-  #         log-level: debug
-  #         environment-file: environment.yml
-  #         cache-environment: true
-  #         cache-downloads: true
-  #         create-args: >-
-  #           python=${{matrix.python-version}}
-
-  #     - name: Install pywatershed
-  #       run: |
-  #         pip install .
-
-  #     - name: Version info
-  #       run: |
-  #         pip -V
-  #         pip list
-
-  #     - name: Get GIS files for tests
-  #       run: |
-  #         python pywatershed/utils/gis_files.py
-
-  #     - name: domainless - run tests not requiring domain data
-  #       working-directory: autotest
-  #       run: pytest -m domainless -n=auto -vv
-
-  #     - name: sagehen_5yr_no_cascades - generate and manage test data domain, run PRMS and convert csv output to NetCDF
-  #       working-directory: autotest
-  #       run: |
-  #         python generate_test_data.py \
-  #           -n=auto --domain=sagehen_5yr --control_pattern=sagehen_no_cascades.control \
-  #           --remove_prms_csvs --remove_prms_output_dirs
-
-  #     - name: sagehen_5yr_no_cascades - list netcdf input files
-  #       working-directory: test_data
-  #       run: |
-  #         find sagehen_5yr/output_no_cascades -name '*.nc'
-
-  #     - name: sagehen_5yr_no_cascades - pywatershed tests
-  #       working-directory: autotest
-  #       run: pytest
-  #         -vv
-  #         -rs
-  #         -n=auto
-  #         -m "not domainless"
-  #         --domain=sagehen_5yr
-  #         --control_pattern=sagehen_no_cascades.control
-  #         --durations=0
-  #         --cov=pywatershed
-  #         --cov-report=xml
-  #         --junitxml=pytest_sagehen_5yr_no_cascades.xml
+      - name: Test suite
+        working-directory: tests
+        run: pytest -vv
 
   #     - name: Upload test results
   #       if: always()
