@@ -132,7 +132,7 @@ jobs:
 
       - name: Test suite
         working-directory: tests
-        run: pytest -vv
+        run: pytest -v --cov --cov-report=html:coverage_re
 
   #     - name: Upload test results
   #       if: always()
