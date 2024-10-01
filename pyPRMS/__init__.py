@@ -1,4 +1,3 @@
-
 from . import constants
 from . import Exceptions_custom
 from . import plot_helpers
@@ -17,32 +16,33 @@ from .parameters.ParamDb import ParamDb
 from .parameters.ParameterNetCDF import ParameterNetCDF
 from .cbh.CbhAscii import CbhAscii
 from .cbh.CbhNetcdf import CbhNetcdf
-from .Streamflow import Streamflow
 
 
 from .version import __author__, __author_email__, __version__
 
-__all__ = ['constants',
-           'Exceptions_custom',
-           'plot_helpers',
-           'prms_helpers',
-           'control',
-           'dimensions',
-           'parameters',
-           'cbh',
-           'CbhAscii',
-           'CbhNetcdf',
-           'Control',
-           'ControlFile',
-           'ControlVariable',
-           'Dimension',
-           'Dimensions',
-           'MetaData',
-           'OutputVariables',
-           'ParamDimensions',
-           'Parameter',
-           'Parameters',
-           'ParameterFile',
-           'ParamDb',
-           'ParameterNetCDF',
-           'Streamflow']
+__all__ = [
+    "constants",
+    "Exceptions_custom",
+    "plot_helpers",
+    "prms_helpers",
+    "control",
+    "dimensions",
+    "parameters",
+    "cbh",
+    "CbhAscii",
+    "CbhNetcdf",
+    "Control",
+    "ControlFile",
+    "ControlVariable",
+    "Dimension",
+    "Dimensions",
+    "MetaData",
+    "OutputVariables",
+    "ParamDimensions",
+    "Parameter",
+    "Parameters",
+    "ParameterFile",
+    "ParamDb",
+    "ParameterNetCDF",
+    "Streamflow",
+]
