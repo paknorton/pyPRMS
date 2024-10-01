@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 import os
 from distutils import dir_util
+# from shutil import copytree
 from pyPRMS import Control
 from pyPRMS import MetaData
 from pyPRMS.Exceptions_custom import ControlError
@@ -20,6 +21,7 @@ def datadir(tmpdir, request):
     test_dir, _ = os.path.splitext(filename)
 
     if os.path.isdir(test_dir):
+        # copytree(test_dir, str(tmpdir))
         dir_util.copy_tree(test_dir, str(tmpdir))
 
     return tmpdir
@@ -95,7 +97,7 @@ class TestControl:
                     'imperv_stor_dynamic': 'dyn_imperv_stor_max.param', 'lake_transfer_file': 'lake.transfer',
                     'model_mode': 'PRMS5', 'model_output_file': 'prms.out', 'nhruOutBaseFileName': 'nhru_summary_',
                     'nsegmentOutBaseFileName': 'nsegment_summary_', 'nsubOutBaseFileName': 'nsub_summary_',
-                    'param_file': 'prms.params', 'potet_day': 'potet.day', 'potetcoef_dynamic': 'dyn_potet_coef.param',
+                    'param_file': 'prms.params', 'potet_day': 'potet.day', 'potet_coef_dynamic': 'dyn_potet_coef.param',
                     'precip_day': 'precip.day', 'precip_map_file': 'precip.map', 'precip_module': 'precip_1sta',
                     'radtrncf_dynamic': 'dyn_rad_trncf.param', 'segment_transfer_file': 'seg.transfer',
                     'snareathresh_dynamic': 'dyn_snarea_thresh.param', 'snow_intcp_dynamic': 'dyn_snow_intcp.param',

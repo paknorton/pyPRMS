@@ -944,7 +944,7 @@
         <default>potet.day</default>
         <type>4</type>
         <numvals>1</numvals>
-        <desc>Pathname of the CBH file of pre-processed potential-ET input data for each HRU to specify variable potet-inches </desc>
+        <desc>Pathname of the CBH file of pre-processed potential-ET input data for each HRU to specify variable potet (units: inches/day)</desc>
     </control_param>
     <control_param name="potet_coef_dynamic" version="5.0">
         <default>dyn_potet_coef.param</default>
