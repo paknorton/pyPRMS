@@ -34,7 +34,8 @@ dev = ["mypy",
        "mypy_extensions",
        "pytest",
        "pytest-cov",
-       "pytest-xdist",]
+       "pytest-xdist",
+       "pytest-datafiles",]
 
 [project.urls]
 Repository = "https://github.com/paknorton/pyPRMS.git"
