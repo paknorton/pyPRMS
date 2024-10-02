@@ -119,7 +119,7 @@ jobs:
 
       - name: Install pytest
         run: |
-          pip install pytest
+          pip install pytest pytest-cov pytest-datafiles
 
       - name: Install pyPRMS
         run: |
