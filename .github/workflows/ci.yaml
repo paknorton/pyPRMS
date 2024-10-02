@@ -132,7 +132,11 @@ jobs:
 
       - name: Test suite
         working-directory: tests
-        run: pytest -v
+        run: coverage run -m pytest -v -s
+
+      - name: Coverage report
+        working-directory: tests
+        run: coverage report -m
 
   #     - name: Upload test results
   #       if: always()
