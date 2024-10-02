@@ -114,6 +114,11 @@ jobs:
           docker-images: true
           swap-storage: true
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{matrix.python-version}}
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
