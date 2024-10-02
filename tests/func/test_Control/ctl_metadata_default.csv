@@ -1,0 +1,152 @@
+variable_name	datatype	description	default
+albedo_cbh_flag	int32	Flag to specify whether to input snowpack albedo from a CBH file	0
+albedo_day	string	Pathname of the CBH file of pre-processed snowpack albedo input data for each HRU to specify variable albedo_hru (units: decimal fraction)	albedo.day
+aniOutON_OFF	int32	Switch to specify whether or not Animation File(s) are generated	0
+aniOutVar_names	string	List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)	none
+ani_output_file	string	Root pathname for Animation Files(s) to which a filename suffix based on dimension name associated with selected variables is appended	animation.out
+basinOutBaseFileName	string	String to define the prefix for each basin summary output file	basinout_path
+basinOutON_OFF	int32	Switch to specify whether or not basin summary output files are generated	0
+basinOutVar_names	string	List of variable names for which output is written to basin summary Comma Separated Values (CSV) output file(s). Each variable is written to files in the order specified in basinOutVars with the prefix of each file equal to the value of basinOutBaseFileName. The suffix of the files is based on the value of basinOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double	none
+basinOutVars	int32	Number of variables to include in basin summary output file(s)	0
+basinOut_freq	int32	Output frequency and type	1
+cascade_flag	int32	Flag to indicate if HRU cascades are computed	0
+cascadegw_flag	int32	Flag to indicate if GWR cascades are computed	0
+cbh_binary_flag	int32	Flag to specify whether to input CBH files in a binary format using the samer order of values as the text file version	0
+cbh_check_flag	int32	Flag to indicate if CBH values are validated each time step	0
+cloud_cover_cbh_flag	int32	Flag to specify whether to input snowpack albedo from a CBH file	0
+cloud_cover_day	string	Pathname of the CBH file of pre-processed cloud cover input data for each HRU to specify variable cloud_cover_cbh (units: decimal fraction)	cloudcover.day
+covden_sum_dynamic	string	Pathname of the time series of pre-processed values for summer plant-cover density used to set values of covden_sum for each HRU	dyn_covden_sum.param
+covden_win_dynamic	string	Pathname of the time series of pre-processed values for winter plant-cover density used to set values of covden_win for each HRU	dyn_covden_win.param
+covtype_dynamic	string	Pathname of the time series of pre-processed values used to set values of cov_type for each HRU	dyn_cov_type.param
+csvON_OFF	int32	Switch to specify whether to output Comma-Separated-Values (CSV) file with simulated flows with 4 decimal places for segments specified by poi_gage_segment and poi_gage_id	0
+csv_output_file	string	Pathname of CSV output file	prms_summary.csv
+data_file	string	Pathname(s) for measured input Data File(s), typically a single Data File is specified	sf_data
+dispGraphsBuffSize	int32	Number of time steps to wait before updating the runtime graph	50
+dispVar_element	string	List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable's dimension size)	none
+dispVar_names	string	List of variable names for which plots are output to the runtime graph	none
+dispVar_plot	string	List of variable names for which plots are output to the runtime graph	none
+dprst_depth_dynamic	string	Pathname of the time series of pre-processed values used to set values of dprst_depth_avg	dyn_dprst_depth.param
+dprst_flag	int32	Flag to indicate if depression-storage simulation is computed	0
+dprst_frac_dynamic	string	Pathname of the time series of pre-processed values used to set values of dprst_frac	dyn_dprst_frac.param
+dprst_transferON_OFF	int32	Flag to indicate to use time series of surface-depression transfer flow rates from the dprst_transfer_file	0
+dprst_transfer_file	string	Pathname of the time series of pre-processed flow rates for transfers from surface-depression storage	dprst.transfer
+dyn_covden_flag	int32	Flag to indicate if a time series of plant-canopy density values are input in a Dynamic Parameter File(s)	0
+dyn_covtype_flag	int32	Flag to indicate if a time series of plant-canopy type values are input in Dynamic Parameter File covtype_dynamic	0
+dyn_dprst_flag	int32	Flag to indicate if a time series of surface-depression values are input in a Dynamic Parameter File(s)	0
+dyn_fallfrost_flag	int32	Flag to indicate if a time series of transpiration start Julian day values are input in a Dynamic Parameter File(s)	0
+dyn_imperv_flag	int32	Flag to indicate if a time series of impervious values are input in a Dynamic Parameter File(s)	0
+dyn_intcp_flag	int32	Flag to indicate if a time series of plant canopy interception values are input in a Dynamic Parameter File(s)	0
+dyn_potet_flag	int32	Flag to indicate if a time series of potential ET coefficient values are input in Dynamic Parameter File potet_coef_dynamic to update coefficients for the specified month for the selected potential ET module specified by control parameter et_module	0
+dyn_radtrncf_flag	int32	Flag to indicate if a time series of solar radiation values are input in Dynamic Parameter File radtrncf_dynamic	0
+dyn_snareathresh_flag	int32	Flag to indicate if a time series of snow-area threshold values are input in Dynamic Parameter File snareathresh_dynamic	0
+dyn_soil_flag	int32	Flag to indicate if a time series of soil-water capacity values are input in a Dynamic Parameter File(s)	0
+dyn_springfrost_flag	int32	Flag to indicate if a time series of transpiration start Julian day values are input in a Dynamic Parameter File(s)	0
+dyn_sro2dprst_imperv_flag	int32	Flag to indicate if a time series of fraction of surface runoff from the impervious portion of an HRU are input in Dynamic Parameter File	0
+dyn_sro2dprst_perv_flag	int32	Flag to indicate if a time series of fraction of surface runoff from the pervious portion of an HRU are input in Dynamic Parameter File	0
+dyn_transp_flag	int32	Flag to indicate if a time series of transpiration month values are input in a Dynamic Parameter File(s)	0
+dyn_transp_on_flag	int32	Flag to indicate if a time series of variable transp_on are input in a Dynamic Parameter File	0
+dynamic_param_log_file	string	Pathname of the log file that summarizes dynamic parameter changes for parameters not related to soilzone and land surface	dynamic_parameter.out
+end_time	int32	Simulation end date and time specified in order in the control item as: year, month, day, hour, minute, second	1980,12,31,0,0,0
+et_module	string	Module name for potential evapotranspiration method (climate_hru, potet_jh, potet_hamon, potet_hs, potet_pt, potet_pm, potet_pm_sta, or potet_pan)	potet_jh
+executable_desc	string	Descriptive text to identify the PRMS executable	MOWS
+executable_model	string	Pathname (full or relative) of the PRMS executable	prmsIV
+external_transferON_OFF	int32	Flag to indicate to use external transfer flow rates from the external_transfer_file	0
+external_transfer_file	string	Pathname of the time series of pre-processed flow rates for transfers from external sources	ext.transfer
+fallfrost_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter fall_frost	dyn_fall_frost.param
+frozen_flag	int32	Flag to indicate if continuous frozen ground index simulation is computed	0
+glacier_flag	int32	Flag to indicate if glacier simulation is computed	0
+gwr_swale_flag	int32	Flag to indicate if GWR swales are allowed	0
+gwr_transferON_OFF	int32	Flag to indicate to use groundwater transfer flow rates from the gwr_transfer_file	0
+gwr_transfer_file	string	Pathname of the time series of pre-processed flow rates for transfers from groundwater reservoir storage	gwr.transfer
+humidity_cbh_flag	int32	Flag to specify whether to input humidity from a CBH file	0
+humidity_day	string	Pathname of the CBH file of pre-processed humidity input data for each HRU to specify variable humidity_hru-percentage	humidity.day
+imperv_frac_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter hru_percent_imperv	dyn_hru_percent_imperv.param
+imperv_stor_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter imperv_stor_max	dyn_imperv_stor_max.param
+init_vars_from_file	int32	Flag to specify whether or not the Initial Conditions File is specified as an input file	0
+initial_deltat	float32	Initial time step for the simulation	24.0
+lake_transferON_OFF	int32	Flag to indicate to use lake HRU transfer flow rates from the lake_transfer_file	0
+lake_transfer_file	string	Pathname of the time series of pre-processed flow rates for transfers from lake HRUs 	lake.transfer
+mapOutON_OFF	int32	Switch to specify whether or not mapped output file(s) by a specified number of columns (parameter ncol) of daily, monthly, yearly, or total simulation results is generated	0
+mapOutVar_names	string	List of variable names for which output is written to mapped output files(s); variables must be of type real or double.	none
+mbInit_flag	int32	Flag to indicate initial mass balance of glaciers	0
+model_mode	string	Flag to indicate the simulation mode	PRMS5
+model_output_file	string	Pathname for Water-Budget File for results module basin_sum	prms.out
+naniOutVars	int32	Number of output variables specified in the aniOutVar_names list	0
+ndispGraphs	int32	Number of plots included in the runtime graph	0
+nhruOutBaseFileName	string	String to define the prefix for each nhru summary output file	nhru_summary_
+nhruOutNcol	int32	Number of columns written per line, which can be used to generate gridded output	0
+nhruOutON_OFF	int32	Switch to specify whether or not nhru summary output files are generated	0
+nhruOutVar_names	string	List of variable names for which output is written to nhru summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName. The suffix of the files is based on the value of nhruOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double	none
+nhruOutVars	int32	Number of variables to include in nhru summary output file(s)	0
+nhruOut_format	int32	Format of values	1
+nhruOut_freq	int32	Output frequency and type	1
+nmapOutVars	int32	Number of variables to include in mapped output file(s)	0
+nsegmentOutBaseFileName	string	String to define the prefix for each nsegment summary output file	nsegment_summary_
+nsegmentOutON_OFF	int32	Switch to specify whether nsegment summary output files are generated	0
+nsegmentOutVar_names	string	List of variable names for which output is written to nsegment summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsegmentOutBaseFileName; variables must be of type real or double; the suffix of the files is based on the value of nsegmentOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv	none
+nsegmentOutVars	int32	Number of variables to include in nsegment summary output file(s)	0
+nsegmentOut_format	int32	Format of values	1
+nsegmentOut_freq	int32	Output frequency and type	1
+nstatVars	int32	Number of variables to include in Statistics Variables File and names specified in statVar_names	0
+nsubOutBaseFileName	string	String to define the prefix for each nsub summary output file	nsub_summary_
+nsubOutON_OFF	int32	Switch to specify whether or not nsub summary output files are generated	0
+nsubOutVar_names	string	List of variable names for which output is written to nsub summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName. The suffix of the files is based on the value of nsubOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double	none
+nsubOutVars	int32	Number of variables to include in nsub summary output file(s)	0
+nsubOut_format	int32	Format of values	1
+nsubOut_freq	int32	Output frequency and type	1
+orad_flag	int32	Flag to specify whether or not the variable orad is specified as the last column of the swrad_day CBH file	1
+outputSelectDatesON_OFF	int32	Switch to indicate if nhru_summary output files are generated for a specified set of dates	0
+param_file	string	Pathname(s) for Parameter File(s)	prms.params
+parameter_check_flag	int32	Flag to indicate if selected parameter values validation checks are treated as warnings or errors	0
+potet_coef_dynamic	string	Pathname of the time series of pre-processed potential evapotranspiration coefficient values where the parameter is dependent on the value of et_module 	dyn_potet_coef.param
+potet_day	string	Pathname of the CBH file of pre-processed potential-ET input data for each HRU to specify variable potet (units: inches/day)	potet.day
+precip_day	string	Pathname of the CBH file of pre-processed precipitation input data for each HRU to specify variable precip-inches	precip.day
+precip_map_file	string	Pathname of pre-processed precipitation input data to be mapped to each HRU to specify variable precip_map_values (units based on value specified for parameter precip_units)	precip.map
+precip_module	string	Module name for precipitation-distribution method	precip_1sta
+print_debug	int32	Flag to indicate type of debug output	0
+prms_warmup	int32	Number of years to simulate before writing mapped results, Basin, nhru, nsub, or nsegment Summary Output Files	1
+radtrncf_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter rad_trncf	dyn_rad_trncf.param
+save_vars_to_file	int32	Flag to determine if an Initial Conditions File will be generated at the end of simulation	0
+segment_transferON_OFF	int32	Flag to indicate to use stream segment transfer flow rates from the segment_transfer_file	0
+segment_transfer_file	string	Pathname of the time series of pre-processed flow rates for transfers from stream segments 	seg.transfer
+selectDatesFileName	string	File that contains the set of dates to output values of nhru_summary output files in chronological order with dates specified as YEAR MONTH DAY with space(s) and/or comma separating YEAR and MONTH and MONTH and DAY (e.g. 1959 09 01)	selectDates.in
+snarea_curve_flag	int32	Flag to specify snow depletion curve calculation method	0
+snareathresh_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter snarea_thresh	dyn_snarea_thresh.param
+snow_cloudcover_flag	int32	Flag to indicate if radiation transmission is computed based on HRU-based variables or basin-wide variables as is done in previous model versions	0
+snow_intcp_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter snow_intcp	dyn_snow_intcp.param
+soilmoist_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter soil_moist_max	dyn_soil_moist.param
+soilrechr_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter soil_rechr_max_frac	dyn_soil_rechr.param
+soilzone_aet_flag	int32	Flag to specify soil-water evapotranspiration (ET) computation method. Either it's based on unsatisfied potential ET (PET) and for GSFLOW or GSFLOW5 modes replenish the upper zone of capillary reservoir using the fraction of the upper zone of the capillary reservoir (as was done in previous versions) or it's based on PET when specified equal to 1 and replenish by first filling the lower zone and then the upper zone to their maximum water-holding capactities; set to 0 for downward compatibility of old models, though it is recommended setting to 1 for new models.	0
+soilzone_module	string	Module name for soil zone method	soilzone
+solrad_module	string	Module name for solar-radiation-distribution method	ddsolrad
+springfrost_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter spring_frost	dyn_spring_frost.param
+srain_intcp_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter srain_intcp	dyn_srain_intcp.param
+sro2dprst_imperv_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter sro_to_dprst_imperv	dyn_sro_to_dprst_imperv.param
+sro2dprst_perv_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter sro_to_dprst_perv	dyn_sro_to_dprst_perv.param
+srunoff_module	string	Module name for surface-runoff/infiltration computation method	srunoff_smidx
+start_time	int32	Simulation start date and time specified in order in the control item as: year, month, day, hour, minute, second	1980,1,1,0,0,0
+statVar_element	string	List of identification numbers corresponding to variables specified in statVar_names list (1 to variable's dimension size)	none
+statVar_names	string	List of variable names for which output is written to Statistics Variables File	none
+stat_var_file	string	Pathname for Statistics Variables File	statvar.out
+statsON_OFF	int32	Switch to specify whether or not the Statistics Variables File is generated	0
+stream_temp_flag	int32	Flag to specify whether to simulate stream temperature; strmflow_module must be set to muskingum, muksingum_mann, strmflow_in_out, or muskingum_lake.	0
+stream_temp_shade_flag	int32	Flag to indicate how shade is used in the stream_temp module	0
+strmflow_module	string	Module name for streamflow routing simulation method	strmflow
+strmtemp_humidity_flag	int32	Flag to specify where humidity information is read for use by the stream_temp module; strmflow_module must be set to muskingum, muskingum_mann, strmflow_in_out, or muskingum_lake.	0
+subbasin_flag	int32	Flag to indicate if internal subbasin are computed	1
+swrad_day	string	Pathname of the CBH file of pre-processed solar-radiation input data for each HRU to specify variable swrad-Langleys	swrad.day
+temp_module	string	Module name for temperature-distribution method (climate_hru, temp_1sta, temp_dist2, temp_laps, ide_dist, or xyz_dist)	temp_1sta
+tmax_day	string	Pathname of the CBH file of pre-processed maximum air temperature input data for each HRU to specify variable tmaxf-degrees Fahrenheit	tmax.day
+tmax_map_file	string	Pathname of pre-processed maximum air temperature input data to be mapped to each HRU to specify variable tmax_map_values to set variable tmaxf (units: degrees Fahrenheit)	tmax.map
+tmin_day	string	Pathname of the CBH file of pre-processed minimum air temperature input data for each HRU to specify variable tminf-degrees Fahrenheit	tmin.day
+tmin_map_file	string	Pathname of pre-processed minimum air temperature input data to be mapped to each HRU to specify variable tmin_map_values to set variable tminf (units: degrees Fahrenheit)	tmin.map
+transp_day	string	Pathname of the CBH file of pre-processed transpiration on or off flag for each HRU file to specify variable transp_on	transp.day
+transp_module	string	Module name for transpiration simulation method	transp_tindex
+transp_on_dynamic	string	Pathname of the time series of pre-processed values used to set values for dynamic variable transp_on	dyn_transp_on.param
+transpbeg_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter transp_beg	dyn_transp_beg.param
+transpend_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter transp_end	dyn_transp_end.param
+var_init_file	string	Pathname for Initial Conditions input file 	prms_ic.in
+var_save_file	string	Pathname for the Initial Conditions File to be generated at end of simulation 	prms_ic.out
+windspeed_cbh_flag	int32	Flag to specify whether to input windspeed from a CBH file	0
+windspeed_day	string	Pathname of the CBH file of pre-processed wind speed input data for each HRU to specify variable windspeed_hru-meters/second	windspeed.day
+wrain_intcp_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter wrain_intcp 	dyn_wrain_intcp.param

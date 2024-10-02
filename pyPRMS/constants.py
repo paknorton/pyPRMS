@@ -53,8 +53,7 @@ ctl_order: List[str] = ['start_time', 'end_time', 'initial_deltat', 'executable_
                         'lake_transfer_file', 'segment_transferON_OFF', 'segment_transfer_file', 'segmentOutON_OFF',
                         'aniOutON_OFF', 'ani_output_file', 'naniOutVars', 'aniOutVar_names',
                         'dispGraphsBuffSize', 'ndispGraphs', 'dispVar_element', 'dispVar_names', 'dispVar_plot',
-                        'mapOutON_OFF', 'nmapOutVars', 'mapOutVar_names',
-                        ]
+                        'mapOutON_OFF', 'nmapOutVars', 'mapOutVar_names']
 
 ctl_variable_modules: List[str] = ['et_module', 'precip_module', 'soilzone_module', 'solrad_module',
                                    'srunoff_module', 'strmflow_module', 'temp_module', 'transp_module']
@@ -69,6 +68,17 @@ ctl_implicit_modules: Dict[str, str] = {'basin_module': 'basin',
                                         'gw_module': 'gwflow',
                                         'soilzone_module': 'soilzone'}
 
+# This is a map between what is in the control file and what is in the parameters.xml file
+internal_module_map = dict(et_module={'climate_hru': 'potet_hru'},
+                           precip_module={'climate_hru': 'precipitation_hru'},
+                           solrad_module={'climate_hru': 'solar_radiation_hru'},
+                           temp_module={'climate_hru': 'temperature_hru'})
+
+# This maps the internal parameters.xml names to the external control file module names
+external_module_map = dict(potet_hru='climate_hru',
+                           precipitation_hru='climate_hru',
+                           solar_radiation_hru='climate_hru',
+                           temperature_hru='climate_hru')
 
 # Constants related to parameter files
 DIMENSIONS_HDR: str = 'Dimensions'

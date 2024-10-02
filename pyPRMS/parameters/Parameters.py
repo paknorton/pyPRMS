@@ -24,7 +24,7 @@ from ..Exceptions_custom import ParameterError, ParameterExistsError, ParameterN
 from .Parameter import Parameter, ParamDataRawType
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
 from ..prms_helpers import cond_check, flex_type, get_streamnet_subset
-from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, MetaDataType, NETCDF_DATATYPES,
+from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, external_module_map, MetaDataType, NETCDF_DATATYPES,
                          NEW_PTYPE_TO_DTYPE, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML, VAR_DELIM)
 
 from rich.console import Console
@@ -963,7 +963,7 @@ class Parameters(object):
         if self.__hru_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':   # type: ignore
             print('Overriding USGS aea crs with EPSG:5070')
             self.__hru_poly.crs = 'EPSG:5070'   # type: ignore
-        elif self.__hru_poly.crs.name[0:5] == 'NAD83':
+        elif self.__hru_poly.crs.name[0:5] == 'NAD83':   # type: ignore
             self.__hru_poly.to_crs('epsg:4326', inplace=True)
 
         self.__hru_shape_key = shape_key
@@ -983,7 +983,7 @@ class Parameters(object):
         if self.__seg_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':   # type: ignore
             print('Overriding USGS aea crs with EPSG:5070')
             self.__seg_poly.crs = 'EPSG:5070'   # type: ignore
-        elif self.__seg_poly.crs.name[0:5] == 'NAD83':
+        elif self.__seg_poly.crs.name[0:5] == 'NAD83':   # type: ignore
             self.__seg_poly.to_crs('epsg:4326', inplace=True)
 
         self.__seg_shape_key = shape_key
@@ -1273,8 +1273,8 @@ class Parameters(object):
 
         out_list = []
 
-        assert self.__control is not None
-        modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
+        if self.__control is not None:
+            modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
 
         for pk in sorted(list(self.parameters.keys())):
             pp = self.get(pk)
@@ -1283,17 +1283,32 @@ class Parameters(object):
             param_modules = md.get('modules')
             assert type(param_modules) is list
 
-            modules = ', '.join(list(modules_used.intersection(set(param_modules))))
-            if modules == '':
-                # We have a parameter that is needed by the declared modules
-                if self.verbose:   # pragma: no cover
-                    print(f'{pp.name} not used with selected modules')
-                    print(f'    {md.get("modules")}')
-                continue
+            if self.__control is not None:
+                module_list = list(modules_used.intersection(set(param_modules)))
 
-            dims = ', '.join(list(pp.dimensions.keys()))
+                if len(module_list) == 0:
+                    # We have a parameter that is not needed by the declared modules
+                    if self.verbose:   # pragma: no cover
+                        print(f'{pp.name} not used with selected modules')
+                        print(f'    {md.get("modules")}')
+                    continue
+            else:
+                module_list = param_modules
 
-            # TODO: 20230719 PAN - precipitation_hru and temperature_hru should be changed to climate_hru
+            for idx, mm in enumerate(module_list):
+                if mm in external_module_map:
+                    module_list[idx] = external_module_map[mm]
+
+            modules = ', '.join(module_list)
+
+            dim_list = list(pp.dimensions.keys())
+
+            if pk in ['gwflow_coef', 'gwsink_coef', 'gwstor_init', 'gwstor_min', 'gw_seep_coef']:
+                dim_list[0] = 'ngw'
+            elif pk in ['ssr2gw_exp', 'ssr2gw_rate', 'ssstor_init', 'ssstor_init_frac']:
+                dim_list[0] = 'nssr'
+
+            dims = ', '.join(dim_list)
 
             try:
                 act_min = pp.data_raw.min()

@@ -1,28 +1,8 @@
 import pytest
 import numpy as np
-import os
-from distutils import dir_util
 from pyPRMS import Control
 from pyPRMS import MetaData
 from pyPRMS.Exceptions_custom import ControlError
-
-
-@pytest.fixture
-def datadir(tmpdir, request):
-    """
-    Fixture responsible for searching a folder with the same name of test
-    module and, if available, moving all contents to a temporary directory so
-    tests can use them freely.
-    """
-    # 2023-07-18
-    # https://stackoverflow.com/questions/29627341/pytest-where-to-store-expected-data
-    filename = request.module.__file__
-    test_dir, _ = os.path.splitext(filename)
-
-    if os.path.isdir(test_dir):
-        dir_util.copy_tree(test_dir, str(tmpdir))
-
-    return tmpdir
 
 
 @pytest.fixture(scope='class')
@@ -44,7 +24,8 @@ class TestControl:
 
     def test_control_default_metadata(self, control_object, datadir, tmp_path):
         """Test the default control metadata CSV file"""
-        ctl_metadata_orig_file = datadir.join('ctl_metadata_default.csv')
+        ctl_metadata_orig_file = datadir / 'ctl_metadata_default.csv'
+
         with open(ctl_metadata_orig_file, 'r') as f:
             lines_orig = f.readlines()
 
@@ -95,7 +76,7 @@ class TestControl:
                     'imperv_stor_dynamic': 'dyn_imperv_stor_max.param', 'lake_transfer_file': 'lake.transfer',
                     'model_mode': 'PRMS5', 'model_output_file': 'prms.out', 'nhruOutBaseFileName': 'nhru_summary_',
                     'nsegmentOutBaseFileName': 'nsegment_summary_', 'nsubOutBaseFileName': 'nsub_summary_',
-                    'param_file': 'prms.params', 'potet_day': 'potet.day', 'potetcoef_dynamic': 'dyn_potet_coef.param',
+                    'param_file': 'prms.params', 'potet_day': 'potet.day', 'potet_coef_dynamic': 'dyn_potet_coef.param',
                     'precip_day': 'precip.day', 'precip_map_file': 'precip.map', 'precip_module': 'precip_1sta',
                     'radtrncf_dynamic': 'dyn_rad_trncf.param', 'segment_transfer_file': 'seg.transfer',
                     'snareathresh_dynamic': 'dyn_snarea_thresh.param', 'snow_intcp_dynamic': 'dyn_snow_intcp.param',
