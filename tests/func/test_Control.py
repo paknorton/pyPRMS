@@ -1,30 +1,8 @@
 import pytest
 import numpy as np
-import os
-from distutils import dir_util
-# from shutil import copytree
 from pyPRMS import Control
 from pyPRMS import MetaData
 from pyPRMS.Exceptions_custom import ControlError
-
-
-@pytest.fixture
-def datadir(tmpdir, request):
-    """
-    Fixture responsible for searching a folder with the same name of test
-    module and, if available, moving all contents to a temporary directory so
-    tests can use them freely.
-    """
-    # 2023-07-18
-    # https://stackoverflow.com/questions/29627341/pytest-where-to-store-expected-data
-    filename = request.module.__file__
-    test_dir, _ = os.path.splitext(filename)
-
-    if os.path.isdir(test_dir):
-        # copytree(test_dir, str(tmpdir))
-        dir_util.copy_tree(test_dir, str(tmpdir))
-
-    return tmpdir
 
 
 @pytest.fixture(scope='class')
@@ -46,7 +24,8 @@ class TestControl:
 
     def test_control_default_metadata(self, control_object, datadir, tmp_path):
         """Test the default control metadata CSV file"""
-        ctl_metadata_orig_file = datadir.join('ctl_metadata_default.csv')
+        ctl_metadata_orig_file = datadir / 'ctl_metadata_default.csv'
+
         with open(ctl_metadata_orig_file, 'r') as f:
             lines_orig = f.readlines()
 

@@ -1,34 +1,13 @@
-import pytest
-import os
-from distutils import dir_util
-import numpy as np
-# import xml.dom.minidom as minidom
-# import xml.etree.ElementTree as xmlET
+# import pytest
+# import numpy as np
 
 from pyPRMS import DataFile
-
-@pytest.fixture
-def datadir(tmpdir, request):
-    """
-    Fixture responsible for searching a folder with the same name of test
-    module and, if available, moving all contents to a temporary directory so
-    tests can use them freely.
-    """
-    # 2023-07-18
-    # https://stackoverflow.com/questions/29627341/pytest-where-to-store-expected-data
-    filename = request.module.__file__
-    test_dir, _ = os.path.splitext(filename)
-
-    if os.path.isdir(test_dir):
-        dir_util.copy_tree(test_dir, str(tmpdir))
-
-    return tmpdir
 
 
 class TestStreamflow:
 
     def test_read_datafile_single_station(self, datadir):
-        sf_filename = datadir.join('sf_data_pipestem_bandit')
+        sf_filename = datadir / 'sf_data_pipestem_bandit'
 
         obs_sf = DataFile(sf_filename, verbose=False)
 
@@ -40,9 +19,8 @@ class TestStreamflow:
         assert obs_sf.get('runoff')['units'] == 'cfs'
         assert obs_sf.get('runoff')['stations'] == expected_stations
 
-
     def test_read_datafile_multiple_stations(self, datadir):
-        sf_filename = datadir.join('sf_data_downsizer')
+        sf_filename = datadir / 'sf_data_downsizer'
 
         obs_sf = DataFile(sf_filename, verbose=False)
 
@@ -82,9 +60,8 @@ class TestStreamflow:
         assert obs_sf.get('runoff')['units'] == 'cfs'
         assert obs_sf.get('runoff')['stations'] == expected_stations
 
-
     def test_read_datafile_sagehen(self, datadir):
-        sf_filename = datadir.join('sagehen.data')
+        sf_filename = datadir / 'sagehen.data'
 
         obs_sf = DataFile(sf_filename, verbose=False)
 

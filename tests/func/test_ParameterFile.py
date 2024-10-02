@@ -1,37 +1,16 @@
 import pytest
 import numpy as np
-import os
 import pandas as pd
-from distutils import dir_util
 from pyPRMS import ControlFile
 from pyPRMS import ParamDb
 from pyPRMS import ParameterFile
 from pyPRMS import ParameterNetCDF
-from pyPRMS.Exceptions_custom import ControlError
 from pyPRMS.metadata.metadata import MetaData
-
-
-@pytest.fixture
-def datadir(tmpdir, request):
-    """
-    Fixture responsible for searching a folder with the same name of test
-    module and, if available, moving all contents to a temporary directory so
-    tests can use them freely.
-    """
-    # 2023-07-18
-    # https://stackoverflow.com/questions/29627341/pytest-where-to-store-expected-data
-    filename = request.module.__file__
-    test_dir, _ = os.path.splitext(filename)
-
-    if os.path.isdir(test_dir):
-        dir_util.copy_tree(test_dir, str(tmpdir))
-
-    return tmpdir
 
 
 @pytest.fixture()
 def pdb_instance(datadir):
-    parameter_file = datadir.join('myparam.param')
+    parameter_file = datadir / 'myparam.param'
 
     prms_meta = MetaData(verbose=True).metadata
 
@@ -42,8 +21,8 @@ def pdb_instance(datadir):
 class TestParameterFile:
 
     def test_read_parameter_file(self, datadir):
-        control_file = datadir.join('control.default.bandit')
-        parameter_file = datadir.join('myparam.param')
+        # control_file = datadir / 'control.default.bandit'
+        parameter_file = datadir / 'myparam.param'
 
         prms_meta = MetaData(verbose=True).metadata
 
@@ -55,7 +34,7 @@ class TestParameterFile:
         assert pdb.headers == expected_headers
 
     def test_parameter_file_write(self, datadir, tmp_path):
-        parameter_file = datadir.join('myparam.param')
+        parameter_file = datadir / 'myparam.param'
 
         prms_meta_orig = MetaData(verbose=True).metadata
         pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
@@ -92,7 +71,7 @@ class TestParameterFile:
             assert (orig_params[cparam].data_raw == chk_params[cparam].data_raw).all(), f'{cparam}: Parameter values different'
 
     def test_parameter_file_write_header_check(self, datadir, tmp_path):
-        parameter_file = datadir.join('myparam.param')
+        parameter_file = datadir / 'myparam.param'
 
         prms_meta_orig = MetaData(verbose=True).metadata
         pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
@@ -117,7 +96,7 @@ class TestParameterFile:
         assert pdb_chk.headers == ['Written by pyPRMS', 'Comment: It is all downhill from here'], 'Default header not written correctly'
 
     def test_paramdb_write(self, datadir, tmp_path):
-        parameter_file = datadir.join('myparam.param')
+        parameter_file = datadir / 'myparam.param'
 
         prms_meta_orig = MetaData(verbose=True).metadata
         pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
@@ -151,7 +130,7 @@ class TestParameterFile:
             assert (orig_params[cparam].data_raw == chk_params[cparam].data_raw).all(), f'{cparam}: Parameter values different'
 
     def test_parameter_netcdf_write(self, datadir, tmp_path):
-        parameter_file = datadir.join('myparam.param')
+        parameter_file = datadir / 'myparam.param'
 
         prms_meta_orig = MetaData(verbose=True).metadata
         pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
@@ -185,10 +164,9 @@ class TestParameterFile:
             # if isinstance(orig_params[cparam].data, np.ndarray):
             assert (orig_params[cparam].data_raw == chk_params[cparam].data_raw).all(), f'{cparam}: Parameter values different'
 
-
     def test_parameters_unneeded_parameters(self, datadir):
-        control_file = datadir.join('control.default.bandit')
-        parameter_file = datadir.join('myparam.param')
+        control_file = datadir / 'control.default.bandit'
+        parameter_file = datadir / 'myparam.param'
 
         prms_meta = MetaData(verbose=True).metadata
 
@@ -206,9 +184,8 @@ class TestParameterFile:
                                            'gw_tau', 'vcw', 'ss_tau', 'vdemx', 'vhe', 'melt_temp', 'vdwmx'}
 
     def test_add_missing_parameters(self, datadir):
-        control_file = datadir.join('control.default.bandit')
-        parameter_file = datadir.join('myparam.param')
-
+        control_file = datadir / 'control.default.bandit'
+        parameter_file = datadir / 'myparam.param'
         prms_meta = MetaData(verbose=True).metadata
 
         ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
@@ -233,8 +210,8 @@ class TestParameterFile:
         assert set(pdb_instance.parameters.keys()) == initial_params - remove_list
 
     def test_read_parameter_file_dup_entry(self, datadir):
-        control_file = datadir.join('control.default.bandit')
-        parameter_file = datadir.join('myparam.param_dup')
+        # control_file = datadir / 'control.default.bandit'
+        parameter_file = datadir / 'myparam.param_dup'
 
         prms_meta = MetaData(verbose=True).metadata
 
@@ -249,8 +226,8 @@ class TestParameterFile:
         assert pdb.updated_parameters == {'width_alpha'}
 
     def test_read_parameter_file_invalid_param(self, datadir):
-        control_file = datadir.join('control.default.bandit')
-        parameter_file = datadir.join('myparam.param_invalid')
+        # control_file = datadir / 'control.default.bandit'
+        parameter_file = datadir / 'myparam.param_invalid'
 
         prms_meta = MetaData(verbose=True).metadata
 
@@ -263,8 +240,8 @@ class TestParameterFile:
         assert not pdb.exists('width_ft')
 
     def test_read_parameter_file_too_many_values(self, datadir):
-        control_file = datadir.join('control.default.bandit')
-        parameter_file = datadir.join('myparam.param_too_many_values')
+        # control_file = datadir / 'control.default.bandit'
+        parameter_file = datadir / 'myparam.param_too_many_values'
 
         prms_meta = MetaData(verbose=True).metadata
 
@@ -289,7 +266,7 @@ class TestParameterFile:
         assert (pdb_instance.get_subset(name, [30114, 30118, 30116]) == expected).all()
 
     def test_read_parameter_file_with_control(self, datadir, pdb_instance):
-        control_file = datadir.join('control.default.bandit')
+        control_file = datadir / 'control.default.bandit'
 
         prms_meta = MetaData(verbose=True).metadata
         ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
