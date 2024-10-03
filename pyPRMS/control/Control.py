@@ -301,10 +301,12 @@ class Control(object):
             assert meta_default is not None
 
             if pk in ['start_time', 'end_time']:
+                dt = pd.Timestamp(meta_default)
                 out_list.append([cvar.name,
                                  'int32',
                                  md.get('description', ''),
-                                 pd.Timestamp(meta_default).strftime('%-Y,%-m,%-d,%-H,%-M,%-S')])
+                                 f'{dt.year},{dt.month},{dt.day},{dt.hour},{dt.minute},{dt.second}'])
+                                 # pd.Timestamp(meta_default).strftime('%-Y,%-m,%-d,%-H,%-M,%-S')])
             else:
                 out_list.append([cvar.name,
                                  md.get('datatype', ''),
