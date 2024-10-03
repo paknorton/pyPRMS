@@ -1,5 +1,6 @@
 pyPRMS
 ======
+|Build Status|
 
 A Python library for working with the Precipitation-Runoff Modeling System (PRMS)
 
@@ -23,3 +24,8 @@ To update from the development branch type::
 To uninstall pyPRMS type::
 
     pip uninstall pyPRMS
+
+
+
+.. |Build Status| image:: https://github.com/paknorton/pyPRMS/actions/workflows/ci.yaml/badge.svg
+   :target: https://github.com/paknorton/pyPRMS/actions/workflows/ci.yaml
