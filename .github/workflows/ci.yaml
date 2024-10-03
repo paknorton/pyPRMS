@@ -133,7 +133,7 @@ jobs:
 
       - name: Test suite
         working-directory: tests
-        run: coverage run -m pytest -v -s
+        run: coverage run -m pytest -v
 
       - name: Coverage report
         working-directory: tests
