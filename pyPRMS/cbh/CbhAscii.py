@@ -3,21 +3,16 @@ import os
 import numpy as np
 import pandas as pd   # type: ignore
 import netCDF4 as nc   # type: ignore
-from collections import OrderedDict
+# from collections import OrderedDict
 
-try:
-    from typing import Dict, List, Union, Optional, OrderedDict as OrderedDictType
-except ImportError:
-    # pre-python 3.7.2
-    from typing import List, Union, Optional, MutableMapping as OrderedDictType
+from typing import Dict, List, Union, Optional
 
-
-# from pyPRMS.prms_helpers import dparse
 from ..constants import REGIONS
 
 CBH_VARNAMES = ['prcp', 'tmin', 'tmax']
 CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]
 TS_FORMAT = '%Y %m %d %H %M %S' # 1915 1 13 0 0 0
+NA_VALS_DEFAULT = ['-99.0', '-999.0', 'NaN', 'inf']
 
 class CbhAscii(object):
 
@@ -43,7 +38,7 @@ class CbhAscii(object):
     def __init__(self, src_path: Optional[str] = None,
                  st_date: Optional[datetime.datetime] = None,
                  en_date: Optional[datetime.datetime] = None,
-                 indices: Optional[OrderedDictType] = None,
+                 indices: Optional[Dict] = None,
                  nhm_hrus: Optional[List] = None,
                  mapping: Optional[Dict] = None):
         """Create CbhAscii object.
@@ -66,10 +61,7 @@ class CbhAscii(object):
         self.__endate = en_date
         self.__nhm_hrus = nhm_hrus
         self.__mapping = mapping
-        self.__date_range = None
         self.__dataframe = None
-        self.__dataset = None
-        self.__final_outorder = None
 
     def read_cbh(self):
         """Reads an entire CBH file.
@@ -149,28 +141,32 @@ class CbhAscii(object):
         :returns: dataframe of CBH variable
         """
         # Columns 0-5 always represent date/time information
+        time_col_names = {0: 'year', 1: 'month', 2: 'day', 3: 'hour', 4: 'minute', 5: 'second'}
+
         if columns is not None:
             df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
-                             usecols=columns,
                              skiprows=3, engine='c', memory_map=True,
-                             parse_dates={'time': CBH_INDEX_COLS},
-                             # date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
-                             index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
+                             header=None, na_values=NA_VALS_DEFAULT,
+                             usecols=columns)
         else:
             df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
                              skiprows=3, engine='c', memory_map=True,
-                             parse_dates={'time': CBH_INDEX_COLS},
-                             # date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
-                             index_col='time', header=None, na_values=[-99.0, -999.0, 'NaN', 'inf'])
+                             header=None, na_values=NA_VALS_DEFAULT)
 
-        df.index = pd.to_datetime(df.index, exact=True, cache=True, format=TS_FORMAT)
+        # Rename columns with time information
+        df.rename(columns=time_col_names, inplace=True)
 
         # Rename columns with local model indices
         ren_dict = {k + 6: k + 1 for k in range(len(df.columns))}
         df.rename(columns=ren_dict, inplace=True)
+
+        df['time'] = pd.to_datetime(df[time_col_names.values()], yearfirst=True)
+        df.drop(columns=time_col_names.values(), inplace=True)
+        df.set_index('time', inplace=True)
+
         return df
 
-    def check_region(self, region: str) -> Union[OrderedDictType[int, int], None]:
+    def check_region(self, region: str) -> Union[Dict[int, int], None]:
         """Get the range of nhm_id values for selected region.
 
         :param region: HUC2 region number (1 to 18)
