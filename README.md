@@ -1,6 +1,6 @@
 pyPRMS
 ======
-|Build Status|
+[![ci-badge](https://github.com/EC-USGS/pyPRMS/actions/workflows/ci.yaml/badge.svg?branch=development)](https://github.com/EC-USGS/pyPRMS/actions?query=workflows%3CI)
 
 A Python library for working with the Precipitation-Runoff Modeling System (PRMS)
 
@@ -27,5 +27,4 @@ To uninstall pyPRMS type::
 
 
 
-.. |Build Status| image:: https://github.com/EC-USGS/pyPRMS/actions/workflows/ci.yaml/badge.svg
-   :target: https://github.com/EC-USGS/pyPRMS/actions/workflows/ci.yaml
+
