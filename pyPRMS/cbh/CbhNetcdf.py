@@ -134,7 +134,7 @@ class CbhNetcdf(object):
             out_cbh.write('########################################\n')
             # data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.3f',
             data.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.2f',
-                        sep=' ', index=False, header=False, encoding=None, chunksize=50)
+                        sep=' ', index=False, header=False, lineterminator='\n', encoding=None, chunksize=50)
             out_cbh.close()
         else:
             print(f'WARNING: {variable} does not exist in source CBH files..skipping')
