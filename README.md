@@ -15,11 +15,11 @@ up-to-date version of the software.
 
 To install from development branch use the following command::
 
-    pip install git+https://github.com/paknorton/pyPRMS.git@development
+    pip install git+https://github.com/EC-USGS/pyPRMS.git@development
 
 To update from the development branch type::
 
-    pip install git+https://github.com/paknorton/pyPRMS.git@development --upgrade
+    pip install git+https://github.com/EC-USGS/pyPRMS.git@development --upgrade
 
 To uninstall pyPRMS type::
 
@@ -27,5 +27,5 @@ To uninstall pyPRMS type::
 
 
 
-.. |Build Status| image:: https://github.com/paknorton/pyPRMS/actions/workflows/ci.yaml/badge.svg
-   :target: https://github.com/paknorton/pyPRMS/actions/workflows/ci.yaml
+.. |Build Status| image:: https://github.com/EC-USGS/pyPRMS/actions/workflows/ci.yaml/badge.svg
+   :target: https://github.com/EC-USGS/pyPRMS/actions/workflows/ci.yaml
