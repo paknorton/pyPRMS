@@ -21,7 +21,6 @@ jobs:
 
   pyprms_setup:
     name: standard installation
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     defaults:
