@@ -1,0 +1,45 @@
+[
+  {
+    "name": "pyPRMS",
+    "organization": "U.S. Geological Survey",
+    "description": "Python library for Precipitation-Runoff Modeling System",
+    "version": "0.9.7",
+    "status": "Preliminary",
+
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/TEAM_NAME/REPOSITORY_NAME/-/raw/RELEASE_VERSION/LICENSE.md"
+        }
+      ]
+    },
+
+    "homepageURL": "https://code.usgs.gov/TEAM_NAME/REPOSITORY_NAME",
+    "downloadURL": "https://code.usgs.gov/TEAM_NAME/REPOSITORY_NAME/-/archive/RELEASE_VERSION/REPOSITORY_NAME-RELEASE_VERSION.zip",
+    "disclaimerURL": "https://code.usgs.gov/TEAM_NAME/REPOSITORY_NAME/-/raw/RELEASE_VERSION/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/TEAM_NAME/REPOSITORY_NAME.git",
+    "vcs": "git",
+
+    "laborHours": -1,
+
+    "tags": [
+      "PRMS",
+      "hydrology"
+    ],
+
+    "languages": [
+      "Python"
+    ],
+
+    "contact": {
+      "name": "Parker Norton",
+      "email": "pnorton@usgs.gov"
+    },
+
+    "date": {
+      "metadataLastUpdated": "2025-01-29"
+    }
+  }
+]
