@@ -15,11 +15,11 @@ up-to-date version of the software.
 
 To install from development branch use the following command::
 
-    pip install git+https://github.com/EC-USGS/pyPRMS.git@development
+    pip install git+https://github.com/EC-USGS/pyPRMS.git
 
 To update from the development branch type::
 
-    pip install git+https://github.com/EC-USGS/pyPRMS.git@development --upgrade
+    pip install git+https://github.com/EC-USGS/pyPRMS.git --upgrade
 
 To uninstall pyPRMS type::
 
