@@ -93,7 +93,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: bash -l {0}
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -102,17 +102,17 @@ jobs:
 
     steps:
 
-      - name: Free Disk Space (Ubuntu)
-        if: runner.os == 'Linux'
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
+      # - name: Free Disk Space (Ubuntu)
+      #   if: runner.os == 'Linux'
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     tool-cache: false
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     docker-images: true
+      #     swap-storage: true
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -130,6 +130,7 @@ jobs:
         run: |
           pip -V
           pip list
+          python --version
 
       - name: Test suite
         working-directory: tests
