@@ -9,7 +9,7 @@ import numpy as np
 import re
 import xml.etree.ElementTree as xmlET
 
-from .constants import Version   # type: ignore
+# from .constants import Version   # type: ignore
 
 cond_check = {'=': operator.eq,
               '>': operator.gt,
@@ -166,26 +166,27 @@ def set_date(adate: Union[datetime.datetime, datetime.date, str, np.ndarray]) ->
         return datetime.datetime(*[int(x) for x in re.split('[- :]', adate)])  # type: ignore
 
 
-def version_info(version_str: Optional[str] = None,
-                 delim: Optional[str] = '.') -> Version:
-    """Given a version string (MM.mm.rr) returns a named tuple of version values
-
-    :param version_str: Version string
-    :param delim: Delimiter for version string
-
-    :returns: Named tuple of version values
-    """
-
-    # Version = NamedTuple('Version', [('major', Union[int, None]),
-    #                                  ('minor', Union[int, None]),
-    #                                  ('revision', Union[int, None])])
-    flds: List[Union[int, None]] = [None, None, None]
-
-    if version_str is not None:
-        for ii, kk in enumerate(version_str.split(delim)):
-            flds[ii] = int(kk)
-
-    return Version(flds[0], flds[1], flds[2])
+# def version_info(version_str: Optional[str] = None,
+#                  delim: Optional[str] = '.') -> Version:
+#     """Given a version string (MM.mm.rr) returns a named tuple of version values
+#
+#     :param version_str: Version string
+#     :param delim: Delimiter for version string
+#
+#     :returns: Named tuple of version values
+#     """
+#
+#     # Version = NamedTuple('Version', [('major', Union[int, None]),
+#     #                                  ('minor', Union[int, None]),
+#     #                                  ('revision', Union[int, None])])
+#     flds: List[Union[int, None]] = [None, None, None]
+#
+#     # TODO: 2025-01-27 PAN - if first character == delim then raise an error
+#     if version_str is not None:
+#         for ii, kk in enumerate(version_str.split(delim)):
+#             flds[ii] = int(kk)
+#
+#     return Version(flds[0], flds[1], flds[2])
 
 
 # def version_info(version_str: Optional[str] = None, delim: Optional[str] = '.') -> NamedTuple:
