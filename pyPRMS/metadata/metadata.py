@@ -6,8 +6,8 @@ from collections import defaultdict
 from packaging.version import Version
 from typing import Dict, Optional, Union
 
-from pyPRMS.prms_helpers import set_date, version_info
-from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE   # , Version
+from pyPRMS.prms_helpers import set_date
+from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE, PRMS_VERSION
 
 from rich.console import Console
 from rich import pretty
@@ -27,7 +27,7 @@ NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
 class MetaData(object):
     """Class to handle variable and parameter metadata"""
 
-    def __init__(self, version: Union[str, int] = '5.2.1',
+    def __init__(self, version: str = PRMS_VERSION,
                  verbose: bool = False):
         # meta_type - one of control, dimension, parameter, output
         # version - PRMS major version to use for filtering
@@ -39,8 +39,8 @@ class MetaData(object):
 
         self.__meta_dict: MetaDataType = {}
 
-        if isinstance(version, int):
-            version = str(version)
+        # if isinstance(version, int):
+        #     version = str(version)
 
         self.__version = Version(version)
         self.__verbose = verbose
@@ -155,35 +155,64 @@ class MetaData(object):
 
     def __parameters_to_dict(self, xml_root: xmlET.Element,
                              meta_type: str,
-                             version: Version) -> Dict:
+                             req_version: Version) -> Dict:
         """Convert parameter metadata to dictionary"""
 
         meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
-            var_version = version_info(elem.attrib.get('version'))
-            depr_version = version_info(elem.attrib.get('deprecated'))
-
-            if var_version.major is not None and var_version.major > version.major:
-                if self.__verbose:   # pragma: no cover
-                    print(f'{name} rejected by version')
-                continue
-            if depr_version.major is not None and depr_version.major <= version.major:
-                if self.__verbose:   # pragma: no cover
-                    print(f'{name} rejected by deprecation version')
-                continue
 
             meta_dict[name] = defaultdict(list)
 
-            var_version = elem.attrib.get('version')
-            if var_version is not None:
-                meta_dict[name]['version'] = var_version
-                # meta_dict[name]['version'] = elem.attrib.get('version')
+            try:
+                var_version = Version(elem.attrib.get('version'))
 
-            depr_version = elem.attrib.get('deprecated')
-            if depr_version is not None:
+                if var_version > req_version:
+                    if self.__verbose:   # pragma: no cover
+                        print(f'{name} rejected by version {str(var_version)}, req: {str(req_version)}')
+
+                    del meta_dict[name]
+                    continue
+                meta_dict[name]['version'] = str(var_version)
+            except TypeError:
+                pass
+
+            try:
+                depr_version = Version(elem.attrib.get('deprecated'))
+
+                if depr_version <= req_version:
+                    if self.__verbose:   # pragma: no cover
+                        print(f'{name} rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
+
+                    del meta_dict[name]
+                    continue
                 meta_dict[name]['deprecated'] = depr_version
+            except TypeError:
+                pass
+
+            # var_version = version_info(elem.attrib.get('version'))
+            # depr_version = version_info(elem.attrib.get('deprecated'))
+            #
+            # if var_version.major is not None and var_version.major > version.major:
+            #     if self.__verbose:   # pragma: no cover
+            #         print(f'{name} rejected by version')
+            #     continue
+            # if depr_version.major is not None and depr_version.major <= version.major:
+            #     if self.__verbose:   # pragma: no cover
+            #         print(f'{name} rejected by deprecation version')
+            #     continue
+            #
+            # meta_dict[name] = defaultdict(list)
+            #
+            # var_version = elem.attrib.get('version')
+            # if var_version is not None:
+            #     meta_dict[name]['version'] = var_version
+            #     # meta_dict[name]['version'] = elem.attrib.get('version')
+            #
+            # depr_version = elem.attrib.get('deprecated')
+            # if depr_version is not None:
+            #     meta_dict[name]['deprecated'] = depr_version
 
             datatype = elem.find('type').text
             meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
@@ -231,7 +260,7 @@ class MetaData(object):
 
     def __dimensions_to_dict(self, xml_root: xmlET.Element,
                              meta_type: str,
-                             version: Version) -> Dict:
+                             req_version: Version) -> Dict:
         """Convert control variables metadata to dictionary"""
 
         meta_dict: Dict = {}
@@ -265,7 +294,7 @@ class MetaData(object):
 
     def __variables_to_dict(self, xml_root: xmlET.Element,
                             meta_type: str,
-                            version: Version) -> Dict:
+                            req_version: Version) -> Dict:
         """Convert output variables metadata to dictionary"""
 
         meta_dict: Dict = {}
