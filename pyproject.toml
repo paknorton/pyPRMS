@@ -27,6 +27,9 @@ dependencies = ["cartopy",
     "pyproj",
     "rich",
     "shapely",
+    "sphinx",
+    "sphinx-autodoc-typehints",
+    "sphinx-book-theme",
     "xarray", ]
 
 [project.optional-dependencies]
