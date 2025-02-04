@@ -84,7 +84,7 @@
             <value name="1">Yes</value>
         </values>
     </control_param>
-    <control_param name="cbh_binary_flag" deprecated="6.0">
+    <control_param name="cbh_binary_flag" deprecated="5.2.1.1">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>

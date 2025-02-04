@@ -3608,7 +3608,7 @@
             </dimension>
         </dimensions>
     </parameter>
-    <parameter name="pref_flow_infil_frac" version="5.2.1">
+    <parameter name="pref_flow_infil_frac" version="5.2.1.1">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Fraction of the soilwater infiltration to the preferential flow that occurs for each HRU</desc>
@@ -4529,6 +4529,26 @@
             <control>stream_temp_flag = 1</control>
         </requires>
     </parameter>
+    <parameter name="seg_close" version="5.2.1.1">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of closest segment from elevation and latitude for each a segment, if not specified, seg_close defaults to the upstream segment</desc>
+        <help>Index of closest segment from elevation and latitude for each a segment, if not specified, seg_close defaults to the upstream segment</help>
+        <minimum>bounded</minimum>
+        <maximum>nsegment</maximum>
+        <default>-1</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
+    </parameter>
     <parameter name="seg_elev" version="5.1.0">
         <type>F</type>
         <units>meters</units>
@@ -4593,7 +4613,7 @@
             <control>stream_temp_flag = 1</control>
         </requires>
     </parameter>
-    <parameter name="seg_humidity_sta">
+    <parameter name="seg_humidity_sta" version="5.2.1.1">
         <type>I</type>
         <units>none</units>
         <desc>Index of humidity measurement station for each stream segment</desc>
@@ -4611,6 +4631,7 @@
         </dimensions>
         <requires>
             <control>stream_temp_flag = 1</control>
+            <control>strmtemp_humidity_flag = 1</control>
         </requires>
     </parameter>
     <parameter name="seg_length" version="5.1.0">
@@ -4914,11 +4935,11 @@
     <parameter name="width_alpha" version="5.1.0">
         <type>F</type>
         <units>meters</units>
-        <desc>Alpha coefficient in power function for width calculation (for units M and CMS)</desc>
-        <help>Alpha coefficient in power function for width calculation (for units M and CMS)</help>
-        <minimum>0.0001</minimum>
-        <maximum>1000.0</maximum>
-        <default>1.0</default>
+        <desc>Alpha coefficient in power function for width calculation (for units m and cms)</desc>
+        <help>Alpha coefficient in power function for width calculation (for units m and cms)</help>
+        <minimum>2.6</minimum>
+        <maximum>20.0</maximum>
+        <default>7.2</default>
         <modules>
             <module>stream_temp</module>
         </modules>
@@ -4934,11 +4955,11 @@
     <parameter name="width_m" version="5.1.0">
         <type>F</type>
         <units>none</units>
-        <desc>M value in power function for width calculation (for units M and CMS)</desc>
-        <help>M value in power function for width calculation (for units M and CMS)</help>
-        <minimum>0.0001</minimum>
-        <maximum>2.0</maximum>
-        <default>0.015</default>
+        <desc>M value in power function for width calculation (for units m and cms)</desc>
+        <help>M value in power function for width calculation (for units m and cms)</help>
+        <minimum>0.48</minimum>
+        <maximum>0.52</maximum>
+        <default>0.5</default>
         <modules>
             <module>stream_temp</module>
         </modules>
@@ -4951,7 +4972,7 @@
             <control>stream_temp_flag = 1</control>
         </requires>
     </parameter>
-    <parameter name="depth_alpha" version="5.2.1">
+    <parameter name="depth_alpha" version="5.2.1.1">
         <type>F</type>
         <units>meters</units>
         <desc>Alpha coefficient in power function for depth calculation (for units M and CMS)</desc>
@@ -4971,7 +4992,7 @@
             <control>stream_temp_flag = 1</control>
         </requires>
     </parameter>
-    <parameter name="depth_m" version="5.2.1">
+    <parameter name="depth_m" version="5.2.1.1">
         <type>F</type>
         <units>meters</units>
         <desc>M value in power function for depth calculation (for units M and CMS)</desc>

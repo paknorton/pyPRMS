@@ -203,6 +203,9 @@
             <module name="strmflow">
                 <desc>Computes daily streamflow as the sum of surface runoff, shallow-subsurface flow (interflow), detention reservoir flow, and groundwater flow.</desc>
             </module>
+            <module name="strmflow_character" version="5.2.1.1">
+                <desc>Computes stream segment characteristics when stream_temp is active.</desc>
+            </module>
             <module name="strmflow_in_out">
                 <desc>Routes water between segments in the stream network by setting the outflow to the inflow.</desc>
             </module>
