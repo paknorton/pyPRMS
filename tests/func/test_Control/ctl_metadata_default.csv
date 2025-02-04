@@ -11,7 +11,6 @@ basinOutVars	int32	Number of variables to include in basin summary output file(s
 basinOut_freq	int32	Output frequency and type	1
 cascade_flag	int32	Flag to indicate if HRU cascades are computed	0
 cascadegw_flag	int32	Flag to indicate if GWR cascades are computed	0
-cbh_binary_flag	int32	Flag to specify whether to input CBH files in a binary format using the samer order of values as the text file version	0
 cbh_check_flag	int32	Flag to indicate if CBH values are validated each time step	0
 cloud_cover_cbh_flag	int32	Flag to specify whether to input snowpack albedo from a CBH file	0
 cloud_cover_day	string	Pathname of the CBH file of pre-processed cloud cover input data for each HRU to specify variable cloud_cover_cbh (units: decimal fraction)	cloudcover.day
