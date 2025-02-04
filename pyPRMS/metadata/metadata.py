@@ -1,11 +1,19 @@
 import io
 import pkgutil
 import xml.etree.ElementTree as xmlET   # type: ignore
+
 from collections import defaultdict
+from packaging.version import Version
 from typing import Dict, Optional, Union
 
 from pyPRMS.prms_helpers import set_date, version_info
-from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE
+from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE   # , Version
+
+from rich.console import Console
+from rich import pretty
+
+pretty.install()
+con = Console(record=False, force_jupyter=False)
 
 outside_elem = {'control': 'control_param',
                 'parameters': 'parameter',
@@ -19,18 +27,22 @@ NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
 class MetaData(object):
     """Class to handle variable and parameter metadata"""
 
-    def __init__(self, version: Optional[Union[str, int]] = 5, verbose: Optional[bool] = False):
+    def __init__(self, version: Union[str, int] = '5.2.1',
+                 verbose: bool = False):
         # meta_type - one of control, dimension, parameter, output
         # version - PRMS major version to use for filtering
 
         fcn_map = {'control': self.__control_to_dict,
                    'dimensions': self.__dimensions_to_dict,
                    'parameters': self.__parameters_to_dict,
-                   'variables': self.__variables_to_dict
-                   }
+                   'variables': self.__variables_to_dict}
 
         self.__meta_dict: MetaDataType = {}
-        self.__version = version
+
+        if isinstance(version, int):
+            version = str(version)
+
+        self.__version = Version(version)
         self.__verbose = verbose
 
         # meta_type: one of - control, dimensions, parameters, variables
@@ -40,42 +52,55 @@ class MetaData(object):
             xml_tree = xmlET.parse(xml_fh)
             xml_root = xml_tree.getroot()
 
+            if self.__verbose:
+                con.print(f'[bold green]{mt}[/bold green]')
             self.__meta_dict[mt] = mf(xml_root, mt, self.__version)
 
     @property
     def metadata(self) -> MetaDataType:
         return self.__meta_dict
 
-    # @staticmethod
-    def __control_to_dict(self, xml_root, meta_type, version) -> Dict:
-        """Convert control variables metadata to dictionary"""
+    def __control_to_dict(self, xml_root: xmlET.Element,
+                          meta_type: str,
+                          req_version: Version) -> Dict:
+        """Convert control variables metadata to dictionary
+
+        :param xml_root: XML root element
+        :param meta_type: Type of metadata
+        :param req_version: Required minimum version for filtering
+        """
 
         meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
 
-            var_version = version_info(elem.attrib.get('version'))
-            depr_version = version_info(elem.attrib.get('deprecated'))
-
-            if var_version.major is not None and var_version.major > version:
-                if self.__verbose:   # pragma: no cover
-                    print(f'{name} rejected by version')
-                continue
-            if depr_version.major is not None and depr_version.major <= version:
-                if self.__verbose:   # pragma: no cover
-                    print(f'{name} rejected by deprecation version')
-                continue
-
             meta_dict[name] = {}
+            try:
+                var_version = Version(elem.attrib.get('version'))
 
-            var_version = elem.attrib.get('version')
-            if var_version is not None:
-                meta_dict[name]['version'] = var_version
+                if var_version > req_version:
+                    if self.__verbose:   # pragma: no cover
+                        print(f'{name} rejected by version {str(var_version)}, req: {str(req_version)}')
 
-            depr_version = elem.attrib.get('deprecated')
-            if depr_version is not None:
+                    del meta_dict[name]
+                    continue
+                meta_dict[name]['version'] = str(var_version)
+            except TypeError:
+                pass
+
+            try:
+                depr_version = Version(elem.attrib.get('deprecated'))
+
+                if depr_version <= req_version:
+                    if self.__verbose:   # pragma: no cover
+                        print(f'{name} rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
+
+                    del meta_dict[name]
+                    continue
                 meta_dict[name]['deprecated'] = depr_version
+            except TypeError:
+                pass
 
             if name in ['start_time', 'end_time']:
                 meta_dict[name]['datatype'] = 'datetime'
@@ -128,7 +153,9 @@ class MetaData(object):
 
         return meta_dict
 
-    def __parameters_to_dict(self, xml_root, meta_type, version) -> Dict:
+    def __parameters_to_dict(self, xml_root: xmlET.Element,
+                             meta_type: str,
+                             version: Version) -> Dict:
         """Convert parameter metadata to dictionary"""
 
         meta_dict: Dict = {}
@@ -138,11 +165,11 @@ class MetaData(object):
             var_version = version_info(elem.attrib.get('version'))
             depr_version = version_info(elem.attrib.get('deprecated'))
 
-            if var_version.major is not None and var_version.major > version:
+            if var_version.major is not None and var_version.major > version.major:
                 if self.__verbose:   # pragma: no cover
                     print(f'{name} rejected by version')
                 continue
-            if depr_version.major is not None and depr_version.major <= version:
+            if depr_version.major is not None and depr_version.major <= version.major:
                 if self.__verbose:   # pragma: no cover
                     print(f'{name} rejected by deprecation version')
                 continue
@@ -202,7 +229,9 @@ class MetaData(object):
 
         return meta_dict
 
-    def __dimensions_to_dict(self, xml_root, meta_type, version) -> Dict:
+    def __dimensions_to_dict(self, xml_root: xmlET.Element,
+                             meta_type: str,
+                             version: Version) -> Dict:
         """Convert control variables metadata to dictionary"""
 
         meta_dict: Dict = {}
@@ -234,7 +263,9 @@ class MetaData(object):
 
         return meta_dict
 
-    def __variables_to_dict(self, xml_root, meta_type, version) -> Dict:
+    def __variables_to_dict(self, xml_root: xmlET.Element,
+                            meta_type: str,
+                            version: Version) -> Dict:
         """Convert output variables metadata to dictionary"""
 
         meta_dict: Dict = {}
