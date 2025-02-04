@@ -12,7 +12,7 @@ class TestControlFile:
 
         prms_meta = MetaData(verbose=True).metadata
 
-        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
+        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
 
         assert ctl.header == ['$Id:$']
 
@@ -31,7 +31,7 @@ class TestControlFile:
 
         prms_meta = MetaData(verbose=True).metadata
 
-        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
+        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
 
         assert not ctl.exists('random_ctl_var')
 
@@ -42,7 +42,7 @@ class TestControlFile:
         prms_meta = MetaData(verbose=True).metadata
 
         with pytest.raises(ControlError):
-            ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
+            ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
 
     def test_dup_var_in_file(self, datadir):
         """Duplicate control variables should be updated with new value and print a warning"""
@@ -51,7 +51,7 @@ class TestControlFile:
         prms_meta = MetaData(verbose=True).metadata
 
         # If verbose=False warnings about duplicates are not shown
-        ctl = ControlFile(control_file, metadata=prms_meta, verbose=True, version=5)
+        ctl = ControlFile(control_file, metadata=prms_meta, verbose=True)
 
         assert ctl.get('print_debug').values == 4
 
@@ -61,7 +61,7 @@ class TestControlFile:
 
         prms_meta = MetaData(verbose=True).metadata
 
-        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False, version=5)
+        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
         ctl_vars_orig = ctl.control_variables.keys()
 
         out_path = tmp_path / 'run_files'
@@ -71,7 +71,7 @@ class TestControlFile:
         ctl.write(out_file)
 
         prms_meta_chk = MetaData(verbose=True).metadata
-        ctl_chk = ControlFile(out_file, metadata=prms_meta_chk, verbose=True, version=5)
+        ctl_chk = ControlFile(out_file, metadata=prms_meta_chk, verbose=True)
         ctl_vars_chk = ctl_chk.control_variables.keys()
 
         # Do both control files have the same variables?
