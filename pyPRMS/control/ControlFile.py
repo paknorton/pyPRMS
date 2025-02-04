@@ -127,8 +127,13 @@ class ControlFile(Control):
                 except ValueError as err:
                     print(f'WARNING: {varname} is not a valid control variable')
                     print(err)
-                    while next(it) != VAR_DELIM:
-                        pass
+
+                    try:
+                        while next(it) != VAR_DELIM:
+                            pass
+                    except StopIteration:
+                        # Hit the end of the file
+                        continue
 
         self.header = header_tmp
         self.__isloaded = True
