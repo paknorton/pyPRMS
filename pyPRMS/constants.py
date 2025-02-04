@@ -5,9 +5,12 @@ from typing import Dict, List, NamedTuple, Union
 # Define aliases for static typing
 MetaDataType = Dict[str, Dict]
 
-Version = NamedTuple('Version', [('major', Union[int, None]),
-                                 ('minor', Union[int, None]),
-                                 ('revision', Union[int, None])])
+# Version = NamedTuple('Version', [('major', Union[int, None]),
+#                                  ('minor', Union[int, None]),
+#                                  ('revision', Union[int, None])])
+
+# Default PRMS version to use for metadata
+PRMS_VERSION = '5.2.1.1'
 
 # Order to write control file parameters for printing and writing a new control file
 ctl_order: List[str] = ['start_time', 'end_time', 'initial_deltat', 'executable_desc', 'executable_model', 'model_mode',
