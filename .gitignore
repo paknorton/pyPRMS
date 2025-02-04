@@ -44,6 +44,10 @@ target/
 *.ipynb
 .ipynb_checkpoints
 
+# sphinx
+docs/_build/
+docs/generated/
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
