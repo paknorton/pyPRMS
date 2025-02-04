@@ -4,16 +4,22 @@ import pandas as pd   # type: ignore
 import xarray as xr
 
 from pathlib import Path
-from typing import Union
+from typing import List, Optional, Union
 
 from ..constants import NEW_PTYPE_TO_DTYPE
 
 
 class OutputVariable(object):
     """Container for a single output variable
+
+    Each OutputVariable instance contains the model output for a single
+    model output variable. The model output file is expected to follow the
+    PRMS ASCII format.
     """
 
-    def __init__(self, name: str, filename: Union[str, Path], metadata: dict):
+    def __init__(self, name: str,
+                 filename: Union[str, Path],
+                 metadata: dict):
         """Initialize the OutputVariable object.
 
         :param name: Name of the output variable
@@ -35,7 +41,7 @@ class OutputVariable(object):
 
     @property
     def data(self) -> pd.DataFrame:
-        """Returns the source model output.
+        """Returns the source model output as a pandas DataFrame
 
         :returns: Model output dataframe
         """
@@ -46,15 +52,41 @@ class OutputVariable(object):
 
     @property
     def filename(self) -> Path:
-        """Return the path to the model output variable
+        """Returns the path to the model output variable
 
         :returns: Path to the model output variable file
         """
 
         return self.__filename
 
+    def to_csv(self, filename: Union[str, Path],
+               columns: Optional[List[int]] = None,
+               sep: Optional[str] = ','):
+        """Write the output variable to a CSV file.
+
+        :param filename: Name of the output file
+        :param columns: List of columns to write
+        :param sep: Delimiter for the output file
+        """
+
+        if isinstance(filename, str):
+            filename = Path(filename)
+
+        self.data.to_csv(filename, sep=sep, index=True, header=True, columns=columns, chunksize=50)
+
+    def to_netcdf(self, filename: Union[str, Path]):
+        """Write the output variable to a netCDF file.
+
+        :param filename: Name of the netCDF output file
+        """
+
+        if isinstance(filename, str):
+            filename = Path(filename)
+
+        self.to_xarray().to_netcdf(filename, mode='w', format='NETCDF4')
+
     def to_xarray(self) -> xr.DataArray:
-        """Return output variable as an xarray object.
+        """Returns the output variable as an xarray DataArray.
 
         :returns: xarray DataArray
         """
