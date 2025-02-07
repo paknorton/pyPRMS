@@ -175,10 +175,31 @@ class TestParameterFile:
                            'ParamDb revision: https///code.usgs.gov/wma/national-iwaas/nhm/nhm-applications/nhm-v1.1-conus/paramdb_v1.1_gridmet_CONUS/commit/1ffad3a9e33473290efaaa472a90b42a12e28e1f']
         assert pdb.headers == expected_headers
 
-        assert pdb.unneeded_parameters == {'lat_temp_adj', 'azrh', 'width_alpha', 'alte', 'seg_lat', 'vow',
-                                           'albedo', 'seg_elev', 'width_m', 'altw', 'stream_tave_init', 'vce',
-                                           'maxiter_sntemp', 'voe', 'vdemn', 'vdwmn', 'vhw', 'seg_humidity',
-                                           'gw_tau', 'vcw', 'ss_tau', 'vdemx', 'vhe', 'melt_temp', 'vdwmx'}
+        assert sorted(list(pdb.unneeded_parameters)) == ['albedo',
+                                                         'alte',
+                                                         'altw',
+                                                         'azrh',
+                                                         'gw_tau',
+                                                         'lat_temp_adj',
+                                                         'maxiter_sntemp',
+                                                         'melt_temp',
+                                                         'seg_elev',
+                                                         'seg_humidity',
+                                                         'seg_lat',
+                                                         'ss_tau',
+                                                         'stream_tave_init',
+                                                         'vce',
+                                                         'vcw',
+                                                         'vdemn',
+                                                         'vdemx',
+                                                         'vdwmn',
+                                                         'vdwmx',
+                                                         'vhe',
+                                                         'vhw',
+                                                         'voe',
+                                                         'vow',
+                                                         'width_alpha',
+                                                         'width_m']
 
     def test_add_missing_parameters(self, datadir):
         control_file = datadir / 'control.default.bandit'
