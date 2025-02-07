@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <control>
-    <control_param name="aniOutON_OFF" deprecated="6.0">
+    <control_param name="aniOutON_OFF" deprecated="60.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -10,7 +10,25 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="basinOutON_OFF" version="5.0" deprecated="6.0">
+    <control_param name="ani_output_file" deprecated="60.0">
+        <default>animation.out</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>Root pathname for Animation Files(s) to which a filename suffix based on dimension name associated with selected variables is appended</desc>
+    </control_param>
+    <control_param name="naniOutVars" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Number of output variables specified in the aniOutVar_names list</desc>
+    </control_param>
+    <control_param name="aniOutVar_names" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>naniOutVars</numvals>
+        <desc>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</desc>
+    </control_param>
+    <control_param name="basinOutON_OFF" version="5.0" deprecated="60.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -24,7 +42,13 @@
             <variable name="basinOut_freq"/>
         </related_variables>
     </control_param>
-    <control_param name="basinOutVars" version="5.0" deprecated="6.0">
+    <control_param name="basinOutBaseFileName" version="5.0" deprecated="60.0">
+        <default>basinout_path</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>String to define the prefix for each basin summary output file</desc>
+    </control_param>
+    <control_param name="basinOutVars" version="5.0" deprecated="60.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -35,7 +59,13 @@
             <variable name="basinOut_freq"/>
         </related_variables>
     </control_param>
-    <control_param name="basinOut_freq" version="5.0" deprecated="6.0">
+    <control_param name="basinOutVar_names" version="5.0" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>basinOutVars</numvals>
+        <desc>List of variable names for which output is written to basin summary Comma Separated Values (CSV) output file(s). Each variable is written to files in the order specified in basinOutVars with the prefix of each file equal to the value of basinOutBaseFileName. The suffix of the files is based on the value of basinOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
+    </control_param>
+    <control_param name="basinOut_freq" version="5.0" deprecated="60.0">
         <default>1</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -52,6 +82,281 @@
             <variable name="basinOutVars"/>
             <variable name="basinOutON_OFF"/>
         </related_variables>
+    </control_param>
+    <control_param name="nhruOutNcol" version="5.1.0" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Number of columns written per line, which can be used to generate gridded output</desc>
+        <values type="method">
+            <value name="0">All values for each timestep are written on a single line as in previous versions</value>
+            <value name=">0">Number of columns</value>
+        </values>
+    </control_param>
+    <control_param name="nhruOutON_OFF" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Switch to specify whether or not nhru summary output files are generated</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+            <value name="2">on; use nhm_id for header</value>
+        </values>
+    </control_param>
+    <control_param name="nhruOutBaseFileName" deprecated="60.0">
+        <default>nhru_summary_</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>String to define the prefix for each nhru summary output file</desc>
+    </control_param>
+    <control_param name="nhruOutVars" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Number of variables to include in nhru summary output file(s)</desc>
+    </control_param>
+    <control_param name="nhruOut_format" version="5.0" deprecated="60.0">
+        <default>1</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Format of values</desc>
+        <values type="method">
+            <value name="1">Scientific notation with four significant digits</value>
+            <value name="2">Two decimal places</value>
+            <value name="3">Three decimal places</value>
+            <value name="4">Four decimal places</value>
+            <value name="5">Five decimal places</value>
+        </values>
+        <related_variables>
+            <variable name="nhruOutVars"/>
+            <variable name="nhruOutON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="nhruOut_freq" deprecated="60.0">
+        <default>1</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Output frequency and type</desc>
+        <values type="interval">
+            <value name="1">daily</value>
+            <value name="2">monthly</value>
+            <value name="3">daily,monthly</value>
+            <value name="4">mean monthly</value>
+            <value name="5" version="5.0">mean yearly</value>
+            <value name="6" version="5.0">yearly</value>
+        </values>
+        <related_variables>
+            <variable name="nhruOutVars"/>
+            <variable name="nhruOutON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="outputSelectDatesON_OFF" version="5.2.0" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Switch to indicate if nhru_summary output files are generated for a specified set of dates</desc>
+        <values type="flag">
+            <value name="0">No, output time series on basis of nhruOut_freq</value>
+            <value name="1">Yes, specify dates in file specified by selectDatesFileName</value>
+        </values>
+        <related_variables>
+            <variable name="nhruOutVars"/>
+            <variable name="nhruOutON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="nhruOutVar_names" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>nhruOutVars</numvals>
+        <desc>List of variable names for which output is written to nhru summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName. The suffix of the files is based on the value of nhruOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
+        <related_variables>
+            <variable name="nhruOutVars"/>
+            <variable name="nhruOutON_OFF"/>
+            <variable name="nhruOut_freq"/>
+            <variable name="nhruOut_format"/>
+        </related_variables>
+    </control_param>
+    <control_param name="selectDatesFileName" version="5.2.0" deprecated="60.0">
+        <default>selectDates.in</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>File that contains the set of dates to output values of nhru_summary output files in chronological order with dates specified as YEAR MONTH DAY with space(s) and/or comma separating YEAR and MONTH and MONTH and DAY (e.g. 1959 09 01)</desc>
+        <related_variables>
+            <variable name="outputSelectDatesON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="nsegmentOutON_OFF" version="5.0" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Switch to specify whether nsegment summary output files are generated</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+            <value name="2">yes and use values of nhm_seg as column heading</value>
+        </values>
+    </control_param>
+    <control_param name="nsegmentOutBaseFileName" version="5.0" deprecated="60.0">
+        <default>nsegment_summary_</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>String to define the prefix for each nsegment summary output file</desc>
+    </control_param>
+    <control_param name="nsegmentOutVars" version="5.0" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Number of variables to include in nsegment summary output file(s)</desc>
+    </control_param>
+    <control_param name="nsegmentOutVar_names" version="5.0" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>nsegmentOutVars</numvals>
+        <desc>List of variable names for which output is written to nsegment summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsegmentOutBaseFileName; variables must be of type real or double; the suffix of the files is based on the value of nsegmentOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv</desc>
+    </control_param>
+    <control_param name="nsegmentOut_format" version="5.0" deprecated="60.0">
+        <default>1</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Format of values</desc>
+        <values type="method">
+            <value name="1">Scientific notation with four significant digits</value>
+            <value name="2">Two decimal places</value>
+            <value name="3">Three decimal places</value>
+            <value name="4">Four decimal places</value>
+            <value name="5">Five decimal places</value>
+        </values>
+        <related_variables>
+            <variable name="nsegmentOutVars"/>
+            <variable name="nsegmentOutON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="nsegmentOut_freq" version="5.0" deprecated="60.0">
+        <default>1</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Output frequency and type</desc>
+        <values type="interval">
+            <value name="1">daily</value>
+            <value name="2">monthly</value>
+            <value name="3">daily,monthly</value>
+            <value name="4">mean monthly</value>
+            <value name="5">mean yearly</value>
+            <value name="6">yearly</value>
+        </values>
+        <related_variables>
+            <variable name="nsegmentOutVars"/>
+            <variable name="nsegmentOutON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="nsubOutON_OFF" version="5.0" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Switch to specify whether or not nsub summary output files are generated</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
+    </control_param>
+    <control_param name="nsubOutBaseFileName" version="5.0" deprecated="60.0">
+        <default>nsub_summary_</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>String to define the prefix for each nsub summary output file</desc>
+    </control_param>
+    <control_param name="nsubOutVars" version="5.0" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Number of variables to include in nsub summary output file(s)</desc>
+    </control_param>
+    <control_param name="nsubOutVar_names" version="5.0" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>nsubOutVars</numvals>
+        <desc>List of variable names for which output is written to nsub summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName. The suffix of the files is based on the value of nsubOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
+    </control_param>
+    <control_param name="nsubOut_format" version="5.0" deprecated="60.0">
+        <default>1</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Format of values</desc>
+        <values type="method">
+            <value name="1">Scientific notation with four significant digits</value>
+            <value name="2">Two decimal places</value>
+            <value name="3">Three decimal places</value>
+            <value name="4">Four decimal places</value>
+            <value name="5">Five decimal places</value>
+        </values>
+        <related_variables>
+            <variable name="nsubOutVars"/>
+            <variable name="nsubOutON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="nsubOut_freq" version="5.0" deprecated="60.0">
+        <default>1</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Output frequency and type</desc>
+        <values type="interval">
+            <value name="1">daily</value>
+            <value name="2">monthly</value>
+            <value name="3">daily,monthly</value>
+            <value name="4">mean monthly</value>
+            <value name="5">mean yearly</value>
+            <value name="6">yearly</value>
+        </values>
+        <related_variables>
+            <variable name="nsubOutVars"/>
+            <variable name="nsubOutON_OFF"/>
+        </related_variables>
+    </control_param>
+    <control_param name="statsON_OFF" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Switch to specify whether or not the Statistics Variables File is generated</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">statvar text format</value>
+            <value name="2">CSV format</value>
+        </values>
+    </control_param>
+    <control_param name="stat_var_file" deprecated="60.0">
+        <default>statvar.out</default>
+        <type>4</type>
+        <numvals>1</numvals>
+        <desc>Pathname for Statistics Variables File</desc>
+    </control_param>
+    <control_param name="nstatVars" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Number of variables to include in Statistics Variables File and names specified in statVar_names</desc>
+    </control_param>
+    <control_param name="statVar_element" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>nstatVars</numvals>
+        <desc>List of identification numbers corresponding to variables specified in statVar_names list (1 to variable's dimension size)</desc>
+    </control_param>
+    <control_param name="statVar_names" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>nstatVars</numvals>
+        <desc>List of variable names for which output is written to Statistics Variables File</desc>
+    </control_param>
+    <control_param name="bias_adjust_flag" version="6.0.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Flag to indicate if temperature adjusts are changed to (a) improve the calculation of precipitation temperature used to calculate the form of precipitation as rain, snow or mixed; (b) use offset parameters from minimum air temperature adjustment parameters to adjust maximum air temperatures as it is possible in automated calibration methods maximum air temperatures could be set less than minimum air temperature; (c) allow for persistent snowpacks by using the antecedent snowpack water equivalent instead of setting to 0.0 on first Julian day of the water year; (d) set the temperature of rain that is added to a snowpack to (tavgc+tmax_allrain_c)*0.5 instead of (tmaxc+tmax_allsnow_c)*0.5 for mixed precipitation events</desc>
+        <values type="flag">
+            <value name="0">no</value>
+            <value name="1">yes</value>
+        </values>
     </control_param>
     <control_param name="cascade_flag">
         <default>0</default>
@@ -116,11 +421,57 @@
             <value name="3" version="6.0.0">yes, with date tag year-month-day followed by simulated flows as comma separated values</value>
         </values>
     </control_param>
-    <control_param name="dispGraphsBuffSize" deprecated="6.0">
+    <control_param name="dispGraphsBuffSize" deprecated="60.0">
         <default>50</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Number of time steps to wait before updating the runtime graph</desc>
+    </control_param>
+    <control_param name="ndispGraphs" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Number of plots included in the runtime graph</desc>
+    </control_param>
+    <control_param name="dispVar_element" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>ndispGraphs</numvals>
+        <desc>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable's dimension size)</desc>
+    </control_param>
+    <control_param name="dispVar_names" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>ndispGraphs</numvals>
+        <desc>List of variable names for which plots are output to the runtime graph</desc>
+    </control_param>
+    <control_param name="dispVar_plot" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>ndispGraphs</numvals>
+        <desc>List of variable names for which plots are output to the runtime graph</desc>
+    </control_param>
+    <control_param name="mapOutON_OFF" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Switch to specify whether or not mapped output file(s) by a specified number of columns (parameter ncol) of daily, monthly, yearly, or total simulation results is generated</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
+    </control_param>
+    <control_param name="nmapOutVars" deprecated="60.0">
+        <default>0</default>
+        <type>1</type>
+        <numvals>1</numvals>
+        <desc>Number of variables to include in mapped output file(s)</desc>
+    </control_param>
+    <control_param name="mapOutVar_names" deprecated="60.0">
+        <default>none</default>
+        <type>4</type>
+        <numvals>nmapOutVars</numvals>
+        <desc>List of variable names for which output is written to mapped output files(s); variables must be of type real or double.</desc>
     </control_param>
     <control_param name="dprst_flag">
         <default>0</default>
@@ -379,240 +730,6 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="mapOutON_OFF" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Switch to specify whether or not mapped output file(s) by a specified number of columns (parameter ncol) of daily, monthly, yearly, or total simulation results is generated</desc>
-        <values type="flag">
-            <value name="0">off</value>
-            <value name="1">on</value>
-        </values>
-    </control_param>
-    <control_param name="naniOutVars" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Number of output variables specified in the aniOutVar_names list</desc>
-    </control_param>
-    <control_param name="ndispGraphs" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Number of plots included in the runtime graph</desc>
-    </control_param>
-    <control_param name="nhruOutNcol" version="5.1.0" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Number of columns written per line, which can be used to generate gridded output</desc>
-        <values type="method">
-            <value name="0">All values for each timestep are written on a single line as in previous versions</value>
-            <value name=">0">Number of columns</value>
-        </values>
-    </control_param>
-    <control_param name="nhruOutON_OFF" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Switch to specify whether or not nhru summary output files are generated</desc>
-        <values type="flag">
-            <value name="0">off</value>
-            <value name="1">on</value>
-            <value name="2">on; use nhm_id for header</value>
-        </values>
-    </control_param>
-    <control_param name="nhruOutVars" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Number of variables to include in nhru summary output file(s)</desc>
-    </control_param>
-    <control_param name="nhruOut_format" version="5.0" deprecated="6.0">
-        <default>1</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Format of values</desc>
-        <values type="method">
-            <value name="1">Scientific notation with four significant digits</value>
-            <value name="2">Two decimal places</value>
-            <value name="3">Three decimal places</value>
-            <value name="4">Four decimal places</value>
-            <value name="5">Five decimal places</value>
-        </values>
-        <related_variables>
-            <variable name="nhruOutVars"/>
-            <variable name="nhruOutON_OFF"/>
-        </related_variables>
-    </control_param>
-    <control_param name="nhruOut_freq" deprecated="6.0">
-        <default>1</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Output frequency and type</desc>
-        <values type="interval">
-            <value name="1">daily</value>
-            <value name="2">monthly</value>
-            <value name="3">daily,monthly</value>
-            <value name="4">mean monthly</value>
-            <value name="5" version="5.0">mean yearly</value>
-            <value name="6" version="5.0">yearly</value>
-        </values>
-        <related_variables>
-            <variable name="nhruOutVars"/>
-            <variable name="nhruOutON_OFF"/>
-        </related_variables>
-    </control_param>
-    <control_param name="outputSelectDatesON_OFF" version="5.2.0" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Switch to indicate if nhru_summary output files are generated for a specified set of dates</desc>
-        <values type="flag">
-            <value name="0">No, output time series on basis of nhruOut_freq</value>
-            <value name="1">Yes, specify dates in file specified by selectDatesFileName</value>
-        </values>
-        <related_variables>
-            <variable name="nhruOutVars"/>
-            <variable name="nhruOutON_OFF"/>
-        </related_variables>
-    </control_param>
-    <control_param name="nhruOutVar_names" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>nhruOutVars</numvals>
-        <desc>List of variable names for which output is written to nhru summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nhruOutBaseFileName. The suffix of the files is based on the value of nhruOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
-        <related_variables>
-            <variable name="nhruOutVars"/>
-            <variable name="nhruOutON_OFF"/>
-            <variable name="nhruOut_freq"/>
-            <variable name="nhruOut_format"/>
-        </related_variables>
-    </control_param>
-    <control_param name="selectDatesFileName" version="5.2.0" deprecated="6.0">
-        <default>selectDates.in</default>
-        <type>4</type>
-        <numvals>1</numvals>
-        <desc>File that contains the set of dates to output values of nhru_summary output files in chronological order with dates specified as YEAR MONTH DAY with space(s) and/or comma separating YEAR and MONTH and MONTH and DAY (e.g. 1959 09 01)</desc>
-        <related_variables>
-            <variable name="outputSelectDatesON_OFF"/>
-        </related_variables>
-    </control_param>
-    <control_param name="nmapOutVars" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Number of variables to include in mapped output file(s)</desc>
-    </control_param>
-    <control_param name="nsegmentOutON_OFF" version="5.0" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Switch to specify whether nsegment summary output files are generated</desc>
-        <values type="flag">
-            <value name="0">off</value>
-            <value name="1">on</value>
-            <value name="2">yes and use values of nhm_seg as column heading</value>
-        </values>
-    </control_param>
-    <control_param name="nsegmentOutVars" version="5.0" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Number of variables to include in nsegment summary output file(s)</desc>
-    </control_param>
-    <control_param name="nsegmentOut_format" version="5.0" deprecated="6.0">
-        <default>1</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Format of values</desc>
-        <values type="method">
-            <value name="1">Scientific notation with four significant digits</value>
-            <value name="2">Two decimal places</value>
-            <value name="3">Three decimal places</value>
-            <value name="4">Four decimal places</value>
-            <value name="5">Five decimal places</value>
-        </values>
-        <related_variables>
-            <variable name="nsegmentOutVars"/>
-            <variable name="nsegmentOutON_OFF"/>
-        </related_variables>
-    </control_param>
-    <control_param name="nsegmentOut_freq" version="5.0" deprecated="6.0">
-        <default>1</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Output frequency and type</desc>
-        <values type="interval">
-            <value name="1">daily</value>
-            <value name="2">monthly</value>
-            <value name="3">daily,monthly</value>
-            <value name="4">mean monthly</value>
-            <value name="5">mean yearly</value>
-            <value name="6">yearly</value>
-        </values>
-        <related_variables>
-            <variable name="nsegmentOutVars"/>
-            <variable name="nsegmentOutON_OFF"/>
-        </related_variables>
-    </control_param>
-    <control_param name="nstatVars" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Number of variables to include in Statistics Variables File and names specified in statVar_names</desc>
-    </control_param>
-    <control_param name="nsubOutON_OFF" version="5.0" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Switch to specify whether or not nsub summary output files are generated</desc>
-        <values type="flag">
-            <value name="0">off</value>
-            <value name="1">on</value>
-        </values>
-    </control_param>
-    <control_param name="nsubOutVars" version="5.0" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Number of variables to include in nsub summary output file(s)</desc>
-    </control_param>
-    <control_param name="nsubOut_format" version="5.0" deprecated="6.0">
-        <default>1</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Format of values</desc>
-        <values type="method">
-            <value name="1">Scientific notation with four significant digits</value>
-            <value name="2">Two decimal places</value>
-            <value name="3">Three decimal places</value>
-            <value name="4">Four decimal places</value>
-            <value name="5">Five decimal places</value>
-        </values>
-        <related_variables>
-            <variable name="nsubOutVars"/>
-            <variable name="nsubOutON_OFF"/>
-        </related_variables>
-    </control_param>
-    <control_param name="nsubOut_freq" version="5.0" deprecated="6.0">
-        <default>1</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Output frequency and type</desc>
-        <values type="interval">
-            <value name="1">daily</value>
-            <value name="2">monthly</value>
-            <value name="3">daily,monthly</value>
-            <value name="4">mean monthly</value>
-            <value name="5">mean yearly</value>
-            <value name="6">yearly</value>
-        </values>
-        <related_variables>
-            <variable name="nsubOutVars"/>
-            <variable name="nsubOutON_OFF"/>
-        </related_variables>
-    </control_param>
     <control_param name="orad_flag">
         <default>1</default>
         <type>1</type>
@@ -623,17 +740,7 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="outVarON_OFF" version="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Switch to specify whether or not combined basin, nhru, nsegment summary output files are generated</desc>
-        <values type="flag">
-            <value name="0">off</value>
-            <value name="1">on</value>
-        </values>
-    </control_param>
-    <control_param name="parameter_check_flag" deprecated="6.0">
+    <control_param name="parameter_check_flag" deprecated="60.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
@@ -692,17 +799,6 @@
             <value name="1">on</value>
         </values>
     </control_param>
-    <control_param name="statsON_OFF" deprecated="6.0">
-        <default>0</default>
-        <type>1</type>
-        <numvals>1</numvals>
-        <desc>Switch to specify whether or not the Statistics Variables File is generated</desc>
-        <values type="flag">
-            <value name="0">off</value>
-            <value name="1">statvar text format</value>
-            <value name="2">CSV format</value>
-        </values>
-    </control_param>
     <control_param name="stream_temp_shade_flag" version="5.2">
         <default>0</default>
         <type>1</type>
@@ -752,27 +848,15 @@
         <numvals>1</numvals>
         <desc>Initial time step for the simulation</desc>
     </control_param>
-    <control_param name="ani_output_file">
-        <default>animation.out</default>
-        <type>4</type>
-        <numvals>1</numvals>
-        <desc>Root pathname for Animation Files(s) to which a filename suffix based on dimension name associated with selected variables is appended</desc>
-    </control_param>
-    <control_param name="basinOutBaseFileName" version="5.0" deprecated="6.0">
-        <default>basinout_path</default>
-        <type>4</type>
-        <numvals>1</numvals>
-        <desc>String to define the prefix for each basin summary output file</desc>
-    </control_param>
     <control_param name="covden_sum_dynamic" version="5.0">
-        <default>dyn_covden_sum.param</default>
+        <default>dyn_covden_sum</default>
         <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for summer plant-cover density used to set values of covden_sum for each HRU</desc>
     </control_param>
     <control_param name="covden_win_dynamic" version="5.0">
-        <default>dyn_covden_win.param</default>
+        <default>dyn_covden_win</default>
         <force_default>1</force_default>
         <type>4</type>
         <numvals>1</numvals>
@@ -785,7 +869,7 @@
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values used to set values of cov_type for each HRU</desc>
     </control_param>
-    <control_param name="csv_output_file" deprecated="6.0">
+    <control_param name="csv_output_file" deprecated="60.0">
         <default>prms_summary.csv</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -904,31 +988,23 @@
         <numvals>1</numvals>
         <desc>Pathname for Water-Budget File for results module basin_sum</desc>
     </control_param>
-    <control_param name="nhruOutBaseFileName" deprecated="6.0">
-        <default>nhru_summary_</default>
-        <type>4</type>
+    <control_param name="outVarON_OFF" version="60.0">
+        <default>0</default>
+        <type>1</type>
         <numvals>1</numvals>
-        <desc>String to define the prefix for each nhru summary output file</desc>
+        <desc>Switch to specify whether or not combined basin, nhru, nsegment summary output files are generated</desc>
+        <values type="flag">
+            <value name="0">off</value>
+            <value name="1">on</value>
+        </values>
     </control_param>
-    <control_param name="nsegmentOutBaseFileName" version="5.0" deprecated="6.0">
-        <default>nsegment_summary_</default>
-        <type>4</type>
-        <numvals>1</numvals>
-        <desc>String to define the prefix for each nsegment summary output file</desc>
-    </control_param>
-    <control_param name="nsubOutBaseFileName" version="5.0" deprecated="6.0">
-        <default>nsub_summary_</default>
-        <type>4</type>
-        <numvals>1</numvals>
-        <desc>String to define the prefix for each nsub summary output file</desc>
-    </control_param>
-    <control_param name="outVar_base_filename" version="6.0">
+    <control_param name="outVar_base_filename" version="60.0">
         <default>summary</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>String to define the prefix for each combined summary output file</desc>
     </control_param>
-    <control_param name="outVar_names" version="6.0">
+    <control_param name="outVar_names" version="60.0">
         <default>none</default>
         <type>4</type>
         <numvals>1</numvals>
@@ -1079,12 +1155,6 @@
             <value name="srunoff_smidx">Computes surface runoff and infiltration for each HRU by using a nonlinear variable-source-area method allowing for cascading flow.</value>
         </values>
     </control_param>
-    <control_param name="stat_var_file" deprecated="6.0">
-        <default>statvar.out</default>
-        <type>4</type>
-        <numvals>1</numvals>
-        <desc>Pathname for Statistics Variables File</desc>
-    </control_param>
     <control_param name="strmflow_module">
         <default>strmflow</default>
         <type>4</type>
@@ -1204,71 +1274,11 @@
         <numvals>1</numvals>
         <desc>Pathname of the time series of pre-processed values for dynamic parameter wrain_intcp </desc>
     </control_param>
-    <control_param name="aniOutVar_names" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>naniOutVars</numvals>
-        <desc>List of variable names for which all values of the variable (that is, the entire dimension size) for each time step are written Animation Dimension Files(s)</desc>
-    </control_param>
-    <control_param name="basinOutVar_names" version="5.0" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>basinOutVars</numvals>
-        <desc>List of variable names for which output is written to basin summary Comma Separated Values (CSV) output file(s). Each variable is written to files in the order specified in basinOutVars with the prefix of each file equal to the value of basinOutBaseFileName. The suffix of the files is based on the value of basinOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
-    </control_param>
     <control_param name="data_file">
         <default>sf_data</default>
         <type>4</type>
         <numvals>1</numvals>
         <desc>Pathname(s) for measured input Data File(s), typically a single Data File is specified</desc>
-    </control_param>
-    <control_param name="dispVar_element" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>ndispGraphs</numvals>
-        <desc>List of identification numbers corresponding to variables specified in dispVar_names list (1 to variable's dimension size)</desc>
-    </control_param>
-    <control_param name="dispVar_names" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>ndispGraphs</numvals>
-        <desc>List of variable names for which plots are output to the runtime graph</desc>
-    </control_param>
-    <control_param name="dispVar_plot" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>ndispGraphs</numvals>
-        <desc>List of variable names for which plots are output to the runtime graph</desc>
-    </control_param>
-    <control_param name="mapOutVar_names" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>nmapOutVars</numvals>
-        <desc>List of variable names for which output is written to mapped output files(s); variables must be of type real or double.</desc>
-    </control_param>
-    <control_param name="nsegmentOutVar_names" version="5.0" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>nsegmentOutVars</numvals>
-        <desc>List of variable names for which output is written to nsegment summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsegmentOutBaseFileName; variables must be of type real or double; the suffix of the files is based on the value of nsegmentOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv</desc>
-    </control_param>
-    <control_param name="nsubOutVar_names" version="5.0" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>nsubOutVars</numvals>
-        <desc>List of variable names for which output is written to nsub summary Comma Separated Values (CSV) output files(s). Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName; variables must be of type real or double. Each variable is written to a separate file with the prefix of each file equal to the value of nsubOutBaseFileName. The suffix of the files is based on the value of nsubOut_freq and will be .csv; _meanyearly.csv; _yearly.csv; _meanmonthly.csv; or _monthly.csv. Variables must be of type real or double</desc>
-    </control_param>
-    <control_param name="statVar_element" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>nstatVars</numvals>
-        <desc>List of identification numbers corresponding to variables specified in statVar_names list (1 to variable's dimension size)</desc>
-    </control_param>
-    <control_param name="statVar_names" deprecated="6.0">
-        <default>none</default>
-        <type>4</type>
-        <numvals>nstatVars</numvals>
-        <desc>List of variable names for which output is written to Statistics Variables File</desc>
     </control_param>
     <control_param name="snarea_curve_flag" version="5.1.0">
         <default>0</default>
