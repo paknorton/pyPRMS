@@ -1,0 +1,198 @@
+<?xml version="1.0" ?>
+<variables>
+    <variable name="gage_ht">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Height of the gate opening at each dam with a gate</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>muskingum_lake</module>
+        </modules>
+        <dimensions>
+            <dimension name="nratetbl">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="humidity">
+        <type>F</type>
+        <units>percentage</units>
+        <desc>Relative humidity at each measurement station</desc>
+        <minimum>0.0</minimum>
+        <maximum>1.0</maximum>
+        <modules>
+            <module>potet_pm_sta</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhumid">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="lake_elev">
+        <type>F</type>
+        <units>feet</units>
+        <desc>Elevation of each simulated lake surface</desc>
+        <dimensions>
+            <dimension name="nlakeelev">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="pan_evap">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Pan evaporation at each measurement station</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>potet_pan</module>
+        </modules>
+        <dimensions>
+            <dimension name="nevap">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="precip">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Precipitation at each measurement station</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>ide_dist</module>
+            <module>precip_dist2</module>
+            <module>precip_1sta_laps</module>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="nrain">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="rain_day">
+        <type>I</type>
+        <units>none</units>
+        <desc>Flag to set the form of any precipitation to rain (0=determine form; 1=rain)</desc>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <modules>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="runoff">
+        <type>F</type>
+        <units>runoff_units</units>
+        <desc>Streamflow at each measurement station</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>muskingum</module>
+            <module>muskingum_lake</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nobs">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="snowdepth">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Snow depth at each measurement station</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsnow">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="solrad">
+        <type>F</type>
+        <units>Langleys</units>
+        <desc>Solar radiation at each measurement station</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>ccsolrad</module>
+            <module>ddsolrad</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsol">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="stream_temp" version="6.0.0">
+        <type>F</type>
+        <units>degrees Celsius</units>
+        <desc>Stream temperature at each measurement station</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nstreamtemp">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="tmax">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Maximum air temperature at each measurement station</desc>
+        <minimum>-150.0</minimum>
+        <maximum>200.0</maximum>
+        <modules>
+            <module>ide_dist</module>
+            <module>temp_dist2</module>
+            <module>temp_1sta_laps</module>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="ntemp">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="tmin">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Minimum air temperature at each measurement station</desc>
+        <minimum>-150.0</minimum>
+        <maximum>200.0</maximum>
+        <modules>
+            <module>ide_dist</module>
+            <module>temp_dist2</module>
+            <module>temp_1sta_laps</module>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="ntemp">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="wind_speed">
+        <type>F</type>
+        <units>meters per second</units>
+        <desc>Wind speed at each measurement station</desc>
+        <minimum>0.0</minimum>
+        <maximum>500.0</maximum>
+        <modules>
+            <module>potet_pm_sta</module>
+        </modules>
+        <dimensions>
+            <dimension name="nwind">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+</variables>
