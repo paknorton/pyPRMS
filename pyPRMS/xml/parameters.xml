@@ -348,14 +348,14 @@
             </dimension>
         </dimensions>
     </parameter>
-    <parameter name="cascade_tol">
+    <parameter name="cascade_min" version="6.0.0">
         <type>F</type>
-        <units>acres</units>
-        <desc>Cascade area below which a cascade link is ignored</desc>
-        <help>Cascade area below which a cascade link is ignored</help>
+        <units>inches</units>
+        <desc>Minimum depth of interflow + Dunnian flow to cascade</desc>
+        <help>Minimum depth of interflow + Dunnian flow to cascade</help>
         <minimum>0.0</minimum>
-        <maximum>99.0</maximum>
-        <default>5.0</default>
+        <maximum>0.01</maximum>
+        <default>0.000001</default>
         <modules>
             <module>cascade</module>
         </modules>
@@ -365,6 +365,32 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncasade > 0</dimension>
+        </requires>
+    </parameter>
+    <parameter name="cascade_tol">
+        <type>F</type>
+        <units>acres</units>
+        <desc>Cascade area below which a cascade link is ignored (0.0 to 7.5% of hru_area)</desc>
+        <help>Cascade area below which a cascade link is ignored (0.0 to 7.5% of hru_area)</help>
+        <minimum>0.0</minimum>
+        <maximum>99.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>cascade</module>
+        </modules>
+        <dimensions>
+            <dimension name="one">
+                <position>1</position>
+                <default>1</default>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncasade > 0</dimension>
+        </requires>
     </parameter>
     <parameter name="circle_switch">
         <type>I</type>
@@ -871,6 +897,29 @@
                 <default>12</default>
             </dimension>
         </dimensions>
+    </parameter>
+    <parameter name="tmax_cbh_adj_offset" version="6.0.0">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Monthly (January to December) additive adjustment factor to maximum air temperature as an offset from tmin_cbh_adj for each HRU, estimated on the basis of slope and aspect</desc>
+        <minimum>0.0</minimum>
+        <maximum>50.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+                <default>12</default>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>bias_adjust_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="tmin_cbh_adj">
         <type>F</type>
@@ -1392,6 +1441,23 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+    </parameter>
+    <parameter name="segment_outflow_id" version="6.0.0">
+        <type>I</type>
+        <units>none</units>
+        <desc>Identification number of HRU that receives outflow from a segment</desc>
+        <help>Identification number of HRU that receives outflow from a segment</help>
+        <minimum>bounded</minimum>
+        <maximum>nhru</maximum>
+        <default>0.0</default>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>seg2hru_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="elev_outflow">
         <type>F</type>
@@ -3071,6 +3137,7 @@
         </dimensions>
         <requires>
             <dimension>npoigages > 0</dimension>
+            <control>csvON_OFF > 0</control>
         </requires>
     </parameter>
     <parameter name="poi_gage_segment">
@@ -3092,6 +3159,7 @@
         </dimensions>
         <requires>
             <dimension>npoigages > 0</dimension>
+            <control>csvON_OFF > 0</control>
         </requires>
     </parameter>
     <parameter name="albset_rna">
@@ -3611,8 +3679,8 @@
     <parameter name="pref_flow_infil_frac" version="5.2.1.1">
         <type>F</type>
         <units>decimal fraction</units>
-        <desc>Fraction of the soilwater infiltration to the preferential flow that occurs for each HRU</desc>
-        <help>Fraction of the soilwater infiltration to the preferential flow that occurs for each HRU</help>
+        <desc>Fraction of the soilwater infiltration to the preferential reservoir storage that occurs for each HRU (if not specified values are set to pref_flow_den)</desc>
+        <help>Fraction of the soilwater infiltration to the preferential reservoir storage that occurs for each HRU (if not specified values are set to pref_flow_den)</help>
         <minimum>-1.0</minimum>
         <maximum>1.0</maximum>
         <default>-1.0</default>
@@ -4732,6 +4800,26 @@
             <control>stream_temp_flag = 1</control>
         </requires>
     </parameter>
+    <parameter name="tempIN_segment" version="6.0.0">
+        <type>I</type>
+        <units>none</units>
+        <desc>Index of streamflow temperature in Data File that replaces temperature in a segment</desc>
+        <help>Index of streamflow temperature in Data File that replaces temperature in a segment</help>
+        <minimum>bounded</minimum>
+        <maximum>nstreamtemp</maximum>
+        <default>0</default>
+        <modules>
+            <module>stream_temp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>stream_temp_flag = 1</control>
+        </requires>
+    </parameter>
     <parameter name="vce" version="5.1.0">
         <type>F</type>
         <units>meters</units>
@@ -4938,7 +5026,7 @@
         <desc>Alpha coefficient in power function for width calculation (for units m and cms)</desc>
         <help>Alpha coefficient in power function for width calculation (for units m and cms)</help>
         <minimum>2.6</minimum>
-        <maximum>20.0</maximum>
+        <maximum>20.2</maximum>
         <default>7.2</default>
         <modules>
             <module>stream_temp</module>
@@ -5157,6 +5245,34 @@
                 <default>12</default>
             </dimension>
         </dimensions>
+    </parameter>
+    <parameter name="tmax_adj_offset" version="6.0.0">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Monthly (January to December) additive adjustment to maximum temperature for each HRU as offset from tmin_adj, estimated on the basis of slope and aspect</desc>
+        <minimum>0.0</minimum>
+        <maximum>50.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>temp_1sta</module>
+            <module>temp_sta</module>
+            <module>temp_laps</module>
+            <module>temp_dist2</module>
+            <module>ide_dist</module>
+            <module>xyz_dist</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+                <default>12</default>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>bias_adjust_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="tmin_adj">
         <type>F</type>
@@ -6138,6 +6254,29 @@
                 <position>2</position>
             </dimension>
         </dimensions>
+    </parameter>
+    <parameter name="tmax_map_adj_offset" version="6.0.0">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Monthly (January to December) additive adjustment factor to maximum air temperature as an offset from tmin_map_adj for each mapped, spatial unit estimated on the basis of slope and aspect</desc>
+        <minimum>0.0</minimum>
+        <maximum>50.0</maximum>
+        <default>0.0</default>
+        <modules>
+            <module>temp_map</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+                <default>12</default>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>bias_adjust_flag = 1</control>
+        </requires>
     </parameter>
     <parameter name="tmin_map_adj" version="5.2">
         <type>F</type>
