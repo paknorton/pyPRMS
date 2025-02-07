@@ -14,8 +14,8 @@ cascadegw_flag	int32	Flag to indicate if GWR cascades are computed	0
 cbh_check_flag	int32	Flag to indicate if CBH values are validated each time step	0
 cloud_cover_cbh_flag	int32	Flag to specify whether to input snowpack albedo from a CBH file	0
 cloud_cover_day	string	Pathname of the CBH file of pre-processed cloud cover input data for each HRU to specify variable cloud_cover_cbh (units: decimal fraction)	cloudcover.day
-covden_sum_dynamic	string	Pathname of the time series of pre-processed values for summer plant-cover density used to set values of covden_sum for each HRU	dyn_covden_sum.param
-covden_win_dynamic	string	Pathname of the time series of pre-processed values for winter plant-cover density used to set values of covden_win for each HRU	dyn_covden_win.param
+covden_sum_dynamic	string	Pathname of the time series of pre-processed values for summer plant-cover density used to set values of covden_sum for each HRU	dyn_covden_sum
+covden_win_dynamic	string	Pathname of the time series of pre-processed values for winter plant-cover density used to set values of covden_win for each HRU	dyn_covden_win
 covtype_dynamic	string	Pathname of the time series of pre-processed values used to set values of cov_type for each HRU	dyn_cov_type.param
 csvON_OFF	int32	Switch to specify whether to output Comma-Separated-Values (CSV) file with simulated flows with 4 decimal places for segments specified by poi_gage_segment and poi_gage_id	0
 csv_output_file	string	Pathname of CSV output file	prms_summary.csv

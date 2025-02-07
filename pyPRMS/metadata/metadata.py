@@ -39,14 +39,10 @@ class MetaData(object):
 
         self.__meta_dict: MetaDataType = {}
 
-        # if isinstance(version, int):
-        #     version = str(version)
-
         self.__version = Version(version)
         self.__verbose = verbose
 
         # meta_type: one of - control, dimensions, parameters, variables
-
         for mt, mf in fcn_map.items():
             xml_fh = io.StringIO(pkgutil.get_data('pyPRMS', f'xml/{mt}.xml').decode('utf-8'))
             xml_tree = xmlET.parse(xml_fh)
