@@ -13,7 +13,33 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="hru_frac_perv">
+    <variable name="hru_frac_dprst" version="6.0.0">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of HRU that is surface-depression storage</desc>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="hru_frac_imperv" version="6.0.0">
+        <type>F</type>
+        <units>decimal fraction</units>
+        <desc>Fraction of HRU that is impervious</desc>
+        <modules>
+            <module>basin</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="hru_frac_perv" version="6.0.0">
         <type>F</type>
         <units>decimal fraction</units>
         <desc>Fraction of HRU that is pervious</desc>
@@ -937,9 +963,6 @@
         <type>F</type>
         <units>degrees Celsius</units>
         <desc>Average air temperature distributed to each HRU</desc>
-        <modules>
-            <module>deprecated</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
@@ -950,9 +973,6 @@
         <type>F</type>
         <units>degrees Fahrenheit</units>
         <desc>Average air temperature distributed to each HRU</desc>
-        <modules>
-            <module>deprecated</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
@@ -976,9 +996,6 @@
         <type>F</type>
         <units>degrees Celsius</units>
         <desc>Maximum air temperature distributed to each HRU</desc>
-        <modules>
-            <module>deprecated</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
@@ -989,9 +1006,6 @@
         <type>F</type>
         <units>degrees Fahrenheit</units>
         <desc>Maximum air temperature distributed to each HRU</desc>
-        <modules>
-            <module>deprecated</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
@@ -1029,9 +1043,6 @@
         <type>F</type>
         <units>degrees Celsius</units>
         <desc>Minimum air temperature distributed to each HRU</desc>
-        <modules>
-            <module>deprecated</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
@@ -1042,9 +1053,6 @@
         <type>F</type>
         <units>degrees Fahrenheit</units>
         <desc>Minimum air temperature distributed to each HRU</desc>
-        <modules>
-            <module>deprecated</module>
-        </modules>
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
@@ -1504,6 +1512,19 @@
         <desc>HRU area-weighted average Interception storage in the canopy for each HRU</desc>
         <modules>
             <module>intcp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="hru_perv_actet" version="6.0.0">
+        <type>F</type>
+        <units>inches</units>
+        <desc>Actual ET from the capillary reservoir as HRU value</desc>
+        <modules>
+            <module>soilzone</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
@@ -2718,6 +2739,54 @@
             <dimension>nsegment > 0</dimension>
         </requires>
     </variable>
+    <variable name="segmentcum_hruarea" version="6.0.0">
+        <type>D</type>
+        <units>acres</units>
+        <desc>Contributing area to each segment including upslope HRUs</desc>
+        <modules>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="segment_hruarea" version="6.0.0">
+        <type>D</type>
+        <units>acres</units>
+        <desc>Contributing area to each segment</desc>
+        <modules>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="segment_upstream_hruarea" version="6.0.0">
+        <type>D</type>
+        <units>acres</units>
+        <desc>Contributing area to each segment from upslope HRUs</desc>
+        <modules>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
     <variable name="segment_delta_flow">
         <type>D</type>
         <units>cfs</units>
@@ -3058,7 +3127,20 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="pkwater_ante">
+    <variable name="pkwater_ante" deprecated="6.0.0">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Antecedent snowpack water equivalent on each HRU</desc>
+        <modules>
+            <module>snowcomp</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="It0_pkwater_equiv" version="6.0.0">
         <type>D</type>
         <units>inches</units>
         <desc>Antecedent snowpack water equivalent on each HRU</desc>
@@ -3253,7 +3335,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="basin_cap_up_max">
+    <variable name="basin_cap_up_max" deprecated="6.0.0">
         <type>D</type>
         <units>inches</units>
         <desc>Basin area-weighted average maximum cascade flow that flows to capillary reservoirs</desc>
@@ -3412,7 +3494,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="basin_gvr_stor_frac">
+    <variable name="basin_gvr_stor_frac" deprecated="6.0.0">
         <type>D</type>
         <units>decimal fraction</units>
         <desc>Basin area-weighted average fraction of gravity reservoir storage of the maximum storage</desc>
@@ -3812,6 +3894,40 @@
                 <position>1</position>
             </dimension>
         </dimensions>
+    </variable>
+    <variable name="hru_dunnian_cascadeflow" version="6.0.0">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Cascading Dunnian surface runoff from each HRU</desc>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
+    </variable>
+    <variable name="hru_interflow_cascadeflow" version="6.0.0">
+        <type>D</type>
+        <units>inches</units>
+        <desc>Cascading interflow from each HRU</desc>
+        <modules>
+            <module>soilzone</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+        <requires>
+            <control>cascade_flag = 1</control>
+            <dimension>ncascade > 0</dimension>
+        </requires>
     </variable>
     <variable name="cascade_dunnianflow" version="4" deprecated="5.0">
         <type>F</type>
@@ -5671,10 +5787,106 @@
             </dimension>
         </dimensions>
     </variable>
+    <variable name="seg_upstream_gwflow" version="6.0.0">
+        <type>D</type>
+        <units>cfs</units>
+        <desc>Area-weighted average groundwater flow for each segment from upstream HRUs</desc>
+        <modules>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
     <variable name="seg_upstream_inflow">
         <type>D</type>
         <units>cfs</units>
         <desc>Sum of inflow from upstream segments</desc>
+        <modules>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="seg_upstream_sroff" version="6.0.0">
+        <type>D</type>
+        <units>cfs</units>
+        <desc>Area-weighted average surface runoff for each segment from upstream HRUs</desc>
+        <modules>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="seg_upstream_ssflow" version="6.0.0">
+        <type>D</type>
+        <units>cfs</units>
+        <desc>Area-weighted average interflow for each segment from upstream HRUs</desc>
+        <modules>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="segcum_gwflow" version="6.0.0">
+        <type>D</type>
+        <units>cfs</units>
+        <desc>Area-weighted average groundwater flow for each segment from HRUs contributing flow to the segment including upstream HRUs</desc>
+        <modules>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="segcum_sroff" version="6.0.0">
+        <type>D</type>
+        <units>cfs</units>
+        <desc>Area-weighted average surface runoff for each segment from HRUs contributing flow to the segment including upstream HRUs</desc>
+        <modules>
+            <module>muskingum</module>
+            <module version="5.0">muskingum_lake</module>
+            <module version="5.1.0">muskingum_mann</module>
+            <module>strmflow_in_out</module>
+        </modules>
+        <dimensions>
+            <dimension name="nsegment">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="segcum_ssflow" version="6.0.0">
+        <type>D</type>
+        <units>cfs</units>
+        <desc>Area-weighted average interflow for each segment from HRUs contributing flow to the segment including upstream HRUs</desc>
         <modules>
             <module>muskingum</module>
             <module version="5.0">muskingum_lake</module>
