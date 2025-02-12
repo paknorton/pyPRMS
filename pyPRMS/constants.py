@@ -75,13 +75,15 @@ ctl_implicit_modules: Dict[str, str] = {'basin_module': 'basin',
 internal_module_map = dict(et_module={'climate_hru': 'potet_hru'},
                            precip_module={'climate_hru': 'precipitation_hru'},
                            solrad_module={'climate_hru': 'solar_radiation_hru'},
-                           temp_module={'climate_hru': 'temperature_hru'})
+                           temp_module={'climate_hru': 'temperature_hru'},
+                           transp_module={'climate_hru': 'transpiration_hru'})
 
 # This maps the internal parameters.xml names to the external control file module names
 external_module_map = dict(potet_hru='climate_hru',
                            precipitation_hru='climate_hru',
                            solar_radiation_hru='climate_hru',
-                           temperature_hru='climate_hru')
+                           temperature_hru='climate_hru',
+                           transpiration_hru='climate_hru')
 
 # Constants related to parameter files
 DIMENSIONS_HDR: str = 'Dimensions'
@@ -100,7 +102,8 @@ VAR_DELIM: str = '####'  # Used to delimit dimensions and parameters
 #                               'nstage', 'nstage2', 'nstage3', 'nstage4']
 
 # These dimensions are related and should have same size
-# HRU_DIMS: List[str] = ['nhru', 'ngw', 'nssr']
+# NOTE: 2025-02-05 PAN - this is currently needed by Bandit
+HRU_DIMS: List[str] = ['nhru', 'ngw', 'nssr']
 
 # Constants for NhmParamDb
 REGIONS: List[str] = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
