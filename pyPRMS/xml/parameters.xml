@@ -906,7 +906,7 @@
         <maximum>50.0</maximum>
         <default>0.0</default>
         <modules>
-            <module>climate_hru</module>
+            <module>temperature_hru</module>
         </modules>
         <dimensions>
             <dimension name="nhru">
