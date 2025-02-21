@@ -15,6 +15,7 @@ import xml.etree.ElementTree as xmlET
 from collections import defaultdict
 from collections.abc import KeysView
 from functools import cached_property
+from packaging.version import Version
 from typing import Any, Literal, Optional, Sequence, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
@@ -25,7 +26,8 @@ from .Parameter import Parameter, ParamDataRawType
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
 from ..prms_helpers import cond_check, flex_type, get_streamnet_subset
 from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, external_module_map, MetaDataType, NETCDF_DATATYPES,
-                         NEW_PTYPE_TO_DTYPE, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES, PARAMETERS_XML, VAR_DELIM)
+                         NEW_PTYPE_TO_DTYPE, PRMS_VERSION, PRMS6_DEV_VERSION, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES,
+                         PARAMETERS_XML, VAR_DELIM)
 
 from rich.console import Console
 from rich import pretty
@@ -69,6 +71,7 @@ class Parameters(object):
         self.__seg_to_hru: Dict[int, List[int]] = dict()
         self.__hru_to_seg: Dict[int, int] = dict()
         self.metadata = metadata['parameters']
+        self.prms_version = Version(metadata['info']['version'])
 
     def __getattr__(self, name: str):
         """Not sure what to write yet.
@@ -1099,13 +1102,11 @@ class Parameters(object):
                 ff.write(xx.toparamdb())
 
     def write_parameter_file(self, filename: str,
-                             header: Optional[List[str]] = None,
-                             prms_version: Optional[int] = 5):
+                             header: Optional[List[str]] = None):
         """Write a PRMS parameter file.
 
         :param filename: name of parameter file
         :param header: list of header lines
-        :param prms_version: Output either version 5 or 6 parameter files
         """
 
         # Write the parameters out to a file
@@ -1137,7 +1138,7 @@ class Parameters(object):
             outfile.write(f'{kk}\n')
             outfile.write(f'{vv.size:d}\n')
 
-        if prms_version == 5 and {'ngw', 'nssr'}.isdisjoint(set(self.dimensions.keys())):
+        if self.prms_version < PRMS6_DEV_VERSION and {'ngw', 'nssr'}.isdisjoint(set(self.dimensions.keys())):
             # Add the ngw and nssr dimensions. These are always equal to nhru.
             for kk in ['ngw', 'nssr']:
                 outfile.write(f'{VAR_DELIM}\n')
@@ -1160,9 +1161,9 @@ class Parameters(object):
 
                     for dd in vv.dimensions.values():
                         # Write dimension names
-                        if prms_version == 5:
+                        if self.prms_version < PRMS6_DEV_VERSION:
                             # On-the-fly change of dimension names for certain parameters
-                            # when the prms version is 5.
+                            # when the prms version is not an experimental development version.
                             if dd.name == 'nhru':
                                 if vv.name in ['gwflow_coef', 'gwsink_coef', 'gwstor_init',
                                                'gwstor_min', 'gw_seep_coef']:
