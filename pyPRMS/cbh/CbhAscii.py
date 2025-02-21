@@ -74,14 +74,13 @@ class CbhAscii(object):
         incl_cols = list(CBH_INDEX_COLS)
 
         for xx in self.__indices.values():
-            incl_cols.append(xx+5)  # include an offset for the having datetime info
+            incl_cols.append(xx+5)  # include an offset for the datetime info
         # print(incl_cols)
 
         # Columns 0-5 always represent date/time information
         self.__data = pd.read_csv(self.__src_path, sep=' ', skipinitialspace=True, usecols=incl_cols,
                                   skiprows=3, engine='c', memory_map=True,
                                   parse_dates={'time': CBH_INDEX_COLS},
-                                  # date_parser=dparse, parse_dates={'time': CBH_INDEX_COLS},
                                   index_col='time', header=None, na_values=[-99.0, -999.0])
 
         self.__data.index = pd.to_datetime(self.__data.index, exact=True, cache=True, format=TS_FORMAT)
