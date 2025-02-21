@@ -19,9 +19,10 @@ class ControlFile(Control):
     # Create date: 2019-04-18
     # Description: Class object to handle reading and writing PRMS control files.
 
-    def __init__(self, filename: Union[str, Path], metadata, verbose: Optional[bool] = False,
-                 version:Optional[Union[str, int]] = 5):
-        super(ControlFile, self).__init__(metadata=metadata, verbose=verbose, version=version)
+    def __init__(self, filename: Union[str, Path],
+                 metadata,
+                 verbose: Optional[bool] = False):
+        super(ControlFile, self).__init__(metadata=metadata, verbose=verbose)
 
         self.__verbose = verbose
         self.__isloaded = False

@@ -10,7 +10,8 @@ import xml.etree.ElementTree as xmlET
 
 from typing import Dict, List, Optional, Sequence, Union   # OrderedDict as OrderedDictType,
 
-# from ..prms_helpers import version_info
+from networkx.utils.misc import check_create_using
+
 from .ControlVariable import ControlVariable
 from ..Exceptions_custom import ControlError
 from ..constants import (ctl_order, ctl_implicit_modules, internal_module_map,
@@ -28,7 +29,7 @@ class Control(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-18
 
-    def __init__(self, metadata: MetaDataType, verbose: Optional[bool] = False, version: Optional[Union[str, int]] = 5):
+    def __init__(self, metadata: MetaDataType, verbose: Optional[bool] = False):
         """Create Control object.
         """
 
@@ -81,6 +82,24 @@ class Control(object):
                 active_modules.append(cmod)
 
         return active_modules
+
+    @property
+    def cbh_files(self) -> List[str]:
+        """Get list of possible CBH filenames.
+
+        :returns: list of CBH files
+        """
+
+        # List of control variables that specify possible CBH files
+        ctl_cbh_files = ['albebo_day', 'cloud_cover_day', 'humidity_day', 'potet_day', 'precip_day',
+                         'swrad_day', 'tmax_day', 'tmin_day', 'transp_day', 'windspeed_day']
+        cbh_files = []
+
+        for cvar in ctl_cbh_files:
+            if self.exists(cvar):
+                cbh_files.append(self.get(cvar).values)
+
+        return sorted(list(set(cbh_files)))
 
     @property
     def control_variables(self) -> Dict[str, ControlVariable]:
