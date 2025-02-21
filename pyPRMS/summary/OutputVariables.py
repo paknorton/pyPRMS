@@ -28,6 +28,9 @@ class OutputVariables(object):
                  verbose: Optional[bool] = False):
         """Initialize the model output object.
 
+        The OutputVariables class reads ASCII model output files based on the
+        output variables defined in a model control file.
+
         :param control: Control object
         :param metadata: Metadata for the model output variables
         :param model_dir: PRMS Model directory
@@ -98,8 +101,9 @@ class OutputVariables(object):
         """Get output variable object.
 
         :param varname: Name of output variable
-        :returns: Output variable object
+        :returns: OutputVariable object
         """
+
         return self.__out_vars[varname]
 
     def write_netcdf(self, filename: Union[str, os.PathLike],
