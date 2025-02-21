@@ -23,7 +23,7 @@ class TestParameterFile:
     def test_read_parameter_file(self, datadir):
         parameter_file = datadir / 'myparam.param'
 
-        prms_meta = MetaData(verbose=True).metadata
+        prms_meta = MetaData(verbose=False).metadata
         pdb = ParameterFile(parameter_file, metadata=prms_meta)
 
         expected_headers = ['Written by Bandit version 0.8.7',
@@ -33,7 +33,7 @@ class TestParameterFile:
     def test_parameter_file_write(self, datadir, tmp_path):
         parameter_file = datadir / 'myparam.param'
 
-        prms_meta_orig = MetaData(verbose=True).metadata
+        prms_meta_orig = MetaData(verbose=False).metadata
         pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
 
         out_path = tmp_path / 'run_files'
@@ -42,7 +42,7 @@ class TestParameterFile:
 
         pdb_orig.write_parameter_file(out_file, header=pdb_orig.headers)
 
-        prms_meta_chk = MetaData(verbose=True).metadata
+        prms_meta_chk = MetaData(verbose=False).metadata
         pdb_chk = ParameterFile(out_file, metadata=prms_meta_chk)
 
         # Same headers?
@@ -57,7 +57,7 @@ class TestParameterFile:
         for cdim in orig_dims.keys():
             assert orig_dims[cdim].size == chk_dims[cdim].size, f'{cdim}: Dimension sizes different'
 
-        # Do they have the parameters/data?
+        # Do they have the sames parameters/data?
         orig_params = pdb_orig.parameters
         chk_params = pdb_chk.parameters
 
@@ -70,7 +70,7 @@ class TestParameterFile:
     def test_parameter_file_write_header_check(self, datadir, tmp_path):
         parameter_file = datadir / 'myparam.param'
 
-        prms_meta_orig = MetaData(verbose=True).metadata
+        prms_meta_orig = MetaData(verbose=False).metadata
         pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
 
         out_path = tmp_path / 'run_files'
@@ -81,13 +81,13 @@ class TestParameterFile:
             pdb_orig.write_parameter_file(out_file, header=['line 1', 'line 2', 'line 3'])
 
         pdb_orig.write_parameter_file(out_file, header=['line 1'])
-        prms_meta_chk = MetaData(verbose=True).metadata
+        prms_meta_chk = MetaData(verbose=False).metadata
         pdb_chk = ParameterFile(out_file, metadata=prms_meta_chk)
 
         assert pdb_chk.headers == ['Written by pyPRMS', 'line 1'], 'Header not written correctly'
 
         pdb_orig.write_parameter_file(out_file, header=None)
-        prms_meta_chk = MetaData(verbose=True).metadata
+        prms_meta_chk = MetaData(verbose=False).metadata
         pdb_chk = ParameterFile(out_file, metadata=prms_meta_chk)
 
         assert pdb_chk.headers == ['Written by pyPRMS', 'Comment: It is all downhill from here'], 'Default header not written correctly'
@@ -95,7 +95,7 @@ class TestParameterFile:
     def test_paramdb_write(self, datadir, tmp_path):
         parameter_file = datadir / 'myparam.param'
 
-        prms_meta_orig = MetaData(verbose=True).metadata
+        prms_meta_orig = MetaData(verbose=False).metadata
         pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
 
         out_path = tmp_path / 'run_files'
@@ -104,7 +104,7 @@ class TestParameterFile:
 
         pdb_orig.write_paramdb(out_file)
 
-        prms_meta_chk = MetaData(verbose=True).metadata
+        prms_meta_chk = MetaData(verbose=False).metadata
         pdb_chk = ParamDb(out_file, metadata=prms_meta_chk)
 
         # Do they have the same dimensions/sizes?
@@ -129,7 +129,7 @@ class TestParameterFile:
     def test_parameter_netcdf_write(self, datadir, tmp_path):
         parameter_file = datadir / 'myparam.param'
 
-        prms_meta_orig = MetaData(verbose=True).metadata
+        prms_meta_orig = MetaData(verbose=False).metadata
         pdb_orig = ParameterFile(parameter_file, metadata=prms_meta_orig)
 
         out_path = tmp_path / 'run_files'
@@ -138,7 +138,7 @@ class TestParameterFile:
 
         pdb_orig.write_parameter_netcdf(out_file)
 
-        prms_meta_chk = MetaData(verbose=True).metadata
+        prms_meta_chk = MetaData(verbose=False).metadata
         pdb_chk = ParameterNetCDF(out_file, metadata=prms_meta_chk)
 
         # Do they have the same dimensions/sizes?
@@ -165,7 +165,7 @@ class TestParameterFile:
         control_file = datadir / 'control.default.bandit'
         parameter_file = datadir / 'myparam.param'
 
-        prms_meta = MetaData(verbose=True).metadata
+        prms_meta = MetaData(verbose=False).metadata
 
         ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
         pdb = ParameterFile(parameter_file, metadata=prms_meta)
@@ -204,7 +204,7 @@ class TestParameterFile:
     def test_add_missing_parameters(self, datadir):
         control_file = datadir / 'control.default.bandit'
         parameter_file = datadir / 'myparam.param'
-        prms_meta = MetaData(verbose=True).metadata
+        prms_meta = MetaData(verbose=False).metadata
 
         ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
         pdb = ParameterFile(parameter_file, metadata=prms_meta)
@@ -230,7 +230,7 @@ class TestParameterFile:
     def test_read_parameter_file_dup_entry(self, datadir):
         parameter_file = datadir / 'myparam.param_dup'
 
-        prms_meta = MetaData(verbose=True).metadata
+        prms_meta = MetaData(verbose=False).metadata
         pdb = ParameterFile(parameter_file, metadata=prms_meta)
 
         expected_headers = ['Written by Bandit version 0.8.7',
@@ -243,7 +243,7 @@ class TestParameterFile:
     def test_read_parameter_file_invalid_param(self, datadir):
         parameter_file = datadir / 'myparam.param_invalid'
 
-        prms_meta = MetaData(verbose=True).metadata
+        prms_meta = MetaData(verbose=False).metadata
         pdb = ParameterFile(parameter_file, metadata=prms_meta)
 
         expected_headers = ['Written by Bandit version 0.8.7',
@@ -254,7 +254,7 @@ class TestParameterFile:
     def test_read_parameter_file_too_many_values(self, datadir):
         parameter_file = datadir / 'myparam.param_too_many_values'
 
-        prms_meta = MetaData(verbose=True).metadata
+        prms_meta = MetaData(verbose=False).metadata
         pdb = ParameterFile(parameter_file, metadata=prms_meta)
 
         expected_headers = ['Written by Bandit version 0.8.7',
@@ -277,7 +277,7 @@ class TestParameterFile:
     def test_read_parameter_file_with_control(self, datadir, pdb_instance):
         control_file = datadir / 'control.default.bandit'
 
-        prms_meta = MetaData(verbose=True).metadata
+        prms_meta = MetaData(verbose=False).metadata
         ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
 
         pdb_instance.control = ctl

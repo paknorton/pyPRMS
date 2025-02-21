@@ -8,7 +8,7 @@ from pyPRMS.metadata.metadata import MetaData
 def pdb_instance(datadir):
     paramdb = datadir / 'paramdb'
 
-    prms_meta = MetaData(verbose=True).metadata
+    prms_meta = MetaData(verbose=False).metadata
 
     pdb = ParamDb(paramdb, metadata=prms_meta)
     return pdb
@@ -41,7 +41,7 @@ class TestParamDb:
 
     def test_read_parameter_database_too_many_values(self, datadir):
         paramdb = datadir / 'paramdb_bad'
-        prms_meta = MetaData(verbose=True).metadata
+        prms_meta = MetaData(verbose=False).metadata
 
         with pytest.raises(IndexError):
             pdb = ParamDb(paramdb, metadata=prms_meta)
