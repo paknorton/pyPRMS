@@ -1,5 +1,6 @@
 import numpy as np
 
+from packaging.version import Version
 from typing import Dict, List, NamedTuple, Union
 
 # Define aliases for static typing
@@ -10,7 +11,10 @@ MetaDataType = Dict[str, Dict]
 #                                  ('revision', Union[int, None])])
 
 # Default PRMS version to use for metadata
-PRMS_VERSION = '5.2.1.1'
+PRMS_VERSION = Version('5.2.1.1')
+
+# PRMS6 experimental development version
+PRMS6_DEV_VERSION = Version('60.0')
 
 # Order to write control file parameters for printing and writing a new control file
 ctl_order: List[str] = ['start_time', 'end_time', 'initial_deltat', 'executable_desc', 'executable_model', 'model_mode',
