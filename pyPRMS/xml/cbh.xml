@@ -98,7 +98,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="tmax">
+    <variable name="tmax_hru">
         <type>F</type>
         <units>temp_units</units>
         <desc>Maximum air temperature distributed to each HRU</desc>
@@ -113,7 +113,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="tmin">
+    <variable name="tmin_hru">
         <type>F</type>
         <units>temp_units</units>
         <desc>Minimum air temperature distributed to each HRU</desc>
@@ -129,7 +129,7 @@
         </dimensions>
     </variable>
     <variable name="transp_on">
-        <type>F</type>
+        <type>I</type>
         <units>none</units>
         <desc>Flag indicating whether transpiration is occurring (0=no; 1=yes)</desc>
         <minimum>0</minimum>
