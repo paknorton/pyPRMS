@@ -15,10 +15,12 @@ from rich import pretty
 pretty.install()
 con = Console(record=False, force_jupyter=False)
 
+# For each metadata type, define the outer element name for each variable in the XML file
 outside_elem = {'control': 'control_param',
                 'parameters': 'parameter',
                 'dimensions': 'dimension',
-                'variables': 'variable'}
+                'variables': 'variable',
+                'cbh': 'variable'}
 
 NEW_DTYPE = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
 NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
@@ -27,7 +29,7 @@ NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
 class MetaData(object):
     """Class to handle variable and parameter metadata"""
 
-    def __init__(self, version: str = PRMS_VERSION,
+    def __init__(self, version: Union[str, Version] = PRMS_VERSION,
                  verbose: bool = False):
         # meta_type - one of control, dimension, parameter, output
         # version - PRMS major version to use for filtering
@@ -35,12 +37,22 @@ class MetaData(object):
         fcn_map = {'control': self.__control_to_dict,
                    'dimensions': self.__dimensions_to_dict,
                    'parameters': self.__parameters_to_dict,
-                   'variables': self.__variables_to_dict}
+                   'variables': self.__variables_to_dict,
+                   'cbh': self.__cbh_to_dict}
 
         self.__meta_dict: MetaDataType = {}
 
-        self.__version = Version(version)
+        if isinstance(version, str):
+            version = Version(version)
+
+        self.__version: Version = version
         self.__verbose = verbose
+
+        # Add information about the metadata
+        self.__meta_dict['info'] = {'version': str(self.__version)}
+
+        if self.__verbose:
+            con.print(f'[green]INFO[/]: Metadata for PRMS version {self.__version}')
 
         # meta_type: one of - control, dimensions, parameters, variables
         for mt, mf in fcn_map.items():
@@ -51,6 +63,15 @@ class MetaData(object):
             if self.__verbose:
                 con.print(f'[bold green]{mt}[/bold green]')
             self.__meta_dict[mt] = mf(xml_root, mt, self.__version)
+
+    @property
+    def version(self) -> Version:
+        """Return the PRMS version used for metadata selection
+
+        :returns: PRMS version
+        """
+
+        return self.__version
 
     @property
     def metadata(self) -> MetaDataType:
@@ -340,5 +361,70 @@ class MetaData(object):
 
             # for creq in elem.findall('./requires/*'):
             #     meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
+
+        return meta_dict
+
+    def __cbh_to_dict(self, xml_root: xmlET.Element,
+                      meta_type: str,
+                      req_version: Version) -> Dict:
+        """Convert cbh variables metadata to dictionary"""
+
+        meta_dict: Dict = {}
+
+        for elem in xml_root.findall(outside_elem[meta_type]):
+            name = elem.attrib.get('name')
+
+            meta_dict[name] = defaultdict(list)
+
+            try:
+                var_version = Version(elem.attrib.get('version'))
+
+                if var_version > req_version:
+                    if self.__verbose:   # pragma: no cover
+                        print(f'{name} rejected by version {str(var_version)}, req: {str(req_version)}')
+
+                    del meta_dict[name]
+                    continue
+                meta_dict[name]['version'] = str(var_version)
+            except TypeError:
+                pass
+
+            try:
+                depr_version = Version(elem.attrib.get('deprecated'))
+
+                if depr_version <= req_version:
+                    if self.__verbose:   # pragma: no cover
+                        print(f'{name} rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
+
+                    del meta_dict[name]
+                    continue
+                meta_dict[name]['deprecated'] = depr_version
+            except TypeError:
+                pass
+
+            datatype = elem.find('type').text
+            meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
+
+            elems = {'description': 'desc',
+                     'help': 'help',
+                     'units': 'units',
+                     'default': 'default',
+                     'minimum': 'minimum',
+                     'maximum': 'maximum', }
+
+            for ek, ev in elems.items():
+                try:
+                    meta_dict[name][ek] = elem.find(ev).text
+                except AttributeError:
+                    pass
+
+            for cdim in elem.findall('./dimensions/dimension'):
+                meta_dict[name]['dimensions'].append(cdim.attrib.get('name'))
+
+            for cmod in elem.findall('./modules/module'):
+                meta_dict[name]['modules'].append(cmod.text)
+
+            for creq in elem.findall('./requires/*'):
+                meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
 
         return meta_dict
