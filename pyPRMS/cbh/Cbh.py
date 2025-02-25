@@ -51,6 +51,7 @@ class Cbh(object):
         self.has_nhm_id = False
         self.metadata = metadata['cbh']
         self.__var_map = {}
+        self.__var_src = {}
 
         if isinstance(src_path, str):
             src_path = Path(src_path)
@@ -135,6 +136,12 @@ class Cbh(object):
         """Return variable to prms_variable mapping."""
 
         return self.__var_map
+
+    @property
+    def var_src(self) -> Dict[str, str]:
+        """Return variable to source file mapping."""
+
+        return self.__var_src
 
     def set_nhm_id(self, nhm_ids: np.ndarray):
         """Add the model nhm_id as a coordinate variable
@@ -321,6 +328,7 @@ class Cbh(object):
                 var_name, ndims = fhdl.readline().rstrip().split()
                 ndims = int(ndims)   # type: ignore
 
+                self.__var_src[var_name] = cfile.name
                 # if variables is not None:
                 #     # Override the variable name when a list of variables has been provided
                 #     var_name = variables[idx]
@@ -346,14 +354,14 @@ class Cbh(object):
         ds = xr.merge([cdf.to_xarray() for cdf in df])
 
         # Apply metadata to variables
-        for cvar in ds.data_vars:
+        for cvar in ds.variables:
             cvar_x = var_crosswalk.get(str(cvar), str(cvar))
 
             if cvar_x in self.metadata:
                 # if cvar in self.metadata or cvar in self.__var_map:
                 # cattrs = self.metadata[cvar]
                 cattrs = self.metadata[cvar_x]
-                con.print(f'  cattrs: {cattrs}')
+                # con.print(f'  cattrs: {cattrs}')
 
                 ds[cvar] = ds[cvar].astype(NEW_PTYPE_TO_DTYPE[cattrs['datatype']])
 

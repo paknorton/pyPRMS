@@ -4,6 +4,7 @@ from pathlib import Path
 from distutils import dir_util
 
 from pyPRMS import Cbh
+from pyPRMS import ControlFile
 from pyPRMS import ParameterFile
 from pyPRMS.metadata.metadata import MetaData
 
@@ -25,12 +26,15 @@ def datadir(tmpdir, request):
 
     return tmpdir
 
+@pytest.fixture()
+def meta_instance():
+    return MetaData(verbose=False)
 
 @pytest.fixture()
-def pdb_instance(datadir):
+def pdb_instance(datadir, meta_instance):
     parameter_file = datadir / 'myparam.param'
 
-    prms_meta = MetaData(verbose=False).metadata
+    prms_meta = meta_instance.metadata
 
     pdb = ParameterFile(parameter_file, metadata=prms_meta)
     return pdb
@@ -39,23 +43,49 @@ def pdb_instance(datadir):
 class TestCbh:
 
     # @pytest.mark.skip(reason="Fixing other problems before testing this")
-    def test_read_ascii_roundtrip_ascii(self, datadir, pdb_instance, tmp_path):
-        src_file = [str(datadir.join('tmax.day')),
-                    str(datadir.join('tmin.day')),
-                    str(datadir.join('precip.day'))]
-
-        nhm_ids = pdb_instance.get('nhm_id').data
-        cbh = Cbh(src_file, engine='ascii')
+    def test_read_ctl_ascii_roundtrip_ascii(self, datadir, pdb_instance, meta_instance, tmp_path):
+        # src_file = [str(datadir.join('tmax.day')),
+        #             str(datadir.join('tmin.day')),
+        #             str(datadir.join('precip.day'))]
 
         out_path = tmp_path / 'run_files'
         out_path.mkdir()
 
-        for cvar in cbh.data.data_vars:
-            # for cvar in ['precip', 'tmax', 'tmin']:
-            out_file = out_path / f'{cvar}_chk.day'
-            cbh.write_ascii(out_file, variable=cvar)
+        nhm_ids = pdb_instance.get('nhm_id').data
 
-            with open(datadir.join(f'{cvar}.day'), 'r') as f:
+        ctl = ControlFile(datadir / 'control.default.bandit', metadata=meta_instance.metadata, verbose=False)
+        cbh = Cbh(str(datadir), engine='ascii', metadata=meta_instance.metadata, control=ctl)
+
+        assert not cbh.has_nhm_id
+        cbh.set_nhm_id(nhm_ids)
+        assert cbh.has_nhm_id
+
+        for cvar in cbh.data.data_vars:
+            if cvar == 'nhm_id':
+                continue
+
+            out_file = out_path / cbh.var_src[str(cvar)]
+            cbh.write_ascii(out_file, variable=str(cvar))
+
+            with open(datadir.join(cbh.var_src[str(cvar)]), 'r') as f:
+                lines_orig = f.readlines()
+
+            with open(out_file, 'r') as f:
+                lines_chk = f.readlines()
+
+            assert lines_orig == lines_chk
+
+    def test_read_single_ascii_roundtrip_ascii(self, datadir, pdb_instance, meta_instance, tmp_path):
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+
+        cbh = Cbh(str(datadir.join('tmax.day')), engine='ascii', metadata=meta_instance.metadata)
+
+        for cvar in cbh.data.data_vars:
+            out_file = out_path / cbh.var_src[str(cvar)]
+            cbh.write_ascii(out_file, variable=str(cvar))
+
+            with open(datadir.join(cbh.var_src[str(cvar)]), 'r') as f:
                 lines_orig = f.readlines()
 
             with open(out_file, 'r') as f:
