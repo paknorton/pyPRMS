@@ -45,13 +45,15 @@ class Cbh(object):
                  control: Optional[Control] = None):
         """
         :param src_path: List of paths to CBH files
+        :param metadata: Metadata dictionary for Climate-by-HRU variables
         :param engine: Engine to use for reading CBH files (one of netcdf, zarr, or ascii)
+        :param control: Control object for PRMS model containing configuration information
         """
 
         self.has_nhm_id = False
         self.metadata = metadata['cbh']
         self.__var_map = {}
-        self.__var_src = {}
+        self.__var_src: Dict[str, str] = {}
 
         if isinstance(src_path, str):
             src_path = Path(src_path)
@@ -83,7 +85,7 @@ class Cbh(object):
                     ds = xr.open_zarr(self.__src_path[0], consolidated=True)
             case 'ascii':
                 if control is None:
-                    ds = self._cbh_to_xarray(self.__src_path)
+                    ds = self._cbh_to_xarray(self.__src_path)  # type: ignore
                 else:
                     # When a control object is specified, the src_path indicates
                     # the model directory and the *_day variables are read to get
@@ -100,7 +102,7 @@ class Cbh(object):
                                          windspeed_day='windspeed_hru')
 
                     cbh_files = []
-                    cbh_vars = []
+                    # cbh_vars = []
                     for ctl_var, prms_var in cbh_file_vars.items():
                         cfile = control.get(ctl_var).values
                         assert type(cfile) is str
@@ -108,9 +110,9 @@ class Cbh(object):
                         if (self.__src_path[0] / cfile).exists():
                             con.print(f'[green]INFO[/]: Found {cfile}')
                             cbh_files.append(self.__src_path[0] / cfile)
-                            cbh_vars.append(prms_var)
+                            # cbh_vars.append(prms_var)
 
-                    ds = self._cbh_to_xarray(cbh_files, variables=cbh_vars)
+                    ds = self._cbh_to_xarray(cbh_files)  # type: ignore # , variables=cbh_vars)
 
         if 'nhm_id' in ds.data_vars:
             # dataset has nhm_id variable so use it as the nhru dimension
@@ -133,18 +135,18 @@ class Cbh(object):
 
     @property
     def var_map(self) -> Dict[str, str]:
-        """Return variable to prms_variable mapping."""
+        """Return variable-to-prms_variable mapping."""
 
         return self.__var_map
 
     @property
     def var_src(self) -> Dict[str, str]:
-        """Return variable to source file mapping."""
+        """Return variable to source-file mapping."""
 
         return self.__var_src
 
     def set_nhm_id(self, nhm_ids: np.ndarray):
-        """Add the model nhm_id as a coordinate variable
+        """Add the model nhm_id parameter as a coordinate variable.
 
         :param nhm_ids: array of nhm_id values
         """
@@ -161,7 +163,7 @@ class Cbh(object):
                     variable: str,
                     time_slice: Optional[Union[list, slice]] = None,
                     hru_ids: Optional[Union[list, np.ndarray]] = None):
-        """Write CBH data for variable to PRMS ASCII-formatted file.
+        """Write CBH data for selected variable to PRMS ASCII-formatted file.
 
         :param filename: Climate-by-HRU filename
         :param variable: CBH variable to write
@@ -221,7 +223,7 @@ class Cbh(object):
 
         :param filename: name of netCDF output file
         :param variables: list of CBH variables to write
-        :param global_attrs: optional dictionary of attributes to include in netcdf file
+        :param global_attrs: optional dictionary of global attributes to include in netcdf file
         :param time_slice: time slice to write
         :param hru_ids: list or array of HRU IDs (local IDs if has_nhm_id is false) to write
         """
@@ -291,11 +293,12 @@ class Cbh(object):
 
         ds.load().to_netcdf(filename, engine='netcdf4', format='NETCDF4', encoding=encoding)
 
-    def _cbh_to_xarray(self, filename: Union[str, Path, List[Union[str, Path]]],
-                       variables: Optional[List[str]] = None) -> xr.Dataset:
+    def _cbh_to_xarray(self, filename: Union[str, Path, List[Union[str, Path]]]) -> xr.Dataset:
+        # variables: Optional[List[str]] = None) -> xr.Dataset:
         """Convert ASCII CBH file(s) to xarray
 
         :param filename: list of CBH filepaths or a single CBH filename
+        :returns: xarray dataset of CBH data
         """
 
         var_meta = dict(time=dict(standard_name='time', long_name='time'),
@@ -317,7 +320,6 @@ class Cbh(object):
 
         for idx, cfile in enumerate(filename):
             assert isinstance(cfile, Path)
-            # var_name = cfile.stem
 
             # First get the header info which has the variable name and number of HRUs
             with open(cfile, 'r') as fhdl:
