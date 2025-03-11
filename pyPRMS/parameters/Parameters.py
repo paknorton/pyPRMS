@@ -37,7 +37,7 @@ os.environ['USE_PYGEOS'] = '0'
 import geopandas    # type: ignore
 
 pretty.install()
-con = Console()
+con = Console(force_jupyter=False)
 
 LimitOptions = Literal['valid', 'centered', 'absolute']
 
