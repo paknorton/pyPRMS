@@ -380,7 +380,7 @@ class Control(object):
             ss = self.get(vv).values
             oo = other.get(vv).values
             try:
-                np.testing.assert_array_equal(ss, oo)
+                np.testing.assert_equal(ss, oo)
             except AssertionError:
                 diffs[vv] = {"self": ss, "other": oo}
 
