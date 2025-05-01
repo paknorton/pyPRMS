@@ -360,3 +360,32 @@ class Control(object):
         """Abstract function for reading.
         """
         assert False, 'Control._read() must be defined by child class'
+
+    def diff(self, other: "Control") -> dict:
+        result = {}
+
+        ctl_vars_self = set(self._Control__control_vars.keys())
+        ctl_vars_other = set(other._Control__control_vars.keys())
+
+        result["self_not_other"] = ctl_vars_self - ctl_vars_other
+        result["other_not_self"] = ctl_vars_other - ctl_vars_self
+        for kk in ["self_not_other", "other_not_self"]:
+            if len(result[kk]):
+                print(f"{kk}: result[kk]")
+
+        diffs = {}
+        result["diffs"] = diffs
+        comp_vars = ctl_vars_self.intersection(ctl_vars_other)
+        for vv in comp_vars:
+            ss = self.get(vv).values
+            oo = other.get(vv).values
+            try:
+                np.testing.assert_array_equal(ss, oo)
+            except AssertionError:
+                diffs[vv] = {"self": ss, "other": oo}
+
+        if len(diffs):
+            print(diffs)
+
+        return result
+
