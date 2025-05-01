@@ -1504,3 +1504,39 @@ class Parameters(object):
         toseg_idx = list(set(xx[0] for xx in dag_ds_subset.edges))
 
         return toseg_idx
+
+    def diff(self, other: "Parameters") -> dict:
+        """A difference listing/dictionary against another Parameter object.
+
+        :param other: Another Parameters object.
+
+        :returns: A dictionary with keys "self_not_other", "other_not_self",
+        and "diffs".
+        """
+        result = {}
+
+        prm_vars_self = set(self._Parameters__parameters.keys())
+        prm_vars_other = set(other._Parameters__parameters.keys())
+
+        result["self_not_other"] = prm_vars_self - prm_vars_other
+        result["other_not_self"] = prm_vars_other - prm_vars_self
+        for kk in ["self_not_other", "other_not_self"]:
+            if len(result[kk]):
+                print(f"{kk}: result[kk]")
+
+        diffs = {}
+        result["diffs"] = diffs
+        comp_vars = prm_vars_self.intersection(prm_vars_other)
+        for vv in comp_vars:
+            ss = self.get(vv).data_raw
+            oo = other.get(vv).data_raw
+            try:
+                np.testing.assert_equal(ss, oo)
+            except AssertionError:
+                diffs[vv] = {"self": ss, "other": oo}
+
+        if len(diffs):
+            print(diffs)
+
+        return result
+
