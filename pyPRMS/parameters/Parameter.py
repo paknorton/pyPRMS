@@ -623,4 +623,3 @@ class Parameter(object):
         else:
             raise TypeError(f'{self.name}: Cannot search for value in multi-dimensional array')
 
-
