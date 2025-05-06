@@ -11,6 +11,7 @@ from .dimensions.Dimensions import Dimensions, ParamDimensions
 from .metadata.metadata import MetaData
 from .summary.OutputVariables import OutputVariables
 from .summary.OutputVariable import OutputVariable
+from .summary.OutputCSV import OutputCSV
 from .parameters.Parameter import Parameter
 from .parameters.Parameters import Parameters
 from .parameters.ParameterFile import ParameterFile
@@ -41,6 +42,7 @@ __all__ = ['constants',
            'Dimension',
            'Dimensions',
            'MetaData',
+           'OutputCSV',
            'OutputVariables',
            'OutputVariable',
            'ParamDimensions',
