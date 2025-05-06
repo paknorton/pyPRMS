@@ -24,6 +24,7 @@ TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
 NA_VALS_DEFAULT = ('-99.0', '-999.0', 'NaN', 'inf')
 DATA_SEP = '####'
 
+# Crosswalk of source CBH variable names to PRMS variable names
 var_crosswalk: Dict[str, str] = dict(tmax='tmax_hru',
                                      T2MAX='tmax_hru',
                                      tmin='tmin_hru',
@@ -67,7 +68,7 @@ class Cbh(object):
             else:
                 self.__src_path = [src_path.resolve()]
 
-        con.print(f'CBH files: {self.__src_path}')
+        # con.print(f'CBH files: {self.__src_path}')
 
         assert self.__src_path is not None
 

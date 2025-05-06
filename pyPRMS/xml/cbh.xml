@@ -36,7 +36,7 @@
             <control>cloud_cover_cbh_flag = 1</control>
         </requires>
     </variable>
-    <variable name="hru_ppt">
+    <variable name="hru_ppt" version="6.0.0">
         <type>F</type>
         <units>precip_units</units>
         <desc>Precipitation distributed to each HRU</desc>
@@ -84,6 +84,20 @@
             </dimension>
         </dimensions>
     </variable>
+    <variable name="precip" version="5.0" deprecated="6.0.0">
+        <type>F</type>
+        <units>precip_units</units>
+        <desc>Precipitation distributed to each HRU</desc>
+        <minimum>0.0</minimum>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
     <variable name="swrad">
         <type>F</type>
         <units>Langleys</units>
@@ -98,7 +112,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="tmax_hru">
+    <variable name="tmax" version="5.0" deprecated="6.0.0">
         <type>F</type>
         <units>temp_units</units>
         <desc>Maximum air temperature distributed to each HRU</desc>
@@ -113,7 +127,37 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="tmin_hru">
+    <variable name="tmin" version="5.0" deprecated="6.0.0">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Minimum air temperature distributed to each HRU</desc>
+        <minimum>-150.0</minimum>
+        <maximum>200.0</maximum>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="tmax_hru" version="6.0.0">
+        <type>F</type>
+        <units>temp_units</units>
+        <desc>Maximum air temperature distributed to each HRU</desc>
+        <minimum>-150.0</minimum>
+        <maximum>200.0</maximum>
+        <modules>
+            <module>climate_hru</module>
+        </modules>
+        <dimensions>
+            <dimension name="nhru">
+                <position>1</position>
+            </dimension>
+        </dimensions>
+    </variable>
+    <variable name="tmin_hru" version="6.0.0">
         <type>F</type>
         <units>temp_units</units>
         <desc>Minimum air temperature distributed to each HRU</desc>
