@@ -12,10 +12,18 @@ from typing import Dict, List, Optional, Sequence, Union   # OrderedDict as Orde
 
 from networkx.utils.misc import check_create_using
 
+from rich import pretty
+from rich.console import Console
+from rich.table import Table
+
 from .ControlVariable import ControlVariable
 from ..Exceptions_custom import ControlError
 from ..constants import (ctl_order, ctl_implicit_modules, internal_module_map,
                          MetaDataType, VAR_DELIM, PTYPE_TO_PRMS_TYPE)
+
+# Rich library
+pretty.install()
+con = Console(record=False, width=200)
 
 cond_check = {'=': operator.eq,
               '>': operator.gt,
@@ -361,39 +369,50 @@ class Control(object):
         """
         assert False, 'Control._read() must be defined by child class'
 
-    def diff(self, other: "Control") -> dict:
+    def diff(self, other: 'Control') -> dict:
         """A difference listing/dictionary against another Control object.
 
         :param other: Another Control object.
-
-        :returns: A dictionary with keys "self_not_other", "other_not_self",
-        and "diffs".
+        :returns: A dictionary with keys 'self_not_other', 'other_not_self',
+        and 'diffs'.
         """
 
         result = {}
 
-        ctl_vars_self = set(self._Control__control_vars.keys())
-        ctl_vars_other = set(other._Control__control_vars.keys())
+        ctl_vars_self = set(self.control_variables.keys())
+        ctl_vars_other = set(other.control_variables.keys())
 
-        result["self_not_other"] = ctl_vars_self - ctl_vars_other
-        result["other_not_self"] = ctl_vars_other - ctl_vars_self
-        for kk in ["self_not_other", "other_not_self"]:
-            if len(result[kk]):
-                print(f"{kk}: result[kk]")
+        result['self_not_other'] = ctl_vars_self - ctl_vars_other
+        result['other_not_self'] = ctl_vars_other - ctl_vars_self
+
+        if self.__verbose:
+            for kk, vv in result.items():
+                if len(vv):
+                    print(f'{kk}: {vv}')
+
+        if self.__verbose:
+            diffs_table = Table(title='Differences in Control Variables')
+            diffs_table.add_column('Variable', justify='left', style='cyan')
+            diffs_table.add_column('self', justify='left', style='magenta')
+            diffs_table.add_column('other', justify='left', style='magenta')
 
         diffs = {}
-        result["diffs"] = diffs
+        result['diffs'] = diffs
         comp_vars = ctl_vars_self.intersection(ctl_vars_other)
-        for vv in comp_vars:
+        for vv in sorted(list(comp_vars)):
             ss = self.get(vv).values
             oo = other.get(vv).values
+
             try:
                 np.testing.assert_equal(ss, oo)
             except AssertionError:
-                diffs[vv] = {"self": ss, "other": oo}
+                diffs[vv] = {'self': ss, 'other': oo}
 
-        if len(diffs):
-            print(diffs)
+                if self.__verbose:
+                    diffs_table.add_row(vv, str(ss), str(oo))
+
+        if self.__verbose and diffs_table.rows:
+            con.print(diffs_table)
 
         return result
 
