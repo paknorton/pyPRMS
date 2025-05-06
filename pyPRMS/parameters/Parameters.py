@@ -597,6 +597,69 @@ class Parameters(object):
 
         return bad_value_ids
 
+    def parameters_info(self) -> pd.DataFrame:
+        """Returns a dataframe of the parameter metadata information.
+
+        :returns: DataFrame
+        """
+
+        out_list = []
+
+        if self.__control is not None:
+            modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
+
+        for pk in sorted(list(self.parameters.keys())):
+            pp = self.get(pk)
+            md = pp.meta
+
+            param_modules = md.get('modules')
+            assert type(param_modules) is list
+
+            if self.__control is not None:
+                module_list = list(modules_used.intersection(set(param_modules)))
+
+                if len(module_list) == 0:
+                    # We have a parameter that is not needed by the declared modules
+                    if self.verbose:   # pragma: no cover
+                        print(f'{pp.name} not used with selected modules')
+                        print(f'    {md.get("modules")}')
+                    continue
+            else:
+                module_list = param_modules
+
+            for idx, mm in enumerate(module_list):
+                if mm in external_module_map:
+                    module_list[idx] = external_module_map[mm]
+
+            modules = ', '.join(module_list)
+
+            dim_list = list(pp.dimensions.keys())
+
+            if pk in ['gwflow_coef', 'gwsink_coef', 'gwstor_init', 'gwstor_min', 'gw_seep_coef']:
+                dim_list[0] = 'ngw'
+            elif pk in ['ssr2gw_exp', 'ssr2gw_rate', 'ssstor_init', 'ssstor_init_frac']:
+                dim_list[0] = 'nssr'
+
+            dims = ', '.join(dim_list)
+
+            try:
+                act_min = pp.data_raw.min()
+                act_max = pp.data_raw.max()
+            except np.core._exceptions.UFuncTypeError:   # type: ignore
+                act_min = ''
+                act_max = ''
+
+            out_list.append([pp.name, md.get('description', ''),
+                             md.get('datatype', ''),
+                             md.get('units', ''),
+                             md.get('default'),
+                             md.get('minimum'),
+                             md.get('maximum'),
+                             act_min,
+                             act_max,
+                             dims,
+                             modules])
+
     def poi_upstream_hrus(self, poi: Union[str, List[str], KeysView]) -> Dict[str, List[int]]:
         """Returns a dictionary of POI to upstream global HRU IDs.
 
@@ -1340,68 +1403,8 @@ class Parameters(object):
         :param sep: separator character
         """
 
-        out_list = []
+        df = self.parameters_info()
 
-        if self.__control is not None:
-            modules_used = set(self.__control.modules.values()).union(set(self.__control.additional_modules))
-
-        for pk in sorted(list(self.parameters.keys())):
-            pp = self.get(pk)
-            md = pp.meta
-
-            param_modules = md.get('modules')
-            assert type(param_modules) is list
-
-            if self.__control is not None:
-                module_list = list(modules_used.intersection(set(param_modules)))
-
-                if len(module_list) == 0:
-                    # We have a parameter that is not needed by the declared modules
-                    if self.verbose:   # pragma: no cover
-                        print(f'{pp.name} not used with selected modules')
-                        print(f'    {md.get("modules")}')
-                    continue
-            else:
-                module_list = param_modules
-
-            for idx, mm in enumerate(module_list):
-                if mm in external_module_map:
-                    module_list[idx] = external_module_map[mm]
-
-            modules = ', '.join(module_list)
-
-            dim_list = list(pp.dimensions.keys())
-
-            if pk in ['gwflow_coef', 'gwsink_coef', 'gwstor_init', 'gwstor_min', 'gw_seep_coef']:
-                dim_list[0] = 'ngw'
-            elif pk in ['ssr2gw_exp', 'ssr2gw_rate', 'ssstor_init', 'ssstor_init_frac']:
-                dim_list[0] = 'nssr'
-
-            dims = ', '.join(dim_list)
-
-            try:
-                act_min = pp.data_raw.min()
-                act_max = pp.data_raw.max()
-            except np.core._exceptions.UFuncTypeError:   # type: ignore
-                act_min = ''
-                act_max = ''
-
-            out_list.append([pp.name, md.get('datatype', ''),
-                             md.get('units', ''),
-                             md.get('description', ''),
-                             md.get('minimum'),
-                             md.get('maximum'),
-                             act_min,
-                             act_max,
-                             md.get('default'),
-                             dims,
-                             modules])
-
-        col_names = ['parameter_name', 'datatype', 'units', 'description',
-                     'valid_minimum', 'valid_maximum', 'actual_minimum',
-                     'actual_maximum', 'default', 'dimension', 'modules']
-
-        df = pd.DataFrame.from_records(out_list, columns=col_names)
         if sep == ',':
             df.to_csv(filename, sep=sep, quotechar='"', index=False)
         else:
