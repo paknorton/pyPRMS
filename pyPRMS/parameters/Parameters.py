@@ -402,6 +402,55 @@ class Parameters(object):
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.get('hru_deplcrv').unique().size:
                     con.print('  [yellow3]WARNING[/]: snarea_curve has more entries than needed by hru_deplcrv')
 
+    def diff(self, other: 'Parameters') -> dict:
+        """A difference listing/dictionary against another Parameter object.
+
+        :param other: Another Parameters object.
+        :returns: A dictionary with keys 'self_not_other', 'other_not_self',
+        and "diffs".
+        """
+
+        result: dict[Any, Any] = {}
+
+        param_vars_self = set(self.parameters.keys())
+        param_vars_other = set(other.parameters.keys())
+
+        result['self_not_other'] = param_vars_self - param_vars_other
+        result['other_not_self'] = param_vars_other - param_vars_self
+
+        if self.verbose:
+            diffs_table = Table(title='Differences in Parameters')
+            diffs_table.add_column('Parameter', justify='left', style='cyan')
+            diffs_table.add_column('self', justify='left', style='magenta')
+            diffs_table.add_column('other', justify='left', style='magenta')
+
+        # if self.verbose:
+        #     for kk, vv in result.items():
+        #         if len(vv):
+        #             print(f'{kk}: {vv}')
+
+        diffs: dict[Any, Any] = {}
+        result['diffs'] = diffs
+        comp_vars = param_vars_self.intersection(param_vars_other)
+        for vv in sorted(list(comp_vars)):
+            ss = self.get(vv).data_raw
+            oo = other.get(vv).data_raw
+
+            try:
+                np.testing.assert_equal(ss, oo)
+            except AssertionError:
+                diffs[vv] = {"self": ss, "other": oo}
+
+                if self.verbose:
+                    diffs_table.add_row(vv, str(ss), str(oo))
+
+        if self.verbose and diffs_table.rows:
+            con.print(diffs_table)
+        # if self.verbose and len(diffs):
+        #     print(diffs)
+
+        return result
+
     def exists(self, name: str) -> bool:
         """Checks if a parameter name exists.
 
@@ -1505,52 +1554,3 @@ class Parameters(object):
         toseg_idx = list(set(xx[0] for xx in dag_ds_subset.edges))
 
         return toseg_idx
-
-    def diff(self, other: 'Parameters') -> dict:
-        """A difference listing/dictionary against another Parameter object.
-
-        :param other: Another Parameters object.
-        :returns: A dictionary with keys 'self_not_other', 'other_not_self',
-        and "diffs".
-        """
-
-        result: dict[Any, Any] = {}
-
-        param_vars_self = set(self.parameters.keys())
-        param_vars_other = set(other.parameters.keys())
-
-        result['self_not_other'] = param_vars_self - param_vars_other
-        result['other_not_self'] = param_vars_other - param_vars_self
-
-        if self.verbose:
-            diffs_table = Table(title='Differences in Parameters')
-            diffs_table.add_column('Parameter', justify='left', style='cyan')
-            diffs_table.add_column('self', justify='left', style='magenta')
-            diffs_table.add_column('other', justify='left', style='magenta')
-
-        # if self.verbose:
-        #     for kk, vv in result.items():
-        #         if len(vv):
-        #             print(f'{kk}: {vv}')
-
-        diffs: dict[Any, Any] = {}
-        result['diffs'] = diffs
-        comp_vars = param_vars_self.intersection(param_vars_other)
-        for vv in sorted(list(comp_vars)):
-            ss = self.get(vv).data_raw
-            oo = other.get(vv).data_raw
-
-            try:
-                np.testing.assert_equal(ss, oo)
-            except AssertionError:
-                diffs[vv] = {"self": ss, "other": oo}
-
-                if self.verbose:
-                    diffs_table.add_row(vv, str(ss), str(oo))
-
-        if self.verbose and diffs_table.rows:
-            con.print(diffs_table)
-        # if self.verbose and len(diffs):
-        #     print(diffs)
-
-        return result

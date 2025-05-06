@@ -211,6 +211,53 @@ class Control(object):
         self.__control_vars[name] = ControlVariable(name=name, meta=meta)
         # self.__control_vars[name] = ControlVariable(name=name, datatype=datatype, meta=meta)
 
+    def diff(self, other: 'Control') -> dict:
+        """A difference listing/dictionary against another Control object.
+
+        :param other: Another Control object.
+        :returns: A dictionary with keys 'self_not_other', 'other_not_self',
+        and 'diffs'.
+        """
+
+        result = {}
+
+        ctl_vars_self = set(self.control_variables.keys())
+        ctl_vars_other = set(other.control_variables.keys())
+
+        result['self_not_other'] = ctl_vars_self - ctl_vars_other
+        result['other_not_self'] = ctl_vars_other - ctl_vars_self
+
+        if self.__verbose:
+            for kk, vv in result.items():
+                if len(vv):
+                    print(f'{kk}: {vv}')
+
+        if self.__verbose:
+            diffs_table = Table(title='Differences in Control Variables')
+            diffs_table.add_column('Variable', justify='left', style='cyan')
+            diffs_table.add_column('self', justify='left', style='magenta')
+            diffs_table.add_column('other', justify='left', style='magenta')
+
+        diffs = {}
+        result['diffs'] = diffs
+        comp_vars = ctl_vars_self.intersection(ctl_vars_other)
+        for vv in sorted(list(comp_vars)):
+            ss = self.get(vv).values
+            oo = other.get(vv).values
+
+            try:
+                np.testing.assert_equal(ss, oo)
+            except AssertionError:
+                diffs[vv] = {'self': ss, 'other': oo}
+
+                if self.__verbose:
+                    diffs_table.add_row(vv, str(ss), str(oo))
+
+        if self.__verbose and diffs_table.rows:
+            con.print(diffs_table)
+
+        return result
+
     def exists(self, name: str) -> bool:
         """Checks if control variable exists.
 
@@ -368,51 +415,3 @@ class Control(object):
         """Abstract function for reading.
         """
         assert False, 'Control._read() must be defined by child class'
-
-    def diff(self, other: 'Control') -> dict:
-        """A difference listing/dictionary against another Control object.
-
-        :param other: Another Control object.
-        :returns: A dictionary with keys 'self_not_other', 'other_not_self',
-        and 'diffs'.
-        """
-
-        result = {}
-
-        ctl_vars_self = set(self.control_variables.keys())
-        ctl_vars_other = set(other.control_variables.keys())
-
-        result['self_not_other'] = ctl_vars_self - ctl_vars_other
-        result['other_not_self'] = ctl_vars_other - ctl_vars_self
-
-        if self.__verbose:
-            for kk, vv in result.items():
-                if len(vv):
-                    print(f'{kk}: {vv}')
-
-        if self.__verbose:
-            diffs_table = Table(title='Differences in Control Variables')
-            diffs_table.add_column('Variable', justify='left', style='cyan')
-            diffs_table.add_column('self', justify='left', style='magenta')
-            diffs_table.add_column('other', justify='left', style='magenta')
-
-        diffs = {}
-        result['diffs'] = diffs
-        comp_vars = ctl_vars_self.intersection(ctl_vars_other)
-        for vv in sorted(list(comp_vars)):
-            ss = self.get(vv).values
-            oo = other.get(vv).values
-
-            try:
-                np.testing.assert_equal(ss, oo)
-            except AssertionError:
-                diffs[vv] = {'self': ss, 'other': oo}
-
-                if self.__verbose:
-                    diffs_table.add_row(vv, str(ss), str(oo))
-
-        if self.__verbose and diffs_table.rows:
-            con.print(diffs_table)
-
-        return result
-
