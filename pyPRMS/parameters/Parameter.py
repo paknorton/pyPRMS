@@ -622,3 +622,4 @@ class Parameter(object):
             # return np.where(self.data_raw == value)[0]
         else:
             raise TypeError(f'{self.name}: Cannot search for value in multi-dimensional array')
+
