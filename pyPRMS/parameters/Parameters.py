@@ -660,65 +660,6 @@ class Parameters(object):
                              dims,
                              modules])
 
-    def poi_upstream_hrus(self, poi: Union[str, List[str], KeysView]) -> Dict[str, List[int]]:
-        """Returns a dictionary of POI to upstream global HRU IDs.
-
-        :param poi: POI ID or list of POI IDs
-
-        :returns: Dictionary of POI to upstream global HRU IDs
-        """
-
-        if isinstance(poi, str):
-            poi = [poi]
-        elif isinstance(poi, KeysView):
-            poi = list(poi)
-
-        poi_hrus = {}
-        nhm_seg = self.get('nhm_seg').data_raw
-        assert type(nhm_seg) is np.ndarray and nhm_seg.dtype == np.int32
-        poi_seg0_dict = self.poi_to_seg0
-
-        # Generate stream network for the model
-        dag_streamnet = self.stream_network()
-
-        for cpoi in poi:
-            # Lookup global segment id for the current POI
-            cseg = poi_seg0_dict[cpoi]
-            dsmost_seg = [nhm_seg[cseg].item()]
-
-            poi_hrus[cpoi] = self._upstream_hrus(dag_streamnet, dsmost_seg)
-
-        return poi_hrus
-
-    def poi_upstream_segments(self, poi: Union[str, List[str], KeysView]) -> Dict[str, List[int]]:
-        """Returns a dictionary of POI to upstream global segment IDs.
-
-        :param poi: POI ID or list of POI IDs
-
-        :returns: Dictionary of POI to upstream global segment IDs
-        """
-
-        if isinstance(poi, str):
-            poi = [poi]
-        elif isinstance(poi, KeysView):
-            poi = list(poi)
-
-        poi_segs = {}
-        nhm_seg = self.get('nhm_seg').data_raw
-        assert type(nhm_seg) is np.ndarray
-        pois_dict = self.poi_to_seg0
-
-        # Generate stream network for the model
-        dag_streamnet = self.stream_network()
-
-        for cpoi in poi:
-            # Lookup global segment id for the current POI
-            dsmost_seg = [nhm_seg[pois_dict[cpoi]].item()]
-
-            poi_segs[cpoi] = self._upstream_segments(dag_streamnet, dsmost_seg)
-
-        return poi_segs
-
     def plot(self, name: str,
              output_dir: Optional[str] = None,
              limits: Optional[Union[LimitOptions, List[float], Tuple[float, float]]] = 'absolute',
@@ -962,6 +903,65 @@ class Parameters(object):
                     print('No segment shapefile is loaded; skipping')
             else:
                 print('Non-plottable parameter')
+
+    def poi_upstream_hrus(self, poi: Union[str, List[str], KeysView]) -> Dict[str, List[int]]:
+        """Returns a dictionary of POI to upstream global HRU IDs.
+
+        :param poi: POI ID or list of POI IDs
+
+        :returns: Dictionary of POI to upstream global HRU IDs
+        """
+
+        if isinstance(poi, str):
+            poi = [poi]
+        elif isinstance(poi, KeysView):
+            poi = list(poi)
+
+        poi_hrus = {}
+        nhm_seg = self.get('nhm_seg').data_raw
+        assert type(nhm_seg) is np.ndarray and nhm_seg.dtype == np.int32
+        poi_seg0_dict = self.poi_to_seg0
+
+        # Generate stream network for the model
+        dag_streamnet = self.stream_network()
+
+        for cpoi in poi:
+            # Lookup global segment id for the current POI
+            cseg = poi_seg0_dict[cpoi]
+            dsmost_seg = [nhm_seg[cseg].item()]
+
+            poi_hrus[cpoi] = self._upstream_hrus(dag_streamnet, dsmost_seg)
+
+        return poi_hrus
+
+    def poi_upstream_segments(self, poi: Union[str, List[str], KeysView]) -> Dict[str, List[int]]:
+        """Returns a dictionary of POI to upstream global segment IDs.
+
+        :param poi: POI ID or list of POI IDs
+
+        :returns: Dictionary of POI to upstream global segment IDs
+        """
+
+        if isinstance(poi, str):
+            poi = [poi]
+        elif isinstance(poi, KeysView):
+            poi = list(poi)
+
+        poi_segs = {}
+        nhm_seg = self.get('nhm_seg').data_raw
+        assert type(nhm_seg) is np.ndarray
+        pois_dict = self.poi_to_seg0
+
+        # Generate stream network for the model
+        dag_streamnet = self.stream_network()
+
+        for cpoi in poi:
+            # Lookup global segment id for the current POI
+            dsmost_seg = [nhm_seg[pois_dict[cpoi]].item()]
+
+            poi_segs[cpoi] = self._upstream_segments(dag_streamnet, dsmost_seg)
+
+        return poi_segs
 
     def remove(self, name: Union[str, Sequence[str], Set[str]]):
         """Delete one or more parameters if they exist.
