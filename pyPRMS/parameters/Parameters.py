@@ -31,13 +31,14 @@ from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, external_module_map, Me
 
 from rich.console import Console
 from rich import pretty
+from rich.table import Table
 
 import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas    # type: ignore
 
 pretty.install()
-con = Console(force_jupyter=False)
+con = Console(force_jupyter=False, width=200)
 
 LimitOptions = Literal['valid', 'centered', 'absolute']
 
@@ -1505,38 +1506,51 @@ class Parameters(object):
 
         return toseg_idx
 
-    def diff(self, other: "Parameters") -> dict:
+    def diff(self, other: 'Parameters') -> dict:
         """A difference listing/dictionary against another Parameter object.
 
         :param other: Another Parameters object.
-
-        :returns: A dictionary with keys "self_not_other", "other_not_self",
+        :returns: A dictionary with keys 'self_not_other', 'other_not_self',
         and "diffs".
         """
-        result = {}
 
-        prm_vars_self = set(self._Parameters__parameters.keys())
-        prm_vars_other = set(other._Parameters__parameters.keys())
+        result: dict[Any, Any] = {}
 
-        result["self_not_other"] = prm_vars_self - prm_vars_other
-        result["other_not_self"] = prm_vars_other - prm_vars_self
-        for kk in ["self_not_other", "other_not_self"]:
-            if len(result[kk]):
-                print(f"{kk}: result[kk]")
+        param_vars_self = set(self.parameters.keys())
+        param_vars_other = set(other.parameters.keys())
 
-        diffs = {}
-        result["diffs"] = diffs
-        comp_vars = prm_vars_self.intersection(prm_vars_other)
-        for vv in comp_vars:
+        result['self_not_other'] = param_vars_self - param_vars_other
+        result['other_not_self'] = param_vars_other - param_vars_self
+
+        if self.verbose:
+            diffs_table = Table(title='Differences in Parameters')
+            diffs_table.add_column('Parameter', justify='left', style='cyan')
+            diffs_table.add_column('self', justify='left', style='magenta')
+            diffs_table.add_column('other', justify='left', style='magenta')
+
+        # if self.verbose:
+        #     for kk, vv in result.items():
+        #         if len(vv):
+        #             print(f'{kk}: {vv}')
+
+        diffs: dict[Any, Any] = {}
+        result['diffs'] = diffs
+        comp_vars = param_vars_self.intersection(param_vars_other)
+        for vv in sorted(list(comp_vars)):
             ss = self.get(vv).data_raw
             oo = other.get(vv).data_raw
+
             try:
                 np.testing.assert_equal(ss, oo)
             except AssertionError:
                 diffs[vv] = {"self": ss, "other": oo}
 
-        if len(diffs):
-            print(diffs)
+                if self.verbose:
+                    diffs_table.add_row(vv, str(ss), str(oo))
+
+        if self.verbose and diffs_table.rows:
+            con.print(diffs_table)
+        # if self.verbose and len(diffs):
+        #     print(diffs)
 
         return result
-
