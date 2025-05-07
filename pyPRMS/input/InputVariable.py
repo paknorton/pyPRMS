@@ -8,16 +8,41 @@ class InputVariable(object):
 
     def __init__(self, name: str,
                  data: pd.DataFrame,
+                 metadata: dict,
                  units: Optional[str] = None):
         """Initialize the InputVariable object.
 
         :param name: Name or kind of the input variable
         :param data: Input variable data
-        :param units: Units of the input variable
+        :param metadata: Metadata for the input data variable
+        :param units: Units of the input variable from the data file
         """
         self.__name = name
         self.__units = units
         self.data = data
+
+        if 'data_file' in metadata:
+            self.metadata = metadata['data_file'][name]
+        else:
+            self.metadata = metadata[name]
+
+    def __str__(self) -> str:
+        """Pretty-print string representation of the data file input variable information.
+
+        :return: Pretty-print string of data file input variable information
+        """
+
+        outstr = f'----- PRMS data file input variable -----\n'
+        outstr += f'name: {self.name}\n'
+
+        for kk, vv in self.metadata.items():
+            outstr += f'{kk}: {vv}\n'
+
+        outstr += '----------\n'
+        outstr += f'Number of rows: {len(self.data)}\n'
+        outstr += f'Number of columns: {len(self.data.columns)}\n'
+
+        return outstr
 
     @property
     def data(self) -> pd.DataFrame:
