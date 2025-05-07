@@ -218,7 +218,7 @@ class DataFile(object):
             self.__input_vars[cvar] = InputVariable(name=cvar,
                                                     data=self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])],
                                                     metadata=self.metadata,
-                                                    units=cmeta.get('units', None))
+                                                    file_units=cmeta.get('file_units', None))
             # self.__input_vars_intern[cvar]['data'] = self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])]
             st_idx += cmeta['size']
 

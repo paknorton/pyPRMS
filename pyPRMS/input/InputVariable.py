@@ -9,7 +9,7 @@ class InputVariable(object):
     def __init__(self, name: str,
                  data: pd.DataFrame,
                  metadata: dict,
-                 units: Optional[str] = None):
+                 file_units: Optional[str] = None):
         """Initialize the InputVariable object.
 
         :param name: Name or kind of the input variable
@@ -18,7 +18,7 @@ class InputVariable(object):
         :param units: Units of the input variable from the data file
         """
         self.__name = name
-        self.__units = units
+        self.__file_units = file_units
         self.data = data
 
         if 'data_file' in metadata:
@@ -77,10 +77,10 @@ class InputVariable(object):
         return self.__name
 
     @property
-    def units(self) -> str:
+    def file_units(self) -> str:
         """Returns the input variable units.
 
         :returns: Input variable units
         """
 
-        return self.__units
+        return self.__file_units
