@@ -79,7 +79,7 @@ class Parameter(object):
     def __str__(self) -> str:
         """Pretty-print string representation of the parameter information.
 
-        :return: Pretty-print string of arameter information
+        :return: Pretty-print string of parameter information
         """
 
         outstr = f'----- Parameter -----\n'
