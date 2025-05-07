@@ -152,6 +152,10 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <values type="units">
+            <value name="0">ft</value>
+            <value name="1">m</value>
+        </values>
     </parameter>
     <parameter name="hru_elev">
         <type>F</type>
@@ -2011,6 +2015,10 @@
         <requires>
             <dimension>nobs > 0</dimension>
         </requires>
+        <values type="units">
+            <value name="0">cfs</value>
+            <value name="1">cms</value>
+        </values>
     </parameter>
     <parameter name="hamon_coef">
         <type>F</type>
@@ -2283,6 +2291,10 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <values type="units">
+            <value name="0">in</value>
+            <value name="1">mm</value>
+        </values>
     </parameter>
     <parameter name="tmax_allrain" version="4" deprecated="5.0">
         <type>F</type>
@@ -5219,6 +5231,10 @@
                 <default>1</default>
             </dimension>
         </dimensions>
+        <values type="units">
+            <value name="0">degF</value>
+            <value name="1">degC</value>
+        </values>
     </parameter>
     <parameter name="tmax_adj">
         <type>F</type>
