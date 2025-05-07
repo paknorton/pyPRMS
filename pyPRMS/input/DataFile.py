@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Sequence, Union
 pretty.install()
 con = Console()
 
+from ..constants import MetaDataType
 from .InputVariable import InputVariable
 
 # TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
@@ -23,21 +24,22 @@ class DataFile(object):
     """Class for working with observed streamflow in the PRMS ASCII data file format"""
 
     def __init__(self, filename: Union[str, os.PathLike],
+                 metadata: MetaDataType,
                  missing: Sequence[str] = ('-99.9', '-999.0', '-9999.0'),
-                 verbose: bool = False,
-                 include_metadata: bool = True):
+                 verbose: bool = False):
         """Create the DataFile object.
 
         :param filename: name of data file
+        :param metadata: Metadata for the data file variables
         :param missing: list of missing values
         :param verbose: output debugging information
-        :param include_metadata: whether to include metadata
         """
 
         self.__missing = missing
         self.filename = filename
         self.__verbose = verbose
-        self.__include_metadata = include_metadata
+        self.metadata = metadata['data_file']
+        self.__dimension_metadata = metadata['dimensions']
 
         self.__timecols = 6  # number columns for time in the file
         self.__header = ''   # data file header from first line of the file
@@ -69,6 +71,17 @@ class DataFile(object):
         """
 
         return self.__input_vars_intern
+
+    def adjust_derived_units(self, selected_units: Dict[str, str]):
+        """Adjust the derived units for the input variables.
+
+        :param selected_units: Dictionary of selected units parameters
+        :returns: None
+        """
+
+        for cvar in self.__input_vars.values():
+            if cvar.metadata['units'] in selected_units:
+                cvar.metadata['units'] = selected_units[cvar.metadata['units']]
 
     def data_by_variable(self, variable: str) -> pd.DataFrame:
         """Get the data for a specific input variable
@@ -136,7 +149,7 @@ class DataFile(object):
 
             # =============================
             # Process metadata
-            self._add_metadata(header_info)
+            self._add_file_metadata(header_info)
 
             # =============================
             # Read the input variables data
@@ -156,8 +169,8 @@ class DataFile(object):
             # Add data to each input variable
             self._add_variable_data()
 
-    def _add_metadata(self, header_info: List[str]):
-        """Add metadata from data file.
+    def _add_file_metadata(self, header_info: List[str]):
+        """Add file metadata from data file.
 
         :param header_info: list of header lines from the data file
         """
@@ -189,7 +202,7 @@ class DataFile(object):
                         for elem in (line.replace(UNITS_START, '').replace(COMMENT, '').replace(' ', '').split(',')):
                             cvar, cunits = elem.split('=')
                             try:
-                                self.__input_vars_intern[cvar]['units'] = cunits
+                                self.__input_vars_intern[cvar]['file_units'] = cunits
                             except KeyError:
                                 con.print(f'[red]{cvar}[/] is not a valid input variable name in this data file')
                                 pass
@@ -204,6 +217,7 @@ class DataFile(object):
         for cvar, cmeta in self.__input_vars_intern.items():
             self.__input_vars[cvar] = InputVariable(name=cvar,
                                                     data=self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])],
+                                                    metadata=self.metadata,
                                                     units=cmeta.get('units', None))
             # self.__input_vars_intern[cvar]['data'] = self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])]
             st_idx += cmeta['size']
