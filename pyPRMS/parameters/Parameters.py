@@ -128,6 +128,21 @@ class Parameters(object):
         self.__control = ctl_obj
 
     @property
+    def derived_units(self) -> dict[str, str]:
+        """Returns a dictionary of the current unit strings for the
+        derived unit parameters, elev_units, precip_units, runoff_units,
+        and temp_units.
+        """
+
+        # Build dictionary of the *_units values
+        selected_units = {}
+        for pp in ('elev_units', 'precip_units', 'runoff_units', 'temp_units'):
+            cparam = self.get(pp)
+            selected_units[pp] = cparam.meta['valid_values'][str(cparam.data)]
+
+        return selected_units
+
+    @property
     def dimensions(self) -> Dimensions:
         """Get dimensions object.
 
@@ -354,6 +369,28 @@ class Parameters(object):
                 except ValueError:
                     print(f'{cparam.name} has bad valid uppper bound value')
                     raise
+
+    def adjust_units(self):
+        """Adjust units metadata for parameters with units of
+        elev_units, precip_units, runoff_units, or temp_units
+        """
+
+        # Get dictionary of the *_units values
+        selected_units = self.derived_units
+
+        selected_units['dday/temp_units'] = f'dday {selected_units["temp_units"]}-1'
+        selected_units['temp_units/elev_units'] = f'{selected_units["temp_units"]} {selected_units["elev_units"]}-1'
+        selected_units['temp_units/feet'] = f'{selected_units["temp_units"]} ft-1'
+
+        for cparam in self.parameters.values():
+            cmeta = cparam.meta
+            cunits = cmeta.get('units')
+
+            if cunits in selected_units.keys():
+                cmeta['units'] = selected_units[cunits]
+
+                if self.verbose:
+                    con.print(f'{cparam.name}: {cunits} changed to {cmeta["units"]}')
 
     def check(self):   # pragma: no cover
         """Check all parameter variables for proper array size.
@@ -659,6 +696,12 @@ class Parameters(object):
                              act_max,
                              dims,
                              modules])
+
+        col_names = ['parameter_name', 'description', 'datatype', 'units',
+                     'default', 'valid_minimum', 'valid_maximum', 'actual_minimum',
+                     'actual_maximum', 'dimension', 'modules']
+
+        return pd.DataFrame.from_records(out_list, columns=col_names)
 
     def plot(self, name: str,
              output_dir: Optional[str] = None,
@@ -1324,6 +1367,10 @@ class Parameters(object):
 
         :param filename: full path for output file
         """
+
+        # Update units metadata for parameters with units of
+        # elev_units, precip_units, runoff_units, or temp_units
+        self.adjust_units()
 
         # Create the netcdf file
         nc_hdl = nc.Dataset(filename, 'w', clobber=True)
