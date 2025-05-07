@@ -4,6 +4,7 @@ import pandas as pd
 # import numpy as np
 
 from pyPRMS import DataFile
+from pyPRMS.metadata.metadata import MetaData
 
 
 class TestStreamflow:
@@ -11,22 +12,44 @@ class TestStreamflow:
     def test_read_datafile_single_station(self, datadir):
         sf_filename = datadir / 'sf_data_pipestem_bandit'
 
-        datafile = DataFile(sf_filename, verbose=False)
+        expected_str = "----- PRMS data file input variable -----\nname: runoff\ndatatype: float32\ndescription: Streamflow at each measurement station\nunits: runoff_units\nminimum: 0.0\ndimensions: ['nobs']\nmodules: ['muskingum', 'muskingum_lake', 'strmflow_in_out']\n----------\nNumber of rows: 731\nNumber of columns: 1\n"
+        prms_meta = MetaData(verbose=False).metadata
+
+        datafile = DataFile(sf_filename, metadata=prms_meta, verbose=False)
         obs_sf = datafile.get('runoff')
 
         expected_stations = ['06469400']
 
         assert obs_sf.name == 'runoff'
+        assert obs_sf.__str__() == expected_str
         assert obs_sf.data.mean().values[0] == 30.094350205198356
         assert len(obs_sf.data.columns) == 1
         assert len(obs_sf.data) == 731
-        assert obs_sf.units == 'cfs'
+        assert obs_sf.file_units == 'cfs'
         assert list(obs_sf.data.columns) == expected_stations
+
+    def test_datafile_derived_units(self, datadir):
+        sf_filename = datadir / 'sf_data_pipestem_bandit'
+
+        prms_meta = MetaData(verbose=False).metadata
+
+        datafile = DataFile(sf_filename, metadata=prms_meta, verbose=False)
+        obs_sf = datafile.get('runoff')
+
+        assert obs_sf.name == 'runoff'
+        assert obs_sf.metadata['units'] == 'runoff_units'
+
+        sample_derived_units = {'elev_units': 'm', 'precip_units': 'in', 'runoff_units': 'cfs', 'temp_units': 'degF'}
+        datafile.adjust_derived_units(selected_units=sample_derived_units)
+
+        assert obs_sf.metadata['units'] == sample_derived_units['runoff_units']
 
     def test_read_datafile_multiple_stations(self, datadir):
         sf_filename = datadir / 'sf_data_downsizer'
 
-        datafile = DataFile(sf_filename, verbose=False)
+        prms_meta = MetaData(verbose=False).metadata
+
+        datafile = DataFile(sf_filename, metadata=prms_meta, verbose=False)
         obs_sf = datafile.get('runoff')
 
         # A deprecation warning/reminder that checks backwards compatibility
@@ -70,18 +93,20 @@ class TestStreamflow:
         assert obs_sf.data.describe().mean().to_dict() == expected_mean
         assert len(obs_sf.data.columns) == 14   # number of stations
         assert len(obs_sf.data) == 731   # number of days
-        assert obs_sf.units == 'cfs'
+        assert obs_sf.file_units == 'cfs'
         assert list(obs_sf.data.columns) == expected_stations
 
     def test_read_datafile_sagehen(self, datadir):
         sf_filename = datadir / 'sagehen.data'
 
-        datafile = DataFile(sf_filename, verbose=False)
+        prms_meta = MetaData(verbose=False).metadata
+
+        datafile = DataFile(sf_filename, metadata=prms_meta, verbose=False)
         obs_sf = datafile.get('runoff')
 
         # assert obs_sf.data.describe().mean().to_dict() == expected_mean
         assert len(datafile.data.columns) == 7   # number of stations
         assert len(datafile.data) == 8608   # number of days
         assert list(datafile.input_variables.keys()) == ['tmax', 'tmin', 'precip', 'runoff']
-        assert obs_sf.units is None
+        assert obs_sf.file_units is None
         # assert obs_sf.get('runoff').get('stations') is None
