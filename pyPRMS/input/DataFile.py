@@ -5,13 +5,12 @@ from rich.console import Console
 from rich import pretty
 
 from typing import Dict, List, Optional, Sequence, Union
-pretty.install()
-con = Console()
 
 from ..constants import MetaDataType
 from .InputVariable import InputVariable
 
-# TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
+pretty.install()
+con = Console(force_jupyter=False)
 
 HEADER_SEP = '//////////'
 STATION_START = '// Station IDs for'
@@ -39,16 +38,14 @@ class DataFile(object):
         self.filename = filename
         self.__verbose = verbose
         self.metadata = metadata['data_file']
-        self.__dimension_metadata = metadata['dimensions']
 
-        self.__timecols = 6  # number columns for time in the file
         self.__header = ''   # data file header from first line of the file
 
         # Dictionary of input variables and InputVariable objects
         self.__input_vars: Dict[str, InputVariable] = {}
 
         # Internal dictionary of input variables and associated metadata
-        self.__input_vars_intern: Dict[str, Dict[str, Union[int, str, List[str], pd.DataFrame]]] = {}
+        self.__input_vars_intern: Dict[str, Dict[str, Union[int, str, List[str]]]] = {}
 
         self.__data_raw: Optional[pd.DataFrame] = None
 
@@ -64,7 +61,7 @@ class DataFile(object):
         return self.__data_raw
 
     @property
-    def input_variables(self) -> Dict[str, Dict[str, Union[int, str, List[str], pd.DataFrame]]]:
+    def input_variables(self) -> Dict[str, Dict[str, Union[int, str, List[str]]]]:
         """Get the input variables in the data file.
 
         :returns: Dictionary of input variables that are available in the data file
@@ -100,6 +97,7 @@ class DataFile(object):
         # backwards compatible using the old code.
         data.columns = variable + "_" + data.columns
         assert type(data) is pd.DataFrame
+
         return data
 
     def get(self, name: str) -> InputVariable:
@@ -191,7 +189,7 @@ class DataFile(object):
                         for cvar in station_vars:
                             if cvar not in self.__input_vars_intern:
                                 raise KeyError(f'{cvar} is not one of the input variables declared in the data file')
-                            self.__input_vars_intern[cvar].setdefault('stations', []).extend(line.
+                            self.__input_vars_intern[cvar].setdefault('stations', []).extend(line.   # type: ignore
                                                                                              replace(COMMENT, '').
                                                                                              replace(' ', '').
                                                                                              split(','))
@@ -232,11 +230,11 @@ class DataFile(object):
 
         for cvar, meta in self.__input_vars_intern.items():
             if 'stations' in meta:
-                for cstn in meta['stations']:
+                for cstn in meta['stations']:   # type: ignore
                     var_col_names.append(f'{cvar}_{cstn}')
             else:
                 # No usable metadata in the data file
-                for idx in range(1, meta['size']+1):
+                for idx in range(1, meta['size']+1):   # type: ignore
                     var_col_names.append(f'{cvar}_{idx}')
 
         return var_col_names

@@ -1,6 +1,6 @@
-import pandas as pd
+import pandas as pd   # type: ignore
 
-from typing import Optional
+from typing import Optional, Union
 
 
 class InputVariable(object):
@@ -15,8 +15,9 @@ class InputVariable(object):
         :param name: Name or kind of the input variable
         :param data: Input variable data
         :param metadata: Metadata for the input data variable
-        :param units: Units of the input variable from the data file
+        :param file_units: Units of the input variable from the data file
         """
+
         self.__name = name
         self.__file_units = file_units
         self.data = data
@@ -77,7 +78,7 @@ class InputVariable(object):
         return self.__name
 
     @property
-    def file_units(self) -> str:
+    def file_units(self) -> Union[str, None]:
         """Returns the input variable units.
 
         :returns: Input variable units
