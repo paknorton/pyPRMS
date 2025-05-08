@@ -389,7 +389,7 @@ class Parameters(object):
             if cunits in selected_units.keys():
                 cmeta['units'] = selected_units[cunits]
 
-                if self.verbose:
+                if self.verbose:   # pragma: no cover
                     con.print(f'{cparam.name}: {cunits} changed to {cmeta["units"]}')
 
     def check(self):   # pragma: no cover
@@ -455,16 +455,11 @@ class Parameters(object):
         result['self_not_other'] = param_vars_self - param_vars_other
         result['other_not_self'] = param_vars_other - param_vars_self
 
-        if self.verbose:
+        if self.verbose:   # pragma: no cover
             diffs_table = Table(title='Differences in Parameters')
             diffs_table.add_column('Parameter', justify='left', style='cyan')
             diffs_table.add_column('self', justify='left', style='magenta')
             diffs_table.add_column('other', justify='left', style='magenta')
-
-        # if self.verbose:
-        #     for kk, vv in result.items():
-        #         if len(vv):
-        #             print(f'{kk}: {vv}')
 
         diffs: dict[Any, Any] = {}
         result['diffs'] = diffs
@@ -478,13 +473,11 @@ class Parameters(object):
             except AssertionError:
                 diffs[vv] = {"self": ss, "other": oo}
 
-                if self.verbose:
+                if self.verbose:   # pragma: no cover
                     diffs_table.add_row(vv, str(ss), str(oo))
 
-        if self.verbose and diffs_table.rows:
+        if self.verbose and diffs_table.rows:   # pragma: no cover
             con.print(diffs_table)
-        # if self.verbose and len(diffs):
-        #     print(diffs)
 
         return result
 
@@ -1581,8 +1574,10 @@ class Parameters(object):
                 for yy in self.seg_to_hru[xx]:
                     final_hru_list.append(yy)
             except KeyError:
-                # Not all segments have HRUs connected to them
-                print(f'Segment {xx} has no HRUs connected to it')
+                if self.verbose:
+                    # Not all segments have HRUs connected to them
+                    print(f'Segment {xx} has no HRUs connected to it')
+                pass
 
         final_hru_list.sort()
         return final_hru_list
