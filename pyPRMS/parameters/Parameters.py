@@ -128,13 +128,21 @@ class Parameters(object):
         self.__control = ctl_obj
 
     @property
-    def derived_units(self) -> dict[str, str]:
-        """Returns a dictionary of the current unit strings for the
-        derived unit parameters, elev_units, precip_units, runoff_units,
-        and temp_units.
+    def defined_units(self) -> dict[str, str]:
+        """Returns a dictionary of the current unit strings for parameters
+        elev_units, precip_units, runoff_units, and temp_units.
+
+        There are four parameters (elev_units, precip_units, runoff_units, and temp_units)
+        that define units used by other parameters. These unit values are
+        defined as 0 or 1 which represent specific units for these parameters.
+        This function returns a dictionary of these parameters with the
+        string representation of the selected units (e.g. `in` or `mm` for precip_units)
+        instead of the integer values.
+
+        :returns: dictionary of the current unit strings for parameters
         """
 
-        # Build dictionary of the *_units values
+        # Build dictionary of the *_units values.
         selected_units = {}
         for pp in ('elev_units', 'precip_units', 'runoff_units', 'temp_units'):
             cparam = self.get(pp)
@@ -370,13 +378,21 @@ class Parameters(object):
                     print(f'{cparam.name} has bad valid uppper bound value')
                     raise
 
-    def adjust_units(self):
-        """Adjust units metadata for parameters with units of
-        elev_units, precip_units, runoff_units, or temp_units
+    def resolve_defined_units(self):
+        """Adjust units metadata for parameters with initial units value of
+        elev_units, precip_units, runoff_units, or temp_units.
+
+        Some parameters have initial units metadata that are defined based on another parameter
+        (e.g. elev_units, precip_units, runoff_units, or temp_units). The initial
+        metadata for those parameters won't indicate the actual units
+        used for the model. The value of the units metadata of any parameter
+        whose initial units are one of elev_units, precip_units, runoff_units, or
+        temp_units can be updated to reflect the actual units used for the model.
+
         """
 
         # Get dictionary of the *_units values
-        selected_units = self.derived_units
+        selected_units = self.defined_units
 
         selected_units['dday/temp_units'] = f'dday {selected_units["temp_units"]}-1'
         selected_units['temp_units/elev_units'] = f'{selected_units["temp_units"]} {selected_units["elev_units"]}-1'
@@ -1363,7 +1379,7 @@ class Parameters(object):
 
         # Update units metadata for parameters with units of
         # elev_units, precip_units, runoff_units, or temp_units
-        self.adjust_units()
+        self.resolve_defined_units()
 
         # Create the netcdf file
         nc_hdl = nc.Dataset(filename, 'w', clobber=True)
