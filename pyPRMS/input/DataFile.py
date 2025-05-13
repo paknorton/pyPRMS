@@ -69,10 +69,11 @@ class DataFile(object):
 
         return self.__input_vars_intern
 
-    def adjust_derived_units(self, selected_units: Dict[str, str]):
-        """Adjust the derived units for the input variables.
+    def resolve_defined_units(self, selected_units: Dict[str, str]):
+        """Adjust units metadata for input variables that have an initial units value of
+        elev_units, precip_units, runoff_units, or temp_units.
 
-        :param selected_units: Dictionary of selected units parameters
+        :param selected_units: Dictionary of parameters with unit strings
         :returns: None
         """
 
