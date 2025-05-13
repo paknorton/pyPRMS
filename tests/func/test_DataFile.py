@@ -40,7 +40,7 @@ class TestStreamflow:
         assert obs_sf.metadata['units'] == 'runoff_units'
 
         sample_derived_units = {'elev_units': 'm', 'precip_units': 'in', 'runoff_units': 'cfs', 'temp_units': 'degF'}
-        datafile.adjust_derived_units(selected_units=sample_derived_units)
+        datafile.resolve_defined_units(selected_units=sample_derived_units)
 
         assert obs_sf.metadata['units'] == sample_derived_units['runoff_units']
 
