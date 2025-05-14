@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Sequence, Union
 
 from ..constants import MetaDataType
 from .InputVariable import InputVariable
+from ..parameters.Parameters import Parameters
 
 pretty.install()
 con = Console(force_jupyter=False)
@@ -20,16 +21,19 @@ COMMENT = '//'
 
 
 class DataFile(object):
-    """Class for working with observed streamflow in the PRMS ASCII data file format"""
+    """Class for working with PRMS ASCII input data files
+    """
 
     def __init__(self, filename: Union[str, os.PathLike],
                  metadata: MetaDataType,
+                 parameters: Parameters = None,
                  missing: Sequence[str] = ('-99.9', '-999.0', '-9999.0'),
                  verbose: bool = False):
         """Create the DataFile object.
 
         :param filename: name of data file
         :param metadata: Metadata for the data file variables
+        :param parameters: Parameters object
         :param missing: list of missing values
         :param verbose: output debugging information
         """
@@ -38,6 +42,7 @@ class DataFile(object):
         self.filename = filename
         self.__verbose = verbose
         self.metadata = metadata['data_file']
+        self.parameters = parameters
 
         self.__header = ''   # data file header from first line of the file
 
@@ -50,6 +55,14 @@ class DataFile(object):
         self.__data_raw: Optional[pd.DataFrame] = None
 
         self.load_file(self.filename)
+
+        if self.parameters is None:
+            for cvar in self.__input_vars.values():
+                if '_units' in cvar.metadata['units']:
+                    print(f'[dark_orange]WARNING[/]: {cvar.name} has units={cvar.metadata["units"]} '
+                          f'but no parameters were supplied.')
+        else:
+            self.resolve_units()
 
     @property
     def data(self) -> pd.DataFrame:
@@ -69,14 +82,14 @@ class DataFile(object):
 
         return self.__input_vars_intern
 
-    def resolve_defined_units(self, selected_units: Dict[str, str]):
+    def resolve_units(self):
         """Adjust units metadata for input variables that have an initial units value of
-        elev_units, precip_units, runoff_units, or temp_units.
+        precip_units, runoff_units, or temp_units.
 
-        :param selected_units: Dictionary of parameters with unit strings
         :returns: None
         """
 
+        selected_units = self.parameters.user_defined_units
         for cvar in self.__input_vars.values():
             if cvar.metadata['units'] in selected_units:
                 cvar.metadata['units'] = selected_units[cvar.metadata['units']]
