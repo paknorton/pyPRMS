@@ -9,6 +9,12 @@ from ..constants import NEW_PTYPE_TO_DTYPE
 from ..dimensions.Dimensions import ParamDimensions
 from ..Exceptions_custom import FixedDimensionError
 
+from rich.console import Console
+from rich import pretty
+
+pretty.install()
+con = Console(force_jupyter=False)
+
 ParamDataRawType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_]
 ParamDataType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_, int, float, str]
 
@@ -38,7 +44,8 @@ class Parameter(object):
     def __init__(self, name: str,
                  meta: Optional[Dict] = None,
                  global_dims=None,
-                 strict: Optional[bool] = True):
+                 strict: Optional[bool] = True,
+                 verbose: Optional[bool] = False):
         """
         Initialize a parameter object.
 
@@ -48,6 +55,7 @@ class Parameter(object):
         # Set the parameter name
         self.__name = name
         self.__dimensions = ParamDimensions(strict=False)
+        self.__verbose = verbose
 
         if meta is None:
             if strict:
@@ -164,15 +172,28 @@ class Parameter(object):
             expected_size = functools.reduce(lambda x, y: x * y, expected_shape)
 
             if expected_size > 0 and data_in.shape != expected_shape:
+                if self.__verbose:   # pragma: no cover
+                    con.print(f'[bold]{self.__name}[/]: expected shape {expected_shape} but got {data_in.shape}')
+
                 # If this is a parameter that was collapsed to a scalar we
                 # can broadcast it to the correct shape
                 if data_in.size == 1:
+                    if self.__verbose:   # pragma: no cover
+                        con.print(f'\tExpanding scalar to {expected_shape}')
                     data_in = np.repeat(data_in, expected_size)
 
-                # if data_in.size == 12 and expected_shape[1] == 12:
                 if data_in.size == 12 and 'nmonths' in self.__dimensions.keys():
-                    # Expand nmonths to nhru, nmonth
+                    # Expand nmonth parameter to nhru, nmonth
+                    if self.__verbose:   # pragma: no cover
+                        con.print(f'\tExpanding nmonth to {expected_shape}')
                     data_in = np.resize(data_in, expected_shape)
+                elif ('nhru' in self.__dimensions.keys() and data_in.size == self.__dimensions.get('nhru').size
+                      and 'nmonths' in self.__dimensions.keys()):
+                    # Expand nhru parameter to nhru, nmonth
+                    if self.__verbose:   # pragma: no cover
+                        con.print(f'\tExpanding nhru to {expected_shape}')
+                        con.print(f'\tExpected size: {expected_size}')
+                    data_in = np.tile(data_in, (12, 1)).T
                 else:
                     # Try to reshape the data to match the dimensionality
                     try:
