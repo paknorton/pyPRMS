@@ -227,12 +227,12 @@ class Control(object):
         result['self_not_other'] = ctl_vars_self - ctl_vars_other
         result['other_not_self'] = ctl_vars_other - ctl_vars_self
 
-        if self.__verbose:
+        if self.__verbose:   # pragma: no cover
             for kk, vv in result.items():
                 if len(vv):
                     print(f'{kk}: {vv}')
 
-        if self.__verbose:
+        if self.__verbose:   # pragma: no cover
             diffs_table = Table(title='Differences in Control Variables')
             diffs_table.add_column('Variable', justify='left', style='cyan')
             diffs_table.add_column('self', justify='left', style='magenta')
@@ -250,10 +250,10 @@ class Control(object):
             except AssertionError:
                 diffs[vv] = {'self': ss, 'other': oo}
 
-                if self.__verbose:
+                if self.__verbose:   # pragma: no cover
                     diffs_table.add_row(vv, str(ss), str(oo))
 
-        if self.__verbose and diffs_table.rows:
+        if self.__verbose and diffs_table.rows:   # pragma: no cover
             con.print(diffs_table)
 
         return result

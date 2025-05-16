@@ -128,6 +128,32 @@ class Parameters(object):
         self.__control = ctl_obj
 
     @property
+    def user_defined_units(self) -> dict[str, str]:
+        """Returns a dictionary of the current unit strings for parameters
+        elev_units, precip_units, runoff_units, and temp_units.
+
+        There are four parameters (elev_units, precip_units, runoff_units, and temp_units)
+        that define units used by other parameters. These unit values are
+        defined as 0 or 1 which represent specific units for these parameters.
+        This function returns a dictionary of these parameters with the
+        string representation of the selected units (e.g. `in` or `mm` for precip_units)
+        instead of the integer values.
+
+        :returns: dictionary of the current unit strings for parameters
+        """
+
+        # Build dictionary of the *_units values.
+        selected_units = {}
+        for pp in ('elev_units', 'precip_units', 'runoff_units', 'temp_units'):
+            try:
+                cparam = self.get(pp)
+                selected_units[pp] = cparam.meta['valid_values'][str(cparam.data)]
+            except ParameterError:
+                con.print(f'[dark_orange]WARNING[/]: {pp} parameter not found')
+
+        return selected_units
+
+    @property
     def dimensions(self) -> Dimensions:
         """Get dimensions object.
 
@@ -300,7 +326,7 @@ class Parameters(object):
             if not self.__dimensions.exists(cdim):
                 raise KeyError(f'Global dimension, {cdim}, does not exist')
 
-        self.__parameters[name] = Parameter(name=name, meta=self.metadata, global_dims=self.__dimensions)
+        self.__parameters[name] = Parameter(name=name, meta=self.metadata, global_dims=self.__dimensions, verbose=self.verbose)
 
     def add_metadata(self, name: str,
                      metadata: Dict):
@@ -355,6 +381,36 @@ class Parameters(object):
                     print(f'{cparam.name} has bad valid uppper bound value')
                     raise
 
+    def resolve_units(self):
+        """Adjust units metadata for parameters with initial units value of
+        elev_units, precip_units, runoff_units, or temp_units.
+
+        Some parameters have initial units metadata that are defined based on another parameter
+        (e.g. elev_units, precip_units, runoff_units, or temp_units). The initial
+        metadata for those parameters won't indicate the actual units
+        used for the model. The value of the units metadata of any parameter
+        whose initial units are one of elev_units, precip_units, runoff_units, or
+        temp_units can be updated to reflect the actual units used for the model.
+
+        """
+
+        # Get dictionary of the *_units values
+        selected_units = self.user_defined_units
+
+        selected_units['dday/temp_units'] = f'dday {selected_units["temp_units"]}-1'
+        selected_units['temp_units/elev_units'] = f'{selected_units["temp_units"]} {selected_units["elev_units"]}-1'
+        selected_units['temp_units/feet'] = f'{selected_units["temp_units"]} ft-1'
+
+        for cparam in self.parameters.values():
+            cmeta = cparam.meta
+            cunits = cmeta.get('units')
+
+            if cunits in selected_units.keys():
+                cmeta['units'] = selected_units[cunits]
+
+                if self.verbose:   # pragma: no cover
+                    con.print(f'{cparam.name}: {cunits} changed to {cmeta["units"]}')
+
     def check(self):   # pragma: no cover
         """Check all parameter variables for proper array size.
         """
@@ -377,30 +433,37 @@ class Parameters(object):
                 default_val = pp.meta['default']
 
                 if not (isinstance(valid_min, str) or isinstance(valid_max, str)):
-                    con.print(f'    [dark_orange3]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside '
+                    con.print(f'    [dark_orange]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside '
                               + f'the valid range of ({valid_min}, {valid_max}); '
                               + f'under/over=({pp_outliers.under}, {pp_outliers.over})')
                     # print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
                     #       f'the valid range of ({pp.minimum}, {pp.maximum})')
                 elif valid_min == 'bounded':
                     # TODO: Handling bounded parameters needs improvement
-                    con.print(f'    [dark_orange3]WARNING[/]: Bounded parameter value(s) '
+                    con.print(f'    [dark_orange]WARNING[/]: Bounded parameter value(s) '
                               + f'(range: {pp_stats.min}, {pp_stats.max}) outside '
                               + f'the valid range of ({default_val}, {valid_max})')
 
-            if pp.all_equal():
-                dims = list(pp.dimensions.keys())
+            dims = list(pp.dimensions.keys())
 
-                if pp.is_scalar:
-                    con.print(f'    INFO: Scalar; value = {pp.data}')
-                elif pp.data.ndim == 2:
+            if pp.is_scalar:
+                con.print(f'    INFO: Scalar; value = {pp.data}')
+            elif pp.data.ndim == 1 and np.unique(pp.data).size == 1:
+                con.print(f'    INFO: dimensioned {dims}; all values are equal to {pp.data[0]}')
+            elif pp.data.ndim == 2:
+                if np.unique(pp.data).size == 1:
+                    # All values are equal
+                    con.print(f'    INFO: dimensioned {dims}; all values are equal to {pp.data[0, 0]}')
+                elif (pp.data[:, 0] == pp.data.T).all():
+                    # The values are equal for each month
+                    con.print(f'    INFO: dimensioned {dims}; all values by {dims[1]} are equal')
+                elif (pp.data[0, :] == pp.data).all():
+                    # The values are equal for each hru
                     con.print(f'    INFO: dimensioned {dims}; all values by {dims[0]} are equal to {pp.data[0]}')
-                elif pp.data.ndim == 1:
-                    con.print(f'    INFO: dimensioned {dims}; all values are equal to {pp.data[0]}')
 
             if pp.name == 'snarea_curve':
                 if pp.as_dataframe.values.reshape((-1, 11)).shape[0] != self.get('hru_deplcrv').unique().size:
-                    con.print('  [yellow3]WARNING[/]: snarea_curve has more entries than needed by hru_deplcrv')
+                    con.print('  [dark_orange]WARNING[/]: snarea_curve has more entries than needed by hru_deplcrv')
 
     def diff(self, other: 'Parameters') -> dict:
         """A difference listing/dictionary against another Parameter object.
@@ -418,16 +481,11 @@ class Parameters(object):
         result['self_not_other'] = param_vars_self - param_vars_other
         result['other_not_self'] = param_vars_other - param_vars_self
 
-        if self.verbose:
+        if self.verbose:   # pragma: no cover
             diffs_table = Table(title='Differences in Parameters')
             diffs_table.add_column('Parameter', justify='left', style='cyan')
             diffs_table.add_column('self', justify='left', style='magenta')
             diffs_table.add_column('other', justify='left', style='magenta')
-
-        # if self.verbose:
-        #     for kk, vv in result.items():
-        #         if len(vv):
-        #             print(f'{kk}: {vv}')
 
         diffs: dict[Any, Any] = {}
         result['diffs'] = diffs
@@ -441,13 +499,11 @@ class Parameters(object):
             except AssertionError:
                 diffs[vv] = {"self": ss, "other": oo}
 
-                if self.verbose:
+                if self.verbose:   # pragma: no cover
                     diffs_table.add_row(vv, str(ss), str(oo))
 
-        if self.verbose and diffs_table.rows:
+        if self.verbose and diffs_table.rows:   # pragma: no cover
             con.print(diffs_table)
-        # if self.verbose and len(diffs):
-        #     print(diffs)
 
         return result
 
@@ -659,6 +715,12 @@ class Parameters(object):
                              act_max,
                              dims,
                              modules])
+
+        col_names = ['parameter_name', 'description', 'datatype', 'units',
+                     'default', 'valid_minimum', 'valid_maximum', 'actual_minimum',
+                     'actual_maximum', 'dimension', 'modules']
+
+        return pd.DataFrame.from_records(out_list, columns=col_names)
 
     def plot(self, name: str,
              output_dir: Optional[str] = None,
@@ -1325,6 +1387,10 @@ class Parameters(object):
         :param filename: full path for output file
         """
 
+        # Update units metadata for parameters with units of
+        # elev_units, precip_units, runoff_units, or temp_units
+        self.resolve_units()
+
         # Create the netcdf file
         nc_hdl = nc.Dataset(filename, 'w', clobber=True)
 
@@ -1534,8 +1600,10 @@ class Parameters(object):
                 for yy in self.seg_to_hru[xx]:
                     final_hru_list.append(yy)
             except KeyError:
-                # Not all segments have HRUs connected to them
-                print(f'Segment {xx} has no HRUs connected to it')
+                if self.verbose:
+                    # Not all segments have HRUs connected to them
+                    print(f'Segment {xx} has no HRUs connected to it')
+                pass
 
         final_hru_list.sort()
         return final_hru_list
