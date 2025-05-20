@@ -12,7 +12,7 @@ from pyPRMS.metadata.metadata import MetaData
 def pdb_instance(datadir):
     parameter_file = datadir / 'myparam.param'
 
-    prms_meta = MetaData(verbose=True).metadata
+    prms_meta = MetaData(verbose=False).metadata
 
     pdb = ParameterFile(parameter_file, metadata=prms_meta)
     return pdb
@@ -218,6 +218,30 @@ class TestParameterFile:
         pdb.add_missing_parameters()
 
         assert set(pdb.parameters.keys()) == intial_params.union(missing - {'nhm_deplcrv'})
+
+    def test_diff_parameters(self, datadir):
+        control_file = datadir / 'control.default.bandit'
+        parameter_file = datadir / 'myparam.param'
+        prms_meta = MetaData(verbose=False).metadata
+
+        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
+        pdb_orig = ParameterFile(parameter_file, metadata=prms_meta)
+        pdb = ParameterFile(parameter_file, metadata=prms_meta)
+        pdb.control = ctl
+
+        expected_diff = {'self_not_other': set(), 'other_not_self': {'pref_flow_infil_frac'}, 'diffs': {}}
+        pdb.add_missing_parameters()
+        assert pdb_orig.diff(pdb) == expected_diff
+
+        # Now alter some parameter data and try again
+        expected_diff = {'self_not_other': set(), 'other_not_self': {'pref_flow_infil_frac'},
+                         'diffs': {
+                             'seg_depth': {'self': np.array([1.192112, 0.894294, 1.244646, 0.968989, 1.015976, 1.1965,
+                                                             1.286962], dtype=np.float32),
+                                           'other': np.array([1.192112, 0.894294, 1.244646, 0.968989, 0.25, 1.1965,
+                                                              1.286962], dtype=np.float32)}}}
+        pdb.update_element('seg_depth', 30117, 0.25)
+        np.testing.assert_equal(pdb_orig.diff(pdb), expected_diff)
 
     def test_parameters_remove_unneeded(self, pdb_instance):
         remove_list = pdb_instance.unneeded_parameters

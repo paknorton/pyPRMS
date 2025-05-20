@@ -5,12 +5,13 @@ from rich.console import Console
 from rich import pretty
 
 from typing import Dict, List, Optional, Sequence, Union
-pretty.install()
-con = Console()
 
+from ..constants import MetaDataType
 from .InputVariable import InputVariable
+from ..parameters.Parameters import Parameters
 
-# TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
+pretty.install()
+con = Console(force_jupyter=False)
 
 HEADER_SEP = '//////////'
 STATION_START = '// Station IDs for'
@@ -20,37 +21,48 @@ COMMENT = '//'
 
 
 class DataFile(object):
-    """Class for working with observed streamflow in the PRMS ASCII data file format"""
+    """Class for working with PRMS ASCII input data files
+    """
 
     def __init__(self, filename: Union[str, os.PathLike],
+                 metadata: MetaDataType,
+                 parameters: Parameters = None,
                  missing: Sequence[str] = ('-99.9', '-999.0', '-9999.0'),
-                 verbose: bool = False,
-                 include_metadata: bool = True):
+                 verbose: bool = False):
         """Create the DataFile object.
 
         :param filename: name of data file
+        :param metadata: Metadata for the data file variables
+        :param parameters: Parameters object
         :param missing: list of missing values
         :param verbose: output debugging information
-        :param include_metadata: whether to include metadata
         """
 
         self.__missing = missing
         self.filename = filename
         self.__verbose = verbose
-        self.__include_metadata = include_metadata
+        self.metadata = metadata['data_file']
+        self.parameters = parameters
 
-        self.__timecols = 6  # number columns for time in the file
         self.__header = ''   # data file header from first line of the file
 
         # Dictionary of input variables and InputVariable objects
         self.__input_vars: Dict[str, InputVariable] = {}
 
         # Internal dictionary of input variables and associated metadata
-        self.__input_vars_intern: Dict[str, Dict[str, Union[int, str, List[str], pd.DataFrame]]] = {}
+        self.__input_vars_intern: Dict[str, Dict[str, Union[int, str, List[str]]]] = {}
 
         self.__data_raw: Optional[pd.DataFrame] = None
 
         self.load_file(self.filename)
+
+        if self.parameters is None:
+            for cvar in self.__input_vars.values():
+                if '_units' in cvar.metadata['units']:
+                    print(f'[dark_orange]WARNING[/]: {cvar.name} has units={cvar.metadata["units"]} '
+                          f'but no parameters were supplied.')
+        else:
+            self.resolve_units()
 
     @property
     def data(self) -> pd.DataFrame:
@@ -62,13 +74,25 @@ class DataFile(object):
         return self.__data_raw
 
     @property
-    def input_variables(self) -> Dict[str, Dict[str, Union[int, str, List[str], pd.DataFrame]]]:
+    def input_variables(self) -> Dict[str, Dict[str, Union[int, str, List[str]]]]:
         """Get the input variables in the data file.
 
         :returns: Dictionary of input variables that are available in the data file
         """
 
         return self.__input_vars_intern
+
+    def resolve_units(self):
+        """Adjust units metadata for input variables that have an initial units value of
+        precip_units, runoff_units, or temp_units.
+
+        :returns: None
+        """
+
+        selected_units = self.parameters.user_defined_units
+        for cvar in self.__input_vars.values():
+            if cvar.metadata['units'] in selected_units:
+                cvar.metadata['units'] = selected_units[cvar.metadata['units']]
 
     def data_by_variable(self, variable: str) -> pd.DataFrame:
         """Get the data for a specific input variable
@@ -87,6 +111,7 @@ class DataFile(object):
         # backwards compatible using the old code.
         data.columns = variable + "_" + data.columns
         assert type(data) is pd.DataFrame
+
         return data
 
     def get(self, name: str) -> InputVariable:
@@ -136,7 +161,7 @@ class DataFile(object):
 
             # =============================
             # Process metadata
-            self._add_metadata(header_info)
+            self._add_file_metadata(header_info)
 
             # =============================
             # Read the input variables data
@@ -156,8 +181,8 @@ class DataFile(object):
             # Add data to each input variable
             self._add_variable_data()
 
-    def _add_metadata(self, header_info: List[str]):
-        """Add metadata from data file.
+    def _add_file_metadata(self, header_info: List[str]):
+        """Add file metadata from data file.
 
         :param header_info: list of header lines from the data file
         """
@@ -178,7 +203,7 @@ class DataFile(object):
                         for cvar in station_vars:
                             if cvar not in self.__input_vars_intern:
                                 raise KeyError(f'{cvar} is not one of the input variables declared in the data file')
-                            self.__input_vars_intern[cvar].setdefault('stations', []).extend(line.
+                            self.__input_vars_intern[cvar].setdefault('stations', []).extend(line.   # type: ignore
                                                                                              replace(COMMENT, '').
                                                                                              replace(' ', '').
                                                                                              split(','))
@@ -189,7 +214,7 @@ class DataFile(object):
                         for elem in (line.replace(UNITS_START, '').replace(COMMENT, '').replace(' ', '').split(',')):
                             cvar, cunits = elem.split('=')
                             try:
-                                self.__input_vars_intern[cvar]['units'] = cunits
+                                self.__input_vars_intern[cvar]['file_units'] = cunits
                             except KeyError:
                                 con.print(f'[red]{cvar}[/] is not a valid input variable name in this data file')
                                 pass
@@ -204,7 +229,8 @@ class DataFile(object):
         for cvar, cmeta in self.__input_vars_intern.items():
             self.__input_vars[cvar] = InputVariable(name=cvar,
                                                     data=self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])],
-                                                    units=cmeta.get('units', None))
+                                                    metadata=self.metadata,
+                                                    file_units=cmeta.get('file_units', None))
             # self.__input_vars_intern[cvar]['data'] = self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])]
             st_idx += cmeta['size']
 
@@ -218,11 +244,11 @@ class DataFile(object):
 
         for cvar, meta in self.__input_vars_intern.items():
             if 'stations' in meta:
-                for cstn in meta['stations']:
+                for cstn in meta['stations']:   # type: ignore
                     var_col_names.append(f'{cvar}_{cstn}')
             else:
                 # No usable metadata in the data file
-                for idx in range(1, meta['size']+1):
+                for idx in range(1, meta['size']+1):   # type: ignore
                     var_col_names.append(f'{cvar}_{idx}')
 
         return var_col_names

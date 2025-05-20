@@ -1,6 +1,6 @@
-import pandas as pd
+import pandas as pd   # type: ignore
 
-from typing import Optional
+from typing import Optional, Union
 
 
 class InputVariable(object):
@@ -8,16 +8,42 @@ class InputVariable(object):
 
     def __init__(self, name: str,
                  data: pd.DataFrame,
-                 units: Optional[str] = None):
+                 metadata: dict,
+                 file_units: Optional[str] = None):
         """Initialize the InputVariable object.
 
         :param name: Name or kind of the input variable
         :param data: Input variable data
-        :param units: Units of the input variable
+        :param metadata: Metadata for the input data variable
+        :param file_units: Units of the input variable from the data file
         """
+
         self.__name = name
-        self.__units = units
+        self.__file_units = file_units
         self.data = data
+
+        if 'data_file' in metadata:
+            self.metadata = metadata['data_file'][name]
+        else:
+            self.metadata = metadata[name]
+
+    def __str__(self) -> str:
+        """Pretty-print string representation of the data file input variable information.
+
+        :return: Pretty-print string of data file input variable information
+        """
+
+        outstr = f'----- PRMS data file input variable -----\n'
+        outstr += f'name: {self.name}\n'
+
+        for kk, vv in self.metadata.items():
+            outstr += f'{kk}: {vv}\n'
+
+        outstr += '----------\n'
+        outstr += f'Number of rows: {len(self.data)}\n'
+        outstr += f'Number of columns: {len(self.data.columns)}\n'
+
+        return outstr
 
     @property
     def data(self) -> pd.DataFrame:
@@ -52,10 +78,10 @@ class InputVariable(object):
         return self.__name
 
     @property
-    def units(self) -> str:
+    def file_units(self) -> Union[str, None]:
         """Returns the input variable units.
 
         :returns: Input variable units
         """
 
-        return self.__units
+        return self.__file_units

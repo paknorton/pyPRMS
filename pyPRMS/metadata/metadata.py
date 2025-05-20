@@ -20,6 +20,7 @@ outside_elem = {'control': 'control_param',
                 'parameters': 'parameter',
                 'dimensions': 'dimension',
                 'variables': 'variable',
+                'data_file': 'variable',
                 'cbh': 'variable'}
 
 NEW_DTYPE = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
@@ -38,6 +39,7 @@ class MetaData(object):
                    'dimensions': self.__dimensions_to_dict,
                    'parameters': self.__parameters_to_dict,
                    'variables': self.__variables_to_dict,
+                   'data_file': self.__data_file_to_dict,
                    'cbh': self.__cbh_to_dict}
 
         self.__meta_dict: MetaDataType = {}
@@ -239,7 +241,7 @@ class MetaData(object):
                      'units': 'units',
                      'default': 'default',
                      'minimum': 'minimum',
-                     'maximum': 'maximum', }
+                     'maximum': 'maximum'}
 
             for ek, ev in elems.items():
                 if ek in ['default', 'minimum', 'maximum']:
@@ -272,6 +274,14 @@ class MetaData(object):
 
             for creq in elem.findall('./requires/*'):
                 meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
+
+            # Possible valid values for variable
+            for cvals in elem.findall('./values'):
+                meta_dict[name]['valid_value_type'] = cvals.attrib.get('type')
+
+                meta_dict[name]['valid_values'] = {}
+                for cv in cvals.findall('./value'):
+                    meta_dict[name]['valid_values'][cv.attrib.get('name')] = cv.text
 
         return meta_dict
 
@@ -409,6 +419,69 @@ class MetaData(object):
                      'help': 'help',
                      'units': 'units',
                      'default': 'default',
+                     'minimum': 'minimum',
+                     'maximum': 'maximum', }
+
+            for ek, ev in elems.items():
+                try:
+                    meta_dict[name][ek] = elem.find(ev).text
+                except AttributeError:
+                    pass
+
+            for cdim in elem.findall('./dimensions/dimension'):
+                meta_dict[name]['dimensions'].append(cdim.attrib.get('name'))
+
+            for cmod in elem.findall('./modules/module'):
+                meta_dict[name]['modules'].append(cmod.text)
+
+            for creq in elem.findall('./requires/*'):
+                meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
+
+        return meta_dict
+
+    def __data_file_to_dict(self, xml_root: xmlET.Element,
+                            meta_type: str,
+                            req_version: Version) -> Dict:
+        """Convert Data File variables metadata to dictionary"""
+
+        meta_dict: Dict = {}
+
+        for elem in xml_root.findall(outside_elem[meta_type]):
+            name = elem.attrib.get('name')
+
+            meta_dict[name] = defaultdict(list)
+
+            try:
+                var_version = Version(elem.attrib.get('version'))
+
+                if var_version > req_version:
+                    if self.__verbose:   # pragma: no cover
+                        print(f'{name} rejected by version {str(var_version)}, req: {str(req_version)}')
+
+                    del meta_dict[name]
+                    continue
+                meta_dict[name]['version'] = str(var_version)
+            except TypeError:
+                pass
+
+            try:
+                depr_version = Version(elem.attrib.get('deprecated'))
+
+                if depr_version <= req_version:
+                    if self.__verbose:   # pragma: no cover
+                        print(f'{name} rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
+
+                    del meta_dict[name]
+                    continue
+                meta_dict[name]['deprecated'] = depr_version
+            except TypeError:
+                pass
+
+            datatype = elem.find('type').text
+            meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
+
+            elems = {'description': 'desc',
+                     'units': 'units',
                      'minimum': 'minimum',
                      'maximum': 'maximum', }
 
