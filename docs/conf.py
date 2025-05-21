@@ -60,7 +60,7 @@ html_title = 'pyPRMS'
 html_static_path = ['_static']
 
 html_context = {
-    "github_user": "EC-USGS",
+    "github_user": "DOI-USGS",
     "github_repo": "pyPRMS",
     "github_version": "development",
     "doc_path": "docs",
@@ -90,7 +90,7 @@ html_theme_options = {
 # html_theme_options = dict(
 #     # analytics_id=''  this is configured in rtfd.io
 #     # canonical_url="",
-#     repository_url="https://github.com/EC-USGS/pyPRMS",
+#     repository_url="https://github.com/DOI-USGS/pyPRMS",
 #     repository_branch="main",
 #     path_to_docs="docs",
 #     use_edit_page_button=True,

@@ -8,4 +8,4 @@ The pyPRMS library can be installed using pip:
 
 .. code-block:: console
 
-    pip install git+https://github.com/EC-USGS/pyPRMS.git
+    pip install git+https://github.com/DOI-USGS/pyPRMS.git

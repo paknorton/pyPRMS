@@ -1,6 +1,6 @@
 pyPRMS
 ======
-[![ci-badge](https://github.com/EC-USGS/pyPRMS/actions/workflows/ci.yaml/badge.svg?branch=development)](https://github.com/EC-USGS/pyPRMS/actions?query=workflows%3CI)
+[![ci-badge](https://github.com/DOI-USGS/pyPRMS/actions/workflows/ci.yaml/badge.svg?branch=development)](https://github.com/DOI-USGS/pyPRMS/actions?query=workflows%3CI)
 
 A Python library for working with the Precipitation-Runoff Modeling System (PRMS)
 
@@ -15,11 +15,11 @@ up-to-date version of the software.
 
 To install from development branch use the following command::
 
-    pip install git+https://github.com/EC-USGS/pyPRMS.git
+    pip install git+https://github.com/DOI-USGS/pyPRMS.git
 
 To update from the development branch type::
 
-    pip install git+https://github.com/EC-USGS/pyPRMS.git --upgrade
+    pip install git+https://github.com/DOI-USGS/pyPRMS.git --upgrade
 
 To uninstall pyPRMS type::
 
