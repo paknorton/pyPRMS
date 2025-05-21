@@ -41,7 +41,7 @@ dev = ["mypy",
        "pytest-datafiles",]
 
 [project.urls]
-Repository = "https://github.com/EC-USGS/pyPRMS.git"
+Repository = "https://github.com/DOI-USGS/pyPRMS.git"
 
 [project.scripts]
 convert_params = "pyPRMS.utilities.convert_params:main"
