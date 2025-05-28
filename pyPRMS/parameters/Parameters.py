@@ -363,6 +363,58 @@ class Parameters(object):
             if self.verbose:   # pragma: no cover
                 con.print(f'[bold]{cparam}[/] [gold3] parameter added with default value[/]')
 
+    def add_poi(self, addl_gages: Dict[str, int]):
+        """Add user-specified points of interest (POIs) to the model.
+
+        :param addl_gages: Dictionary of user-specified POIs with POI ID as key and segment index as value
+        """
+
+        poi_gage_segment = self.get('poi_gage_segment').tolist().copy()
+        poi_gage_id = self.get('poi_gage_id').tolist().copy()
+        poi_type = self.get('poi_type').tolist().copy()
+
+        nsegment = self.dimensions.get('nsegment').size
+
+        if self.verbose:
+            con.print(f'Starting number of POIs: {len(poi_gage_id)}')
+
+        for cpoi, cseg in addl_gages.items():
+            if cpoi in poi_gage_id:
+                idx = poi_gage_id.index(cpoi)
+                con.print(f'[orange3]WARNING[/]: Existing NHM POI, {cpoi}, overridden; (was {poi_gage_segment[idx]}, now {cseg})')
+                poi_gage_segment[idx] = cseg
+                poi_type[idx] = 0
+            elif cseg in poi_gage_segment:
+                sidx = poi_gage_segment.index(cseg)
+                con.print(f'[orange3]WARNING[/]: User-specified POI ({cpoi}) has same segment index ({cseg}) as existing POI ({poi_gage_id[sidx]}); replacing streamgage ID')
+                poi_gage_id[sidx] = cpoi
+                poi_type[sidx] = 0
+            elif cseg > nsegment:
+                con.print(f'[red]ERROR[/]: User-specified streamgage ({cpoi}) has segment index {cseg} which is not part of the model subset; skipping.')
+            else:
+                poi_gage_id.append(cpoi)
+                poi_gage_segment.append(cseg)
+                poi_type.append(0)
+                con.print(f'Added user-specified POI streamgage ({cpoi}) at segment index {cseg}')
+
+        if self.verbose:
+            con.print(f'Final number of POIs: {len(poi_gage_id)}')
+        assert len(poi_gage_id) == len(poi_gage_segment)
+        assert len(poi_gage_id) == len(poi_type)
+
+        # Update global dimensions
+        for cdim in ('npoigages', 'nobs'):
+            self.dimensions.get(cdim).size = len(poi_gage_id)
+
+        for cparam in ('poi_gage_id', 'poi_gage_segment', 'poi_type'):
+            # Update parameters dimensions
+            self.get(cparam).dimensions.get('npoigages').size = len(poi_gage_id)
+
+        # Update the POI parameters data
+        self.get('poi_gage_id').data = np.array(poi_gage_id)
+        self.get('poi_gage_segment').data = np.array(poi_gage_segment)
+        self.get('poi_type').data = np.array(poi_type)
+
     def adjust_bounded_parameters(self):
         """Adjust the valid upper and lower values for bounded parameters.
         """
