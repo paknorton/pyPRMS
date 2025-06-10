@@ -7,14 +7,11 @@ import xarray as xr   # type: ignore
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Union
 
-from rich.console import Console
-from rich import pretty
-
 from ..control.Control import Control
 from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
+from ..base.console import get_console_instance
 
-pretty.install()
-con = Console(force_jupyter=False)
+con = None
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
@@ -50,6 +47,9 @@ class Cbh(object):
         :param engine: Engine to use for reading CBH files (one of netcdf, zarr, or ascii)
         :param control: Control object for PRMS model containing configuration information
         """
+
+        global con
+        con = get_console_instance()
 
         self.has_nhm_id = False
         self.metadata = metadata['cbh']

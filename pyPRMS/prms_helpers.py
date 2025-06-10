@@ -9,6 +9,10 @@ import numpy as np
 import re
 import xml.etree.ElementTree as xmlET
 
+from .base.console import get_console_instance
+
+con = None
+
 # from .constants import Version   # type: ignore
 
 cond_check = {'=': operator.eq,
@@ -65,6 +69,12 @@ def get_streamnet_subset(dag_ds: nx.classes.digraph.DiGraph,
 
     :returns: Stream network of extracted segments
     """
+
+    global con
+
+    if con is None:
+        con = get_console_instance()
+
     # Create the upstream graph
     # TODO: 2021-12-01 PAN - the reverse function is pretty inefficient for multi-location
     #       jobs.
@@ -81,9 +91,9 @@ def get_streamnet_subset(dag_ds: nx.classes.digraph.DiGraph,
                 # Also remove the cutoff segment itself
                 dag_us.remove_node(xx)
             except KeyError:
-                print(f'WARNING: nhm_segment {xx} does not exist in stream network')
+                con.print(f'[orange3]WARNING[/]: nhm_segment {xx} does not exist in stream network')
     except TypeError:
-        print('\nSelected cutoffs should at least be an empty list instead of NoneType.')
+        con.print('\n[red]ERROR[/]: Selected cutoffs should at least be an empty list instead of NoneType.')
         # logger.error('\nSelected cutoffs should at least be an empty list instead of NoneType.')
         # exit(200)
 
@@ -102,7 +112,7 @@ def get_streamnet_subset(dag_ds: nx.classes.digraph.DiGraph,
                 uniq_seg_us = uniq_seg_us.union(set(pred.keys()).union(set(pred.values())))
             except KeyError:
                 # logger.error('KeyError: Segment {} does not exist in stream network'.format(xx))
-                print(f'KeyError: Segment {xx} does not exist in stream network')
+                con.print(f'[red]ERROR[/]: Segment {xx} does not exist in stream network')
 
         # Get a subgraph in the dag_ds graph and return the edges
         dag_ds_subset = dag_ds.subgraph(uniq_seg_us).copy()

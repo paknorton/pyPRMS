@@ -12,18 +12,21 @@ from typing import Dict, List, Optional, Sequence, Union   # OrderedDict as Orde
 
 from networkx.utils.misc import check_create_using
 
-from rich import pretty
-from rich.console import Console
+# from rich import pretty
+# from rich.console import Console
 from rich.table import Table
 
 from .ControlVariable import ControlVariable
 from ..Exceptions_custom import ControlError
 from ..constants import (ctl_order, ctl_implicit_modules, internal_module_map,
                          MetaDataType, VAR_DELIM, PTYPE_TO_PRMS_TYPE)
+from ..base.console import get_console_instance
+
+con = None
 
 # Rich library
-pretty.install()
-con = Console(record=False, width=200)
+# pretty.install()
+# con = Console(record=False, width=200)
 
 cond_check = {'=': operator.eq,
               '>': operator.gt,
@@ -41,6 +44,9 @@ class Control(object):
         """Create Control object.
         """
 
+        global con
+        con = get_console_instance()
+
         # Container to hold dicionary of ControlVariables
         # self.__control_vars = OrderedDict()
         self.__control_vars: Dict = {}
@@ -55,7 +61,7 @@ class Control(object):
             self.add(name=cvar, meta=metadata['control'])
 
         if verbose:
-            print('Pre-populate control variables done')
+            con.print('[bold]Pre-populate control variables done[/]')
 
     def __getitem__(self, item: str) -> ControlVariable:
         """Get ControlVariable object for a variable.
@@ -230,7 +236,7 @@ class Control(object):
         if self.__verbose:   # pragma: no cover
             for kk, vv in result.items():
                 if len(vv):
-                    print(f'{kk}: {vv}')
+                    con.print(f'{kk}: {vv}')
 
         if self.__verbose:   # pragma: no cover
             diffs_table = Table(title='Differences in Control Variables')

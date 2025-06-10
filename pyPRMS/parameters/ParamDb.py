@@ -6,6 +6,9 @@ from typing import cast, Optional
 from ..prms_helpers import read_xml
 from .Parameters import Parameters
 from ..constants import NEW_PTYPE_TO_DTYPE, PARAMETERS_XML, DIMENSIONS_XML
+from ..base.console import get_console_instance
+
+con = None
 
 
 class ParamDb(Parameters):
@@ -21,6 +24,10 @@ class ParamDb(Parameters):
         """
 
         super(ParamDb, self).__init__(metadata=metadata, verbose=verbose)
+
+        global con
+        con = get_console_instance()
+
         self.__paramdb_dir = paramdb_dir
         self.__verbose = verbose
 
@@ -54,7 +61,7 @@ class ParamDb(Parameters):
 
             if self.exists(xml_param_name):
                 # Sometimes the global parameter xml file has duplicates of parameters
-                print(f'WARNING: {xml_param_name} is duplicated in {PARAMETERS_XML}; skipping')
+                con.print(f'[orange3]WARNING[/]: {xml_param_name} is duplicated in {PARAMETERS_XML}; skipping')
                 continue
 
             if os.path.exists(curr_file):
@@ -68,6 +75,6 @@ class ParamDb(Parameters):
 
                 self.get(xml_param_name).data = tmp_data
             else:
-                print(f'WARNING: {xml_param_name}, ParamDb file does not exist; skipping')
+                con.print(f'[orange3]WARNING[/]: {xml_param_name}, ParamDb file does not exist; skipping')
 
         self.adjust_bounded_parameters()

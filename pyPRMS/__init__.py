@@ -3,6 +3,7 @@ from . import constants
 from . import Exceptions_custom
 from . import plot_helpers
 from . import prms_helpers
+from .base.console import ConsoleManager
 from .control.Control import Control
 from .control.ControlVariable import ControlVariable
 from .control.ControlFile import ControlFile
@@ -36,6 +37,7 @@ __all__ = ['constants',
            'Cbh',
            'CbhAscii',
            'CbhNetcdf',
+           'ConsoleManager',
            'Control',
            'ControlFile',
            'ControlVariable',

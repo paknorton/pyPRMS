@@ -1,17 +1,14 @@
 import os
 import pandas as pd   # type: ignore
 
-from rich.console import Console
-from rich import pretty
-
 from typing import Dict, List, Optional, Sequence, Union
 
 from ..constants import MetaDataType
 from .InputVariable import InputVariable
 from ..parameters.Parameters import Parameters
+from ..base.console import get_console_instance
 
-pretty.install()
-con = Console(force_jupyter=False)
+con = None
 
 HEADER_SEP = '//////////'
 STATION_START = '// Station IDs for'
@@ -38,6 +35,9 @@ class DataFile(object):
         :param verbose: output debugging information
         """
 
+        global con
+        con = get_console_instance()
+
         self.__missing = missing
         self.filename = filename
         self.__verbose = verbose
@@ -59,8 +59,8 @@ class DataFile(object):
         if self.parameters is None:
             for cvar in self.__input_vars.values():
                 if '_units' in cvar.metadata['units']:
-                    print(f'[dark_orange]WARNING[/]: {cvar.name} has units={cvar.metadata["units"]} '
-                          f'but no parameters were supplied.')
+                    con.print(f'[orange3]WARNING[/]: {cvar.name} has units={cvar.metadata["units"]} '
+                              f'but no parameters were supplied.')
         else:
             self.resolve_units()
 
@@ -216,7 +216,7 @@ class DataFile(object):
                             try:
                                 self.__input_vars_intern[cvar]['file_units'] = cunits
                             except KeyError:
-                                con.print(f'[red]{cvar}[/] is not a valid input variable name in this data file')
+                                con.print(f'[red]ERROR[/]: {cvar} is not a valid input variable name in this data file')
                                 pass
                         line = next(it)
 
