@@ -64,10 +64,10 @@ class TestCbh:
             if cvar == 'nhm_id':
                 continue
 
-            out_file = out_path / cbh.var_src[str(cvar)]
+            out_file = out_path / cbh.cbh_src[str(cvar)]
             cbh.write_ascii(out_file, variable=str(cvar))
 
-            with open(datadir.join(cbh.var_src[str(cvar)]), 'r') as f:
+            with open(datadir.join(cbh.cbh_src[str(cvar)]), 'r') as f:
                 lines_orig = f.readlines()
 
             with open(out_file, 'r') as f:
@@ -82,10 +82,10 @@ class TestCbh:
         cbh = Cbh(str(datadir.join('tmax.day')), engine='ascii', metadata=meta_instance.metadata)
 
         for cvar in cbh.data.data_vars:
-            out_file = out_path / cbh.var_src[str(cvar)]
+            out_file = out_path / cbh.cbh_src[str(cvar)]
             cbh.write_ascii(out_file, variable=str(cvar))
 
-            with open(datadir.join(cbh.var_src[str(cvar)]), 'r') as f:
+            with open(datadir.join(cbh.cbh_src[str(cvar)]), 'r') as f:
                 lines_orig = f.readlines()
 
             with open(out_file, 'r') as f:

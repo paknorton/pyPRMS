@@ -12,6 +12,7 @@ from rich import pretty
 
 from ..control.Control import Control
 from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
+from ..parameters.Parameters import Parameters
 
 pretty.install()
 con = Console(force_jupyter=False)
@@ -43,18 +44,23 @@ class Cbh(object):
     def __init__(self, src_path: Union[str, Path, List[Union[str, Path]]],
                  metadata: MetaDataType,
                  engine: Optional[str] = 'ascii',
-                 control: Optional[Control] = None):
+                 control: Optional[Control] = None,
+                 parameters: Optional[Parameters] = None,
+                 verbose: Optional[bool] = False):
         """
         :param src_path: List of paths to CBH files
         :param metadata: Metadata dictionary for Climate-by-HRU variables
         :param engine: Engine to use for reading CBH files (one of netcdf, zarr, or ascii)
         :param control: Control object for PRMS model containing configuration information
+        :param verbose: Output debugging information
         """
 
+        self.verbose = verbose
         self.has_nhm_id = False
         self.metadata = metadata['cbh']
+        self.__parameters = parameters
         self.__var_map = {}
-        self.__var_src: Dict[str, str] = {}
+        self.__cbh_src: Dict[str, str] = {}
 
         if isinstance(src_path, str):
             src_path = Path(src_path)
@@ -69,6 +75,9 @@ class Cbh(object):
                 self.__src_path = [src_path.resolve()]
 
         # con.print(f'CBH files: {self.__src_path}')
+
+        if parameters is not None:
+            self.resolve_units()
 
         assert self.__src_path is not None
 
@@ -85,8 +94,13 @@ class Cbh(object):
                 else:
                     ds = xr.open_zarr(self.__src_path[0], consolidated=True)
             case 'ascii':
+                cbh_files = {}
                 if control is None:
-                    ds = self._cbh_to_xarray(self.__src_path)  # type: ignore
+                    con.print('[orange3]WARNING[/]: No control object provided; CBH variables may be missing metadata')
+
+                    for kk in self.__src_path:
+                        cbh_files[kk] = None
+                    ds = self._cbh_to_xarray(cbh_files)  # type: ignore
                 else:
                     # When a control object is specified, the src_path indicates
                     # the model directory and the *_day variables are read to get
@@ -102,21 +116,20 @@ class Cbh(object):
                                          transp_day='transp_on',
                                          windspeed_day='windspeed_hru')
 
-                    cbh_files = []
-                    # cbh_vars = []
                     for ctl_var, prms_var in cbh_file_vars.items():
+                        # Get the filename associated with the control variable
                         cfile = control.get(ctl_var).values
                         assert type(cfile) is str
 
                         if (self.__src_path[0] / cfile).exists():
-                            con.print(f'[green]INFO[/]: Found {cfile}')
-                            cbh_files.append(self.__src_path[0] / cfile)
-                            # cbh_vars.append(prms_var)
+                            if self.verbose:
+                                con.print(f'[green]INFO[/]: Found {cfile}')
+                            cbh_files[self.__src_path[0] / cfile] = prms_var
 
                     ds = self._cbh_to_xarray(cbh_files)  # type: ignore # , variables=cbh_vars)
 
         if 'nhm_id' in ds.data_vars:
-            # dataset has nhm_id variable so use it as the nhru dimension
+            # The dataset has nhm_id variable so use it as the nhru dimension
             ds = ds.assign_coords(nhru=ds.nhm_id)
             self.has_nhm_id = True
 
@@ -141,10 +154,22 @@ class Cbh(object):
         return self.__var_map
 
     @property
-    def var_src(self) -> Dict[str, str]:
+    def cbh_src(self) -> Dict[str, str]:
         """Return variable to source-file mapping."""
 
-        return self.__var_src
+        return self.__cbh_src
+
+    def resolve_units(self):
+        """Adjust units metadata for CBH variables that have an initial units value of
+        precip_units or temp_units.
+
+        :returns: None
+        """
+
+        selected_units = self.__parameters.user_defined_units
+        for cvar, cval in self.metadata.items():
+            if cval['units'] in selected_units:
+                cval['units'] = selected_units[cval['units']]
 
     def set_nhm_id(self, nhm_ids: np.ndarray):
         """Add the model nhm_id parameter as a coordinate variable.
@@ -284,17 +309,24 @@ class Cbh(object):
 
         for cvar in ds.variables:
             if ds[cvar].ndim > 1:
-                encoding[cvar] = dict(_FillValue=ds[cvar].encoding['_FillValue'],
-                                      compression='zlib',
-                                      complevel=2,
-                                      fletcher32=True)
+                try:
+                    encoding[cvar] = dict(_FillValue=ds[cvar].encoding['_FillValue'],
+                                          compression='zlib',
+                                          complevel=2,
+                                          fletcher32=True)
+                except KeyError:
+                    con.print(f'[orange3]WARNING[/]: Variable {cvar} has no _FillValue defined in encoding.')
+                    encoding[cvar] = dict(_FillValue=None,
+                                          compression='zlib',
+                                          complevel=2,
+                                          fletcher32=True)
             else:
                 encoding[cvar] = dict(_FillValue=None,
                                       contiguous=True)
 
         ds.load().to_netcdf(filename, engine='netcdf4', format='NETCDF4', encoding=encoding)
 
-    def _cbh_to_xarray(self, filename: Union[str, Path, List[Union[str, Path]]]) -> xr.Dataset:
+    def _cbh_to_xarray(self, filename: dict[Path, Optional[str]]) -> xr.Dataset:
         # variables: Optional[List[str]] = None) -> xr.Dataset:
         """Convert ASCII CBH file(s) to xarray
 
@@ -310,17 +342,14 @@ class Cbh(object):
                    'int32': dict(_FillValue=nc.default_fillvals['i4']),
                    'int64': dict(_FillValue=nc.default_fillvals['i8'])}
 
-        if isinstance(filename, str):
-            filename = Path(filename)
-
-        if not isinstance(filename, list):
-            filename = [filename]
-
         df = []
-        read_ok = True
 
-        for idx, cfile in enumerate(filename):
-            assert isinstance(cfile, Path)
+        for cfile, cvar in filename.items():
+            read_ok = True
+
+            if isinstance(cfile, str):
+                cfile = Path(cfile)
+                # assert isinstance(cfile, Path)
 
             # First get the header info which has the variable name and number of HRUs
             with open(cfile, 'r') as fhdl:
@@ -331,12 +360,17 @@ class Cbh(object):
                 var_name, ndims = fhdl.readline().rstrip().split()
                 ndims = int(ndims)   # type: ignore
 
-                self.__var_src[var_name] = cfile.name
-                # if variables is not None:
-                #     # Override the variable name when a list of variables has been provided
-                #     var_name = variables[idx]
-                # else:
-                #     var_name = var_crosswalk.get(var_name, var_name)
+                if cvar is not None:
+                    if var_name != cvar:
+                        con.print(f'[orange3]WARNING[/]: Variable name in file header ({var_name}) does not match expected '
+                                  f'variable ({cvar}). The expected variable name will be used.')
+                        var_name = cvar
+                else:
+                    # With ASCII files when cvar is None, usually the control object was not provided.
+                    # Try looking up the variable name in the variable crosswalk.
+                    var_name = var_crosswalk.get(var_name, var_name)
+
+                self.__cbh_src[var_name] = cfile.name
 
                 line = fhdl.readline().rstrip()
 
@@ -345,7 +379,7 @@ class Cbh(object):
                         # This happens when orad_flag == 1
                         con.print(f'[red]ERROR[/]: Two variables in CBH file ({var_name}, orad). Data will not be read.')
                     else:
-                        con.print(f'[red]ERROR[/]: Unknown extra line: {line}.\n Data will not be read')
+                        con.print(f'[red]ERROR[/]: {cvar}: Unknown extra line: {line}.\n Data will not be read.')
 
                     read_ok = False
 
@@ -358,13 +392,8 @@ class Cbh(object):
 
         # Apply metadata to variables
         for cvar in ds.variables:
-            cvar_x = var_crosswalk.get(str(cvar), str(cvar))
-
-            if cvar_x in self.metadata:
-                # if cvar in self.metadata or cvar in self.__var_map:
-                # cattrs = self.metadata[cvar]
-                cattrs = self.metadata[cvar_x]
-                # con.print(f'  cattrs: {cattrs}')
+            if cvar in self.metadata:
+                cattrs = self.metadata[cvar]
 
                 ds[cvar] = ds[cvar].astype(NEW_PTYPE_TO_DTYPE[cattrs['datatype']])
 
@@ -380,14 +409,15 @@ class Cbh(object):
                     ds[cvar].attrs['units'] = cattrs['units']
 
                 # Set the fill value
+                # con.print(f'{cvar}: {cattrs["datatype"]} -> {var_enc[cattrs["datatype"]]}')
                 ds[cvar].encoding.update(var_enc[cattrs['datatype']])
+            else:
+                if cvar not in ['time', 'nhru']:
+                    con.print(f'[orange3]WARNING[/]: {cvar} not found in metadata.')
 
             if cvar in var_meta:
                 for cattr, cval in var_meta[cvar].items():   # type: ignore
                     ds[cvar].attrs[cattr] = cval
-
-            # if cvar in var_enc:
-            #     ds[cvar].encoding.update(var_enc[cvar])   # type: ignore
 
         return ds
 
