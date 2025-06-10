@@ -96,8 +96,8 @@ class Cbh(object):
             case 'ascii':
                 cbh_files = {}
                 if control is None:
-                    con.print('[orange3]WARNING[/]: No control object provided; CBH variables will have '
-                              'no descriptive metadata')
+                    con.print('[orange3]WARNING[/]: No control object provided; CBH variables may be missing metadata')
+
                     for kk in self.__src_path:
                         cbh_files[kk] = None
                     ds = self._cbh_to_xarray(cbh_files)  # type: ignore
@@ -362,9 +362,13 @@ class Cbh(object):
 
                 if cvar is not None:
                     if var_name != cvar:
-                        con.print(f'[red]ERROR[/]: Variable name in file header ({var_name}) does not match expected '
+                        con.print(f'[orange3]WARNING[/]: Variable name in file header ({var_name}) does not match expected '
                                   f'variable ({cvar}). The expected variable name will be used.')
                         var_name = cvar
+                else:
+                    # With ASCII files when cvar is None, usually the control object was not provided.
+                    # Try looking up the variable name in the variable crosswalk.
+                    var_name = var_crosswalk.get(var_name, var_name)
 
                 self.__cbh_src[var_name] = cfile.name
 
@@ -375,7 +379,7 @@ class Cbh(object):
                         # This happens when orad_flag == 1
                         con.print(f'[red]ERROR[/]: Two variables in CBH file ({var_name}, orad). Data will not be read.')
                     else:
-                        con.print(f'[red]ERROR[/]: {cvar}: Unknown extra line: {line}.\n Data will not be read')
+                        con.print(f'[red]ERROR[/]: {cvar}: Unknown extra line: {line}.\n Data will not be read.')
 
                     read_ok = False
 
@@ -405,8 +409,11 @@ class Cbh(object):
                     ds[cvar].attrs['units'] = cattrs['units']
 
                 # Set the fill value
-                con.print(f'{cvar}: {cattrs["datatype"]} -> {var_enc[cattrs["datatype"]]}')
+                # con.print(f'{cvar}: {cattrs["datatype"]} -> {var_enc[cattrs["datatype"]]}')
                 ds[cvar].encoding.update(var_enc[cattrs['datatype']])
+            else:
+                if cvar not in ['time', 'nhru']:
+                    con.print(f'[orange3]WARNING[/]: {cvar} not found in metadata.')
 
             if cvar in var_meta:
                 for cattr, cval in var_meta[cvar].items():   # type: ignore
