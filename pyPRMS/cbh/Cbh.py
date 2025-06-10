@@ -12,6 +12,7 @@ from rich import pretty
 
 from ..control.Control import Control
 from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
+from ..parameters.Parameters import Parameters
 
 pretty.install()
 con = Console(force_jupyter=False)
@@ -44,6 +45,7 @@ class Cbh(object):
                  metadata: MetaDataType,
                  engine: Optional[str] = 'ascii',
                  control: Optional[Control] = None,
+                 parameters: Optional[Parameters] = None,
                  verbose: Optional[bool] = False):
         """
         :param src_path: List of paths to CBH files
@@ -56,6 +58,7 @@ class Cbh(object):
         self.verbose = verbose
         self.has_nhm_id = False
         self.metadata = metadata['cbh']
+        self.__parameters = parameters
         self.__var_map = {}
         self.__cbh_src: Dict[str, str] = {}
 
@@ -72,6 +75,9 @@ class Cbh(object):
                 self.__src_path = [src_path.resolve()]
 
         # con.print(f'CBH files: {self.__src_path}')
+
+        if parameters is not None:
+            self.resolve_units()
 
         assert self.__src_path is not None
 
@@ -115,8 +121,9 @@ class Cbh(object):
                         cfile = control.get(ctl_var).values
                         assert type(cfile) is str
 
-                        if self.verbose and (self.__src_path[0] / cfile).exists():
-                            con.print(f'[green]INFO[/]: Found {cfile}')
+                        if (self.__src_path[0] / cfile).exists():
+                            if self.verbose:
+                                con.print(f'[green]INFO[/]: Found {cfile}')
                             cbh_files[self.__src_path[0] / cfile] = prms_var
 
                     ds = self._cbh_to_xarray(cbh_files)  # type: ignore # , variables=cbh_vars)
@@ -151,6 +158,18 @@ class Cbh(object):
         """Return variable to source-file mapping."""
 
         return self.__cbh_src
+
+    def resolve_units(self):
+        """Adjust units metadata for CBH variables that have an initial units value of
+        precip_units or temp_units.
+
+        :returns: None
+        """
+
+        selected_units = self.__parameters.user_defined_units
+        for cvar, cval in self.metadata.items():
+            if cval['units'] in selected_units:
+                cval['units'] = selected_units[cval['units']]
 
     def set_nhm_id(self, nhm_ids: np.ndarray):
         """Add the model nhm_id parameter as a coordinate variable.
