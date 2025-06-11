@@ -59,8 +59,8 @@ class DataFile(object):
         if self.parameters is None:
             for cvar in self.__input_vars.values():
                 if '_units' in cvar.metadata['units']:
-                    con.print(f'[orange3]WARNING[/]: {cvar.name} has units={cvar.metadata["units"]} '
-                              f'but no parameters were supplied.')
+                    con.print(f'[dark_orange]WARNING[/]: {cvar.name} has units={cvar.metadata["units"]} '
+                              f'but parameter was not supplied.')
         else:
             self.resolve_units()
 
