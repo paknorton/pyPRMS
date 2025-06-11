@@ -29,16 +29,17 @@ from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, external_module_map, Me
                          NEW_PTYPE_TO_DTYPE, PRMS_VERSION, PRMS6_DEV_VERSION, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES,
                          PARAMETERS_XML, VAR_DELIM)
 
-from rich.console import Console
-from rich import pretty
+# from rich.console import Console
+# from rich import pretty
 from rich.table import Table
 
 import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas    # type: ignore
 
-pretty.install()
-con = Console(force_jupyter=False, width=200)
+from ..base.console import get_console_instance
+
+con = None
 
 LimitOptions = Literal['valid', 'centered', 'absolute']
 
@@ -59,6 +60,10 @@ class Parameters(object):
         :param metadata: Metadata for the parameters
         :param verbose: Output debugging information
         """
+
+        global con
+        con = get_console_instance()
+        # con.print('Parameters: Console info: {}'.format(con))
 
         self.__dimensions = Dimensions(metadata=metadata, verbose=verbose)
         self.__parameters: Dict[str, Parameter] = dict()

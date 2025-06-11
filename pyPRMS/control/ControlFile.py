@@ -8,7 +8,9 @@ from ..constants import PTYPE_TO_DTYPE, VAR_DELIM
 from ..prms_helpers import get_file_iter
 from .Control import Control
 from ..Exceptions_custom import ControlError
+from ..base.console import get_console_instance
 
+con = None
 
 class ControlFile(Control):
     """
@@ -23,6 +25,9 @@ class ControlFile(Control):
                  metadata,
                  verbose: Optional[bool] = False):
         super(ControlFile, self).__init__(metadata=metadata, verbose=verbose)
+
+        global con
+        con = get_console_instance()
 
         self.__verbose = verbose
         self.__isloaded = False
@@ -77,7 +82,7 @@ class ControlFile(Control):
 
                 if self.__verbose:
                     if varname in chk_vars:
-                        print(f'WARNING: {varname} already exists')
+                        con.print(f'[orange3]WARNING[/]: [bold]{varname}[/] already exists')
                     chk_vars.append(varname)
 
                 numval = int(next(it))  # number of values for this variable
@@ -105,7 +110,8 @@ class ControlFile(Control):
                             # NOTE: string-float to int works but float to int does not
                             vals[idx] = next(it)
                     else:
-                        print(f'WARNING: {varname} has context={self.get(varname).meta["context"]} which is not supported')
+                        con.print(f'[orange3]WARNING[/]: [bold]{varname}[/] has context={self.get(varname).meta["context"]} '
+                                  f'which is not supported')
 
                     # After reading expected values make sure there aren't more values
                     # before the next delimiter.
@@ -126,8 +132,8 @@ class ControlFile(Control):
                     self.get(varname).values = vals
 
                 except ValueError as err:
-                    print(f'WARNING: {varname} is not a valid control variable')
-                    print(err)
+                    con.print(f'[orange3]WARNING[/]: [bold]{varname}[/] is not a valid control variable')
+                    # con.print(err)
 
                     try:
                         while next(it) != VAR_DELIM:

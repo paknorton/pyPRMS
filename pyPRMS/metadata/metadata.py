@@ -8,12 +8,15 @@ from typing import Dict, Optional, Union
 
 from pyPRMS.prms_helpers import set_date
 from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE, PRMS_VERSION
+from ..base.console import get_console_instance
 
-from rich.console import Console
-from rich import pretty
+con = None
 
-pretty.install()
-con = Console(record=False, force_jupyter=False)
+# from rich.console import Console
+# from rich import pretty
+#
+# pretty.install()
+# con = Console(record=False, force_jupyter=False)
 
 # For each metadata type, define the outer element name for each variable in the XML file
 outside_elem = {'control': 'control_param',
@@ -34,6 +37,9 @@ class MetaData(object):
                  verbose: bool = False):
         # meta_type - one of control, dimension, parameter, output
         # version - PRMS major version to use for filtering
+
+        global con
+        con = get_console_instance()
 
         fcn_map = {'control': self.__control_to_dict,
                    'dimensions': self.__dimensions_to_dict,
@@ -100,7 +106,7 @@ class MetaData(object):
 
                 if var_version > req_version:
                     if self.__verbose:   # pragma: no cover
-                        print(f'{name} rejected by version {str(var_version)}, req: {str(req_version)}')
+                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by version {str(var_version)}, req: {str(req_version)}')
 
                     del meta_dict[name]
                     continue
@@ -113,7 +119,7 @@ class MetaData(object):
 
                 if depr_version <= req_version:
                     if self.__verbose:   # pragma: no cover
-                        print(f'{name} rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
+                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
 
                     del meta_dict[name]
                     continue
@@ -189,7 +195,7 @@ class MetaData(object):
 
                 if var_version > req_version:
                     if self.__verbose:   # pragma: no cover
-                        print(f'{name} rejected by version {str(var_version)}, req: {str(req_version)}')
+                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by version {str(var_version)}, req: {str(req_version)}')
 
                     del meta_dict[name]
                     continue
@@ -202,7 +208,7 @@ class MetaData(object):
 
                 if depr_version <= req_version:
                     if self.__verbose:   # pragma: no cover
-                        print(f'{name} rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
+                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
 
                     del meta_dict[name]
                     continue
@@ -391,7 +397,7 @@ class MetaData(object):
 
                 if var_version > req_version:
                     if self.__verbose:   # pragma: no cover
-                        print(f'{name} rejected by version {str(var_version)}, req: {str(req_version)}')
+                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by version {str(var_version)}, req: {str(req_version)}')
 
                     del meta_dict[name]
                     continue
@@ -404,7 +410,7 @@ class MetaData(object):
 
                 if depr_version <= req_version:
                     if self.__verbose:   # pragma: no cover
-                        print(f'{name} rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
+                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
 
                     del meta_dict[name]
                     continue
@@ -456,7 +462,7 @@ class MetaData(object):
 
                 if var_version > req_version:
                     if self.__verbose:   # pragma: no cover
-                        print(f'{name} rejected by version {str(var_version)}, req: {str(req_version)}')
+                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by version {str(var_version)}, req: {str(req_version)}')
 
                     del meta_dict[name]
                     continue
@@ -469,7 +475,7 @@ class MetaData(object):
 
                 if depr_version <= req_version:
                     if self.__verbose:   # pragma: no cover
-                        print(f'{name} rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
+                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
 
                     del meta_dict[name]
                     continue

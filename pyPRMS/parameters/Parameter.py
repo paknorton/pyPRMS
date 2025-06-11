@@ -5,15 +5,17 @@ import pandas as pd     # type: ignore
 from typing import Any, cast, Dict, List, NamedTuple, Optional, Union
 import xml.etree.ElementTree as xmlET
 
+from ..base.console import get_console_instance
 from ..constants import NEW_PTYPE_TO_DTYPE
 from ..dimensions.Dimensions import ParamDimensions
 from ..Exceptions_custom import FixedDimensionError
 
-from rich.console import Console
-from rich import pretty
-
-pretty.install()
-con = Console(force_jupyter=False)
+# from rich.console import Console
+# from rich import pretty
+#
+# pretty.install()
+# con = Console(force_jupyter=False)
+con = None
 
 ParamDataRawType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_]
 ParamDataType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_, int, float, str]
@@ -51,6 +53,9 @@ class Parameter(object):
 
         :param name: A valid PRMS parameter name
         """
+
+        global con
+        con = get_console_instance()
 
         # Set the parameter name
         self.__name = name

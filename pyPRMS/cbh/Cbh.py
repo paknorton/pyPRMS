@@ -7,25 +7,19 @@ import xarray as xr   # type: ignore
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Union
 
-from rich.console import Console
-from rich import pretty
-
 from ..control.Control import Control
 from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
+from ..base.console import get_console_instance
 from ..parameters.Parameters import Parameters
 
-pretty.install()
-con = Console(force_jupyter=False)
+con = None
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
-CBH_VARNAMES = ['prcp', 'tmin', 'tmax']
-CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]
-TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
 NA_VALS_DEFAULT = ('-99.0', '-999.0', 'NaN', 'inf')
 DATA_SEP = '####'
 
-# Crosswalk of source CBH variable names to PRMS variable names
+# Crosswalk of some of the possible source CBH variable names to PRMS variable names
 var_crosswalk: Dict[str, str] = dict(tmax='tmax_hru',
                                      T2MAX='tmax_hru',
                                      tmin='tmin_hru',
@@ -54,6 +48,9 @@ class Cbh(object):
         :param control: Control object for PRMS model containing configuration information
         :param verbose: Output debugging information
         """
+
+        global con
+        con = get_console_instance()
 
         self.verbose = verbose
         self.has_nhm_id = False

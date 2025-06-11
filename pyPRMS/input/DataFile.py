@@ -1,17 +1,14 @@
 import os
 import pandas as pd   # type: ignore
 
-from rich.console import Console
-from rich import pretty
-
 from typing import Dict, List, Optional, Sequence, Union
 
 from ..constants import MetaDataType
 from .InputVariable import InputVariable
 from ..parameters.Parameters import Parameters
+from ..base.console import get_console_instance
 
-pretty.install()
-con = Console(force_jupyter=False)
+con = None
 
 HEADER_SEP = '//////////'
 STATION_START = '// Station IDs for'
@@ -37,6 +34,9 @@ class DataFile(object):
         :param missing: list of missing values
         :param verbose: output debugging information
         """
+
+        global con
+        con = get_console_instance()
 
         self.__missing = missing
         self.filename = filename
@@ -216,7 +216,7 @@ class DataFile(object):
                             try:
                                 self.__input_vars_intern[cvar]['file_units'] = cunits
                             except KeyError:
-                                con.print(f'[red]{cvar}[/] is not a valid input variable name in this data file')
+                                con.print(f'[red]ERROR[/]: {cvar} is not a valid input variable name in this data file')
                                 pass
                         line = next(it)
 

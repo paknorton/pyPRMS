@@ -7,13 +7,14 @@ from ..Exceptions_custom import ParameterExistsError, ParameterNotValidError
 from .Parameters import Parameters
 from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM, PTYPE_TO_DTYPE
 from ..prms_helpers import get_file_iter
+from ..base.console import get_console_instance
 
-from rich.console import Console
-from rich import pretty
-
-pretty.install()
-con = Console()
-
+# from rich.console import Console
+# from rich import pretty
+#
+# pretty.install()
+# con = Console()
+con = None
 
 class ParameterFile(Parameters):
 
@@ -31,6 +32,9 @@ class ParameterFile(Parameters):
         """
 
         super(ParameterFile, self).__init__(metadata=metadata, verbose=verbose)
+
+        global con
+        con = get_console_instance()
 
         # self.__filename = None
         # self.__header = None

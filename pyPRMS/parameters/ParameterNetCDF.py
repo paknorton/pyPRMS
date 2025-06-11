@@ -3,7 +3,9 @@ import xarray as xr
 from typing import Optional
 
 from .Parameters import Parameters
+from ..base.console import get_console_instance
 
+con = None
 
 NCF_TO_NHM_TYPES = {'int32': 1, 'float32': 2, 'float64': 3, '|S1': 4}
 
@@ -23,6 +25,10 @@ class ParameterNetCDF(Parameters):
         """
 
         super(ParameterNetCDF, self).__init__(metadata=metadata, verbose=verbose)
+
+        global con
+        con = get_console_instance()
+
         self.__filename = filename
         self.__verbose = verbose
 
@@ -61,7 +67,7 @@ class ParameterNetCDF(Parameters):
         # Now add the parameters
         for var in xr_df.variables.keys():
             if self.__verbose:   # pragma: no cover
-                print(str(var))
+                con.print(str(var))
 
             cparam = xr_df[var].T
 

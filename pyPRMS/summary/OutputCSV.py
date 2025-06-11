@@ -2,11 +2,10 @@ import pandas as pd   # type: ignore
 
 from pathlib import Path
 from typing import Optional, Union
-from rich.console import Console
-from rich import pretty
 
-pretty.install()
-con = Console(force_jupyter=False)
+from ..base.console import get_console_instance
+
+con = None
 
 
 class OutputCSV(object):
@@ -20,6 +19,9 @@ class OutputCSV(object):
         :param filename: Name of the PRMS CSV output file
         :param verbose: Output debugging information
         """
+
+        global con
+        con = get_console_instance()
 
         self.__filename = filename
 
@@ -77,7 +79,7 @@ class OutputCSV(object):
                 self.sep = ','
 
         if self.verbose:
-            con.print(f'value separator: {self.sep}')
+            con.print(f'[green]INFO[/]: value separator = {self.sep}')
 
         # Determine the format of the time field(s)
         var_offset = 0
@@ -89,8 +91,8 @@ class OutputCSV(object):
             self.time_col_names = {0: 'Date'}
 
         if self.verbose:
-            con.print(f'{var_offset=}')
-            con.print(f'time field(s): {list(self.time_col_names.values())}')
+            con.print(f'[green]INFO[/]: {var_offset=}')
+            con.print(f'[green]INFO[/]: time field(s): {list(self.time_col_names.values())}')
 
         # Parse the field names
         tmp_flds = [kk.strip() for kk in hdr1.split(self.sep)]
