@@ -15,13 +15,10 @@ con = None
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
-CBH_VARNAMES = ['prcp', 'tmin', 'tmax']
-CBH_INDEX_COLS = [0, 1, 2, 3, 4, 5]
-TS_FORMAT = '%Y %m %d %H %M %S'   # 1915 1 13 0 0 0
 NA_VALS_DEFAULT = ('-99.0', '-999.0', 'NaN', 'inf')
 DATA_SEP = '####'
 
-# Crosswalk of source CBH variable names to PRMS variable names
+# Crosswalk of some of the possible source CBH variable names to PRMS variable names
 var_crosswalk: Dict[str, str] = dict(tmax='tmax_hru',
                                      T2MAX='tmax_hru',
                                      tmin='tmin_hru',

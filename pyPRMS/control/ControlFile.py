@@ -82,7 +82,7 @@ class ControlFile(Control):
 
                 if self.__verbose:
                     if varname in chk_vars:
-                        con.print(f'[orange3]WARNING[/]: {varname} already exists')
+                        con.print(f'[orange3]WARNING[/]: [bold]{varname}[/] already exists')
                     chk_vars.append(varname)
 
                 numval = int(next(it))  # number of values for this variable
@@ -110,7 +110,7 @@ class ControlFile(Control):
                             # NOTE: string-float to int works but float to int does not
                             vals[idx] = next(it)
                     else:
-                        con.print(f'[orange3]WARNING[/]: {varname} has context={self.get(varname).meta["context"]} '
+                        con.print(f'[orange3]WARNING[/]: [bold]{varname}[/] has context={self.get(varname).meta["context"]} '
                                   f'which is not supported')
 
                     # After reading expected values make sure there aren't more values
@@ -132,7 +132,7 @@ class ControlFile(Control):
                     self.get(varname).values = vals
 
                 except ValueError as err:
-                    con.print(f'[orange3]WARNING[/]: {varname} is not a valid control variable')
+                    con.print(f'[orange3]WARNING[/]: [bold]{varname}[/] is not a valid control variable')
                     # con.print(err)
 
                     try:
