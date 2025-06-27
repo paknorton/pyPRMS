@@ -23,6 +23,7 @@ class ControlFile(Control):
 
     def __init__(self, filename: Union[str, Path],
                  metadata,
+                 missing_as_default: bool=True,
                  verbose: Optional[bool] = False):
         super(ControlFile, self).__init__(metadata=metadata, verbose=verbose)
 
@@ -31,6 +32,7 @@ class ControlFile(Control):
 
         self.__verbose = verbose
         self.__isloaded = False
+        self.__missing_as_default = missing_as_default
 
         if isinstance(filename, str):
             filename = Path(filename)
@@ -61,6 +63,7 @@ class ControlFile(Control):
         Reads the contents of a control file into the class.
         """
 
+        vars_in_file = []
         if self.__verbose:
             chk_vars = []
 
@@ -79,6 +82,7 @@ class ControlFile(Control):
                 # We're dealing with a control parameter/variable
                 # We're in a parameter section
                 varname = line.split(' ')[0]
+                vars_in_file += [varname]
 
                 if self.__verbose:
                     if varname in chk_vars:
@@ -141,6 +145,12 @@ class ControlFile(Control):
                     except StopIteration:
                         # Hit the end of the file
                         continue
+
+        if not self.__missing_as_default:
+            ctl_vars = list(self.control_variables.keys())
+            for vv in ctl_vars:
+                if vv not in vars_in_file:
+                    self.remove(vv)
 
         self.header = header_tmp
         self.__isloaded = True
