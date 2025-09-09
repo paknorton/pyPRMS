@@ -4,6 +4,7 @@ import pandas as pd   # type: ignore
 import netCDF4 as nc   # type: ignore
 import xarray as xr   # type: ignore
 
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Union
 
@@ -381,7 +382,8 @@ class Cbh(object):
                     read_ok = False
 
             if read_ok:
-                df.append(pd.DataFrame(self._read_ascii_file(cfile).stack()))
+                df.append(pd.DataFrame(self._read_ascii_file(cfile,
+                                                             datatype=NEW_PTYPE_TO_DTYPE[self.metadata[var_name]['datatype']]).stack()))
                 df[-1].index.rename(['time', 'nhru'], inplace=True)
                 df[-1].rename(columns={0: var_name}, inplace=True)
 
@@ -420,10 +422,12 @@ class Cbh(object):
 
     @staticmethod
     def _read_ascii_file(filename: Union[str, Path],
+                         datatype=np.float32,
                          columns: Optional[List] = None) -> pd.DataFrame:
         """Reads a single ASCII CBH file.
 
         :param filename: name of the CBH file
+        :param datatype: datatype to use for reading the CBH variable
         :param columns: columns to read
         :returns: dataframe of CBH variable
         """
@@ -439,8 +443,16 @@ class Cbh(object):
         # Columns 0-5 always represent date/time information
         time_col_names = {0: 'year', 1: 'month', 2: 'day', 3: 'hour', 4: 'minute', 5: 'second'}
 
+        types = defaultdict(lambda: datatype)
+        types[0] = np.int32
+        types[1] = np.int32
+        types[2] = np.int32
+        types[3] = np.int32
+        types[4] = np.int32
+        types[5] = np.int32
+
         df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
-                         skiprows=3, engine='python',
+                         skiprows=3, engine='python', dtype=types,
                          # skiprows=3, engine='c', memory_map=True,
                          header=None, na_values=NA_VALS_DEFAULT,
                          usecols=columns)
