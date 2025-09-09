@@ -771,7 +771,7 @@
         </values>
     </control_param>
     <control_param name="prms_warmup" version="5.0">
-        <default>1</default>
+        <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
         <desc>Number of years to simulate before writing mapped results, Basin, nhru, nsub, or nsegment Summary Output Files</desc>
@@ -1413,7 +1413,7 @@
             <value name="2">Constant mass balance gradient above and below equilibrium line altitude (ELA)</value>
         </values>
     </control_param>
-    <control_param name="no_snow_flag" version="6.0.0">
+    <control_param name="snow_flag" version="6.0.0">
         <default>0</default>
         <type>1</type>
         <numvals>1</numvals>
