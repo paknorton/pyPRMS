@@ -4120,7 +4120,7 @@
             </dimension>
         </dimensions>
     </variable>
-    <variable name="perv_avail_et" version="4.0" depcrated="5.0">
+    <variable name="perv_avail_et" version="4.0" deprecated="5.0">
         <type>F</type>
         <units>inches</units>
         <desc>Unsatisfied ET available to the capillary reservoir of each HRU</desc>
