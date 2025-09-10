@@ -97,13 +97,13 @@ orad_flag	int32	Flag to specify whether or not the variable orad is specified as
 outputSelectDatesON_OFF	int32	Switch to indicate if nhru_summary output files are generated for a specified set of dates	0
 param_file	string	Pathname(s) for Parameter File(s)	prms.params
 parameter_check_flag	int32	Flag to indicate if selected parameter values validation checks are treated as warnings or errors	0
-potet_coef_dynamic	string	Pathname of the time series of pre-processed potential evapotranspiration coefficient values where the parameter is dependent on the value of et_module 	dyn_potet_coef.param
 potet_day	string	Pathname of the CBH file of pre-processed potential-ET input data for each HRU to specify variable potet (units: inches/day)	potet.day
+potetcoef_dynamic	string	Pathname of the time series of pre-processed potential evapotranspiration coefficient values where the parameter is dependent on the value of et_module 	dyn_potet_coef.param
 precip_day	string	Pathname of the CBH file of pre-processed precipitation input data for each HRU to specify variable precip-inches	precip.day
 precip_map_file	string	Pathname of pre-processed precipitation input data to be mapped to each HRU to specify variable precip_map_values (units based on value specified for parameter precip_units)	precip.map
 precip_module	string	Module name for precipitation-distribution method	precip_1sta
 print_debug	int32	Flag to indicate type of debug output	0
-prms_warmup	int32	Number of years to simulate before writing mapped results, Basin, nhru, nsub, or nsegment Summary Output Files	1
+prms_warmup	int32	Number of years to simulate before writing mapped results, Basin, nhru, nsub, or nsegment Summary Output Files	0
 radtrncf_dynamic	string	Pathname of the time series of pre-processed values for dynamic parameter rad_trncf	dyn_rad_trncf.param
 save_vars_to_file	int32	Flag to determine if an Initial Conditions File will be generated at the end of simulation	0
 segment_transferON_OFF	int32	Flag to indicate to use stream segment transfer flow rates from the segment_transfer_file	0

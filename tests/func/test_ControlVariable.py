@@ -60,7 +60,7 @@ class TestControlVariable:
         assert avar.meta == adhoc_meta and avar.size == 1
 
     def test_control_variable_str(self, metadata_ctl):
-        expected = '----- ControlVariable -----\nname: prms_warmup\nversion: 5.0\ndatatype: int32\ndescription: Number of years to simulate before writing mapped results, Basin, nhru, nsub, or nsegment Summary Output Files\ncontext: scalar\ndefault: 1\n'
+        expected = '----- ControlVariable -----\nname: prms_warmup\nversion: 5.0\ndatatype: int32\ndescription: Number of years to simulate before writing mapped results, Basin, nhru, nsub, or nsegment Summary Output Files\ncontext: scalar\ndefault: 0\n'
         avar = ControlVariable('prms_warmup', meta=metadata_ctl)
 
         assert avar.__str__() == expected
