@@ -385,6 +385,7 @@ class Cbh(object):
                 df.append(pd.DataFrame(self._read_ascii_file(cfile,
                                                              datatype=NEW_PTYPE_TO_DTYPE[self.metadata[var_name]['datatype']]).stack()))
                 df[-1].index.rename(['time', 'nhru'], inplace=True)
+                # df[-1].rename(var_name, inplace=True)
                 df[-1].rename(columns={0: var_name}, inplace=True)
 
         ds = xr.merge([cdf.to_xarray() for cdf in df])
@@ -452,10 +453,17 @@ class Cbh(object):
         types[5] = np.int32
 
         df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
-                         skiprows=3, engine='python', dtype=types,
+                         skiprows=3, engine='c', dtype=types, low_memory=True,
                          # skiprows=3, engine='c', memory_map=True,
                          header=None, na_values=NA_VALS_DEFAULT,
                          usecols=columns)
+
+        df[0] = pd.to_numeric(df[0], downcast='integer')
+        df[1] = pd.to_numeric(df[1], downcast='integer')
+        df[2] = pd.to_numeric(df[2], downcast='integer')
+        df[3] = pd.to_numeric(df[3], downcast='integer')
+        df[4] = pd.to_numeric(df[4], downcast='integer')
+        df[5] = pd.to_numeric(df[5], downcast='integer')
 
         # Rename columns with time information
         df.rename(columns=time_col_names, inplace=True)
