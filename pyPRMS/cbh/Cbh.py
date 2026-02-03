@@ -186,7 +186,9 @@ class Cbh(object):
     def write_ascii(self, filename: Union[str, Path],
                     variable: str,
                     time_slice: Optional[Union[list, slice]] = None,
-                    hru_ids: Optional[Union[list, np.ndarray]] = None):
+                    hru_ids: Optional[Union[list, np.ndarray]] = None,
+                    na_rep: str = '-999',
+                    float_format: str = '%0.2f'):
         """Write CBH data for selected variable to PRMS ASCII-formatted file.
 
         :param filename: Climate-by-HRU filename
@@ -231,7 +233,7 @@ class Cbh(object):
             out_cbh.write('Written by Bandit\n')
             out_cbh.write(f'{var_crosswalk.get(variable, variable)} {len(hru_ids)}\n')
             out_cbh.write('########################################\n')
-            ds.to_csv(out_cbh, columns=out_order, na_rep='-999', float_format='%0.2f',
+            ds.to_csv(out_cbh, columns=out_order, na_rep=na_rep, float_format=float_format,
                       sep=' ', index=False, header=False, lineterminator='\n', encoding=None,
                       chunksize=10)
             out_cbh.close()

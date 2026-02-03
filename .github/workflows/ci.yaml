@@ -132,13 +132,16 @@ jobs:
           pip list
           python --version
 
-      - name: Test suite
-        working-directory: tests
-        run: coverage run -m pytest -v
+      - name: Run tests
+        run: pytest
 
-      - name: Coverage report
-        working-directory: tests
-        run: coverage report -m
+#      - name: Test suite
+#        working-directory: tests
+#        run: coverage run -m pytest -v
+#
+#      - name: Coverage report
+#        working-directory: tests
+#        run: coverage report -m
 
   #     - name: Upload test results
   #       if: always()
