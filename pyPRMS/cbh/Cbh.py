@@ -188,8 +188,7 @@ class Cbh(object):
                     time_slice: Optional[Union[list, slice]] = None,
                     hru_ids: Optional[Union[list, np.ndarray]] = None,
                     na_rep: str = '-999',
-                    float_format: str = '%0.2f',
-    ):
+                    float_format: str = '%0.2f'):
         """Write CBH data for selected variable to PRMS ASCII-formatted file.
 
         :param filename: Climate-by-HRU filename
