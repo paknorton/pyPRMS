@@ -38,7 +38,8 @@ dev = ["mypy",
        "pytest",
        "pytest-cov",
        "pytest-xdist",
-       "pytest-datafiles",]
+       "pytest-datafiles",
+       "coverage[toml]", ]
 
 [project.urls]
 Repository = "https://github.com/DOI-USGS/pyPRMS.git"
@@ -47,8 +48,21 @@ Repository = "https://github.com/DOI-USGS/pyPRMS.git"
 convert_params = "pyPRMS.utilities.convert_params:main"
 convert_cbh = "pyPRMS.utilities.convert_cbh:main"
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov=pyPRMS --cov-report=term-missing --cov-report=xml:coverage.xml"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["pyPRMS"]
+branch = true
+omit = ["*/src/netCDF4/_netCDF4.pyx", ]
+
 [tool.coverage.report]
 omit = ["*/src/netCDF4/_netCDF4.pyx", ]
+show_missing = true
+skip_covered = false
+precision = 1
 
 [tool.setuptools]
 include-package-data = true
