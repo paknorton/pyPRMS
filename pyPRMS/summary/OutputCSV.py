@@ -41,6 +41,7 @@ class OutputCSV(object):
 
     @property
     def basin_vars(self):
+        """Returns the basin variables from the CSV output file."""
         return self.__basin_vars
 
     @property
