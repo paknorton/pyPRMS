@@ -98,6 +98,7 @@ def get_figsize(extent, init_size=(10, 10), **kwargs):
 #
 #     return extent_dms
 
+
 def get_projection(gdf: geopandas.GeoDataFrame):
     """Get projection of geodataframe.
 
@@ -132,6 +133,7 @@ def get_projection(gdf: geopandas.GeoDataFrame):
         crs_proj = ccrs.PlateCarree()
 
     return crs_proj
+
 
 def plot_line_collection(ax, geoms, values=None, cmap=None, norm=None, vary_width=False, vary_color=True, colors=None,
                          alpha=1.0, linewidth=1.0, **kwargs):
@@ -199,6 +201,7 @@ def plot_polygon_collection(ax, geoms, values=None, cmap=None, norm=None, # face
     ax.autoscale_view()
     return patches
 
+
 def read_gis(filename: str, layer_name: str):
     """Read a shapefile or geodatabase that corresponds to HRUs.
 
@@ -211,6 +214,7 @@ def read_gis(filename: str, layer_name: str):
         print('Overriding USGS aea crs with EPSG:5070')
         gis_obj.crs = 'EPSG:5070'
     return gis_obj
+
 
 def set_colormap(the_var: str,
                  param_data: pd.DataFrame,
