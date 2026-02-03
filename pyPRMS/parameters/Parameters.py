@@ -1215,8 +1215,8 @@ class Parameters(object):
         if self.__hru_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':   # type: ignore
             print('Overriding USGS aea crs with EPSG:5070')
             self.__hru_poly.crs = 'EPSG:5070'   # type: ignore
-        elif self.__hru_poly.crs.name[0:5] == 'NAD83':   # type: ignore
-            self.__hru_poly.to_crs('epsg:4326', inplace=True)
+        # elif self.__hru_poly.crs.name[0:5] == 'NAD83':   # type: ignore
+        #     self.__hru_poly.to_crs('epsg:4326', inplace=True)
 
         self.__hru_shape_key = shape_key
 
@@ -1235,8 +1235,8 @@ class Parameters(object):
         if self.__seg_poly.crs.name == 'USA_Contiguous_Albers_Equal_Area_Conic_USGS_version':   # type: ignore
             print('Overriding USGS aea crs with EPSG:5070')
             self.__seg_poly.crs = 'EPSG:5070'   # type: ignore
-        elif self.__seg_poly.crs.name[0:5] == 'NAD83':   # type: ignore
-            self.__seg_poly.to_crs('epsg:4326', inplace=True)
+        # elif self.__seg_poly.crs.name[0:5] == 'NAD83':   # type: ignore
+        #     self.__seg_poly.to_crs('epsg:4326', inplace=True)
 
         self.__seg_shape_key = shape_key
 
