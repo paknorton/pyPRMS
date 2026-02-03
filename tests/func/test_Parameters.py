@@ -112,7 +112,7 @@ class TestParameters:
 
     def test_as_dataframe_poi(self, pdb_instance):
         df = pdb_instance.get('poi_gage_id').as_dataframe
-        expected_df = pd.DataFrame({'poi_gage_id': ['01234567', '12345678', '23456789', '34567890']}, dtype=np.str_)
+        expected_df = pd.DataFrame({'poi_gage_id': ['01234567', '12345678', '23456789', '34567890']})
         expected_df.rename(index={k: k + 1 for k in expected_df.index}, inplace=True)
         expected_df.index.name = 'model_poi_idx'
 
