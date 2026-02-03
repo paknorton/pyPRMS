@@ -3,7 +3,10 @@ import os
 import pandas as pd     # type: ignore
 from typing import cast, Optional
 
+from ..constants import PRMS_VERSION
+from ..Exceptions_custom import ParameterNotValidError
 from ..prms_helpers import read_xml
+from ..metadata import MetaData
 from .Parameters import Parameters
 from ..constants import NEW_PTYPE_TO_DTYPE, PARAMETERS_XML, DIMENSIONS_XML
 from ..base.console import get_console_instance
@@ -54,6 +57,12 @@ class ParamDb(Parameters):
         for xml_dim in dimens_root.findall('dimension'):
             self.dimensions.add(name=cast(str, xml_dim.attrib.get('name')), size=cast(int, xml_dim.find('size').text))
 
+        # Create a MetaData object to use its parameter parsing function
+        mobj = MetaData()
+        pvt_meta = mobj._MetaData__parameters_to_dict(xml_root=params_root,
+                                                      meta_type='parameters',
+                                                      req_version=PRMS_VERSION)
+
         # Populate parameterSet with all available parameter names
         for param in params_root.findall('parameter'):
             xml_param_name = cast(str, param.attrib.get('name'))
@@ -65,7 +74,12 @@ class ParamDb(Parameters):
                 continue
 
             if os.path.exists(curr_file):
-                self.add(xml_param_name)
+                try:
+                    self.add(xml_param_name)
+                except ParameterNotValidError:
+                    con.print(f'[orange3]WARNING[/]: {xml_param_name} added custom metadata')
+                    self.add_metadata(xml_param_name, pvt_meta[xml_param_name])
+                    self.add(xml_param_name)
 
                 cdtype = NEW_PTYPE_TO_DTYPE[self.get(xml_param_name).meta['datatype']]
                 tmp_data = pd.read_csv(curr_file,
