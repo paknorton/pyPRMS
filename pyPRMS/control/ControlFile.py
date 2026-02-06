@@ -23,14 +23,16 @@ class ControlFile(Control):
 
     def __init__(self, filename: Union[str, Path],
                  metadata,
+                 include_missing: Optional[bool] = False,
                  verbose: Optional[bool] = False):
-        super(ControlFile, self).__init__(metadata=metadata, verbose=verbose)
+        super(ControlFile, self).__init__(metadata=metadata, include_missing=include_missing, verbose=verbose)
 
         global con
         con = get_console_instance()
 
         self.__verbose = verbose
         self.__isloaded = False
+        self.__include_missing = include_missing
 
         if isinstance(filename, str):
             filename = Path(filename)
@@ -84,6 +86,12 @@ class ControlFile(Control):
                     if varname in chk_vars:
                         con.print(f'[orange3]WARNING[/]: [bold]{varname}[/] already exists')
                     chk_vars.append(varname)
+
+                if not self.__include_missing:
+                    try:
+                        self.add(name=varname)   # , meta=self.__metadata['control'])
+                    except ControlError:
+                        con.print(f'[orange3]WARNING[/]: [bold]{varname}[/] duplicated in the control file')
 
                 numval = int(next(it))  # number of values for this variable
                 valuetype = int(next(it))  # Variable type (1 - integer, 2 - float, 4 - character)
