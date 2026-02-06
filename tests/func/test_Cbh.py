@@ -1,5 +1,7 @@
 import pytest
 import os
+import numpy as np
+import xarray as xr
 from pathlib import Path
 from distutils import dir_util
 
@@ -54,7 +56,8 @@ class TestCbh:
         nhm_ids = pdb_instance.get('nhm_id').data
 
         ctl = ControlFile(datadir / 'control.default.bandit', metadata=meta_instance.metadata, verbose=False)
-        cbh = Cbh(str(datadir), engine='ascii', metadata=meta_instance.metadata, control=ctl)
+        cbh = Cbh(str(datadir), engine='ascii', metadata=meta_instance.metadata, control=ctl,
+                  parameters=pdb_instance, verbose=True)
 
         assert not cbh.has_nhm_id
         cbh.set_nhm_id(nhm_ids)
@@ -92,3 +95,21 @@ class TestCbh:
                 lines_chk = f.readlines()
 
             assert lines_orig == lines_chk
+
+    def test_read_netcdf_roundtrip_netcdf(self, datadir, pdb_instance, meta_instance, tmp_path):
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+
+        cbh = Cbh(str(datadir.join('cbh.nc')), engine='netcdf', metadata=meta_instance.metadata)
+
+        out_file = out_path / 'cbh.nc'
+        cbh.write_netcdf(out_file)
+
+        # Check that the values of the data variables match
+        ds_tmp = xr.open_dataset(out_file, chunks={})
+        ds_tmp = ds_tmp.assign_coords(nhru=ds_tmp.nhm_id)
+
+        ds_orig = cbh.data
+
+        for vv in ds_orig.data_vars:
+            np.testing.assert_equal(ds_orig[vv].values, ds_tmp[vv].values)
