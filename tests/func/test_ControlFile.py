@@ -31,7 +31,7 @@ class TestControlFile:
 
         prms_meta = MetaData(verbose=False).metadata
 
-        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
+        ctl = ControlFile(control_file, metadata=prms_meta, include_missing=True, verbose=False)
 
         # Create a instance of a base control class
         ctl_base = Control(metadata=prms_meta)
@@ -77,9 +77,8 @@ class TestControlFile:
 
         prms_meta = MetaData(verbose=True).metadata
 
-        ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
-
-        assert not ctl.exists('random_ctl_var')
+        with pytest.raises(ValueError):
+            ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
 
     def test_bad_num_vals_in_file(self, datadir):
         """Too many values for a variable  should raise ControlError"""
