@@ -24,10 +24,6 @@ from ..base.console import get_console_instance
 
 con = None
 
-# Rich library
-# pretty.install()
-# con = Console(record=False, width=200)
-
 cond_check = {'=': operator.eq,
               '>': operator.gt,
               '<': operator.lt}
@@ -40,7 +36,9 @@ class Control(object):
     # Author: Parker Norton (pnorton@usgs.gov)
     # Create date: 2019-04-18
 
-    def __init__(self, metadata: MetaDataType, verbose: Optional[bool] = False):
+    def __init__(self, metadata: MetaDataType,
+                 include_missing: Optional[bool] = True,
+                 verbose: Optional[bool] = False):
         """Create Control object.
         """
 
@@ -48,20 +46,14 @@ class Control(object):
         con = get_console_instance()
 
         # Container to hold dicionary of ControlVariables
-        # self.__control_vars = OrderedDict()
         self.__control_vars: Dict = {}
         self.__header: Optional[List[str]] = None
+
+        self.__metadata = metadata
         self.__verbose = verbose
 
-        # Create an entry for each variable in the control section of
-        # the metadata dictionary
-        # for cvar, cvals in metadata['control'].items():
-        #     self.add(name=cvar, meta=cvals)
-        for cvar in metadata['control'].keys():
-            self.add(name=cvar, meta=metadata['control'])
-
-        if verbose:
-            con.print('[bold]Pre-populate control variables done[/]')
+        if include_missing:
+            self._preload_metadata()
 
     def __getitem__(self, item: str) -> ControlVariable:
         """Get ControlVariable object for a variable.
@@ -203,7 +195,7 @@ class Control(object):
 
         return mod_dict
 
-    def add(self, name: str, meta=None):
+    def add(self, name: str):   # , meta=None):
         """Add a control variable by name.
 
         :param name: Name of the control variable
@@ -214,8 +206,7 @@ class Control(object):
 
         if self.exists(name):
             raise ControlError("Control variable already exists")
-        self.__control_vars[name] = ControlVariable(name=name, meta=meta)
-        # self.__control_vars[name] = ControlVariable(name=name, datatype=datatype, meta=meta)
+        self.__control_vars[name] = ControlVariable(name=name, meta=self.__metadata['control'])
 
     def diff(self, other: 'Control') -> dict:
         """A difference listing/dictionary against another Control object.
@@ -421,3 +412,12 @@ class Control(object):
         """Abstract function for reading.
         """
         assert False, 'Control._read() must be defined by child class'
+
+    def _preload_metadata(self):
+        # Create an entry for each variable in the control section of
+        # the metadata dictionary
+        for cvar in self.__metadata['control'].keys():
+            self.add(name=cvar)   # , meta=self.__metadata['control'])
+
+        if self.__verbose:
+            con.print('[bold]Pre-populate control variables done[/]')
