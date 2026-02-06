@@ -745,7 +745,7 @@ precip_map_file
 4
 precip.map
 ####
-potet_coef_dynamic
+potetcoef_dynamic
 1
 4
 dyn_potet_coef.param
