@@ -744,8 +744,3 @@ segment_transfer_file
 1
 4
 seg.transfer
-####
-cbh_binary_flag
-1
-1
-0
