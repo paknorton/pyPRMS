@@ -8,7 +8,7 @@ from pyPRMS.Exceptions_custom import ControlError
 @pytest.fixture(scope='class')
 def control_object():
     prms_meta = MetaData(verbose=False).metadata
-    ctl = Control(metadata=prms_meta)
+    ctl = Control(metadata=prms_meta, verbose=True)
 
     return ctl
 
@@ -224,6 +224,19 @@ class TestControl:
         control_object.header = None
         assert control_object.header is None
 
+    def test_cbh_files(self, control_object):
+        """Check the default set of CBH files"""
+        expected = ['cloudcover.day',
+                    'humidity.day',
+                    'potet.day',
+                    'precip.day',
+                    'swrad.day',
+                    'tmax.day',
+                    'tmin.day',
+                    'transp.day',
+                    'windspeed.day']
+        assert control_object.cbh_files == expected
+
     def test_default_modules(self, control_object):
         """Check the default set of modules is correct"""
         expected = {'et_module': 'potet_jh',
@@ -275,13 +288,13 @@ class TestControl:
         """Add an invalid control variable name"""
 
         with pytest.raises(ValueError):
-            control_object.add(name=name, meta=metadata_ctl)
+            control_object.add(name=name)
 
     def test_add_duplicate_variable(self, control_object, metadata_ctl):
         """Add a duplicate control variable"""
 
         with pytest.raises(ControlError):
-            control_object.add(name='et_module', meta=metadata_ctl)
+            control_object.add(name='et_module')
 
     def test_remove_variable(self, control_object):
         control_object.remove('albedo_day')
