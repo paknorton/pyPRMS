@@ -15,6 +15,7 @@ STATION_START = '// Station'
 UNITS_START = '// Unit:'
 DATA_SEP = '####'
 COMMENT = '//'
+# NA_VALS_DEFAULT = ('-99.0', '-999.0')
 
 
 class DataFile(object):
@@ -89,6 +90,10 @@ class DataFile(object):
         """
 
         return self.__input_vars_intern
+
+    @property
+    def station_meta_header(self):
+        return self.__station_meta_header
 
     def resolve_units(self):
         """Adjust units metadata for input variables that have an initial units value of
@@ -193,51 +198,10 @@ class DataFile(object):
             # Add data to each input variable
             self._add_variable_data()
 
-    def _add_file_metadata(self, header_info: List[str]):
-        """Add file metadata from data file.
-
-        :param header_info: list of header lines from the data file
-        """
-
-        it = iter(header_info)
-        if 'Downsizer' in self.__header or 'Bandit' in self.__header:
-            for line in it:
-                if line[0:len(STATION_START)] == STATION_START:
-                    # Process the station information
-                    self.__station_meta_header.append(line.strip())
-                    # station_vars = line[len(STATION_START):].replace(' ', '').strip(':').split(',')
-
-                    line = next(it)
-                    if line[0:len('// ID')] == '// ID':
-                        # Process the station information
-                        self.__station_meta_header.append(line.strip())
-                        # station_meta_header = line.replace(COMMENT, '').strip().split()
-
-                        line = next(it)
-
-                    # Loop through the variables types and read the station information
-                    for kk, vv in self.__input_vars_intern.items():
-                        for sz in range(vv['size']):
-                            self.__input_vars_intern[kk].setdefault('stations', []).append(line.replace(COMMENT, '').strip().split()[0])
-                            self.__input_vars_intern[kk].setdefault('file_metadata', []).append(line.strip())
-                            line = next(it)
-
-                        if vv['size'] != len(vv['stations']):
-                            con.print(f'[red]ERROR[/] Number of expected stations, {vv["size"]}, does not match number of stations read {vv["stations"]}')
-                elif line[0:len(UNITS_START)] == UNITS_START:
-                    # Process the units
-                    while line[0:len(HEADER_SEP)] != HEADER_SEP:
-                        for elem in (line.replace(UNITS_START, '').replace(COMMENT, '').replace(' ', '').split(',')):
-                            cvar, cunits = elem.split('=')
-                            try:
-                                self.__input_vars_intern[cvar]['file_units'] = cunits
-                            except KeyError:
-                                con.print(f'[orange3]WARNING[/]: Units variable, {cvar}, is not a valid input variable name in this data file')
-                                pass
-                        line = next(it)
-
     def write_ascii(self, filename: str) -> None:
         """Write dataframe to ASCII formatted file.
+
+        This routine always writes out missing data as -999
         """
 
         df = self.data.copy()
@@ -252,7 +216,7 @@ class DataFile(object):
         df['hour'] = df.index.hour
         df['minute'] = df.index.minute
         df['second'] = df.index.second
-        df.fillna(-999, inplace=True)
+        # df.fillna(-999, inplace=True)
 
         outhdl = open(filename, 'w')
         outhdl.write(f'{self.__header}\n')
@@ -262,21 +226,120 @@ class DataFile(object):
             outhdl.write(f'{xx}\n')
 
         for kk, vv in self.__input_vars_intern.items():
-            for xx in vv['file_metadata']:
-                outhdl.write(f'{xx}\n')
+            if 'file_metadata' in vv:
+                for xx in vv['file_metadata']:
+                    outhdl.write(f'{xx}\n')
 
         outhdl.write(f'{HEADER_SEP*15}\n')
+
         for kk, vv in self.__input_vars_intern.items():
             outhdl.write(f'{kk} {vv["size"]}\n')
 
         outhdl.write(f'{DATA_SEP*15}\n')
 
-
         # ds.to_csv(out_cbh, columns=out_order, na_rep=na_rep, float_format=float_format,
         #           sep=' ', index=False, header=False, lineterminator='\n', encoding=None,
         #           chunksize=10)
-        df.to_csv(outhdl, sep=' ', columns=out_order, index=False, header=False)
+        df.to_csv(outhdl, sep=' ', columns=out_order, index=False, header=False, na_rep='-999')
         outhdl.close()
+
+    def _add_file_metadata(self, header_info: List[str]):
+        """Add file metadata from data file.
+
+        :param header_info: list of header lines from the data file
+        """
+        # Examples
+
+        # USGS streamflow, NWS stage, some climate
+        # ////////////////////////////////////////////////////////////
+        # // Station metadata (listed in the same order as the data):
+        # // ID         Type     Latitude	 Longitude    Elevation  Name
+        # // 15199500   runoff   62.5907   -144.6488    594.3600   Sinona
+
+        # Sagehen Data File: Independence Lake and Sagehen Creek data staions
+        #
+        # // tmax stations are:
+        # //   INDEPENDENCE LAKE
+        # //   SAGEHEN CREEK
+        # tmax 2
+
+        # Created by Bandit
+        # /////////////////////////////////////////////////////////////////////////
+        # // Station IDs for runoff:
+        # // ID
+        # // 06469400
+
+        # Created by Downsizer
+        # ////////////////////////////////////////////////////////////
+        # // Station metadata (listed in the same order as the data):
+        # // ID       Type   Latitude   Longitude  Elevation
+        # // 049855   tasmax 37.75      -119.58972 1224.6864
+
+        it = iter(header_info)
+        line = next(it)
+
+        try:
+            while line[0:len(STATION_START)] != STATION_START:
+                line = next(it)
+
+            # Process the station information
+            self.__station_meta_header.append(line.strip())
+
+            line = next(it)
+            con.print(f'{line=}')
+            if line[0:len('// ID')] == '// ID':
+                # Process the station information
+                self.__station_meta_header.append(line.strip())
+                meta_vars = line.replace(COMMENT, '').strip().split()
+                con.print(f'{meta_vars=}')
+
+                line = next(it)
+
+                # Loop through the variables and read the station information for each one
+                for kk, vv in self.__input_vars_intern.items():
+                    if line[0:len(HEADER_SEP)] == HEADER_SEP:
+                        continue
+
+                    for sz in range(vv['size']):
+                        self.__input_vars_intern[kk].setdefault('stations', []).append(line.replace(COMMENT, '').strip().split()[0])
+                        self.__input_vars_intern[kk].setdefault('file_metadata', []).append(line.strip())
+                        line = next(it)
+
+                # Check that the number of stations for each variable matches the variable size
+                for vv in self.__input_vars_intern.values():
+                    if vv['size'] != len(vv['stations']):
+                        con.print(f'[red]ERROR[/] Number of expected stations, {vv["size"]}, does not match number of stations read {vv["stations"]}')
+        except StopIteration:
+            con.print('[orange3]WARNING[/]: No usable metadata found')
+
+            # We don't have useful metadata so we assign indexed station IDs
+            self.__station_meta_header.append('// Station metadata:')
+            self.__station_meta_header.append('// ID')
+
+            for kk, vv in self.__input_vars_intern.items():
+                if 'stations' not in self.__input_vars_intern[kk]:
+                    for sz in range(vv['size']):
+                        self.__input_vars_intern[kk].setdefault('stations', []).append(f'{sz+1}')
+                        self.__input_vars_intern[kk].setdefault('file_metadata', []).append(f'{COMMENT} {sz+1}')
+
+        try:
+            while line[0:len(UNITS_START)] != UNITS_START:
+                line = next(it)
+
+            # Process the units
+            while line[0:len(HEADER_SEP)] != HEADER_SEP:
+                for elem in (line.replace(UNITS_START, '').replace(COMMENT, '').replace(' ', '').split(',')):
+                    try:
+                        cvar, cunits = elem.split('=')
+                        try:
+                            self.__input_vars_intern[cvar]['file_units'] = cunits
+                        except KeyError:
+                            con.print(f'[orange3]WARNING[/]: Units variable, {cvar}, is not a valid input variable name in this data file')
+                    except ValueError:
+                        con.print(f'[orange3]WARNING[/]: Malformed units information in data file')
+                line = next(it)
+        except StopIteration:
+            con.print('[orange3]WARNING[/]: No unit information in data file metadata')
 
     def _add_variable_data(self):
         """Add data to each input variable.
