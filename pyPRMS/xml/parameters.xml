@@ -5204,6 +5204,8 @@
             <module>temp_1sta</module>
             <module>temp_laps</module>
             <module>temp_dist2</module>
+            <module>temp_ide</module>
+            <module>temp_xyz</module>
         </modules>
         <dimensions>
             <dimension name="ntemp">
