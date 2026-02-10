@@ -5204,6 +5204,8 @@
             <module>temp_1sta</module>
             <module>temp_laps</module>
             <module>temp_dist2</module>
+            <module>temp_ide</module>
+            <module>temp_xyz</module>
         </modules>
         <dimensions>
             <dimension name="ntemp">
@@ -6104,6 +6106,9 @@
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
         </dimensions>
         <requires>
             <control>glacier_flag = 1</control>
@@ -6125,6 +6130,9 @@
             <dimension name="nhru">
                 <position>1</position>
             </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
+            </dimension>
         </dimensions>
         <requires>
             <control>glacier_flag = 1</control>
@@ -6145,6 +6153,9 @@
         <dimensions>
             <dimension name="nhru">
                 <position>1</position>
+            </dimension>
+            <dimension name="nmonths">
+                <position>2</position>
             </dimension>
         </dimensions>
         <requires>
