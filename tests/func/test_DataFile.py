@@ -1,12 +1,32 @@
 import pytest
+import os
 import pandas as pd
+from distutils import dir_util
 
 # import numpy as np
+from pandas.testing import assert_frame_equal
 
 from pyPRMS import DataFile
 from pyPRMS.metadata.metadata import MetaData
 from pyPRMS.parameters.ParameterFile import ParameterFile
 
+
+@pytest.fixture
+def datadir(tmpdir, request):
+    """
+    Fixture responsible for searching a folder with the same name of test
+    module and, if available, moving all contents to a temporary directory so
+    tests can use them freely.
+    """
+    # 2023-07-18
+    # https://stackoverflow.com/questions/29627341/pytest-where-to-store-expected-data
+    filename = request.module.__file__
+    test_dir, _ = os.path.splitext(filename)
+
+    if os.path.isdir(test_dir):
+        dir_util.copy_tree(test_dir, str(tmpdir))
+
+    return tmpdir
 
 class TestStreamflow:
 
@@ -113,3 +133,31 @@ class TestStreamflow:
         assert list(datafile.input_variables.keys()) == ['tmax', 'tmin', 'precip', 'runoff']
         assert obs_sf.file_units is None
         # assert obs_sf.get('runoff').get('stations') is None
+
+    @pytest.mark.parametrize('model, missing', [('sagehen', ('-901.0', '-9999.0')),
+                                                ('merced', ('-999.0')),
+                                                ('boise', ('-999.0'))])
+    def test_roundtrip_datafile(self, datadir, tmp_path, model, missing):
+        """Tests reading and writing datafiles
+
+        Original datafile data is compared to the written datafile data.
+        The metadata in the written file is not guaranteed to match the
+        original datafile.
+        """
+
+        out_path = tmp_path / 'run_files'
+        out_path.mkdir()
+
+        datafile_filename = datadir / f'{model}.data'
+        param_filename = datadir / f'{model}.params'
+        chk_filename = out_path / f'{model}_chk.data'
+
+        prms_meta = MetaData(verbose=False).metadata
+        pdb = ParameterFile(param_filename, metadata=prms_meta, verbose=False)
+        datafile = DataFile(datafile_filename, metadata=prms_meta, parameters=pdb, missing=missing, verbose=False)
+
+        datafile.write_ascii(chk_filename)
+
+        datafile_chk = DataFile(chk_filename, metadata=prms_meta, parameters=pdb, missing=('-999.0'), verbose=False)
+
+        assert_frame_equal(datafile.data, datafile_chk.data, check_dtype=False)
