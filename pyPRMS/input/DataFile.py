@@ -10,8 +10,8 @@ from ..base.console import get_console_instance
 
 con = None
 
-HEADER_SEP = '//////////'
-STATION_START = '// Station IDs for'
+HEADER_SEP = '////'
+STATION_START = '// Station'
 UNITS_START = '// Unit:'
 DATA_SEP = '####'
 COMMENT = '//'
@@ -45,6 +45,8 @@ class DataFile(object):
         self.parameters = parameters
 
         self.__header = ''   # data file header from first line of the file
+        self.__station_meta_header = []
+        self.__header_info = []
 
         # Dictionary of input variables and InputVariable objects
         self.__input_vars: Dict[str, InputVariable] = {}
@@ -57,11 +59,13 @@ class DataFile(object):
         self.load_file(self.filename)
 
         if self.parameters is None:
+            # Resolve the units for each variable from the file units if possible
             for cvar in self.__input_vars.values():
                 if '_units' in cvar.metadata['units']:
                     con.print(f'[dark_orange]WARNING[/]: {cvar.name} has units={cvar.metadata["units"]} '
                               f'but parameter was not supplied.')
         else:
+            # Resolve the units of each variable from the parameter file
             self.resolve_units()
 
     @property
@@ -72,6 +76,10 @@ class DataFile(object):
         """
 
         return self.__data_raw
+
+    @property
+    def header_info(self):
+        return self.__header_info
 
     @property
     def input_variables(self) -> Dict[str, Dict[str, Union[int, str, List[str]]]]:
@@ -159,6 +167,10 @@ class DataFile(object):
                         raise KeyError(f'{nm} declared multiple times in the data file')
                     self.__input_vars_intern[nm] = dict(size=sz)
 
+            # con.print(self.__input_vars_intern)
+
+            # FIX:
+            self.__header_info = header_info
             # =============================
             # Process metadata
             self._add_file_metadata(header_info)
@@ -192,22 +204,26 @@ class DataFile(object):
             for line in it:
                 if line[0:len(STATION_START)] == STATION_START:
                     # Process the station information
-                    station_vars = line[len(STATION_START):].replace(' ', '').strip(':').split(',')
+                    self.__station_meta_header.append(line.strip())
+                    # station_vars = line[len(STATION_START):].replace(' ', '').strip(':').split(',')
 
                     line = next(it)
-                    if line == '// ID':
-                        # Skip the metadata column information line (found Bandit data files)
+                    if line[0:len('// ID')] == '// ID':
+                        # Process the station information
+                        self.__station_meta_header.append(line.strip())
+                        # station_meta_header = line.replace(COMMENT, '').strip().split()
+
                         line = next(it)
 
-                    while line[0:len(HEADER_SEP)] != HEADER_SEP and len(line) > 2:
-                        for cvar in station_vars:
-                            if cvar not in self.__input_vars_intern:
-                                raise KeyError(f'{cvar} is not one of the input variables declared in the data file')
-                            self.__input_vars_intern[cvar].setdefault('stations', []).extend(line.   # type: ignore
-                                                                                             replace(COMMENT, '').
-                                                                                             replace(' ', '').
-                                                                                             split(','))
-                        line = next(it)
+                    # Loop through the variables types and read the station information
+                    for kk, vv in self.__input_vars_intern.items():
+                        for sz in range(vv['size']):
+                            self.__input_vars_intern[kk].setdefault('stations', []).append(line.replace(COMMENT, '').strip().split()[0])
+                            self.__input_vars_intern[kk].setdefault('file_metadata', []).append(line.strip())
+                            line = next(it)
+
+                        if vv['size'] != len(vv['stations']):
+                            con.print(f'[red]ERROR[/] Number of expected stations, {vv["size"]}, does not match number of stations read {vv["stations"]}')
                 elif line[0:len(UNITS_START)] == UNITS_START:
                     # Process the units
                     while line[0:len(HEADER_SEP)] != HEADER_SEP:
@@ -216,9 +232,51 @@ class DataFile(object):
                             try:
                                 self.__input_vars_intern[cvar]['file_units'] = cunits
                             except KeyError:
-                                con.print(f'[red]ERROR[/]: {cvar} is not a valid input variable name in this data file')
+                                con.print(f'[orange3]WARNING[/]: Units variable, {cvar}, is not a valid input variable name in this data file')
                                 pass
                         line = next(it)
+
+    def write_ascii(self, filename: str) -> None:
+        """Write dataframe to ASCII formatted file.
+        """
+
+        df = self.data.copy()
+
+        out_order = [kk for kk in df.columns]
+        for cc in ['second', 'minute', 'hour', 'day', 'month', 'year']:
+            out_order.insert(0, cc)
+
+        df['year'] = df.index.year
+        df['month'] = df.index.month
+        df['day'] = df.index.day
+        df['hour'] = df.index.hour
+        df['minute'] = df.index.minute
+        df['second'] = df.index.second
+        df.fillna(-999, inplace=True)
+
+        outhdl = open(filename, 'w')
+        outhdl.write(f'{self.__header}\n')
+        outhdl.write(f'{HEADER_SEP*15}\n')
+
+        for xx in self.__station_meta_header:
+            outhdl.write(f'{xx}\n')
+
+        for kk, vv in self.__input_vars_intern.items():
+            for xx in vv['file_metadata']:
+                outhdl.write(f'{xx}\n')
+
+        outhdl.write(f'{HEADER_SEP*15}\n')
+        for kk, vv in self.__input_vars_intern.items():
+            outhdl.write(f'{kk} {vv["size"]}\n')
+
+        outhdl.write(f'{DATA_SEP*15}\n')
+
+
+        # ds.to_csv(out_cbh, columns=out_order, na_rep=na_rep, float_format=float_format,
+        #           sep=' ', index=False, header=False, lineterminator='\n', encoding=None,
+        #           chunksize=10)
+        df.to_csv(outhdl, sep=' ', columns=out_order, index=False, header=False)
+        outhdl.close()
 
     def _add_variable_data(self):
         """Add data to each input variable.
