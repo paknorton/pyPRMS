@@ -136,7 +136,8 @@ class TestStreamflow:
 
     @pytest.mark.parametrize('model, missing', [('sagehen', ('-901.0', '-9999.0')),
                                                 ('merced', ('-999.0')),
-                                                ('boise', ('-999.0'))])
+                                                ('boise', ('-999.0')),
+                                                ('gulkana', ('-999.0'))])
     def test_roundtrip_datafile(self, datadir, tmp_path, model, missing):
         """Tests reading and writing datafiles
 
