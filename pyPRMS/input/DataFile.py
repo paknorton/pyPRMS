@@ -46,13 +46,13 @@ class DataFile(object):
         self.parameters = parameters
 
         self.__header = ''   # data file header from first line of the file
-        self.__station_meta_header = []
-        self.__header_info = []
+        self.__station_meta_header = []   # header lines before station metadata (if provided)
+        self.__df_file_metadata: Optional[pd.DataFrame] = None
 
         # Dictionary of input variables and InputVariable objects
         self.__input_vars: Dict[str, InputVariable] = {}
 
-        # Internal dictionary of input variables and associated metadata
+        # Internal dictionary of input variables and associated file metadata
         self.__input_vars_intern: Dict[str, Dict[str, Union[int, str, List[str]]]] = {}
 
         self.__data_raw: Optional[pd.DataFrame] = None
@@ -79,8 +79,12 @@ class DataFile(object):
         return self.__data_raw
 
     @property
-    def header_info(self):
-        return self.__header_info
+    def file_metadata(self) -> pd.DataFrame:
+        return self.__df_file_metadata
+
+    @property
+    def header(self):
+        return self.__header
 
     @property
     def input_variables(self) -> Dict[str, Dict[str, Union[int, str, List[str]]]]:
@@ -172,10 +176,6 @@ class DataFile(object):
                         raise KeyError(f'{nm} declared multiple times in the data file')
                     self.__input_vars_intern[nm] = dict(size=sz)
 
-            # con.print(self.__input_vars_intern)
-
-            # FIX:
-            self.__header_info = header_info
             # =============================
             # Process metadata
             self._add_file_metadata(header_info)
@@ -216,7 +216,6 @@ class DataFile(object):
         df['hour'] = df.index.hour
         df['minute'] = df.index.minute
         df['second'] = df.index.second
-        # df.fillna(-999, inplace=True)
 
         outhdl = open(filename, 'w')
         outhdl.write(f'{self.__header}\n')
@@ -237,10 +236,7 @@ class DataFile(object):
 
         outhdl.write(f'{DATA_SEP*15}\n')
 
-        # ds.to_csv(out_cbh, columns=out_order, na_rep=na_rep, float_format=float_format,
-        #           sep=' ', index=False, header=False, lineterminator='\n', encoding=None,
-        #           chunksize=10)
-        df.to_csv(outhdl, sep=' ', columns=out_order, index=False, header=False, na_rep='-999')
+        df.to_csv(outhdl, sep=' ', columns=out_order, index=False, header=False, na_rep='-999', encoding=None)
         outhdl.close()
 
     def _add_file_metadata(self, header_info: List[str]):
@@ -248,32 +244,9 @@ class DataFile(object):
 
         :param header_info: list of header lines from the data file
         """
-        # Examples
 
-        # USGS streamflow, NWS stage, some climate
-        # ////////////////////////////////////////////////////////////
-        # // Station metadata (listed in the same order as the data):
-        # // ID         Type     Latitude	 Longitude    Elevation  Name
-        # // 15199500   runoff   62.5907   -144.6488    594.3600   Sinona
-
-        # Sagehen Data File: Independence Lake and Sagehen Creek data staions
-        #
-        # // tmax stations are:
-        # //   INDEPENDENCE LAKE
-        # //   SAGEHEN CREEK
-        # tmax 2
-
-        # Created by Bandit
-        # /////////////////////////////////////////////////////////////////////////
-        # // Station IDs for runoff:
-        # // ID
-        # // 06469400
-
-        # Created by Downsizer
-        # ////////////////////////////////////////////////////////////
-        # // Station metadata (listed in the same order as the data):
-        # // ID       Type   Latitude   Longitude  Elevation
-        # // 049855   tasmax 37.75      -119.58972 1224.6864
+        if self.__verbose:
+            con.print(header_info)
 
         it = iter(header_info)
         line = next(it)
@@ -286,12 +259,12 @@ class DataFile(object):
             self.__station_meta_header.append(line.strip())
 
             line = next(it)
-            con.print(f'{line=}')
             if line[0:len('// ID')] == '// ID':
                 # Process the station information
                 self.__station_meta_header.append(line.strip())
                 meta_vars = line.replace(COMMENT, '').strip().split()
-                con.print(f'{meta_vars=}')
+
+                self.__df_file_metadata = pd.DataFrame(columns=meta_vars)
 
                 line = next(it)
 
@@ -301,8 +274,24 @@ class DataFile(object):
                         continue
 
                     for sz in range(vv['size']):
-                        self.__input_vars_intern[kk].setdefault('stations', []).append(line.replace(COMMENT, '').strip().split()[0])
+                        fields = line.replace(COMMENT, '').strip().split()
+                        stn_id = fields[0]
+
+                        dup = 0
+                        while stn_id in self.__input_vars_intern[kk].setdefault('stations', []):
+                            con.print(f'[orange3]WARNING[/] {kk} station {stn_id} already declared in data file; adjusting variable name')
+                            dup += 1
+                            stn_id = f'{stn_id}dup{dup}'
+
+                        self.__input_vars_intern[kk].setdefault('stations', []).append(stn_id)
                         self.__input_vars_intern[kk].setdefault('file_metadata', []).append(line.strip())
+
+                        try:
+                            self.__df_file_metadata.loc[len(self.__df_file_metadata)] = fields
+                        except ValueError:
+                            con.print(f'[red]ERROR[/]: file metadata for {kk} station {stn_id} has incorrect number of fields')
+                            raise
+
                         line = next(it)
 
                 # Check that the number of stations for each variable matches the variable size
@@ -316,11 +305,14 @@ class DataFile(object):
             self.__station_meta_header.append('// Station metadata:')
             self.__station_meta_header.append('// ID')
 
+            self.__df_file_metadata = pd.DataFrame(columns=['ID', 'type'])
+
             for kk, vv in self.__input_vars_intern.items():
                 if 'stations' not in self.__input_vars_intern[kk]:
                     for sz in range(vv['size']):
                         self.__input_vars_intern[kk].setdefault('stations', []).append(f'{sz+1}')
                         self.__input_vars_intern[kk].setdefault('file_metadata', []).append(f'{COMMENT} {sz+1}')
+                        self.__df_file_metadata.loc[len(self.__df_file_metadata)] = [f'{sz+1}', kk]
 
         try:
             while line[0:len(UNITS_START)] != UNITS_START:
@@ -351,6 +343,7 @@ class DataFile(object):
             self.__input_vars[cvar] = InputVariable(name=cvar,
                                                     data=self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])],
                                                     metadata=self.metadata,
+                                                    station_metadata=self.__df_file_metadata.iloc[st_idx:(st_idx + cmeta['size'])],
                                                     file_units=cmeta.get('file_units', None))
             # self.__input_vars_intern[cvar]['data'] = self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])]
             st_idx += cmeta['size']

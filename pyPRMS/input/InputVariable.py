@@ -9,6 +9,7 @@ class InputVariable(object):
     def __init__(self, name: str,
                  data: pd.DataFrame,
                  metadata: dict,
+                 station_metadata: pd.DataFrame,
                  file_units: Optional[str] = None):
         """Initialize the InputVariable object.
 
@@ -21,6 +22,7 @@ class InputVariable(object):
         self.__name = name
         self.__file_units = file_units
         self.data = data
+        self.station_metadata = station_metadata
 
         if 'data_file' in metadata:
             self.metadata = metadata['data_file'][name]
