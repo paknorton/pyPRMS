@@ -80,7 +80,7 @@ Created by Downsizer
 // 19l06s   precip 38.5       -119.61667 2357.9329 
 // 19l08s   precip 38.3       -119.55    2193.9504 
 // 19l07s   precip 38.3       -119.583336 2690.4695 
-// 11266500 runoff 37.716873  -119.666275           
+// 11266500 runoff 37.716873  -119.666275 0
 ////////////////////////////////////////////////////////////
 // Unit: temperature = fahrenheit, precipitation = in per day, runoff = ft3 per sec, elevation = meters
 ////////////////////////////////////////////////////////////
