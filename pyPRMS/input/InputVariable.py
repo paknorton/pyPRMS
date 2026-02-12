@@ -71,6 +71,29 @@ class InputVariable(object):
         self.__data.rename(columns=col_names, inplace=True)
 
     @property
+    def file_metadata_str(self) -> list:
+        """Returns the input variable file metadata string.
+
+        :returns: List of input variable file metadata strings
+        """
+
+        flds = self.station_metadata.columns.tolist()
+        # mstr = [f'// {" ".join(flds)}']
+        mstr = []
+        for cstn in self.stations:
+            # mstr += f'// {" ".join(df_m.loc[df_m["id"] == cstn].values.tolist()[0])}\n'
+            mstr.append(f'// {" ".join(self.station_metadata.loc[self.station_metadata[flds[0]] == cstn].values.tolist()[0])}')
+
+        return mstr
+
+    @property
+    def full_column_names(self) -> list:
+        col_names = {}
+        for xx in self.__data.columns:
+            col_names[xx] = f'{self.name}_{xx}'
+        return col_names
+
+    @property
     def name(self) -> str:
         """Returns the input variable kind.
 
@@ -87,3 +110,31 @@ class InputVariable(object):
         """
 
         return self.__file_units
+
+    @property
+    def num_stations(self) -> int:
+        """Returns the number of stations for the input variable.
+
+        :returns: Input variable number of stations
+        """
+        return self.data.columns.size
+
+    @property
+    def stations(self) -> list:
+        """Returns the input variable stations.
+
+        :returns: Input variable stations
+        """
+
+        return self.station_metadata.iloc[:, 0].tolist()
+
+    def drop(self, stations: list):
+        """Drop stations from the input variable
+        """
+
+        # Drop the station data
+        self.data.drop(columns=stations, inplace=True)
+
+        # Drop the station metadata
+        self.station_metadata.drop(self.station_metadata[self.station_metadata['id'].isin(stations)].index,
+                                   axis=0, inplace=True)
