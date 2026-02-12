@@ -75,7 +75,16 @@ class DataFile(object):
 
         :returns: Pandas dataframe of the data file
         """
+        first = True
+        for cvar in self.input_variables.keys():
+            tmp_df = self.get(cvar).data.copy()
+            tmp_df.rename(columns=self.get(cvar).full_column_names, inplace=True)
 
+            if first:
+                self.__data_raw = tmp_df
+                first = False
+            else:
+                self.__data_raw = pd.concat([self.__data_raw, tmp_df], axis=1)
         return self.__data_raw
 
     @property
@@ -224,15 +233,14 @@ class DataFile(object):
         for xx in self.__station_meta_header:
             outhdl.write(f'{xx}\n')
 
-        for kk, vv in self.__input_vars_intern.items():
-            if 'file_metadata' in vv:
-                for xx in vv['file_metadata']:
-                    outhdl.write(f'{xx}\n')
+        for kk in self.__input_vars.keys():
+            for mstr in self.get(kk).file_metadata_str:
+                outhdl.write(f'{mstr}\n')
 
         outhdl.write(f'{HEADER_SEP*15}\n')
 
-        for kk, vv in self.__input_vars_intern.items():
-            outhdl.write(f'{kk} {vv["size"]}\n')
+        for kk in self.__input_vars.keys():
+            outhdl.write(f'{kk} {self.get(kk).num_stations}\n')
 
         outhdl.write(f'{DATA_SEP*15}\n')
 
@@ -246,7 +254,7 @@ class DataFile(object):
         """
 
         if self.__verbose:
-            con.print(header_info)
+            con.print(f'{header_info=}')
 
         it = iter(header_info)
         line = next(it)
@@ -259,7 +267,7 @@ class DataFile(object):
             self.__station_meta_header.append(line.strip())
 
             line = next(it)
-            if line[0:len('// ID')] == '// ID':
+            if line[0:len('// ID')].lower() == '// id':
                 # Process the station information
                 self.__station_meta_header.append(line.strip())
                 meta_vars = line.replace(COMMENT, '').strip().split()
@@ -274,7 +282,7 @@ class DataFile(object):
                         continue
 
                     for sz in range(vv['size']):
-                        fields = line.replace(COMMENT, '').strip().split()
+                        fields = line.replace(COMMENT, '').strip().lower().split()
                         stn_id = fields[0]
 
                         dup = 0
@@ -282,11 +290,13 @@ class DataFile(object):
                             con.print(f'[orange3]WARNING[/] {kk} station {stn_id} already declared in data file; adjusting variable name')
                             dup += 1
                             stn_id = f'{stn_id}dup{dup}'
+                        fields[0] = stn_id
 
                         self.__input_vars_intern[kk].setdefault('stations', []).append(stn_id)
                         self.__input_vars_intern[kk].setdefault('file_metadata', []).append(line.strip())
 
                         try:
+                            # Add metadata to file_metadata dataframe
                             self.__df_file_metadata.loc[len(self.__df_file_metadata)] = fields
                         except ValueError:
                             con.print(f'[red]ERROR[/]: file metadata for {kk} station {stn_id} has incorrect number of fields')
@@ -294,7 +304,7 @@ class DataFile(object):
 
                         line = next(it)
 
-                # Check that the number of stations for each variable matches the variable size
+                # Check that the number of stations read for each variable matches the variable size
                 for vv in self.__input_vars_intern.values():
                     if vv['size'] != len(vv['stations']):
                         con.print(f'[red]ERROR[/] Number of expected stations, {vv["size"]}, does not match number of stations read {vv["stations"]}')
@@ -303,9 +313,9 @@ class DataFile(object):
 
             # We don't have useful metadata so we assign indexed station IDs
             self.__station_meta_header.append('// Station metadata:')
-            self.__station_meta_header.append('// ID')
+            self.__station_meta_header.append('// id type')
 
-            self.__df_file_metadata = pd.DataFrame(columns=['ID', 'type'])
+            self.__df_file_metadata = pd.DataFrame(columns=['id', 'type'])
 
             for kk, vv in self.__input_vars_intern.items():
                 if 'stations' not in self.__input_vars_intern[kk]:
@@ -366,129 +376,3 @@ class DataFile(object):
                     var_col_names.append(f'{cvar}_{idx}')
 
         return var_col_names
-
-    # def write_selected_stations(self, filename):
-    #     """Writes station observations to a new file"""
-    #     # Either writes out all station observations or, if stations are selected,
-    #     # then a subset of station observations.
-    #
-    #     # Sample header format
-    #
-    #     # $Id:$
-    #     # ////////////////////////////////////////////////////////////
-    #     # // Station metadata (listed in the same order as the data):
-    #     # // ID    Type Latitude Longitude Elevation
-    #     # // <station info>
-    #     # ////////////////////////////////////////////////////////////
-    #     # // Unit: runoff = ft3 per sec, elevation = feet
-    #     # ////////////////////////////////////////////////////////////
-    #     # runoff <number of stations for each type>
-    #     # ################################################################################
-    #
-    #     top_line = '$Id:$\n'
-    #     section_sep = '////////////////////////////////////////////////////////////\n'
-    #     meta_header_1 = '// Station metadata (listed in the same order as the data):\n'
-    #     # metaHeader2 = '// ID    Type Latitude Longitude Elevation'
-    #     meta_header_2 = '// %s\n' % ' '.join(self.metaheader)
-    #     data_section = '################################################################################\n'
-    #
-    #     # ----------------------------------
-    #     # Get the station information for each selected station
-    #     type_count = {}  # Counts the number of stations for each type of data (e.g. 'runoff')
-    #     stninfo = ''
-    #     if self.__selectedStations is None:
-    #         for xx in self.__stations:
-    #             if xx[1] not in type_count:
-    #                 # index 1 should be the type field
-    #                 type_count[xx[1]] = 0
-    #             type_count[xx[1]] += 1
-    #
-    #             stninfo += '// %s\n' % ' '.join(xx)
-    #     else:
-    #         for xx in self.__selectedStations:
-    #             cstn = self.__stations[self.__stationIndex[xx]]
-    #
-    #             if cstn[1] not in type_count:
-    #                 # index 1 should be the type field
-    #                 type_count[cstn[1]] = 0
-    #
-    #             type_count[cstn[1]] += 1
-    #
-    #             stninfo += '// %s\n' % ' '.join(cstn)
-    #     # stninfo = stninfo.rstrip('\n')
-    #
-    #     # ----------------------------------
-    #     # Get the units information
-    #     unit_line = '// Unit:'
-    #     for uu in self.__units:
-    #         unit_line += ' %s,' % ' = '.join(uu)
-    #     unit_line = '%s\n' % unit_line.rstrip(',')
-    #
-    #     # ----------------------------------
-    #     # Create the list of types of data that are being included
-    #     tmpl = []
-    #
-    #     # Create list of types in the correct order
-    #     for (kk, vv) in self.__types.items():
-    #         if kk in type_count:
-    #             tmpl.insert(vv[0], [kk, type_count[kk]])
-    #
-    #     type_line = ''
-    #     for tt in tmpl:
-    #         type_line += '%s %d\n' % (tt[0], tt[1])
-    #     # typeLine = typeLine.rstrip('\n')
-    #
-    #     # Write out the header to the new file
-    #     outfile = open(filename, 'w')
-    #     outfile.write(top_line)
-    #     outfile.write(section_sep)
-    #     outfile.write(meta_header_1)
-    #     outfile.write(meta_header_2)
-    #     outfile.write(stninfo)
-    #     outfile.write(section_sep)
-    #     outfile.write(unit_line)
-    #     outfile.write(section_sep)
-    #     outfile.write(type_line)
-    #     outfile.write(data_section)
-    #
-    #     # Write out the data to the new file
-    #     # Using quoting=csv.QUOTE_NONE results in an error when using a customized  date_format
-    #     # A kludgy work around is to write with quoting and then re-open the file
-    #     # and write it back out, stripping the quote characters.
-    #     self.data.to_csv(outfile, index=True, header=False, date_format='%Y %m %d %H %M %S', sep=' ')
-    #     outfile.close()
-    #
-    #     old = open(filename, 'r').read()
-    #     new = re.sub('["]', '', old)
-    #     open(filename, 'w').write(new)
-    #
-    #     # def getRecurrenceInterval(self, thetype):
-    #     #     """Returns the recurrence intervals for each station"""
-    #     #
-    #     #     # Copy the subset of data
-    #     #     xx = self.seldata(thetype)
-    #     #
-    #     #     ri = np.zeros(xx.shape)
-    #     #     ri[:,:] = -1.
-    #     #
-    #     #     # for each station we need to compute the RI for non-zero values
-    #     #     for ss in range(0,xx.shape[1]):
-    #     #         tmp = xx[:,ss]              # copy values for current station
-    #     #
-    #     #         # Get array of indices that would result in a sorted array
-    #     #         sorted_ind = np.argsort(tmp)
-    #     #         #print "sorted_ind.shape:", sorted_ind.shape
-    #     #
-    #     #         numobs = tmp[(tmp > 0.0),].shape[0]  # Number of observations > 0.
-    #     #         nyr = float(numobs / 365)     # Number of years of non-zero observations
-    #     #
-    #     #         nz_cnt = 0  # non-zero value counter
-    #     #         for si in sorted_ind:
-    #     #             if tmp[si] > 0.:
-    #     #                 nz_cnt += 1
-    #     #                 rank = numobs - nz_cnt + 1
-    #     #                 ri[si,ss] = (nyr + 1.) / float(rank)
-    #     #                 #print "%s: [%d]: %d %d %0.3f %0.3f" % (ss, si,  numobs, rank, tmp[si], ri[si,ss])
-    #     #
-    #     #     return ri
-# ***** END of class streamflow()
