@@ -19,8 +19,6 @@ from .parameters.ParameterFile import ParameterFile
 from .parameters.ParamDb import ParamDb
 from .parameters.ParameterNetCDF import ParameterNetCDF
 from .cbh.Cbh import Cbh
-from .cbh.CbhAscii import CbhAscii
-from .cbh.CbhNetcdf import CbhNetcdf
 from pyPRMS.input.DataFile import DataFile
 
 
@@ -35,8 +33,6 @@ __all__ = ['constants',
            'parameters',
            'cbh',
            'Cbh',
-           'CbhAscii',
-           'CbhNetcdf',
            'ConsoleManager',
            'Control',
            'ControlFile',
