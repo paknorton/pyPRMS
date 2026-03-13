@@ -82,6 +82,7 @@ class Cbh(object):
         match engine:
             case 'netcdf':
                 ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
+                                       compat='no_conflicts', join='outer',
                                        data_vars='minimal', decode_cf=True, engine='netcdf4',
                                        parallel=True)
             case 'zarr':
