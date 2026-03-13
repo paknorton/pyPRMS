@@ -84,7 +84,7 @@ class Cbh(object):
                 ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
                                        compat='no_conflicts', join='outer',
                                        data_vars='minimal', decode_cf=True, engine='netcdf4',
-                                       parallel=True)
+                                       parallel=False)
             case 'zarr':
                 if len(self.__src_path) > 1:
                     con.print('[red]ERROR[/]: Zarr engine does not support reading multiple files')
