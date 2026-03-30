@@ -31,7 +31,7 @@ dependencies = ["cartopy",
     "sphinx-autodoc-typehints",
     "sphinx-book-theme",
     "xarray",
-    "zarr<3"]
+    "zarr"]
 
 [project.optional-dependencies]
 dev = ["mypy",
