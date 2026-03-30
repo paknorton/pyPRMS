@@ -16,6 +16,7 @@ from collections import defaultdict
 from collections.abc import KeysView
 from functools import cached_property
 from packaging.version import Version
+from pathlib import Path
 from typing import Any, Literal, Optional, Sequence, Union, Dict, List, Set, Tuple
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
@@ -1333,7 +1334,7 @@ class Parameters(object):
             with open(f'{output_dir}/{xx.name}.csv', 'w') as ff:
                 ff.write(xx.toparamdb())
 
-    def write_parameter_file(self, filename: str,
+    def write_parameter_file(self, filename: Union[str, Path],
                              header: Optional[List[str]] = None):
         """Write a PRMS parameter file.
 
@@ -1341,8 +1342,11 @@ class Parameters(object):
         :param header: list of header lines
         """
 
+        if isinstance(filename, str):
+            filename = Path(filename)
+
         # Write the parameters out to a file
-        outfile = open(filename, 'w')
+        outfile = open(str(filename), 'w')
 
         if header is not None:
             if len(header) > 2:
@@ -1438,11 +1442,14 @@ class Parameters(object):
 
         outfile.close()
 
-    def write_parameter_netcdf(self, filename: str):
+    def write_parameter_netcdf(self, filename: Union[str, Path]):
         """Write parameters to a netcdf format file.
 
         :param filename: full path for output file
         """
+
+        if isinstance(filename, str):
+            filename = Path(filename)
 
         # Update units metadata for parameters with units of
         # elev_units, precip_units, runoff_units, or temp_units
