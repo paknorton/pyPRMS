@@ -34,12 +34,10 @@ class ControlFile(Control):
         self.__isloaded = False
         self.__include_missing = include_missing
 
-        if isinstance(filename, str):
-            filename = Path(filename)
         self.filename = filename
 
     @property
-    def filename(self) -> Union[str, Path]:
+    def filename(self) -> Path:
         """Get control filename.
 
         :returns: Name of control file
@@ -54,7 +52,7 @@ class ControlFile(Control):
         """
 
         self.__isloaded = False
-        self.__filename = filename
+        self.__filename = filename if isinstance(filename, Path) else Path(filename)
         self._read()
 
     def _read(self):
