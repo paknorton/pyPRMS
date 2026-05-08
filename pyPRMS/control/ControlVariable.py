@@ -2,6 +2,7 @@
 
 import datetime
 import numpy as np
+import numpy.typing as npt
 import re
 from typing import Callable, Dict, List, Optional, Sequence, Union
 
@@ -18,13 +19,15 @@ class ControlVariable(object):
     # Create date: 2019-04-18
 
     def __init__(self, name: str,
-                 value = None,
+                 value: Optional[Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_]] = None,
                  meta: Optional[Dict] = None,
                  strict: Optional[bool] = True):
         """Initialize a control variable object.
 
         :param name: Name of control variable
+        :param value: Value(s) of control variable
         :param meta: Metadata of the control variable
+        :param strict: Enforce use of valid control variable metadata
         """
 
         self.__name = name
