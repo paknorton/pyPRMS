@@ -189,7 +189,6 @@ class Control(object):
         """Add a control variable by name.
 
         :param name: Name of the control variable
-        :param datatype: The datatype of the control variable
 
         :raises ControlError: if control variable already exists
         """
