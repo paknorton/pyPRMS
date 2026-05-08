@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
 
-import io
 import numpy as np
 import operator
 import pandas as pd   # type: ignore
-import pkgutil
 import re
-import xml.etree.ElementTree as xmlET
 
 from typing import Dict, List, Optional, Sequence, Union   # OrderedDict as OrderedDictType,
 
-from networkx.utils.misc import check_create_using
-
-# from rich import pretty
-# from rich.console import Console
 from rich.table import Table
 
 from .ControlVariable import ControlVariable
