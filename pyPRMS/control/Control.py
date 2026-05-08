@@ -87,7 +87,7 @@ class Control(object):
         """
 
         # List of control variables that specify possible CBH files
-        ctl_cbh_files = ['albebo_day', 'cloud_cover_day', 'humidity_day', 'potet_day', 'precip_day',
+        ctl_cbh_files = ['albedo_day', 'cloud_cover_day', 'humidity_day', 'potet_day', 'precip_day',
                          'swrad_day', 'tmax_day', 'tmin_day', 'transp_day', 'windspeed_day']
         cbh_files = []
 
