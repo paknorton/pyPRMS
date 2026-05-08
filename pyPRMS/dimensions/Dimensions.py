@@ -41,17 +41,13 @@ class Dimensions(object):
         #         self.add(name=cdim, meta=self.metadata)
         #
 
-    def __getattr__(self, name: str):
-        """Get named dimension.
+    def __contains__(self, name: str) -> bool:
+        """Check if a dimension exists.
 
-        :param name: name of dimensions
-        :returns: dimension object
+        :param name: Name of the dimension
+        :returns: True if dimension exists, otherwise False
         """
-
-        # https://nedbatchelder.com/blog/201010/surprising_getattr_recursion.html
-        if name == "__setstate__":
-            raise AttributeError(name)
-        return getattr(self.__dimensions, name)
+        return name in self.__dimensions
 
     def __getitem__(self, item: str) -> Dimension:
         """Get named dimension.
@@ -75,6 +71,41 @@ class Dimensions(object):
                 outstr += f'{vv}\n'
         return outstr
 
+    def __iter__(self):
+        """Iterate over dimension names.
+
+        :returns: Iterator over dimension names
+        """
+        return iter(self.__dimensions)
+
+    def __len__(self) -> int:
+        """Return number of dimensions.
+
+        :returns: Number of dimensions
+        """
+        return len(self.__dimensions)
+
+    def keys(self):
+        """Return dimension names.
+
+        :returns: View of dimension names
+        """
+        return self.__dimensions.keys()
+
+    def values(self):
+        """Return Dimension objects.
+
+        :returns: View of Dimension objects
+        """
+        return self.__dimensions.values()
+
+    def items(self):
+        """Return dimension name/object pairs.
+
+        :returns: View of (name, Dimension) pairs
+        """
+        return self.__dimensions.items()
+
     @property
     def dimensions(self) -> dict[str, Dimension]:
         """Get ordered dictionary of Dimension objects.
@@ -90,7 +121,7 @@ class Dimensions(object):
         :returns: Number of dimensions
         """
 
-        return len(self.__dimensions)
+        return len(self)
 
     @property
     def xml(self) -> xmlET.Element:
@@ -129,7 +160,7 @@ class Dimensions(object):
         :returns: True if dimension exists, otherwise False
         """
 
-        return name in self.dimensions.keys()
+        return name in self
 
     def get(self, name: str) -> Dimension:
         """Get dimension.
