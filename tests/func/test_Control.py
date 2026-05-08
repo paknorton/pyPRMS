@@ -199,7 +199,7 @@ class TestControl:
 
     def test_control_read_method_is_abstract(self, control_object):
         """The Control class _read() method is abstract"""
-        with pytest.raises(AssertionError):
+        with pytest.raises(NotImplementedError):
             control_object._read()
 
     def test_default_header(self, control_object):

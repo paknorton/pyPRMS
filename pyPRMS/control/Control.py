@@ -397,7 +397,7 @@ class Control(object):
     def _read(self):
         """Abstract function for reading.
         """
-        assert False, 'Control._read() must be defined by child class'
+        raise NotImplementedError('Control._read() must be defined by child class')
 
     def _preload_metadata(self):
         # Create an entry for each variable in the control section of
