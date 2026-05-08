@@ -3,7 +3,6 @@
 import datetime
 import numpy as np
 import numpy.typing as npt
-import re
 from typing import Callable, Dict, List, Optional, Sequence, Union
 
 from ..constants import NEW_PTYPE_TO_DTYPE
@@ -175,37 +174,22 @@ class ControlVariable(object):
         # return meaning.get(self.values, meaning.get(str(self.values), None))
 
     def _value_meaning_test(self, key, src_dict):
-        try:
+        """Look up the meaning for a value in a dictionary that may use
+        direct keys or conditional keys (e.g. '>0', '<5').
+        """
+        # Direct lookup by value
+        if key in src_dict:
             return src_dict[key]
-        except KeyError:
-            # Maybe the key is a string
-            try:
-                return src_dict[str(key)]
-            except KeyError:
-                # Maybe one of the keys is a conditional?
-                patterns = ['[><]']
-                regex = [re.compile('^' + pat).match for pat in patterns]
 
-                tt = {kk: vv for kk, vv in src_dict.items()
-                      if any (reg(kk) for reg in regex)}
+        # Try string representation of the key
+        str_key = str(key)
+        if str_key in src_dict:
+            return src_dict[str_key]
 
-                if len(tt) > 0:
-                    # So there is a conditional
-                    for mm in tt:
-                        # print(mm.split())
-                        if cond_check[mm[0]](key, int(mm[1:])):
-                            return src_dict[mm]
-                            # print(f'{mm}: {src_dict[mm]}')
+        # Check conditional keys (e.g. ">0", "<100")
+        for cond_key, meaning in src_dict.items():
+            if cond_key and cond_key[0] in '><':
+                if cond_check[cond_key[0]](key, int(cond_key[1:])):
+                    return meaning
+
         raise ValueError('Invalid control value')
-
-
-        #     try:
-        #         if 'valid_values' in self.meta:
-        #             # We want a KeyError here if the key is missing
-        #             return self.meta['valid_values'][self.values]
-        #
-        #         return None
-        #     except KeyError:
-        #         # Try again but return None if the key is still missing
-        #         return self.meta['valid_values'].get(str(self.values), None)
-        # return None
