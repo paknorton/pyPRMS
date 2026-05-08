@@ -226,7 +226,8 @@ class TestControl:
 
     def test_cbh_files(self, control_object):
         """Check the default set of CBH files"""
-        expected = ['cloudcover.day',
+        expected = ['albedo.day',
+                    'cloudcover.day',
                     'humidity.day',
                     'potet.day',
                     'precip.day',
