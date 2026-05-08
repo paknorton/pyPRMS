@@ -1,5 +1,5 @@
 
-from typing import Any, Dict, Optional, Union   # , OrderedDict as OrderedDictType, Union
+from __future__ import annotations
 
 import xml.etree.ElementTree as xmlET
 
@@ -9,19 +9,18 @@ from ..constants import MetaDataType
 
 class Dimensions(object):
     """Container of Dimension objects."""
-    __dimensions: Dict[str, Dimension]
 
-    def __init__(self, metadata: Optional[MetaDataType] = None,
-                 verbose: Optional[bool] = False,
-                 strict: Optional[bool] = True):
+    def __init__(self, metadata: MetaDataType | None = None,
+                 verbose: bool = False,
+                 strict: bool = True):
         """Create dictionary containing Dimension objects.
 
         :param verbose: Output additional debug information
         """
-        self.__dimensions: Dict[str, Dimension] = {}
+        self.__dimensions: dict[str, Dimension] = {}
         self.__verbose = verbose
         self.__strict = strict
-        self.metadata: Union[Dict, None] = None
+        self.metadata: dict | None = None
 
         if strict:
             if metadata is None:
@@ -42,14 +41,13 @@ class Dimensions(object):
         #         self.add(name=cdim, meta=self.metadata)
         #
 
-    def __getattr__(self, name: str) -> Any:
+    def __getattr__(self, name: str):
         """Get named dimension.
 
         :param name: name of dimensions
         :returns: dimension object
         """
 
-        # print('ATTR: {}'.format(name))
         # https://nedbatchelder.com/blog/201010/surprising_getattr_recursion.html
         if name == "__setstate__":
             raise AttributeError(name)
@@ -78,7 +76,7 @@ class Dimensions(object):
         return outstr
 
     @property
-    def dimensions(self) -> Dict[str, Dimension]:
+    def dimensions(self) -> dict[str, Dimension]:
         """Get ordered dictionary of Dimension objects.
 
         :returns: OrderedDict of Dimension objects
@@ -110,7 +108,7 @@ class Dimensions(object):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name: str, size: Optional[int] = None):
+    def add(self, name: str, size: int | None = None):
         """Add a new Dimension object.
 
         :param name: Name of the dimension
@@ -123,9 +121,6 @@ class Dimensions(object):
             self.__dimensions[name] = Dimension(name=name, meta=self.metadata,
                                                 size=size,
                                                 strict=self.__strict)
-        # else:
-        #     # TODO: Should this raise an error?
-        #     print('Dimension {} already exists...skipping add name'.format(name))
 
     def exists(self, name: str) -> bool:
         """Check if dimension exists.
@@ -160,7 +155,7 @@ class Dimensions(object):
         if self.exists(name):
             del self.__dimensions[name]
 
-    def tostructure(self) -> Dict[str, Dict[str, int]]:
+    def tostructure(self) -> dict[str, dict[str, int]]:
         """Get data structure of Dimensions data for serialization.
 
         :returns: dictionary of dimension names and sizes
@@ -179,11 +174,11 @@ class ParamDimensions(Dimensions):
     of individual dimensions to 2.
     """
 
-    def __init__(self, metadata: Optional[MetaDataType] = None,
-                 verbose: Optional[bool] = False,
-                 strict: Optional[bool] = True):
+    def __init__(self, metadata: MetaDataType | None = None,
+                 verbose: bool = False,
+                 strict: bool = True):
 
-        super(ParamDimensions, self).__init__(metadata=metadata, verbose=verbose, strict=strict)
+        super().__init__(metadata=metadata, verbose=verbose, strict=strict)
 
     @property
     def xml(self) -> xmlET.Element:
@@ -207,7 +202,7 @@ class ParamDimensions(Dimensions):
             # dim_sub.set('size', str(vv.size))
         return dims_xml
 
-    def add(self, name: str, size: Optional[int] = None):
+    def add(self, name: str, size: int | None = None):
         """Add a new Dimension object.
 
         :param name: Name of the dimension
@@ -244,13 +239,13 @@ class ParamDimensions(Dimensions):
         # TODO: method name should be index() ??
         return list(self.dimensions.keys()).index(name)
 
-    def tostructure(self) -> Dict[str, Dict[str, int]]:
+    def tostructure(self) -> dict[str, dict[str, int]]:
         """Get dictionary structure of the dimensions.
 
         :returns: dictionary of Dimensions names, sizes, and positions
         """
 
-        ldims = super(ParamDimensions, self).tostructure()
+        ldims = super().tostructure()
         for kk, vv in ldims.items():
             vv['position'] = self.get_position(kk)
         return ldims

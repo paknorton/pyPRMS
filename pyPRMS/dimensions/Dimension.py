@@ -1,16 +1,13 @@
-from typing import Dict, Optional, Union
+from __future__ import annotations
 
 
 class Dimension(object):
     """Defines a single dimension."""
 
-    __name: str = ''
-    __size: int = 0
-
     def __init__(self, name: str,
-                 meta: Optional[Dict] = None,
-                 size: Optional[int] = None,
-                 strict: Optional[bool] = True):
+                 meta: dict | None = None,
+                 size: int | None = None,
+                 strict: bool = True):
         """Create a new dimension object.
 
         A dimension has a name and a size associated with it.
@@ -122,7 +119,7 @@ class Dimension(object):
         return self.__size
 
     @size.setter
-    def size(self, value: Union[int, str]):
+    def size(self, value: int | str):
         """Set the size of the dimension.
 
         :param value: Size of the dimension
