@@ -14,12 +14,9 @@ from ..Exceptions_custom import ControlError
 from ..constants import (ctl_order, ctl_implicit_modules, internal_module_map,
                          MetaDataType, VAR_DELIM, PTYPE_TO_PRMS_TYPE)
 from ..base.console import get_console_instance
+from pyPRMS.prms_helpers import cond_check
 
 con = None
-
-cond_check = {'=': operator.eq,
-              '>': operator.gt,
-              '<': operator.lt}
 
 class Control(object):
     """
