@@ -286,59 +286,55 @@ class Control(object):
         :param filename: Name of control file to create
         """
 
-        outfile = open(filename, 'w')
+        with open(filename, 'w') as outfile:
+            if self.__header is not None:
+                for hh in self.__header:
+                    outfile.write(f'{hh}\n')
 
-        if self.__header is not None:
-            for hh in self.__header:
-                outfile.write(f'{hh}\n')
+            order = ['datatype', 'values']
 
-        order = ['datatype', 'values']
+            # Get set of variables in ctl_order that are missing from control_vars
+            setdiff = set(self.__control_vars.keys()).difference(set(ctl_order))
 
-        # Get set of variables in ctl_order that are missing from control_vars
-        setdiff = set(self.__control_vars.keys()).difference(set(ctl_order))
+            # Add missing control variables (setdiff) in ctl_order to the end of the list
+            ctl_order.extend(list(setdiff))
 
-        # Add missing control variables (setdiff) in ctl_order to the end of the list
-        ctl_order.extend(list(setdiff))
+            for kk in ctl_order:
+                if self.exists(kk):
+                    cvar = self.get(kk)
 
-        for kk in ctl_order:
-            if self.exists(kk):
-                cvar = self.get(kk)
+                    outfile.write(f'{VAR_DELIM}\n')
+                    outfile.write(f'{kk}\n')
 
-                outfile.write(f'{VAR_DELIM}\n')
-                outfile.write(f'{kk}\n')
+                    for item in order:
+                        if cvar.meta['datatype'] == 'datetime':
+                            date_tmp = [int(xx) for xx in re.split(r'[-T:.]+', str(cvar.values))[0:6]]
 
-                for item in order:
-                    if cvar.meta['datatype'] == 'datetime':
-                        date_tmp = [int(xx) for xx in re.split(r'[-T:.]+', str(cvar.values))[0:6]]
-
-                        if item == 'datatype':
-                            outfile.write(f'{len(date_tmp)}\n')
-                            outfile.write(f'{PTYPE_TO_PRMS_TYPE[cvar.meta["datatype"]]}\n')
-                        if item == 'values':
-                            for cval in date_tmp:
-                                outfile.write(f'{cval}\n')
-                    else:
-                        if item == 'datatype':
-                            outfile.write(f'{cvar.size}\n')
-                            outfile.write(f'{PTYPE_TO_PRMS_TYPE[cvar.meta["datatype"]]}\n')
-                        if item == 'values':
-                            if cvar.meta['context'] == 'scalar':
-                                # Single-values (e.g. int, float, str)
-                                # print(type(cvar.values))
-                                if isinstance(cvar.values, np.bytes_):
-                                    print("BYTES")
-                                    outfile.write(f'{cvar.values.decode()}\n')
+                            if item == 'datatype':
+                                outfile.write(f'{len(date_tmp)}\n')
+                                outfile.write(f'{PTYPE_TO_PRMS_TYPE[cvar.meta["datatype"]]}\n')
+                            if item == 'values':
+                                for cval in date_tmp:
+                                    outfile.write(f'{cval}\n')
+                        else:
+                            if item == 'datatype':
+                                outfile.write(f'{cvar.size}\n')
+                                outfile.write(f'{PTYPE_TO_PRMS_TYPE[cvar.meta["datatype"]]}\n')
+                            if item == 'values':
+                                if cvar.meta['context'] == 'scalar':
+                                    # Single-values (e.g. int, float, str)
+                                    if isinstance(cvar.values, np.bytes_):
+                                        print("BYTES")
+                                        outfile.write(f'{cvar.values.decode()}\n')
+                                    else:
+                                        outfile.write(f'{cvar.values}\n')
                                 else:
-                                    outfile.write(f'{cvar.values}\n')
-                            else:
-                                # Multiple-values
-                                if isinstance(cvar.values, np.ndarray):
-                                    for cval in cvar.values:
-                                        outfile.write(f'{cval}\n')
-                                else:
-                                    outfile.write(f'{cvar.values}\n')
-
-        outfile.close()
+                                    # Multiple-values
+                                    if isinstance(cvar.values, np.ndarray):
+                                        for cval in cvar.values:
+                                            outfile.write(f'{cval}\n')
+                                    else:
+                                        outfile.write(f'{cvar.values}\n')
 
     def write_metadata_csv(self, filename: str, sep: str = '\t'):
         """Writes the control metadata to a CSV file"""
