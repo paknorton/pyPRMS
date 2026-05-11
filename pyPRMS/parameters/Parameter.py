@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import functools
 import numpy as np
 import numpy.typing as npt
 import pandas as pd     # type: ignore
-from typing import Any, cast, Dict, List, NamedTuple, Optional, Union
+from collections.abc import ValuesView
+from typing import Any, cast, NamedTuple
 import xml.etree.ElementTree as xmlET
 
 from ..base.console import get_console_instance
@@ -10,15 +13,10 @@ from ..constants import NEW_PTYPE_TO_DTYPE
 from ..dimensions.Dimensions import ParamDimensions
 from ..Exceptions_custom import FixedDimensionError
 
-# from rich.console import Console
-# from rich import pretty
-#
-# pretty.install()
-# con = Console(force_jupyter=False)
 con = None
 
-ParamDataRawType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_]
-ParamDataType = Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_, int, float, str]
+ParamDataRawType = npt.NDArray | np.int32 | np.float32 | np.float64 | np.str_
+ParamDataType = npt.NDArray | np.int32 | np.float32 | np.float64 | np.str_ | int | float | str
 
 
 class Outliers(NamedTuple):
@@ -29,10 +27,10 @@ class Outliers(NamedTuple):
 
 class Stats(NamedTuple):
     name: str
-    min: Optional[npt.DTypeLike]
-    max: Optional[npt.DTypeLike]
-    mean: Optional[npt.DTypeLike]
-    median: Optional[npt.DTypeLike]
+    min: npt.DTypeLike | None
+    max: npt.DTypeLike | None
+    mean: npt.DTypeLike | None
+    median: npt.DTypeLike | None
 
 
 class Parameter(object):
@@ -44,10 +42,10 @@ class Parameter(object):
 
     # Container for a single parameter
     def __init__(self, name: str,
-                 meta: Optional[Dict] = None,
+                 meta: dict | None = None,
                  global_dims=None,
-                 strict: Optional[bool] = True,
-                 verbose: Optional[bool] = False):
+                 strict: bool = True,
+                 verbose: bool = False):
         """
         Initialize a parameter object.
 
@@ -86,8 +84,15 @@ class Parameter(object):
                 # The meta must be supplied as an adhoc dictionary
                 self.meta = meta
 
-        self.__data: Optional[ParamDataRawType] = None
+        self.__data: ParamDataRawType | None = None
         self.__modified = False
+
+    def __repr__(self) -> str:
+        """String representation of the Parameter object.
+
+        :return: string with parameter name and dimensions
+        """
+        return f"Parameter(name='{self.name}')"
 
     def __str__(self) -> str:
         """Pretty-print string representation of the parameter information.
@@ -245,7 +250,7 @@ class Parameter(object):
         return self.__dimensions
 
     @property
-    def index_map(self) -> Union[Dict[Any, int], None]:
+    def index_map(self) -> dict[Any, int] | None:
         """Returns an ordered dictionary which maps data values of a 1D array
         to index positions.
 
@@ -260,7 +265,7 @@ class Parameter(object):
             return None
 
     @property
-    def is_scalar(self):
+    def is_scalar(self) -> bool:
         try:
             return 'one' in self.meta['dimensions']
         except KeyError:
@@ -275,7 +280,7 @@ class Parameter(object):
         return self.__modified
 
     @property
-    def modules(self) -> List[str]:
+    def modules(self) -> list[str]:
         """Returns the names of the PRMS modules that require the parameter.
 
         :returns: names of PRMS modules that require the parameter
@@ -300,16 +305,6 @@ class Parameter(object):
             return 0
         else:
             return self.__dimensions.ndim
-
-    # @property
-    # def size(self) -> int:
-    #     """Return the total size of the parameter for the defined dimensions.
-    #
-    #     :returns total size of parameter dimensions"""
-    #     arr_shp = [dd.size for dd in self.dimensions.dimensions.values()]
-    #
-    #     # Compute the total size of the parameter
-    #     return functools.reduce(lambda x, y: x * y, arr_shp)
 
     @property
     def xml(self) -> xmlET.Element:
@@ -355,7 +350,6 @@ class Parameter(object):
 
         :returns: true when all values are within the valid min/max range for the parameter
         """
-        # if self.__data is not None:
         minval = self.meta.get('minimum', None)
         maxval = self.meta.get('maximum', None)
 
@@ -409,7 +403,6 @@ class Parameter(object):
 
         :returns: NamedTuple containing count of values less than and values greater than valid range
         """
-        # Outliers = namedtuple('Outliers', ['name', 'under', 'over'])
 
         values_under = 0
         values_over = 0
@@ -422,13 +415,13 @@ class Parameter(object):
 
         return Outliers(self.__name, values_under, values_over)
 
-    def remove_by_index(self, dim_name: str, indices: List[int]):
+    def remove_by_index(self, dim_name: str, indices: list[int]):
         """Remove columns (nhru or nsegment) from data array given a list of indices.
 
         :param dim_name: Name of dimension to reduce
         :param indices: List of indices to remove"""
 
-        if isinstance(indices, type(dict().values())):
+        if isinstance(indices, ValuesView):
             indices = list(indices)
 
         if self.__data is not None:
@@ -441,58 +434,11 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
-    # def reshape(self, new_dims: Dict):
-    #     """Reshape a parameter, broadcasting existing values as necessary.
-    #
-    #     :param new_dims: Dimension names and sizes that will be used to reshape the parameter data
-    #     """
-    #
-    #     if self.__data is None:
-    #         # Reshape has no meaning if there is no data to reshape
-    #         return
-    #
-    #     if self.dimensions.ndim == 1:
-    #         if 'one' in self.dimensions.keys():
-    #             # Reshaping from a scalar to a 1D or 2D array
-    #             # print('Scalar to 1D or 2D')
-    #             new_sizes = [vv.size for vv in new_dims.values()]
-    #             tmp_data = np.broadcast_to(self.__data, new_sizes)
-    #
-    #             # Remove the original dimension
-    #             self.dimensions.remove('one')
-    #
-    #             # Add the new ones
-    #             for kk, vv in new_dims.items():
-    #                 self.dimensions.add(kk, vv.size)
-    #
-    #             self.__data = tmp_data
-    #         elif set(self.dimensions.keys()).issubset(set(new_dims.keys())):
-    #             # Reschaping a 1D to a 2D
-    #             if len(new_dims) == 1:
-    #                 print('ERROR: Cannot reshape from 1D array to 1D array')
-    #             else:
-    #                 # print('1D array to 2D array')
-    #                 new_sizes = [vv.size for vv in new_dims.values()]
-    #                 try:
-    #                     tmp_data = np.broadcast_to(self.__data, new_sizes)
-    #                 except ValueError:
-    #                     # operands could not be broadcast together with remapped shapes
-    #                     tmp_data = np.broadcast_to(self.__data, new_sizes[::-1]).T
-    #
-    #                 old_dim = list(self.dimensions.keys())[0]
-    #                 self.dimensions.remove(old_dim)
-    #
-    #                 for kk, vv in new_dims.items():
-    #                     self.dimensions.add(kk, vv.size)
-    #
-    #                 self.__data = tmp_data
-
     def stats(self) -> Stats:
         """Returns basic statistics on parameter values.
 
         :returns: None (for strings or no data) or NamedTuple containing min, max, mean, and median of parameter values
         """
-        # Stats = namedtuple('Stats', ['name', 'min', 'max', 'mean', 'median'])
 
         try:
             return Stats(self.__name, np.min(self.data_raw), np.max(self.data_raw),
@@ -507,7 +453,7 @@ class Parameter(object):
         :param dim_name: name of dimension
         :param indices: local indices of HRUs or segments to extract"""
 
-        if isinstance(indices, type(dict().values())):
+        if isinstance(indices, ValuesView):
             indices = list(indices)
 
         if self.dimensions[dim_name].is_fixed:
@@ -522,7 +468,7 @@ class Parameter(object):
         assert self.data_raw is not None  # Needed so mypy doesn't fail on next line
         self.dimensions[dim_name].size = self.data_raw.shape[dim_idx]
 
-    def tolist(self) -> List[Union[int, float, str]]:
+    def tolist(self) -> list[int | float | str]:
         """Returns the parameter data as a list.
 
         :returns: Parameter data
@@ -572,14 +518,14 @@ class Parameter(object):
                  'data': self.tolist()}
         return param
 
-    def unique(self) -> Optional[npt.NDArray]:
+    def unique(self) -> npt.NDArray | None:
         """Create array of unique values from the parameter data.
 
         :returns: Array of unique values
         """
         return np.unique(self.data_raw)
 
-    def update_element(self, index: int, value: Union[int, float, List[int], List[float]]):
+    def update_element(self, index: int, value: int | float | list[int] | list[float]):
         """Update single value or row of values (e.g. nhru by nmonths) for a
         given local zero-based index in the parameter data array.
 
@@ -634,7 +580,7 @@ class Parameter(object):
                 self.__data[index] = value   # type: ignore
                 self.__modified = True
 
-    def _value_index_1d(self, value: Union[int, float, str]) -> npt.NDArray:
+    def _value_index_1d(self, value: int | float | str) -> npt.NDArray:
         """Given a scalar value return the indices where there is a match.
 
         :param value: The value to find in the parameter data array

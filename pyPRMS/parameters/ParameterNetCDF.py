@@ -1,6 +1,6 @@
+from __future__ import annotations
 
 import xarray as xr
-from typing import Optional
 
 from .Parameters import Parameters
 from ..base.console import get_console_instance
@@ -16,7 +16,7 @@ class ParameterNetCDF(Parameters):
     def __init__(self,
                  filename: str,
                  metadata,
-                 verbose: Optional[bool] = False):
+                 verbose: bool = False):
         """Initialize ParamDb object.
 
         :param filename: Path the ParamDb netcdf file
@@ -24,7 +24,7 @@ class ParameterNetCDF(Parameters):
         :param verify: Verify parameters against master list
         """
 
-        super(ParameterNetCDF, self).__init__(metadata=metadata, verbose=verbose)
+        super().__init__(metadata=metadata, verbose=verbose)
 
         global con
         con = get_console_instance()

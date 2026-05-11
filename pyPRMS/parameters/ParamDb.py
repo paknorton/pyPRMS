@@ -1,7 +1,8 @@
+from __future__ import annotations
 
 import os
 import pandas as pd     # type: ignore
-from typing import cast, Optional
+from typing import cast
 
 from ..constants import PRMS_VERSION
 from ..Exceptions_custom import ParameterNotValidError
@@ -17,7 +18,7 @@ con = None
 class ParamDb(Parameters):
     def __init__(self, paramdb_dir: str,
                  metadata,
-                 verbose: Optional[bool] = False):
+                 verbose: bool = False):
         """Initialize ParamDb object.
 
         This object handles the monolithic parameter database.
@@ -26,7 +27,7 @@ class ParamDb(Parameters):
         :param verbose: Output additional debug information
         """
 
-        super(ParamDb, self).__init__(metadata=metadata, verbose=verbose)
+        super().__init__(metadata=metadata, verbose=verbose)
 
         global con
         con = get_console_instance()
@@ -59,9 +60,9 @@ class ParamDb(Parameters):
 
         # Create a MetaData object to use its parameter parsing function
         mobj = MetaData()
-        pvt_meta = mobj._MetaData__parameters_to_dict(xml_root=params_root,
-                                                      meta_type='parameters',
-                                                      req_version=PRMS_VERSION)
+        pvt_meta = mobj._parameters_to_dict(xml_root=params_root,
+                                             meta_type='parameters',
+                                             req_version=PRMS_VERSION)
 
         # Populate parameterSet with all available parameter names
         for param in params_root.findall('parameter'):

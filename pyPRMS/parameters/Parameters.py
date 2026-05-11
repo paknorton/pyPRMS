@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 import cartopy.crs as ccrs  # type: ignore
 import gc
@@ -13,11 +14,12 @@ import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
 from collections import defaultdict
-from collections.abc import KeysView
+from collections.abc import KeysView, Sequence
 from functools import cached_property
 from packaging.version import Version
 from pathlib import Path
-from typing import Any, Literal, Optional, Sequence, Union, Dict, List, Set, Tuple
+from types import MappingProxyType
+from typing import Any, Literal, cast
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
 from ..control.Control import Control
@@ -30,8 +32,6 @@ from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, external_module_map, Me
                          NEW_PTYPE_TO_DTYPE, PRMS_VERSION, PRMS6_DEV_VERSION, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES,
                          PARAMETERS_XML, VAR_DELIM)
 
-# from rich.console import Console
-# from rich import pretty
 from rich.table import Table
 
 import os
@@ -53,7 +53,7 @@ class Parameters(object):
     # Create date: 2017-05-01
 
     def __init__(self, metadata: MetaDataType,
-                 verbose: Optional[bool] = False):
+                 verbose: bool = False):
         """Initialize the Parameters object.
 
         Create an ordered dictionary to contain pyPRMS.Parameter objects
@@ -67,37 +67,49 @@ class Parameters(object):
         # con.print('Parameters: Console info: {}'.format(con))
 
         self.__dimensions = Dimensions(metadata=metadata, verbose=verbose)
-        self.__parameters: Dict[str, Parameter] = dict()
+        self.__parameters: dict[str, Parameter] = dict()
 
         self.verbose = verbose
-        self.__control: Optional[Control] = None
+        self.__control: Control | None = None
         self.__hru_poly = None
-        self.__hru_shape_key: Optional[str] = None
+        self.__hru_shape_key: str | None = None
         self.__seg_poly = None
-        self.__seg_shape_key: Optional[str] = None
-        self.__seg_to_hru: Dict[int, List[int]] = dict()
-        self.__hru_to_seg: Dict[int, int] = dict()
+        self.__seg_shape_key: str | None = None
+        self.__seg_to_hru: dict[int, list[int]] = dict()
+        self.__hru_to_seg: dict[int, int] = dict()
         self.metadata = metadata['parameters']
         self.prms_version = Version(metadata['info']['version'])
 
-    def __getattr__(self, name: str):
-        """Not sure what to write yet.
+    def __contains__(self, name: str) -> bool:
+        """Check if a parameter exists.
 
-        :param name: Name of the attribute
+        :param name: Name of the parameter
+        :returns: True if parameter exists, otherwise False
         """
-
-        # Undefined attributes will look up the given parameter
-        # return self.get(item)
-        # https://nedbatchelder.com/blog/201010/surprising_getattr_recursion.html
-        if name == "__setstate__":
-            raise AttributeError(name)
-        return getattr(self.__parameters, name)
+        return name in self.__parameters
 
     def __getitem__(self, item):
-        """Not sure what to write yet.
+        """Get a parameter by name.
+
+        :param item: Name of the parameter
+        :returns: Parameter object
         """
 
         return self.get(item)
+
+    def __iter__(self):
+        """Iterate over parameter names.
+
+        :returns: Iterator over parameter names
+        """
+        return iter(self.__parameters)
+
+    def __len__(self) -> int:
+        """Return number of parameters.
+
+        :returns: Number of parameters
+        """
+        return len(self.__parameters)
 
     def __str__(self) -> str:
         """Pretty-print string representation of the Parameters object.
@@ -116,7 +128,7 @@ class Parameters(object):
         return outstr
 
     @property
-    def control(self) -> Optional[Control]:
+    def control(self) -> Control | None:
         """Get Control object.
 
         :returns: Control object
@@ -169,7 +181,7 @@ class Parameters(object):
         return self.__dimensions
 
     @cached_property
-    def hru_to_seg(self) -> Dict[int, int]:
+    def hru_to_seg(self) -> dict[int, int]:
         """Returns an ordered dictionary mapping NHM HRU IDs to HRU NHM segment IDs.
 
         :returns: dictionary mapping nhm_id to hru_segment_nhm
@@ -194,16 +206,16 @@ class Parameters(object):
         return pset.difference(set(self.parameters.keys()))
 
     @property
-    def parameters(self) -> Dict[str, Parameter]:
-        """Returns an ordered dictionary of parameter objects.
+    def parameters(self) -> MappingProxyType[str, Parameter]:
+        """Returns a read-only view of parameter objects.
 
-        :returns: dictionary of Parameter objects
+        :returns: Read-only mapping of parameter names to Parameter objects
         """
 
-        return self.__parameters
+        return MappingProxyType(self.__parameters)
 
     @property
-    def poi_to_seg(self) -> Dict[str, int]:
+    def poi_to_seg(self) -> dict[str, int]:
         """Returns a dictionary mapping poi_id to local poi_seg.
 
         :returns: dictionary mapping poi_id to local poi_seg"""
@@ -213,7 +225,7 @@ class Parameters(object):
         return dict(np.rec.fromarrays([gage_ids, gage_segments]).tolist())   # type: ignore
 
     @property
-    def poi_to_seg0(self) -> Dict[str, int]:
+    def poi_to_seg0(self) -> dict[str, int]:
         """Returns a dictionary mapping poi_id to local, zero-based poi_seg.
 
         :returns: dictionary mapping poi_id to local, zero-based poi_seg"""
@@ -222,7 +234,7 @@ class Parameters(object):
         return dict(np.rec.fromarrays([gage_ids, gage_segments]).tolist())   # type: ignore
 
     @cached_property
-    def seg_to_hru(self) -> Dict[int, List[int]]:
+    def seg_to_hru(self) -> dict[int, list[int]]:
         """Returns a dictionary mapping HRU global segment IDs to global HRU IDs.
 
         Segment keys equal to zero are for non-routed HRUs. Segment keys greater than
@@ -369,7 +381,7 @@ class Parameters(object):
             if self.verbose:   # pragma: no cover
                 con.print(f'[bold]{cparam}[/] [gold3] parameter added with default value[/]')
 
-    def add_poi(self, addl_gages: Dict[str, int]):
+    def add_poi(self, addl_gages: dict[str, int]):
         """Add user-specified points of interest (POIs) to the model.
 
         :param addl_gages: Dictionary of user-specified POIs with POI ID as key and segment index as value
@@ -429,7 +441,6 @@ class Parameters(object):
             cmeta = cparam.meta
 
             if cmeta.get('maximum') in list(self.dimensions.keys()):
-                # if isinstance(cmeta.get('maximum'), str):
                 try:
                     cmeta['maximum'] = self.dimensions.get(cmeta.get('maximum')).size
 
@@ -473,7 +484,6 @@ class Parameters(object):
         """Check all parameter variables for proper array size.
         """
 
-        # for pp in self.__parameters.values():
         for pk in sorted(list(self.parameters.keys())):
             pp = self.get(pk)
 
@@ -494,8 +504,6 @@ class Parameters(object):
                     con.print(f'    [dark_orange]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside '
                               + f'the valid range of ({valid_min}, {valid_max}); '
                               + f'under/over=({pp_outliers.under}, {pp_outliers.over})')
-                    # print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
-                    #       f'the valid range of ({pp.minimum}, {pp.maximum})')
                 elif valid_min == 'bounded':
                     # TODO: Handling bounded parameters needs improvement
                     con.print(f'    [dark_orange]WARNING[/]: Bounded parameter value(s) '
@@ -572,7 +580,7 @@ class Parameters(object):
         :returns: True if parameter exists, otherwise False
         """
 
-        return name in self.parameters.keys()
+        return name in self
 
     def get(self, name: str) -> Parameter:
         """Returns a parameter object.
@@ -581,7 +589,6 @@ class Parameters(object):
         :returns: Parameter object
         """
 
-        # Return the given parameter
         if self.exists(name):
             return self.__parameters[name]
 
@@ -636,7 +643,7 @@ class Parameters(object):
         return param_data
 
     def get_subset(self, name: str,
-                   global_ids: List[int]) -> ParamDataRawType:
+                   global_ids: list[int]) -> ParamDataRawType:
         """Returns a subset for a parameter based on the global_ids (e.g. nhm_id, nhm_seg).
 
         :param name: Name of the parameter
@@ -646,7 +653,7 @@ class Parameters(object):
 
         param = self.get(name)
         dim_set = set(param.dimensions.keys()).intersection({'nhru', 'nssr', 'ngw', 'nsegment', 'ndeplval'})
-        id_index_map: Union[Dict[Any, int], None] = {}
+        id_index_map: dict[Any, int] | None = {}
         cdim = dim_set.pop()
 
         if cdim in ['nhru', 'nssr', 'ngw', 'ndeplval']:
@@ -662,7 +669,6 @@ class Parameters(object):
 
         if param.dimensions.ndim == 2:
             return np.take(param.data_raw, nhm_idx0, axis=0)    # axis: 0 rows, 1 columns
-            # return param.data_raw[tuple(nhm_idx0), :]
         else:
             if name in ['hru_deplcrv', 'snarea_curve']:
                 init_data = np.take(self.get('hru_deplcrv').data_raw, nhm_idx0, axis=0)
@@ -676,7 +682,6 @@ class Parameters(object):
 
                         # Create new hru_deplcrv and renumber
                         res = np.array([uniq_dict[xx] for xx in init_data])
-                        # return np.array([uniq_dict[xx] for xx in init_data])
                     case 'snarea_curve':
                         uniq_deplcrv0 = [xx - 1 for xx in uniq_deplcrv]
                         res = param.data_raw.reshape((-1, 11))[tuple(uniq_deplcrv0), :].reshape((-1))
@@ -694,9 +699,8 @@ class Parameters(object):
             else:
                 # All other 1D arrays
                 return np.take(param.data_raw, nhm_idx0, axis=0)    # axis: 0 rows, 1 columns
-                # return param.data_raw[tuple(nhm_idx0), ]
 
-    def outlier_ids(self, name: str) -> List[int]:
+    def outlier_ids(self, name: str) -> list[int]:
         """Returns list of HRU or segment IDs of invalid parameter values
 
         :param name: Name of the parameter
@@ -781,9 +785,9 @@ class Parameters(object):
         return pd.DataFrame.from_records(out_list, columns=col_names)
 
     def plot(self, name: str,
-             output_dir: Optional[str] = None,
-             limits: Optional[Union[LimitOptions, List[float], Tuple[float, float]]] = 'absolute',
-             mask_defaults: Optional[str] = None,
+             output_dir: str | None = None,
+             limits: LimitOptions | list[float] | tuple[float, float] | None = 'absolute',
+             mask_defaults: str | None = None,
              **kwargs):   # pragma: no cover
         """Plot a parameter.
 
@@ -859,7 +863,6 @@ class Parameters(object):
                     # Takes care of multipolygons that are in the NHM geodatabase/shapefile
                     geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
 
-                    # print('Writing first plot')
                     df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key,
                                                   right_index=True, how='left')
 
@@ -934,7 +937,6 @@ class Parameters(object):
 
                             for tt in range(1, 12):
                                 # Months 2 through 12
-                                # print(f'    Index: {tt}')
                                 param_data = self.get_dataframe(name).iloc[:, tt].to_frame(name=name)
 
                                 if mask_defaults is not None:
@@ -1024,7 +1026,7 @@ class Parameters(object):
             else:
                 print('Non-plottable parameter')
 
-    def poi_upstream_hrus(self, poi: Union[str, List[str], KeysView]) -> Dict[str, List[int]]:
+    def poi_upstream_hrus(self, poi: str | list[str] | KeysView) -> dict[str, list[int]]:
         """Returns a dictionary of POI to upstream global HRU IDs.
 
         :param poi: POI ID or list of POI IDs
@@ -1054,7 +1056,7 @@ class Parameters(object):
 
         return poi_hrus
 
-    def poi_upstream_segments(self, poi: Union[str, List[str], KeysView]) -> Dict[str, List[int]]:
+    def poi_upstream_segments(self, poi: str | list[str] | KeysView) -> dict[str, list[int]]:
         """Returns a dictionary of POI to upstream global segment IDs.
 
         :param poi: POI ID or list of POI IDs
@@ -1083,7 +1085,7 @@ class Parameters(object):
 
         return poi_segs
 
-    def remove(self, name: Union[str, Sequence[str], Set[str]]):
+    def remove(self, name: str | Sequence[str] | set[str]):
         """Delete one or more parameters if they exist.
 
         :param name: parameter or list of parameters to remove
@@ -1099,7 +1101,7 @@ class Parameters(object):
                 if self.verbose:   # pragma: no cover
                     con.print(f'[bold]{cparam}[/] [gold3]parameter removed[/]')
 
-    def remove_poi(self, poi: Union[str, List[str]]):
+    def remove_poi(self, poi: str | list[str]):
         """Remove POIs by gage_id.
 
         :param poi: POI id to remove
@@ -1123,9 +1125,6 @@ class Parameters(object):
 
         poi_parameters = ['poi_gage_id', 'poi_gage_segment', 'poi_type']
 
-        # print(f'POIs to delete: {poi}')
-        # print(f'Current POIs: {poi_ids}')
-        # print(f'Size of poi_del_indices: {poi_del_indices.size}')
         if len(poi_del_indices) > 0:
             if self.get('poi_gage_id').dimensions.get('npoigages').size == len(poi_del_indices):
                 # We're trying to remove all the POIs
@@ -1142,7 +1141,7 @@ class Parameters(object):
                 self.dimensions.get('npoigages').size -= len(poi_del_indices)
                 self.dimensions.get('nobs').size -= len(poi_del_indices)
 
-    def segment_upstream_hrus(self, segs: Union[int, List[int], KeysView, npt.NDArray]) -> Dict[int, List[int]]:
+    def segment_upstream_hrus(self, segs: int | list[int] | KeysView | npt.NDArray) -> dict[int, list[int]]:
         """Returns a dictionary of segment to upstream global HRU IDs.
 
         :param segs: Global segment ID or list of global segment IDs
@@ -1172,7 +1171,7 @@ class Parameters(object):
 
         return seg_hrus
 
-    def segment_upstream_segments(self, segs: Union[int, List[int], KeysView, npt.NDArray]) -> Dict[int, List[int]]:
+    def segment_upstream_segments(self, segs: int | list[int] | KeysView | npt.NDArray) -> dict[int, list[int]]:
         """Returns a dictionary of global segment IDs to upstream global segment IDs.
 
         :param segs: global segment IDs or list of global segment IDs
@@ -1202,8 +1201,8 @@ class Parameters(object):
         return us_segs
 
     def shapefile_hrus(self, filename: str,
-                       layer_name: Optional[str] = None,
-                       shape_key: Optional[str] = None):   # pragma: no cover
+                       layer_name: str | None = None,
+                       shape_key: str | None = None):   # pragma: no cover
         """Read a shapefile or geodatabase that corresponds to HRUs.
 
         :param filename: name of shapefile or geodatabase
@@ -1222,8 +1221,8 @@ class Parameters(object):
         self.__hru_shape_key = shape_key
 
     def shapefile_segments(self, filename: str,
-                           layer_name: Optional[str] = None,
-                           shape_key: Optional[str] = None):   # pragma: no cover
+                           layer_name: str | None = None,
+                           shape_key: str | None = None):   # pragma: no cover
         """Read a shapefile or geodatabase that corresponds to stream segments.
 
         :param filename: name of shapefile or geodatabase
@@ -1242,7 +1241,7 @@ class Parameters(object):
         self.__seg_shape_key = shape_key
 
     def stream_network(self, tosegment: str = 'tosegment_nhm',
-                       seg_id: str = 'nhm_seg') -> Union[nx.DiGraph, None]:
+                       seg_id: str = 'nhm_seg') -> nx.DiGraph | None:
         """Create Directed, Acyclic Graph (DAG) of stream network.
 
         :param tosegment: name of parameter to use for HRU tosegment
@@ -1266,7 +1265,7 @@ class Parameters(object):
 
     def update_element(self, name: str,
                        id1: int,
-                       value: Union[int, float, List[int], List[float]]):
+                       value: int | float | list[int] | list[float]):
         """Update single value or row of values (e.g. nhru by nmonths) for a
         given nhm_id, nhm_seg, or 0 (for scalars).
 
@@ -1334,8 +1333,8 @@ class Parameters(object):
             with open(f'{output_dir}/{xx.name}.csv', 'w') as ff:
                 ff.write(xx.toparamdb())
 
-    def write_parameter_file(self, filename: Union[str, Path],
-                             header: Optional[List[str]] = None):
+    def write_parameter_file(self, filename: str | Path,
+                             header: list[str] | None = None):
         """Write a PRMS parameter file.
 
         :param filename: name of parameter file
@@ -1442,7 +1441,7 @@ class Parameters(object):
 
         outfile.close()
 
-    def write_parameter_netcdf(self, filename: Union[str, Path]):
+    def write_parameter_netcdf(self, filename: str | Path):
         """Write parameters to a netcdf format file.
 
         :param filename: full path for output file
@@ -1494,9 +1493,7 @@ class Parameters(object):
             else:
                 # String parameter
                 # Get the maximum string length in the array of data
-                # print('String parameter: {}'.format(vv.name))
                 str_size = len(max(vv.data, key=len))
-                # print('size: {}'.format(str_size))
 
                 # Create a dimension for the string length
                 nc_hdl.createDimension(vv.name + '_nchars', str_size)
@@ -1641,7 +1638,7 @@ class Parameters(object):
         return param_set
 
     def _upstream_hrus(self, streamnet: nx.DiGraph,
-                       dsmost_seg: List[int]) -> List[int]:
+                       dsmost_seg: list[int]) -> list[int]:
         """Get list of HRUs that contribute to the given stream segments.
 
         :param streamnet: Directed, Acyclic Graph (DAG) of stream network
@@ -1673,7 +1670,7 @@ class Parameters(object):
         return final_hru_list
 
     def _upstream_segments(self, streamnet: nx.DiGraph,
-                           dsmost_seg: List[int]) -> List[int]:
+                           dsmost_seg: list[int]) -> list[int]:
         """Get list of segments that contribute to the given stream segments.
 
         :param streamnet: Directed, Acyclic Graph (DAG) of stream network
