@@ -13,11 +13,19 @@ class Dimension(object):
         A dimension has a name and a size associated with it.
 
         :param name: The name of the dimension
-        :param size: The size of the dimension
-        :param strict: Enforce use of valid dimensions metadata
+        :param meta: Dimension metadata. When ``strict=True`` this should be the
+            full dimensions metadata dict (keyed by dimension name); the sub-dict
+            for *name* will be extracted automatically. When ``strict=False`` this
+            should be the sub-dict of metadata for this specific dimension (or
+            ``None`` for an empty metadata dict).
+        :param size: The size of the dimension. If None, the size is set from
+            the ``default`` value in the metadata (or 0 if not present).
+        :param strict: When True, *meta* is required and must contain an entry
+            for *name*. When False, *meta* is used as-is without validation.
         """
 
         self.__name = name
+        self.__strict = strict
 
         if meta is None:
             if strict:
@@ -32,7 +40,7 @@ class Dimension(object):
                     raise ValueError(f'`{self.name}` does not exist in metadata')
             else:
                 if isinstance(meta, dict):
-                    # Assume we have a dictionary of metadata for this dimension
+                    # Assume we have a dictionary of metadata for just this dimension
                     self.meta = meta
 
         if size is None:
@@ -65,7 +73,7 @@ class Dimension(object):
         :returns: Dimension size
 
         :raises ValueError: if type of parameter is not an integer
-        :raises ValeuError: if parameter is not a positive integer
+        :raises ValueError: if parameter is not a positive integer
         """
 
         # Augment in-place addition so the instance minus a number results
@@ -80,7 +88,7 @@ class Dimension(object):
 
         :returns: string with name and size of dimension
         """
-        return f"Dimension(name='{self.name}', meta={self.meta}, size={self.size}, strict=False)"
+        return f"Dimension(name='{self.name}', meta={self.meta}, size={self.size}, strict={self.__strict})"
 
     def __str__(self) -> str:
         """Return friendly string representation of dimension
@@ -97,7 +105,11 @@ class Dimension(object):
         return outstr
 
     @property
-    def is_fixed(self):
+    def is_fixed(self) -> bool:
+        """Whether this dimension has a fixed size that cannot be changed.
+
+        :returns: True if dimension is fixed, otherwise False
+        """
         return self.meta.get('is_fixed', False)
 
     @property
@@ -122,14 +134,18 @@ class Dimension(object):
     def size(self, value: int | str):
         """Set the size of the dimension.
 
-        :param value: Size of the dimension
-        :raises ValueError: if dimension size is not a positive integer
+        :param value: Size of the dimension (int or numeric string)
+        :raises ValueError: if value is a float, cannot be converted to int, or is negative
         """
 
         if isinstance(value, float):
-            raise ValueError(f'{self.name} size cannot be a float value')
+            raise ValueError(f'{self.name}: size cannot be a float value')
 
-        value = int(value)
+        try:
+            value = int(value)
+        except (ValueError, TypeError):
+            raise ValueError(f'{self.name}: size must be an integer or numeric string, got {type(value).__name__!r}')
+
         def_value = self.meta.get('default', 0)
 
         if value < 0:
