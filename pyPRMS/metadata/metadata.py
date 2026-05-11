@@ -323,7 +323,7 @@ class MetaData(object):
                      'default': {'orig_name': 'default',
                                  'datatype': int},
                      'is_fixed': {'orig_name': 'is_fixed',
-                                  'datatype': bool}}
+                                  'datatype': lambda x: x in ('1', 'True', 'true')}}
 
             for ek, ev in elems.items():
                 text = self.__find_text(elem, ev['orig_name'])
