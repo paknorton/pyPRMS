@@ -18,6 +18,7 @@ from collections.abc import KeysView, Sequence
 from functools import cached_property
 from packaging.version import Version
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Literal, cast
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
 
@@ -205,13 +206,13 @@ class Parameters(object):
         return pset.difference(set(self.parameters.keys()))
 
     @property
-    def parameters(self) -> dict[str, Parameter]:
-        """Returns an ordered dictionary of parameter objects.
+    def parameters(self) -> MappingProxyType[str, Parameter]:
+        """Returns a read-only view of parameter objects.
 
-        :returns: dictionary of Parameter objects
+        :returns: Read-only mapping of parameter names to Parameter objects
         """
 
-        return self.__parameters
+        return MappingProxyType(self.__parameters)
 
     @property
     def poi_to_seg(self) -> dict[str, int]:
