@@ -131,7 +131,7 @@ class TestDimension:
 
     def test_dimension_repr(self, metadata_instance):
         """The __repr__ should produce code to instantiate a Dimension object"""
-        str_cmp = "Dimension(name='nhru', meta={'description': 'Number of HRUs', 'size': 1, 'default': 1, 'is_fixed': False}, size=1, strict=False)"
+        str_cmp = "Dimension(name='nhru', meta={'description': 'Number of HRUs', 'size': 1, 'default': 1, 'is_fixed': False}, size=1, strict=True)"
 
         adim = Dimension(name='nhru', meta=metadata_instance, size=1)
         repr_str = repr(adim)
