@@ -127,5 +127,11 @@ PTYPE_TO_DTYPE = {1: np.int32, 2: np.float32, 3: np.float64, 4: np.str_}
 NEW_PTYPE_TO_DTYPE = {'int32': np.int32, 'float32': np.float32, 'float64': np.float64, 'string': np.str_, 'datetime': np.datetime64}
 PTYPE_TO_PRMS_TYPE: Dict[str, int] = {'int32': 1, 'float32': 2, 'float64': 3, 'string': 4, 'datetime': 1}
 
+# Maps numeric type codes from XML to internal datatype strings (used by control metadata)
+NEW_DTYPE: Dict[int, str] = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
+
+# Maps single-character type codes from XML to internal datatype strings (used by parameter/variable metadata)
+NEW_PARAM_DTYPE: Dict[str, str] = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
+
 # PARNAME_DATATYPES = {'long': 1, 'float': 2, 'double': 3, 'string': 4}
 # DATATYPE_TO_DTYPE = {1: int, 2: np.float32, 3: np.float64, 4: np.str_}

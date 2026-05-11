@@ -9,13 +9,10 @@ from collections import defaultdict
 from packaging.version import Version
 
 from pyPRMS.prms_helpers import set_date
-from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE, PRMS_VERSION
+from pyPRMS.constants import MetaDataType, NEW_DTYPE, NEW_PARAM_DTYPE, NEW_PTYPE_TO_DTYPE, PRMS_VERSION
 from ..base.console import get_console_instance
 
 con = None
-
-NEW_DTYPE = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
-NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
 
 
 class MetaData(object):
@@ -31,8 +28,15 @@ class MetaData(object):
 
     def __init__(self, version: str | Version = PRMS_VERSION,
                  verbose: bool = False):
-        # meta_type - one of control, dimension, parameter, output
-        # version - PRMS major version to use for filtering
+        """Create a MetaData object by parsing PRMS XML metadata files.
+
+        Loads and parses all metadata types (control, dimensions, parameters,
+        variables, data_file, cbh) from the bundled XML files, filtering by
+        the specified PRMS version.
+
+        :param version: PRMS version string or Version object for filtering metadata
+        :param verbose: Output additional debug information during parsing
+        """
 
         global con
         con = get_console_instance()
@@ -79,6 +83,11 @@ class MetaData(object):
 
     @property
     def metadata(self) -> MetaDataType:
+        """Return the complete metadata dictionary.
+
+        :returns: Dictionary containing all parsed metadata keyed by type
+            (info, control, dimensions, parameters, variables, data_file, cbh)
+        """
         return self.__meta_dict
 
     def __repr__(self) -> str:
