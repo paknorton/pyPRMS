@@ -1,3 +1,4 @@
+
 import io
 import pkgutil
 import xml.etree.ElementTree as xmlET   # type: ignore
@@ -11,12 +12,6 @@ from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE, PRMS_VERSION
 from ..base.console import get_console_instance
 
 con = None
-
-# from rich.console import Console
-# from rich import pretty
-#
-# pretty.install()
-# con = Console(record=False, force_jupyter=False)
 
 # For each metadata type, define the outer element name for each variable in the XML file
 outside_elem = {'control': 'control_param',
@@ -85,10 +80,92 @@ class MetaData(object):
     def metadata(self) -> MetaDataType:
         return self.__meta_dict
 
+    # ------------------------------------------------------------------
+    # Shared helpers
+    # ------------------------------------------------------------------
+
+    def __filter_by_version(self, elem: xmlET.Element, name: str,
+                            meta_dict: Dict, req_version: Version) -> bool:
+        """Apply version and deprecation filtering to a metadata element.
+
+        If the element passes filtering, an empty entry is created in *meta_dict*
+        for *name*. If it fails, any partially-created entry is removed.
+
+        :param elem: XML element to check
+        :param name: Name of the variable/parameter
+        :param meta_dict: Dictionary being built (entry may be added/removed)
+        :param req_version: Required PRMS version for filtering
+        :returns: True if the element should be skipped, False if it passes
+        """
+
+        meta_dict[name] = {}
+
+        try:
+            var_version = Version(elem.attrib.get('version'))
+
+            if var_version > req_version:
+                if self.__verbose:   # pragma: no cover
+                    con.print(f'[green]INFO[/]: [bold]{name}[/] requires version {str(var_version)}')
+                del meta_dict[name]
+                return True
+            meta_dict[name]['version'] = str(var_version)
+        except TypeError:
+            pass
+
+        try:
+            depr_version = Version(elem.attrib.get('deprecated'))
+
+            if depr_version <= req_version:
+                if self.__verbose:   # pragma: no cover
+                    con.print(f'[green]INFO[/]: [bold]{name}[/] was deprecated at version {str(depr_version)}')
+                del meta_dict[name]
+                return True
+            meta_dict[name]['deprecated'] = depr_version
+        except TypeError:
+            pass
+
+        return False
+
+    @staticmethod
+    def __extract_common(elem: xmlET.Element, meta_entry: Dict):
+        """Extract dimensions, modules, and requires elements common to most metadata types.
+
+        :param elem: XML element to extract from
+        :param meta_entry: Dictionary entry to populate
+        """
+
+        for cdim in elem.findall('./dimensions/dimension'):
+            meta_entry['dimensions'].append(cdim.attrib.get('name'))
+
+        for cmod in elem.findall('./modules/module'):
+            meta_entry['modules'].append(cmod.text)
+
+        for creq in elem.findall('./requires/*'):
+            meta_entry[f'requires_{creq.tag}'].append(creq.text)
+
+    @staticmethod
+    def __extract_valid_values(elem: xmlET.Element, meta_entry: Dict):
+        """Extract valid values from an XML element.
+
+        :param elem: XML element to extract from
+        :param meta_entry: Dictionary entry to populate
+        """
+
+        for cvals in elem.findall('./values'):
+            meta_entry['valid_value_type'] = cvals.attrib.get('type')
+
+            meta_entry['valid_values'] = {}
+            for cv in cvals.findall('./value'):
+                meta_entry['valid_values'][cv.attrib.get('name')] = cv.text
+
+    # ------------------------------------------------------------------
+    # Per-type parsing methods
+    # ------------------------------------------------------------------
+
     def __control_to_dict(self, xml_root: xmlET.Element,
                           meta_type: str,
                           req_version: Version) -> Dict:
-        """Convert control variables metadata to dictionary
+        """Convert control variables metadata to dictionary.
 
         :param xml_root: XML root element
         :param meta_type: Type of metadata
@@ -100,32 +177,8 @@ class MetaData(object):
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
 
-            meta_dict[name] = {}
-            try:
-                var_version = Version(elem.attrib.get('version'))
-
-                if var_version > req_version:
-                    if self.__verbose:   # pragma: no cover
-                        con.print(f'[green]INFO[/]: [bold]{name}[/] requires version {str(var_version)}')
-
-                    del meta_dict[name]
-                    continue
-                meta_dict[name]['version'] = str(var_version)
-            except TypeError:
-                pass
-
-            try:
-                depr_version = Version(elem.attrib.get('deprecated'))
-
-                if depr_version <= req_version:
-                    if self.__verbose:   # pragma: no cover
-                        con.print(f'[green]INFO[/]: [bold]{name}[/] was deprecated at version {str(depr_version)}')
-
-                    del meta_dict[name]
-                    continue
-                meta_dict[name]['deprecated'] = depr_version
-            except TypeError:
-                pass
+            if self.__filter_by_version(elem, name, meta_dict, req_version):
+                continue
 
             if name in ['start_time', 'end_time']:
                 meta_dict[name]['datatype'] = 'datetime'
@@ -146,7 +199,6 @@ class MetaData(object):
                             meta_dict[name]['context'] = 'scalar'
                         else:
                             meta_dict[name]['context'] = 'array'
-                        # meta_dict[name][ek] = int(elem.find(ev).text)
                     elif ev == 'default':
                         cdtype = NEW_PTYPE_TO_DTYPE[meta_dict[name]['datatype']]
 
@@ -161,83 +213,33 @@ class MetaData(object):
                 except AttributeError:
                     pass
 
-            # meta_dict[name]['description'] = elem.find('desc').text
-            # meta_dict[name]['numvals'] = elem.find('numvals').text
-
             if elem.find('force_default') is not None:
                 meta_dict[name]['force_default'] = elem.find('force_default').text == '1'
 
-            # Possible valid values for variable
-            # outvals = {}
-            for cvals in elem.findall('./values'):
-                meta_dict[name]['valid_value_type'] = cvals.attrib.get('type')
-
-                meta_dict[name]['valid_values'] = {}
-                for cv in cvals.findall('./value'):
-                    meta_dict[name]['valid_values'][cv.attrib.get('name')] = cv.text
+            self.__extract_valid_values(elem, meta_dict[name])
 
         return meta_dict
 
     def __parameters_to_dict(self, xml_root: xmlET.Element,
                              meta_type: str,
                              req_version: Version) -> Dict:
-        """Convert parameter metadata to dictionary"""
+        """Convert parameter metadata to dictionary.
+
+        :param xml_root: XML root element
+        :param meta_type: Type of metadata
+        :param req_version: Required minimum version for filtering
+        """
 
         meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
 
-            meta_dict[name] = defaultdict(list)
+            if self.__filter_by_version(elem, name, meta_dict, req_version):
+                continue
 
-            try:
-                var_version = Version(elem.attrib.get('version'))
-
-                if var_version > req_version:
-                    if self.__verbose:   # pragma: no cover
-                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by version {str(var_version)}, req: {str(req_version)}')
-
-                    del meta_dict[name]
-                    continue
-                meta_dict[name]['version'] = str(var_version)
-            except TypeError:
-                pass
-
-            try:
-                depr_version = Version(elem.attrib.get('deprecated'))
-
-                if depr_version <= req_version:
-                    if self.__verbose:   # pragma: no cover
-                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
-
-                    del meta_dict[name]
-                    continue
-                meta_dict[name]['deprecated'] = depr_version
-            except TypeError:
-                pass
-
-            # var_version = version_info(elem.attrib.get('version'))
-            # depr_version = version_info(elem.attrib.get('deprecated'))
-            #
-            # if var_version.major is not None and var_version.major > version.major:
-            #     if self.__verbose:   # pragma: no cover
-            #         print(f'{name} rejected by version')
-            #     continue
-            # if depr_version.major is not None and depr_version.major <= version.major:
-            #     if self.__verbose:   # pragma: no cover
-            #         print(f'{name} rejected by deprecation version')
-            #     continue
-            #
-            # meta_dict[name] = defaultdict(list)
-            #
-            # var_version = elem.attrib.get('version')
-            # if var_version is not None:
-            #     meta_dict[name]['version'] = var_version
-            #     # meta_dict[name]['version'] = elem.attrib.get('version')
-            #
-            # depr_version = elem.attrib.get('deprecated')
-            # if depr_version is not None:
-            #     meta_dict[name]['deprecated'] = depr_version
+            # Convert to defaultdict for list-valued fields
+            meta_dict[name] = defaultdict(list, meta_dict[name])
 
             datatype = elem.find('type').text
             meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
@@ -272,29 +274,20 @@ class MetaData(object):
                     except AttributeError:
                         pass
 
-            for cdim in elem.findall('./dimensions/dimension'):
-                meta_dict[name]['dimensions'].append(cdim.attrib.get('name'))
-
-            for cmod in elem.findall('./modules/module'):
-                meta_dict[name]['modules'].append(cmod.text)
-
-            for creq in elem.findall('./requires/*'):
-                meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
-
-            # Possible valid values for variable
-            for cvals in elem.findall('./values'):
-                meta_dict[name]['valid_value_type'] = cvals.attrib.get('type')
-
-                meta_dict[name]['valid_values'] = {}
-                for cv in cvals.findall('./value'):
-                    meta_dict[name]['valid_values'][cv.attrib.get('name')] = cv.text
+            self.__extract_common(elem, meta_dict[name])
+            self.__extract_valid_values(elem, meta_dict[name])
 
         return meta_dict
 
     def __dimensions_to_dict(self, xml_root: xmlET.Element,
                              meta_type: str,
                              req_version: Version) -> Dict:
-        """Convert control variables metadata to dictionary"""
+        """Convert dimensions metadata to dictionary.
+
+        :param xml_root: XML root element
+        :param meta_type: Type of metadata
+        :param req_version: Required minimum version for filtering
+        """
 
         meta_dict: Dict = {}
 
@@ -328,182 +321,99 @@ class MetaData(object):
     def __variables_to_dict(self, xml_root: xmlET.Element,
                             meta_type: str,
                             req_version: Version) -> Dict:
-        """Convert output variables metadata to dictionary"""
+        """Convert output variables metadata to dictionary.
+
+        :param xml_root: XML root element
+        :param meta_type: Type of metadata
+        :param req_version: Required minimum version for filtering
+        """
 
         meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
-            # var_version = version_info(elem.attrib.get('version'))
-            # depr_version = version_info(elem.attrib.get('deprecated'))
-            #
-            # if var_version.major is not None and var_version.major > version:
-            #     if self.__verbose:
-            #         print(f'{name} rejected by version')
-            #     continue
-            # if depr_version.major is not None and depr_version.major <= version:
-            #     if self.__verbose:
-            #         print(f'{name} rejected by deprecation version')
-            #     continue
 
             meta_dict[name] = defaultdict(list)
-
-            # var_version = elem.attrib.get('version')
-            # if var_version is not None:
-            #     meta_dict[name]['version'] = var_version
-            #     # meta_dict[name]['version'] = elem.attrib.get('version')
-            #
-            # depr_version = elem.attrib.get('deprecated')
-            # if depr_version is not None:
-            #     meta_dict[name]['deprecated'] = depr_version
 
             datatype = elem.find('type').text
             meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
 
-            elems = {'description': 'desc',
-                     'units': 'units', }
-
-            for ek, ev in elems.items():
+            for ek, ev in {'description': 'desc', 'units': 'units'}.items():
                 try:
                     meta_dict[name][ek] = elem.find(ev).text
                 except AttributeError:
                     pass
 
-            for cdim in elem.findall('./dimensions/dimension'):
-                meta_dict[name]['dimensions'].append(cdim.attrib.get('name'))
-
-            for cmod in elem.findall('./modules/module'):
-                meta_dict[name]['modules'].append(cmod.text)
-
-            # for creq in elem.findall('./requires/*'):
-            #     meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
+            self.__extract_common(elem, meta_dict[name])
 
         return meta_dict
 
     def __cbh_to_dict(self, xml_root: xmlET.Element,
                       meta_type: str,
                       req_version: Version) -> Dict:
-        """Convert cbh variables metadata to dictionary"""
+        """Convert CBH variables metadata to dictionary.
+
+        :param xml_root: XML root element
+        :param meta_type: Type of metadata
+        :param req_version: Required minimum version for filtering
+        """
 
         meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
 
-            meta_dict[name] = defaultdict(list)
+            if self.__filter_by_version(elem, name, meta_dict, req_version):
+                continue
 
-            try:
-                var_version = Version(elem.attrib.get('version'))
-
-                if var_version > req_version:
-                    if self.__verbose:   # pragma: no cover
-                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by version {str(var_version)}, req: {str(req_version)}')
-
-                    del meta_dict[name]
-                    continue
-                meta_dict[name]['version'] = str(var_version)
-            except TypeError:
-                pass
-
-            try:
-                depr_version = Version(elem.attrib.get('deprecated'))
-
-                if depr_version <= req_version:
-                    if self.__verbose:   # pragma: no cover
-                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
-
-                    del meta_dict[name]
-                    continue
-                meta_dict[name]['deprecated'] = depr_version
-            except TypeError:
-                pass
+            # Convert to defaultdict for list-valued fields
+            meta_dict[name] = defaultdict(list, meta_dict[name])
 
             datatype = elem.find('type').text
             meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
 
-            elems = {'description': 'desc',
-                     'help': 'help',
-                     'units': 'units',
-                     'default': 'default',
-                     'minimum': 'minimum',
-                     'maximum': 'maximum', }
-
-            for ek, ev in elems.items():
+            for ek, ev in {'description': 'desc', 'help': 'help', 'units': 'units',
+                           'default': 'default', 'minimum': 'minimum', 'maximum': 'maximum'}.items():
                 try:
                     meta_dict[name][ek] = elem.find(ev).text
                 except AttributeError:
                     pass
 
-            for cdim in elem.findall('./dimensions/dimension'):
-                meta_dict[name]['dimensions'].append(cdim.attrib.get('name'))
-
-            for cmod in elem.findall('./modules/module'):
-                meta_dict[name]['modules'].append(cmod.text)
-
-            for creq in elem.findall('./requires/*'):
-                meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
+            self.__extract_common(elem, meta_dict[name])
 
         return meta_dict
 
     def __data_file_to_dict(self, xml_root: xmlET.Element,
                             meta_type: str,
                             req_version: Version) -> Dict:
-        """Convert Data File variables metadata to dictionary"""
+        """Convert Data File variables metadata to dictionary.
+
+        :param xml_root: XML root element
+        :param meta_type: Type of metadata
+        :param req_version: Required minimum version for filtering
+        """
 
         meta_dict: Dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
 
-            meta_dict[name] = defaultdict(list)
+            if self.__filter_by_version(elem, name, meta_dict, req_version):
+                continue
 
-            try:
-                var_version = Version(elem.attrib.get('version'))
-
-                if var_version > req_version:
-                    if self.__verbose:   # pragma: no cover
-                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by version {str(var_version)}, req: {str(req_version)}')
-
-                    del meta_dict[name]
-                    continue
-                meta_dict[name]['version'] = str(var_version)
-            except TypeError:
-                pass
-
-            try:
-                depr_version = Version(elem.attrib.get('deprecated'))
-
-                if depr_version <= req_version:
-                    if self.__verbose:   # pragma: no cover
-                        con.print(f'[green]INFO[/]: [bold]{name}[/] rejected by deprecation version {str(depr_version)}, req: {str(req_version)}')
-
-                    del meta_dict[name]
-                    continue
-                meta_dict[name]['deprecated'] = depr_version
-            except TypeError:
-                pass
+            # Convert to defaultdict for list-valued fields
+            meta_dict[name] = defaultdict(list, meta_dict[name])
 
             datatype = elem.find('type').text
             meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
 
-            elems = {'description': 'desc',
-                     'units': 'units',
-                     'minimum': 'minimum',
-                     'maximum': 'maximum', }
-
-            for ek, ev in elems.items():
+            for ek, ev in {'description': 'desc', 'units': 'units',
+                           'minimum': 'minimum', 'maximum': 'maximum'}.items():
                 try:
                     meta_dict[name][ek] = elem.find(ev).text
                 except AttributeError:
                     pass
 
-            for cdim in elem.findall('./dimensions/dimension'):
-                meta_dict[name]['dimensions'].append(cdim.attrib.get('name'))
-
-            for cmod in elem.findall('./modules/module'):
-                meta_dict[name]['modules'].append(cmod.text)
-
-            for creq in elem.findall('./requires/*'):
-                meta_dict[name][f'requires_{creq.tag}'].append(creq.text)
+            self.__extract_common(elem, meta_dict[name])
 
         return meta_dict
