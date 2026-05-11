@@ -135,6 +135,17 @@ class MetaData(object):
         return False
 
     @staticmethod
+    def __find_text(elem: xmlET.Element, tag: str) -> str | None:
+        """Find a child element and return its text content, or None if not found.
+
+        :param elem: Parent XML element
+        :param tag: Tag name of the child element to find
+        :returns: Text content of the child element, or None if element is missing
+        """
+        child = elem.find(tag)
+        return child.text if child is not None else None
+
+    @staticmethod
     def __extract_common(elem: xmlET.Element, meta_entry: dict):
         """Extract dimensions, modules, and requires elements common to most metadata types.
 
@@ -191,7 +202,8 @@ class MetaData(object):
             if name in ['start_time', 'end_time']:
                 meta_dict[name]['datatype'] = 'datetime'
             else:
-                datatype = int(elem.find('type').text)
+                type_text = self.__find_text(elem, 'type')
+                datatype = int(type_text)
                 meta_dict[name]['datatype'] = NEW_DTYPE[datatype]
 
             elems = {'description': 'desc',
@@ -199,11 +211,13 @@ class MetaData(object):
                      'default': 'default', }
 
             for ek, ev in elems.items():
+                text = self.__find_text(elem, ev)
+                if text is None:
+                    continue
+
                 try:
                     if ev == 'numvals':
-                        tmp = elem.find(ev).text
-
-                        if tmp in ['1', '6']:
+                        if text in ['1', '6']:
                             meta_dict[name]['context'] = 'scalar'
                         else:
                             meta_dict[name]['context'] = 'array'
@@ -211,18 +225,17 @@ class MetaData(object):
                         cdtype = NEW_PTYPE_TO_DTYPE[meta_dict[name]['datatype']]
 
                         if meta_dict[name]['datatype'] == 'datetime':
-                            meta_dict[name][ek] = cdtype(set_date(elem.find(ev).text))
+                            meta_dict[name][ek] = cdtype(set_date(text))
                         else:
-                            meta_dict[name][ek] = cdtype(elem.find(ev).text)
+                            meta_dict[name][ek] = cdtype(text)
                     else:
-                        meta_dict[name][ek] = elem.find(ev).text
+                        meta_dict[name][ek] = text
                 except ValueError:
-                    meta_dict[name][ek] = elem.find(ev).text
-                except AttributeError:
-                    pass
+                    meta_dict[name][ek] = text
 
-            if elem.find('force_default') is not None:
-                meta_dict[name]['force_default'] = elem.find('force_default').text == '1'
+            force_default_text = self.__find_text(elem, 'force_default')
+            if force_default_text is not None:
+                meta_dict[name]['force_default'] = force_default_text == '1'
 
             self.__extract_valid_values(elem, meta_dict[name])
 
@@ -249,7 +262,7 @@ class MetaData(object):
             # Convert to defaultdict for list-valued fields
             meta_dict[name] = defaultdict(list, meta_dict[name])
 
-            datatype = elem.find('type').text
+            datatype = self.__find_text(elem, 'type')
             meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
 
             elems = {'description': 'desc',
@@ -260,27 +273,26 @@ class MetaData(object):
                      'maximum': 'maximum'}
 
             for ek, ev in elems.items():
+                text = self.__find_text(elem, ev)
+
                 if ek in ['default', 'minimum', 'maximum']:
                     # Try to convert to the parameter datatype
                     # Bounded parameters will fail
                     cdtype = NEW_PTYPE_TO_DTYPE[meta_dict[name]['datatype']]
 
-                    try:
-                        meta_dict[name][ek] = cdtype(elem.find(ev).text)
-                    except ValueError:
-                        # Leave the value as a string
-                        if elem.find(ev).text == 'bounded':
-                            meta_dict[name][ek] = meta_dict[name]['default']
-                        else:
-                            meta_dict[name][ek] = elem.find(ev).text
-                    except AttributeError:
-                        # Occurs when element does not exist; just default to string
+                    if text is None:
                         meta_dict[name][ek] = ''
+                    else:
+                        try:
+                            meta_dict[name][ek] = cdtype(text)
+                        except ValueError:
+                            if text == 'bounded':
+                                meta_dict[name][ek] = meta_dict[name]['default']
+                            else:
+                                meta_dict[name][ek] = text
                 else:
-                    try:
-                        meta_dict[name][ek] = elem.find(ev).text
-                    except AttributeError:
-                        pass
+                    if text is not None:
+                        meta_dict[name][ek] = text
 
             self.__extract_common(elem, meta_dict[name])
             self.__extract_valid_values(elem, meta_dict[name])
@@ -314,12 +326,11 @@ class MetaData(object):
                                   'datatype': bool}}
 
             for ek, ev in elems.items():
-                try:
-                    meta_dict[name][ek] = ev['datatype'](elem.find(ev['orig_name']).text)
-                except AttributeError:
-                    if ek == 'is_fixed':
-                        meta_dict[name][ek] = False
-                    pass
+                text = self.__find_text(elem, ev['orig_name'])
+                if text is not None:
+                    meta_dict[name][ek] = ev['datatype'](text)
+                elif ek == 'is_fixed':
+                    meta_dict[name][ek] = False
 
             for creq in elem.findall('./requires/*'):
                 meta_dict[name].setdefault(f'requires_{creq.tag}', list()).append(creq.text)
@@ -343,14 +354,13 @@ class MetaData(object):
 
             meta_dict[name] = defaultdict(list)
 
-            datatype = elem.find('type').text
+            datatype = self.__find_text(elem, 'type')
             meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
 
             for ek, ev in {'description': 'desc', 'units': 'units'}.items():
-                try:
-                    meta_dict[name][ek] = elem.find(ev).text
-                except AttributeError:
-                    pass
+                text = self.__find_text(elem, ev)
+                if text is not None:
+                    meta_dict[name][ek] = text
 
             self.__extract_common(elem, meta_dict[name])
 
@@ -377,15 +387,14 @@ class MetaData(object):
             # Convert to defaultdict for list-valued fields
             meta_dict[name] = defaultdict(list, meta_dict[name])
 
-            datatype = elem.find('type').text
+            datatype = self.__find_text(elem, 'type')
             meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
 
             for ek, ev in {'description': 'desc', 'help': 'help', 'units': 'units',
                            'default': 'default', 'minimum': 'minimum', 'maximum': 'maximum'}.items():
-                try:
-                    meta_dict[name][ek] = elem.find(ev).text
-                except AttributeError:
-                    pass
+                text = self.__find_text(elem, ev)
+                if text is not None:
+                    meta_dict[name][ek] = text
 
             self.__extract_common(elem, meta_dict[name])
 
@@ -412,15 +421,14 @@ class MetaData(object):
             # Convert to defaultdict for list-valued fields
             meta_dict[name] = defaultdict(list, meta_dict[name])
 
-            datatype = elem.find('type').text
+            datatype = self.__find_text(elem, 'type')
             meta_dict[name]['datatype'] = NEW_PARAM_DTYPE[datatype]
 
             for ek, ev in {'description': 'desc', 'units': 'units',
                            'minimum': 'minimum', 'maximum': 'maximum'}.items():
-                try:
-                    meta_dict[name][ek] = elem.find(ev).text
-                except AttributeError:
-                    pass
+                text = self.__find_text(elem, ev)
+                if text is not None:
+                    meta_dict[name][ek] = text
 
             self.__extract_common(elem, meta_dict[name])
 
