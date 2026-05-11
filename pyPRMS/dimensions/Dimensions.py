@@ -33,14 +33,6 @@ class Dimensions(object):
                 # TODO: 20230707 PAN - is adhoc metadata a useful idea?
                 self.metadata = metadata
 
-        # if metadata is not None:
-        #     self.metadata = metadata['dimensions']
-
-        # if self.metadata is not None:
-        #     for cdim, cvals in self.metadata.items():
-        #         self.add(name=cdim, meta=self.metadata)
-        #
-
     def __contains__(self, name: str) -> bool:
         """Check if a dimension exists.
 
@@ -136,7 +128,6 @@ class Dimensions(object):
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
             xmlET.SubElement(dim_sub, 'size').text = str(vv.size)
-            # dim_sub.set('size', str(vv.size))
         return dims_xml
 
     def add(self, name: str, size: int | None = None):
@@ -228,9 +219,6 @@ class ParamDimensions(Dimensions):
             dim_sub.set('name', kk)
             xmlET.SubElement(dim_sub, 'position').text = str(self.get_position(kk)+1)
             xmlET.SubElement(dim_sub, 'size').text = str(vv.size)
-
-            # dim_sub.set('position', str(self.get_position(kk)+1))
-            # dim_sub.set('size', str(vv.size))
         return dims_xml
 
     def add(self, name: str, size: int | None = None):
