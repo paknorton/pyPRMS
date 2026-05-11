@@ -168,12 +168,9 @@ class Cbh(object):
 
         # For out_order the first six columns contain the time information and
         # are always output for the cbh files
-        # out_order: List[Union[int, str]] = [kk for kk in self.__nhm_hrus]
         out_order = [kk for kk in hru_ids]
         for cc in ['second', 'minute', 'hour', 'day', 'month', 'year']:
             out_order.insert(0, cc)
-
-        # variable = self._VAR_CROSSWALK.get(variable, variable)
 
         if variable in self.__dataset.data_vars:
             ds = self.__dataset[variable].sel(nhru=hru_ids, time=time_slice).to_pandas()
@@ -223,7 +220,6 @@ class Cbh(object):
             time_slice = slice(time_slice[0], time_slice[-1])
 
         ds = self.__dataset.sel(nhru=hru_ids, time=time_slice)
-        # ds = ds.sel(time=slice(self.__stdate, self.__endate), nhru=self.__nhm_hrus)
 
         if variables is None:
             pass
@@ -371,7 +367,6 @@ class Cbh(object):
         return self._cbh_to_xarray(cbh_files)
 
     def _cbh_to_xarray(self, filename: dict[Path, str | None]) -> xr.Dataset:
-        # variables: list[str] | None = None) -> xr.Dataset:
         """Convert ASCII CBH file(s) to xarray
 
         :param filename: list of CBH filepaths or a single CBH filename
@@ -455,7 +450,6 @@ class Cbh(object):
                     ds[cvar].attrs['units'] = cattrs['units']
 
                 # Set the fill value
-                # con.print(f'{cvar}: {cattrs["datatype"]} -> {var_enc[cattrs["datatype"]]}')
                 ds[cvar].encoding.update(var_enc[cattrs['datatype']])
             else:
                 if cvar not in ['time', 'nhru']:
@@ -500,16 +494,11 @@ class Cbh(object):
 
         df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
                          skiprows=3, engine='c', dtype=types, low_memory=True,
-                         # skiprows=3, engine='c', memory_map=True,
                          header=None, na_values=Cbh._NA_VALS_DEFAULT,
                          usecols=columns)
 
-        df[0] = pd.to_numeric(df[0], downcast='integer')
-        df[1] = pd.to_numeric(df[1], downcast='integer')
-        df[2] = pd.to_numeric(df[2], downcast='integer')
-        df[3] = pd.to_numeric(df[3], downcast='integer')
-        df[4] = pd.to_numeric(df[4], downcast='integer')
-        df[5] = pd.to_numeric(df[5], downcast='integer')
+        for col in time_col_names:
+            df[col] = pd.to_numeric(df[col], downcast='integer')
 
         # Rename columns with time information
         df.rename(columns=time_col_names, inplace=True)
