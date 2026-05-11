@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import io
 import pkgutil
-import xml.etree.ElementTree as xmlET   # type: ignore
+import xml.etree.ElementTree as xmlET
 
 from collections import defaultdict
 from packaging.version import Version
@@ -14,20 +14,20 @@ from ..base.console import get_console_instance
 
 con = None
 
-# For each metadata type, define the outer element name for each variable in the XML file
-outside_elem = {'control': 'control_param',
-                'parameters': 'parameter',
-                'dimensions': 'dimension',
-                'variables': 'variable',
-                'data_file': 'variable',
-                'cbh': 'variable'}
-
 NEW_DTYPE = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
 NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
 
 
 class MetaData(object):
     """Class to handle variable and parameter metadata"""
+
+    # For each metadata type, define the outer element name for each variable in the XML file
+    _OUTSIDE_ELEM = {'control': 'control_param',
+                     'parameters': 'parameter',
+                     'dimensions': 'dimension',
+                     'variables': 'variable',
+                     'data_file': 'variable',
+                     'cbh': 'variable'}
 
     def __init__(self, version: str | Version = PRMS_VERSION,
                  verbose: bool = False):
@@ -80,6 +80,13 @@ class MetaData(object):
     @property
     def metadata(self) -> MetaDataType:
         return self.__meta_dict
+
+    def __repr__(self) -> str:
+        """String representation of MetaData object.
+
+        :returns: string with version and entry counts per metadata type
+        """
+        return f"MetaData(version='{self.__version}')"
 
     # ------------------------------------------------------------------
     # Shared helpers
@@ -175,7 +182,7 @@ class MetaData(object):
 
         meta_dict: dict = {}
 
-        for elem in xml_root.findall(outside_elem[meta_type]):
+        for elem in xml_root.findall(self._OUTSIDE_ELEM[meta_type]):
             name = elem.attrib.get('name')
 
             if self.__filter_by_version(elem, name, meta_dict, req_version):
@@ -233,7 +240,7 @@ class MetaData(object):
 
         meta_dict: dict = {}
 
-        for elem in xml_root.findall(outside_elem[meta_type]):
+        for elem in xml_root.findall(self._OUTSIDE_ELEM[meta_type]):
             name = elem.attrib.get('name')
 
             if self.__filter_by_version(elem, name, meta_dict, req_version):
@@ -292,7 +299,7 @@ class MetaData(object):
 
         meta_dict: dict = {}
 
-        for elem in xml_root.findall(outside_elem[meta_type]):
+        for elem in xml_root.findall(self._OUTSIDE_ELEM[meta_type]):
             name = elem.attrib.get('name')
 
             meta_dict[name] = {}
@@ -331,7 +338,7 @@ class MetaData(object):
 
         meta_dict: dict = {}
 
-        for elem in xml_root.findall(outside_elem[meta_type]):
+        for elem in xml_root.findall(self._OUTSIDE_ELEM[meta_type]):
             name = elem.attrib.get('name')
 
             meta_dict[name] = defaultdict(list)
@@ -361,7 +368,7 @@ class MetaData(object):
 
         meta_dict: dict = {}
 
-        for elem in xml_root.findall(outside_elem[meta_type]):
+        for elem in xml_root.findall(self._OUTSIDE_ELEM[meta_type]):
             name = elem.attrib.get('name')
 
             if self.__filter_by_version(elem, name, meta_dict, req_version):
@@ -396,7 +403,7 @@ class MetaData(object):
 
         meta_dict: dict = {}
 
-        for elem in xml_root.findall(outside_elem[meta_type]):
+        for elem in xml_root.findall(self._OUTSIDE_ELEM[meta_type]):
             name = elem.attrib.get('name')
 
             if self.__filter_by_version(elem, name, meta_dict, req_version):
