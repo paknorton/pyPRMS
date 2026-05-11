@@ -1,6 +1,7 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 import xml.etree.ElementTree as xmlET
 
 from .Dimension import Dimension
@@ -32,14 +33,6 @@ class Dimensions(object):
             else:
                 # TODO: 20230707 PAN - is adhoc metadata a useful idea?
                 self.metadata = metadata
-
-        # if metadata is not None:
-        #     self.metadata = metadata['dimensions']
-
-        # if self.metadata is not None:
-        #     for cdim, cvals in self.metadata.items():
-        #         self.add(name=cdim, meta=self.metadata)
-        #
 
     def __contains__(self, name: str) -> bool:
         """Check if a dimension exists.
@@ -107,12 +100,12 @@ class Dimensions(object):
         return self.__dimensions.items()
 
     @property
-    def dimensions(self) -> dict[str, Dimension]:
-        """Get ordered dictionary of Dimension objects.
+    def dimensions(self) -> MappingProxyType[str, Dimension]:
+        """Get read-only view of Dimension objects.
 
-        :returns: OrderedDict of Dimension objects
+        :returns: Read-only mapping of dimension names to Dimension objects
         """
-        return self.__dimensions
+        return MappingProxyType(self.__dimensions)
 
     @property
     def ndim(self) -> int:
@@ -136,7 +129,6 @@ class Dimensions(object):
             dim_sub = xmlET.SubElement(dims_xml, 'dimension')
             dim_sub.set('name', kk)
             xmlET.SubElement(dim_sub, 'size').text = str(vv.size)
-            # dim_sub.set('size', str(vv.size))
         return dims_xml
 
     def add(self, name: str, size: int | None = None):
@@ -205,6 +197,8 @@ class ParamDimensions(Dimensions):
     of individual dimensions to 2.
     """
 
+    MAX_DIMS: int = 2
+
     def __init__(self, metadata: MetaDataType | None = None,
                  verbose: bool = False,
                  strict: bool = True):
@@ -228,9 +222,6 @@ class ParamDimensions(Dimensions):
             dim_sub.set('name', kk)
             xmlET.SubElement(dim_sub, 'position').text = str(self.get_position(kk)+1)
             xmlET.SubElement(dim_sub, 'size').text = str(vv.size)
-
-            # dim_sub.set('position', str(self.get_position(kk)+1))
-            # dim_sub.set('size', str(vv.size))
         return dims_xml
 
     def add(self, name: str, size: int | None = None):
@@ -240,8 +231,8 @@ class ParamDimensions(Dimensions):
         :param size: Size of the dimension
         """
 
-        if self.ndim == 2:
-            raise ValueError('A parameter cannot have more than two dimensions.')
+        if self.ndim == self.MAX_DIMS:
+            raise ValueError(f'A parameter cannot have more than {self.MAX_DIMS} dimensions.')
 
         # Restrict number of dimensions for parameters
         super().add(name, size)
@@ -252,7 +243,7 @@ class ParamDimensions(Dimensions):
         :param index: The 0-based position of the dimension
         :returns: Size of the dimension
 
-        :raises ValueError: if index is greater than number dimensions for the parameter
+        :raises IndexError: if index is greater than number of dimensions for the parameter
         """
 
         if index < len(self.dimensions.items()):
@@ -262,13 +253,20 @@ class ParamDimensions(Dimensions):
     def get_position(self, name: str) -> int:
         """Get 0-based index position of a dimension.
 
+        .. deprecated:: Use :meth:`index` instead.
+
         :param name: name of the dimension
-
-        :returns: Zero-based Index position of dimension
+        :returns: Zero-based index position of dimension
         """
+        return self.index(name)
 
-        # TODO: method name should be index() ??
-        return list(self.dimensions.keys()).index(name)
+    def index(self, name: str) -> int:
+        """Get 0-based index position of a dimension.
+
+        :param name: name of the dimension
+        :returns: Zero-based index position of dimension
+        """
+        return list(self.keys()).index(name)
 
     def tostructure(self) -> dict[str, dict[str, int]]:
         """Get dictionary structure of the dimensions.
