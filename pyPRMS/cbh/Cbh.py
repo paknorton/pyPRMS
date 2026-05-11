@@ -18,24 +18,24 @@ con = None
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
-NA_VALS_DEFAULT = ('-99.0', '-999.0', 'NaN', 'inf')
-DATA_SEP = '####'
-
-# Crosswalk of some of the possible source CBH variable names to PRMS variable names
-var_crosswalk: dict[str, str] = dict(tmax='tmax_hru',
-                                     T2MAX='tmax_hru',
-                                     tmin='tmin_hru',
-                                     T2MIN='tmin_hru',
-                                     precip='hru_ppt',
-                                     prcp='hru_ppt',
-                                     RAIN='hru_ppt',
-                                     rhavg='humidity_hru')
-temp_units = {0: 'degree_fahrenheit', 1: 'degree_celsius'}
-precip_units = {0: 'inch', 1: 'mm'}
-
 
 class Cbh(object):
     """Climate-By-HRU (CBH) files for PRMS."""
+
+    _NA_VALS_DEFAULT = ('-99.0', '-999.0', 'NaN', 'inf')
+    _DATA_SEP = '####'
+
+    # Crosswalk of some of the possible source CBH variable names to PRMS variable names
+    _VAR_CROSSWALK: dict[str, str] = dict(tmax='tmax_hru',
+                                          T2MAX='tmax_hru',
+                                          tmin='tmin_hru',
+                                          T2MIN='tmin_hru',
+                                          precip='hru_ppt',
+                                          prcp='hru_ppt',
+                                          RAIN='hru_ppt',
+                                          rhavg='humidity_hru')
+    _TEMP_UNITS = {0: 'degree_fahrenheit', 1: 'degree_celsius'}
+    _PRECIP_UNITS = {0: 'inch', 1: 'mm'}
 
     def __init__(self, src_path: str | Path | list[str | Path],
                  metadata: MetaDataType,
@@ -81,7 +81,7 @@ class Cbh(object):
             self.has_nhm_id = True
 
         for cvar in ds.data_vars:
-            self.__var_map[str(cvar)] = var_crosswalk.get(str(cvar), str(cvar))
+            self.__var_map[str(cvar)] = self._VAR_CROSSWALK.get(str(cvar), str(cvar))
 
         self.__dataset = ds
 
@@ -173,7 +173,7 @@ class Cbh(object):
         for cc in ['second', 'minute', 'hour', 'day', 'month', 'year']:
             out_order.insert(0, cc)
 
-        # variable = var_crosswalk.get(variable, variable)
+        # variable = self._VAR_CROSSWALK.get(variable, variable)
 
         if variable in self.__dataset.data_vars:
             ds = self.__dataset[variable].sel(nhru=hru_ids, time=time_slice).to_pandas()
@@ -188,7 +188,7 @@ class Cbh(object):
 
             with open(filename, 'w') as out_cbh:
                 out_cbh.write('Written by Bandit\n')
-                out_cbh.write(f'{var_crosswalk.get(variable, variable)} {len(hru_ids)}\n')
+                out_cbh.write(f'{self._VAR_CROSSWALK.get(variable, variable)} {len(hru_ids)}\n')
                 out_cbh.write('########################################\n')
                 ds.to_csv(out_cbh, columns=out_order, na_rep=na_rep, float_format=float_format,
                           sep=' ', index=False, header=False, lineterminator='\n', encoding=None,
@@ -412,13 +412,13 @@ class Cbh(object):
                 else:
                     # With ASCII files when cvar is None, usually the control object was not provided.
                     # Try looking up the variable name in the variable crosswalk.
-                    var_name = var_crosswalk.get(var_name, var_name)
+                    var_name = self._VAR_CROSSWALK.get(var_name, var_name)
 
                 self.__cbh_src[var_name] = cfile.name
 
                 line = fhdl.readline().rstrip()
 
-                if line[0:len(DATA_SEP)] != DATA_SEP:
+                if line[0:len(self._DATA_SEP)] != self._DATA_SEP:
                     if line.split()[0] == 'orad':
                         # This happens when orad_flag == 1
                         con.print(f'[red]ERROR[/]: Two variables in CBH file ({var_name}, orad). Data will not be read.')
@@ -447,10 +447,10 @@ class Cbh(object):
 
                 if cattrs['units'] == 'temp_units':
                     # For now just default to degrees_fahrenheit
-                    ds[cvar].attrs['units'] = temp_units[0]
+                    ds[cvar].attrs['units'] = self._TEMP_UNITS[0]
                 elif cattrs['units'] == 'precip_units':
                     # For now just default to inches
-                    ds[cvar].attrs['units'] = precip_units[0]
+                    ds[cvar].attrs['units'] = self._PRECIP_UNITS[0]
                 else:
                     ds[cvar].attrs['units'] = cattrs['units']
 
@@ -501,7 +501,7 @@ class Cbh(object):
         df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
                          skiprows=3, engine='c', dtype=types, low_memory=True,
                          # skiprows=3, engine='c', memory_map=True,
-                         header=None, na_values=NA_VALS_DEFAULT,
+                         header=None, na_values=Cbh._NA_VALS_DEFAULT,
                          usecols=columns)
 
         df[0] = pd.to_numeric(df[0], downcast='integer')
