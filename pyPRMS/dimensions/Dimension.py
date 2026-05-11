@@ -134,14 +134,18 @@ class Dimension(object):
     def size(self, value: int | str):
         """Set the size of the dimension.
 
-        :param value: Size of the dimension
-        :raises ValueError: if dimension size is not a positive integer
+        :param value: Size of the dimension (int or numeric string)
+        :raises ValueError: if value is a float, cannot be converted to int, or is negative
         """
 
         if isinstance(value, float):
-            raise ValueError(f'{self.name} size cannot be a float value')
+            raise ValueError(f'{self.name}: size cannot be a float value')
 
-        value = int(value)
+        try:
+            value = int(value)
+        except (ValueError, TypeError):
+            raise ValueError(f'{self.name}: size must be an integer or numeric string, got {type(value).__name__!r}')
+
         def_value = self.meta.get('default', 0)
 
         if value < 0:
