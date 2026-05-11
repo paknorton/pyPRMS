@@ -440,7 +440,6 @@ class Parameters(object):
             cmeta = cparam.meta
 
             if cmeta.get('maximum') in list(self.dimensions.keys()):
-                # if isinstance(cmeta.get('maximum'), str):
                 try:
                     cmeta['maximum'] = self.dimensions.get(cmeta.get('maximum')).size
 
@@ -484,7 +483,6 @@ class Parameters(object):
         """Check all parameter variables for proper array size.
         """
 
-        # for pp in self.__parameters.values():
         for pk in sorted(list(self.parameters.keys())):
             pp = self.get(pk)
 
@@ -505,8 +503,6 @@ class Parameters(object):
                     con.print(f'    [dark_orange]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside '
                               + f'the valid range of ({valid_min}, {valid_max}); '
                               + f'under/over=({pp_outliers.under}, {pp_outliers.over})')
-                    # print(f'    WARNING: Value(s) (range: {pp.data.min()}, {pp.data.max()}) outside ' +
-                    #       f'the valid range of ({pp.minimum}, {pp.maximum})')
                 elif valid_min == 'bounded':
                     # TODO: Handling bounded parameters needs improvement
                     con.print(f'    [dark_orange]WARNING[/]: Bounded parameter value(s) '
@@ -592,7 +588,6 @@ class Parameters(object):
         :returns: Parameter object
         """
 
-        # Return the given parameter
         if self.exists(name):
             return self.__parameters[name]
 
@@ -673,7 +668,6 @@ class Parameters(object):
 
         if param.dimensions.ndim == 2:
             return np.take(param.data_raw, nhm_idx0, axis=0)    # axis: 0 rows, 1 columns
-            # return param.data_raw[tuple(nhm_idx0), :]
         else:
             if name in ['hru_deplcrv', 'snarea_curve']:
                 init_data = np.take(self.get('hru_deplcrv').data_raw, nhm_idx0, axis=0)
@@ -687,7 +681,6 @@ class Parameters(object):
 
                         # Create new hru_deplcrv and renumber
                         res = np.array([uniq_dict[xx] for xx in init_data])
-                        # return np.array([uniq_dict[xx] for xx in init_data])
                     case 'snarea_curve':
                         uniq_deplcrv0 = [xx - 1 for xx in uniq_deplcrv]
                         res = param.data_raw.reshape((-1, 11))[tuple(uniq_deplcrv0), :].reshape((-1))
@@ -705,7 +698,6 @@ class Parameters(object):
             else:
                 # All other 1D arrays
                 return np.take(param.data_raw, nhm_idx0, axis=0)    # axis: 0 rows, 1 columns
-                # return param.data_raw[tuple(nhm_idx0), ]
 
     def outlier_ids(self, name: str) -> list[int]:
         """Returns list of HRU or segment IDs of invalid parameter values
@@ -870,7 +862,6 @@ class Parameters(object):
                     # Takes care of multipolygons that are in the NHM geodatabase/shapefile
                     geoms_exploded = self.__hru_poly.explode(index_parts=True).reset_index(level=1, drop=True)
 
-                    # print('Writing first plot')
                     df_mrg = geoms_exploded.merge(param_data, left_on=self.__hru_shape_key,
                                                   right_index=True, how='left')
 
@@ -945,7 +936,6 @@ class Parameters(object):
 
                             for tt in range(1, 12):
                                 # Months 2 through 12
-                                # print(f'    Index: {tt}')
                                 param_data = self.get_dataframe(name).iloc[:, tt].to_frame(name=name)
 
                                 if mask_defaults is not None:
@@ -1134,9 +1124,6 @@ class Parameters(object):
 
         poi_parameters = ['poi_gage_id', 'poi_gage_segment', 'poi_type']
 
-        # print(f'POIs to delete: {poi}')
-        # print(f'Current POIs: {poi_ids}')
-        # print(f'Size of poi_del_indices: {poi_del_indices.size}')
         if len(poi_del_indices) > 0:
             if self.get('poi_gage_id').dimensions.get('npoigages').size == len(poi_del_indices):
                 # We're trying to remove all the POIs
@@ -1505,9 +1492,7 @@ class Parameters(object):
             else:
                 # String parameter
                 # Get the maximum string length in the array of data
-                # print('String parameter: {}'.format(vv.name))
                 str_size = len(max(vv.data, key=len))
-                # print('size: {}'.format(str_size))
 
                 # Create a dimension for the string length
                 nc_hdl.createDimension(vv.name + '_nchars', str_size)

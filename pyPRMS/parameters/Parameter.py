@@ -298,16 +298,6 @@ class Parameter(object):
         else:
             return self.__dimensions.ndim
 
-    # @property
-    # def size(self) -> int:
-    #     """Return the total size of the parameter for the defined dimensions.
-    #
-    #     :returns total size of parameter dimensions"""
-    #     arr_shp = [dd.size for dd in self.dimensions.dimensions.values()]
-    #
-    #     # Compute the total size of the parameter
-    #     return functools.reduce(lambda x, y: x * y, arr_shp)
-
     @property
     def xml(self) -> xmlET.Element:
         """Return the xml metadata for the parameter as an xml Element.
@@ -352,7 +342,6 @@ class Parameter(object):
 
         :returns: true when all values are within the valid min/max range for the parameter
         """
-        # if self.__data is not None:
         minval = self.meta.get('minimum', None)
         maxval = self.meta.get('maximum', None)
 
@@ -406,7 +395,6 @@ class Parameter(object):
 
         :returns: NamedTuple containing count of values less than and values greater than valid range
         """
-        # Outliers = namedtuple('Outliers', ['name', 'under', 'over'])
 
         values_under = 0
         values_over = 0
@@ -438,58 +426,11 @@ class Parameter(object):
         else:
             raise TypeError('Parameter data is not initialized')
 
-    # def reshape(self, new_dims: Dict):
-    #     """Reshape a parameter, broadcasting existing values as necessary.
-    #
-    #     :param new_dims: Dimension names and sizes that will be used to reshape the parameter data
-    #     """
-    #
-    #     if self.__data is None:
-    #         # Reshape has no meaning if there is no data to reshape
-    #         return
-    #
-    #     if self.dimensions.ndim == 1:
-    #         if 'one' in self.dimensions.keys():
-    #             # Reshaping from a scalar to a 1D or 2D array
-    #             # print('Scalar to 1D or 2D')
-    #             new_sizes = [vv.size for vv in new_dims.values()]
-    #             tmp_data = np.broadcast_to(self.__data, new_sizes)
-    #
-    #             # Remove the original dimension
-    #             self.dimensions.remove('one')
-    #
-    #             # Add the new ones
-    #             for kk, vv in new_dims.items():
-    #                 self.dimensions.add(kk, vv.size)
-    #
-    #             self.__data = tmp_data
-    #         elif set(self.dimensions.keys()).issubset(set(new_dims.keys())):
-    #             # Reschaping a 1D to a 2D
-    #             if len(new_dims) == 1:
-    #                 print('ERROR: Cannot reshape from 1D array to 1D array')
-    #             else:
-    #                 # print('1D array to 2D array')
-    #                 new_sizes = [vv.size for vv in new_dims.values()]
-    #                 try:
-    #                     tmp_data = np.broadcast_to(self.__data, new_sizes)
-    #                 except ValueError:
-    #                     # operands could not be broadcast together with remapped shapes
-    #                     tmp_data = np.broadcast_to(self.__data, new_sizes[::-1]).T
-    #
-    #                 old_dim = list(self.dimensions.keys())[0]
-    #                 self.dimensions.remove(old_dim)
-    #
-    #                 for kk, vv in new_dims.items():
-    #                     self.dimensions.add(kk, vv.size)
-    #
-    #                 self.__data = tmp_data
-
     def stats(self) -> Stats:
         """Returns basic statistics on parameter values.
 
         :returns: None (for strings or no data) or NamedTuple containing min, max, mean, and median of parameter values
         """
-        # Stats = namedtuple('Stats', ['name', 'min', 'max', 'mean', 'median'])
 
         try:
             return Stats(self.__name, np.min(self.data_raw), np.max(self.data_raw),

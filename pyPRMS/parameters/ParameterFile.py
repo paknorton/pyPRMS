@@ -18,7 +18,6 @@ class ParameterFile(Parameters):
     def __init__(self, filename: str,
                  metadata,
                  verbose: bool = False):
-                 # verify: Optional[bool] = True):
         """Create the ParameterFile object.
 
         :param filename: name of parameter file
@@ -30,9 +29,6 @@ class ParameterFile(Parameters):
 
         global con
         con = get_console_instance()
-
-        # self.__filename = None
-        # self.__header = None
 
         self.__isloaded = False
         self.__updated_parameters: set[str] = set()
@@ -116,8 +112,6 @@ class ParameterFile(Parameters):
             if line == VAR_DELIM:
                 continue
             varname = line.split(' ')[0]
-            # if self.__verbose:   # pragma: no cover
-            #     print(f'{varname=}')
 
             # Add the parameter
             try:
