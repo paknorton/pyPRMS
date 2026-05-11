@@ -197,6 +197,8 @@ class ParamDimensions(Dimensions):
     of individual dimensions to 2.
     """
 
+    MAX_DIMS: int = 2
+
     def __init__(self, metadata: MetaDataType | None = None,
                  verbose: bool = False,
                  strict: bool = True):
@@ -229,8 +231,8 @@ class ParamDimensions(Dimensions):
         :param size: Size of the dimension
         """
 
-        if self.ndim == 2:
-            raise ValueError('A parameter cannot have more than two dimensions.')
+        if self.ndim == self.MAX_DIMS:
+            raise ValueError(f'A parameter cannot have more than {self.MAX_DIMS} dimensions.')
 
         # Restrict number of dimensions for parameters
         super().add(name, size)
@@ -241,7 +243,7 @@ class ParamDimensions(Dimensions):
         :param index: The 0-based position of the dimension
         :returns: Size of the dimension
 
-        :raises ValueError: if index is greater than number dimensions for the parameter
+        :raises IndexError: if index is greater than number of dimensions for the parameter
         """
 
         if index < len(self.dimensions.items()):
@@ -251,13 +253,20 @@ class ParamDimensions(Dimensions):
     def get_position(self, name: str) -> int:
         """Get 0-based index position of a dimension.
 
+        .. deprecated:: Use :meth:`index` instead.
+
         :param name: name of the dimension
-
-        :returns: Zero-based Index position of dimension
+        :returns: Zero-based index position of dimension
         """
+        return self.index(name)
 
-        # TODO: method name should be index() ??
-        return list(self.dimensions.keys()).index(name)
+    def index(self, name: str) -> int:
+        """Get 0-based index position of a dimension.
+
+        :param name: name of the dimension
+        :returns: Zero-based index position of dimension
+        """
+        return list(self.keys()).index(name)
 
     def tostructure(self) -> dict[str, dict[str, int]]:
         """Get dictionary structure of the dimensions.
