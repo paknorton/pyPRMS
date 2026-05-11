@@ -85,6 +85,14 @@ class Cbh(object):
 
         self.__dataset = ds
 
+    def __repr__(self) -> str:
+        """String representation of the Cbh object.
+
+        :returns: string with source path and variable count
+        """
+        nvars = len(self.__var_map)
+        return f"Cbh(src_path={self.__src_path}, variables={nvars})"
+
     @property
     def data(self) -> xr.Dataset:
         """Returns the CBH dataset.
