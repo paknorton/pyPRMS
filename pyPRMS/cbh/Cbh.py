@@ -1,4 +1,6 @@
-import fsspec   # type: ignore
+from __future__ import annotations
+
+import fsspec
 import numpy as np
 import pandas as pd   # type: ignore
 import netCDF4 as nc   # type: ignore
@@ -6,7 +8,6 @@ import xarray as xr   # type: ignore
 
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Union
 
 from ..control.Control import Control
 from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
@@ -21,7 +22,7 @@ NA_VALS_DEFAULT = ('-99.0', '-999.0', 'NaN', 'inf')
 DATA_SEP = '####'
 
 # Crosswalk of some of the possible source CBH variable names to PRMS variable names
-var_crosswalk: Dict[str, str] = dict(tmax='tmax_hru',
+var_crosswalk: dict[str, str] = dict(tmax='tmax_hru',
                                      T2MAX='tmax_hru',
                                      tmin='tmin_hru',
                                      T2MIN='tmin_hru',
@@ -36,12 +37,12 @@ precip_units = {0: 'inch', 1: 'mm'}
 class Cbh(object):
     """Climate-By-HRU (CBH) files for PRMS."""
 
-    def __init__(self, src_path: Union[str, Path, List[Union[str, Path]]],
+    def __init__(self, src_path: str | Path | list[str | Path],
                  metadata: MetaDataType,
-                 engine: Optional[str] = 'ascii',
-                 control: Optional[Control] = None,
-                 parameters: Optional[Parameters] = None,
-                 verbose: Optional[bool] = False):
+                 engine: str = 'ascii',
+                 control: Control | None = None,
+                 parameters: Parameters | None = None,
+                 verbose: bool = False):
         """
         :param src_path: List of paths to CBH files
         :param metadata: Metadata dictionary for Climate-by-HRU variables
@@ -58,7 +59,7 @@ class Cbh(object):
         self.metadata = metadata['cbh']
         self.__parameters = parameters
         self.__var_map = {}
-        self.__cbh_src: Dict[str, str] = {}
+        self.__cbh_src: dict[str, str] = {}
 
         if isinstance(src_path, str):
             src_path = Path(src_path)
@@ -82,7 +83,7 @@ class Cbh(object):
         match engine:
             case 'netcdf':
                 ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
-                                       compat='no_conflicts', join='outer',
+                                        compat='no_conflicts', join='outer',
                                        data_vars='minimal', decode_cf=True, engine='netcdf4',
                                        parallel=False)
             case 'zarr':
@@ -147,13 +148,13 @@ class Cbh(object):
         return self.__dataset
 
     @property
-    def var_map(self) -> Dict[str, str]:
+    def var_map(self) -> dict[str, str]:
         """Return variable-to-prms_variable mapping."""
 
         return self.__var_map
 
     @property
-    def cbh_src(self) -> Dict[str, str]:
+    def cbh_src(self) -> dict[str, str]:
         """Return variable to source-file mapping."""
 
         return self.__cbh_src
@@ -184,10 +185,10 @@ class Cbh(object):
             self.__dataset = self.__dataset.assign_coords(nhru=self.__dataset.nhm_id)
             self.has_nhm_id = True
 
-    def write_ascii(self, filename: Union[str, Path],
+    def write_ascii(self, filename: str | Path,
                     variable: str,
-                    time_slice: Optional[Union[list, slice]] = None,
-                    hru_ids: Optional[Union[list, np.ndarray]] = None,
+                    time_slice: list | slice | None = None,
+                    hru_ids: list | np.ndarray | None = None,
                     na_rep: str = '-999',
                     float_format: str = '%0.2f'):
         """Write CBH data for selected variable to PRMS ASCII-formatted file.
@@ -241,11 +242,11 @@ class Cbh(object):
         else:
             print(f'WARNING: {variable} does not exist in source CBH files..skipping')
 
-    def write_netcdf(self, filename: Union[str, Path],
-                     variables: Optional[List[str]] = None,
-                     global_attrs: Optional[Dict] = None,
-                     time_slice: Optional[Union[list, slice]] = None,
-                     hru_ids: Optional[Union[list, np.ndarray]] = None):
+    def write_netcdf(self, filename: str | Path,
+                     variables: list[str] | None = None,
+                     global_attrs: dict | None = None,
+                     time_slice: list | slice | None = None,
+                     hru_ids: list | np.ndarray | None = None):
         """Write CBH variables to netCDF file.
 
         :param filename: name of netCDF output file
@@ -327,8 +328,8 @@ class Cbh(object):
 
         ds.load().to_netcdf(filename, engine='netcdf4', format='NETCDF4', encoding=encoding)
 
-    def _cbh_to_xarray(self, filename: dict[Path, Optional[str]]) -> xr.Dataset:
-        # variables: Optional[List[str]] = None) -> xr.Dataset:
+    def _cbh_to_xarray(self, filename: dict[Path, str | None]) -> xr.Dataset:
+        # variables: list[str] | None = None) -> xr.Dataset:
         """Convert ASCII CBH file(s) to xarray
 
         :param filename: list of CBH filepaths or a single CBH filename
@@ -425,9 +426,9 @@ class Cbh(object):
         return ds
 
     @staticmethod
-    def _read_ascii_file(filename: Union[str, Path],
+    def _read_ascii_file(filename: str | Path,
                          datatype=np.float32,
-                         columns: Optional[List] = None) -> pd.DataFrame:
+                         columns: list | None = None) -> pd.DataFrame:
         """Reads a single ASCII CBH file.
 
         :param filename: name of the CBH file
