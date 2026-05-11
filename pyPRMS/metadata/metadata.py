@@ -43,7 +43,7 @@ class MetaData(object):
 
         fcn_map = {'control': self.__control_to_dict,
                    'dimensions': self.__dimensions_to_dict,
-                   'parameters': self.__parameters_to_dict,
+                   'parameters': self._parameters_to_dict,
                    'variables': self.__variables_to_dict,
                    'data_file': self.__data_file_to_dict,
                    'cbh': self.__cbh_to_dict}
@@ -250,9 +250,9 @@ class MetaData(object):
 
         return meta_dict
 
-    def __parameters_to_dict(self, xml_root: xmlET.Element,
-                             meta_type: str,
-                             req_version: Version) -> dict:
+    def _parameters_to_dict(self, xml_root: xmlET.Element,
+                            meta_type: str,
+                            req_version: Version) -> dict:
         """Convert parameter metadata to dictionary.
 
         :param xml_root: XML root element

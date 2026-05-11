@@ -60,9 +60,9 @@ class ParamDb(Parameters):
 
         # Create a MetaData object to use its parameter parsing function
         mobj = MetaData()
-        pvt_meta = mobj._MetaData__parameters_to_dict(xml_root=params_root,
-                                                      meta_type='parameters',
-                                                      req_version=PRMS_VERSION)
+        pvt_meta = mobj._parameters_to_dict(xml_root=params_root,
+                                             meta_type='parameters',
+                                             req_version=PRMS_VERSION)
 
         # Populate parameterSet with all available parameter names
         for param in params_root.findall('parameter'):
