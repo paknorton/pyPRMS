@@ -79,24 +79,36 @@ class Parameters(object):
         self.metadata = metadata['parameters']
         self.prms_version = Version(metadata['info']['version'])
 
-    def __getattr__(self, name: str):
-        """Not sure what to write yet.
+    def __contains__(self, name: str) -> bool:
+        """Check if a parameter exists.
 
-        :param name: Name of the attribute
+        :param name: Name of the parameter
+        :returns: True if parameter exists, otherwise False
         """
-
-        # Undefined attributes will look up the given parameter
-        # return self.get(item)
-        # https://nedbatchelder.com/blog/201010/surprising_getattr_recursion.html
-        if name == "__setstate__":
-            raise AttributeError(name)
-        return getattr(self.__parameters, name)
+        return name in self.__parameters
 
     def __getitem__(self, item):
-        """Not sure what to write yet.
+        """Get a parameter by name.
+
+        :param item: Name of the parameter
+        :returns: Parameter object
         """
 
         return self.get(item)
+
+    def __iter__(self):
+        """Iterate over parameter names.
+
+        :returns: Iterator over parameter names
+        """
+        return iter(self.__parameters)
+
+    def __len__(self) -> int:
+        """Return number of parameters.
+
+        :returns: Number of parameters
+        """
+        return len(self.__parameters)
 
     def __str__(self) -> str:
         """Pretty-print string representation of the Parameters object.
@@ -571,7 +583,7 @@ class Parameters(object):
         :returns: True if parameter exists, otherwise False
         """
 
-        return name in self.parameters.keys()
+        return name in self
 
     def get(self, name: str) -> Parameter:
         """Returns a parameter object.
