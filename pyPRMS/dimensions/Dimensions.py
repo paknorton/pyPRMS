@@ -1,6 +1,7 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 import xml.etree.ElementTree as xmlET
 
 from .Dimension import Dimension
@@ -99,12 +100,12 @@ class Dimensions(object):
         return self.__dimensions.items()
 
     @property
-    def dimensions(self) -> dict[str, Dimension]:
-        """Get ordered dictionary of Dimension objects.
+    def dimensions(self) -> MappingProxyType[str, Dimension]:
+        """Get read-only view of Dimension objects.
 
-        :returns: OrderedDict of Dimension objects
+        :returns: Read-only mapping of dimension names to Dimension objects
         """
-        return self.__dimensions
+        return MappingProxyType(self.__dimensions)
 
     @property
     def ndim(self) -> int:
