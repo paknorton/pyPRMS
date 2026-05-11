@@ -1,11 +1,12 @@
 
+from __future__ import annotations
+
 import io
 import pkgutil
 import xml.etree.ElementTree as xmlET   # type: ignore
 
 from collections import defaultdict
 from packaging.version import Version
-from typing import Dict, Optional, Union
 
 from pyPRMS.prms_helpers import set_date
 from pyPRMS.constants import MetaDataType, NEW_PTYPE_TO_DTYPE, PRMS_VERSION
@@ -28,7 +29,7 @@ NEW_PARAM_DTYPE = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
 class MetaData(object):
     """Class to handle variable and parameter metadata"""
 
-    def __init__(self, version: Union[str, Version] = PRMS_VERSION,
+    def __init__(self, version: str | Version = PRMS_VERSION,
                  verbose: bool = False):
         # meta_type - one of control, dimension, parameter, output
         # version - PRMS major version to use for filtering
@@ -85,7 +86,7 @@ class MetaData(object):
     # ------------------------------------------------------------------
 
     def __filter_by_version(self, elem: xmlET.Element, name: str,
-                            meta_dict: Dict, req_version: Version) -> bool:
+                            meta_dict: dict, req_version: Version) -> bool:
         """Apply version and deprecation filtering to a metadata element.
 
         If the element passes filtering, an empty entry is created in *meta_dict*
@@ -93,7 +94,7 @@ class MetaData(object):
 
         :param elem: XML element to check
         :param name: Name of the variable/parameter
-        :param meta_dict: Dictionary being built (entry may be added/removed)
+        :param meta_dict: dictionary being built (entry may be added/removed)
         :param req_version: Required PRMS version for filtering
         :returns: True if the element should be skipped, False if it passes
         """
@@ -127,11 +128,11 @@ class MetaData(object):
         return False
 
     @staticmethod
-    def __extract_common(elem: xmlET.Element, meta_entry: Dict):
+    def __extract_common(elem: xmlET.Element, meta_entry: dict):
         """Extract dimensions, modules, and requires elements common to most metadata types.
 
         :param elem: XML element to extract from
-        :param meta_entry: Dictionary entry to populate
+        :param meta_entry: dictionary entry to populate
         """
 
         for cdim in elem.findall('./dimensions/dimension'):
@@ -144,11 +145,11 @@ class MetaData(object):
             meta_entry[f'requires_{creq.tag}'].append(creq.text)
 
     @staticmethod
-    def __extract_valid_values(elem: xmlET.Element, meta_entry: Dict):
+    def __extract_valid_values(elem: xmlET.Element, meta_entry: dict):
         """Extract valid values from an XML element.
 
         :param elem: XML element to extract from
-        :param meta_entry: Dictionary entry to populate
+        :param meta_entry: dictionary entry to populate
         """
 
         for cvals in elem.findall('./values'):
@@ -164,7 +165,7 @@ class MetaData(object):
 
     def __control_to_dict(self, xml_root: xmlET.Element,
                           meta_type: str,
-                          req_version: Version) -> Dict:
+                          req_version: Version) -> dict:
         """Convert control variables metadata to dictionary.
 
         :param xml_root: XML root element
@@ -172,7 +173,7 @@ class MetaData(object):
         :param req_version: Required minimum version for filtering
         """
 
-        meta_dict: Dict = {}
+        meta_dict: dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
@@ -222,7 +223,7 @@ class MetaData(object):
 
     def __parameters_to_dict(self, xml_root: xmlET.Element,
                              meta_type: str,
-                             req_version: Version) -> Dict:
+                             req_version: Version) -> dict:
         """Convert parameter metadata to dictionary.
 
         :param xml_root: XML root element
@@ -230,7 +231,7 @@ class MetaData(object):
         :param req_version: Required minimum version for filtering
         """
 
-        meta_dict: Dict = {}
+        meta_dict: dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
@@ -281,7 +282,7 @@ class MetaData(object):
 
     def __dimensions_to_dict(self, xml_root: xmlET.Element,
                              meta_type: str,
-                             req_version: Version) -> Dict:
+                             req_version: Version) -> dict:
         """Convert dimensions metadata to dictionary.
 
         :param xml_root: XML root element
@@ -289,7 +290,7 @@ class MetaData(object):
         :param req_version: Required minimum version for filtering
         """
 
-        meta_dict: Dict = {}
+        meta_dict: dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
@@ -320,7 +321,7 @@ class MetaData(object):
 
     def __variables_to_dict(self, xml_root: xmlET.Element,
                             meta_type: str,
-                            req_version: Version) -> Dict:
+                            req_version: Version) -> dict:
         """Convert output variables metadata to dictionary.
 
         :param xml_root: XML root element
@@ -328,7 +329,7 @@ class MetaData(object):
         :param req_version: Required minimum version for filtering
         """
 
-        meta_dict: Dict = {}
+        meta_dict: dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
@@ -350,7 +351,7 @@ class MetaData(object):
 
     def __cbh_to_dict(self, xml_root: xmlET.Element,
                       meta_type: str,
-                      req_version: Version) -> Dict:
+                      req_version: Version) -> dict:
         """Convert CBH variables metadata to dictionary.
 
         :param xml_root: XML root element
@@ -358,7 +359,7 @@ class MetaData(object):
         :param req_version: Required minimum version for filtering
         """
 
-        meta_dict: Dict = {}
+        meta_dict: dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
@@ -385,7 +386,7 @@ class MetaData(object):
 
     def __data_file_to_dict(self, xml_root: xmlET.Element,
                             meta_type: str,
-                            req_version: Version) -> Dict:
+                            req_version: Version) -> dict:
         """Convert Data File variables metadata to dictionary.
 
         :param xml_root: XML root element
@@ -393,7 +394,7 @@ class MetaData(object):
         :param req_version: Required minimum version for filtering
         """
 
-        meta_dict: Dict = {}
+        meta_dict: dict = {}
 
         for elem in xml_root.findall(outside_elem[meta_type]):
             name = elem.attrib.get('name')
