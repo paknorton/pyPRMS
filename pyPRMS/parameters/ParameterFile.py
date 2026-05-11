@@ -1,7 +1,7 @@
 
-# from typing import Any,  Union, Dict, List, OrderedDict as OrderedDictType, Set
+from __future__ import annotations
+
 import numpy as np
-from typing import List, Optional, Set
 
 from ..Exceptions_custom import ParameterExistsError, ParameterNotValidError
 from .Parameters import Parameters
@@ -9,11 +9,6 @@ from ..constants import DIMENSIONS_HDR, PARAMETERS_HDR, VAR_DELIM, PTYPE_TO_DTYP
 from ..prms_helpers import get_file_iter
 from ..base.console import get_console_instance
 
-# from rich.console import Console
-# from rich import pretty
-#
-# pretty.install()
-# con = Console()
 con = None
 
 class ParameterFile(Parameters):
@@ -22,7 +17,7 @@ class ParameterFile(Parameters):
 
     def __init__(self, filename: str,
                  metadata,
-                 verbose: Optional[bool] = False):
+                 verbose: bool = False):
                  # verify: Optional[bool] = True):
         """Create the ParameterFile object.
 
@@ -31,7 +26,7 @@ class ParameterFile(Parameters):
         :param verify: whether to load the master parameters (default=True)
         """
 
-        super(ParameterFile, self).__init__(metadata=metadata, verbose=verbose)
+        super().__init__(metadata=metadata, verbose=verbose)
 
         global con
         con = get_console_instance()
@@ -40,7 +35,7 @@ class ParameterFile(Parameters):
         # self.__header = None
 
         self.__isloaded = False
-        self.__updated_parameters: Set[str] = set()
+        self.__updated_parameters: set[str] = set()
         self.__verbose = verbose
         self.filename = filename
 
@@ -62,12 +57,12 @@ class ParameterFile(Parameters):
 
         self.__isloaded = False
         self.__filename = name
-        self.__header: List[str] = []  # Initialize the list of file headers
+        self.__header: list[str] = []  # Initialize the list of file headers
 
         self._read()
 
     @property
-    def headers(self) -> List[str]:
+    def headers(self) -> list[str]:
         """Get the headers from the parameter file.
 
         :returns: list of headers from parameter file
@@ -76,7 +71,7 @@ class ParameterFile(Parameters):
         return self.__header
 
     @property
-    def updated_parameters(self) -> Set[str]:
+    def updated_parameters(self) -> set[str]:
         """Get list of parameters that had more than one entry in the parameter file.
 
         :returns: list of parameters
