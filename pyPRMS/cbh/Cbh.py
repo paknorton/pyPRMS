@@ -178,14 +178,13 @@ class Cbh(object):
             ds['minute'] = 0
             ds['second'] = 0
 
-            out_cbh = open(filename, 'w')
-            out_cbh.write('Written by Bandit\n')
-            out_cbh.write(f'{var_crosswalk.get(variable, variable)} {len(hru_ids)}\n')
-            out_cbh.write('########################################\n')
-            ds.to_csv(out_cbh, columns=out_order, na_rep=na_rep, float_format=float_format,
-                      sep=' ', index=False, header=False, lineterminator='\n', encoding=None,
-                      chunksize=10)
-            out_cbh.close()
+            with open(filename, 'w') as out_cbh:
+                out_cbh.write('Written by Bandit\n')
+                out_cbh.write(f'{var_crosswalk.get(variable, variable)} {len(hru_ids)}\n')
+                out_cbh.write('########################################\n')
+                ds.to_csv(out_cbh, columns=out_order, na_rep=na_rep, float_format=float_format,
+                          sep=' ', index=False, header=False, lineterminator='\n', encoding=None,
+                          chunksize=10)
         else:
             print(f'WARNING: {variable} does not exist in source CBH files..skipping')
 
