@@ -1,4 +1,6 @@
-import fsspec   # type: ignore
+from __future__ import annotations
+
+import fsspec
 import numpy as np
 import pandas as pd   # type: ignore
 import netCDF4 as nc   # type: ignore
@@ -6,7 +8,6 @@ import xarray as xr   # type: ignore
 
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Union
 
 from ..control.Control import Control
 from ..constants import MetaDataType, NEW_PTYPE_TO_DTYPE
@@ -17,31 +18,31 @@ con = None
 
 __author__ = 'Parker Norton (pnorton@usgs.gov)'
 
-NA_VALS_DEFAULT = ('-99.0', '-999.0', 'NaN', 'inf')
-DATA_SEP = '####'
-
-# Crosswalk of some of the possible source CBH variable names to PRMS variable names
-var_crosswalk: Dict[str, str] = dict(tmax='tmax_hru',
-                                     T2MAX='tmax_hru',
-                                     tmin='tmin_hru',
-                                     T2MIN='tmin_hru',
-                                     precip='hru_ppt',
-                                     prcp='hru_ppt',
-                                     RAIN='hru_ppt',
-                                     rhavg='humidity_hru')
-temp_units = {0: 'degree_fahrenheit', 1: 'degree_celsius'}
-precip_units = {0: 'inch', 1: 'mm'}
-
 
 class Cbh(object):
     """Climate-By-HRU (CBH) files for PRMS."""
 
-    def __init__(self, src_path: Union[str, Path, List[Union[str, Path]]],
+    _NA_VALS_DEFAULT = ('-99.0', '-999.0', 'NaN', 'inf')
+    _DATA_SEP = '####'
+
+    # Crosswalk of some of the possible source CBH variable names to PRMS variable names
+    _VAR_CROSSWALK: dict[str, str] = dict(tmax='tmax_hru',
+                                          T2MAX='tmax_hru',
+                                          tmin='tmin_hru',
+                                          T2MIN='tmin_hru',
+                                          precip='hru_ppt',
+                                          prcp='hru_ppt',
+                                          RAIN='hru_ppt',
+                                          rhavg='humidity_hru')
+    _TEMP_UNITS = {0: 'degree_fahrenheit', 1: 'degree_celsius'}
+    _PRECIP_UNITS = {0: 'inch', 1: 'mm'}
+
+    def __init__(self, src_path: str | Path | list[str | Path],
                  metadata: MetaDataType,
-                 engine: Optional[str] = 'ascii',
-                 control: Optional[Control] = None,
-                 parameters: Optional[Parameters] = None,
-                 verbose: Optional[bool] = False):
+                 engine: str = 'ascii',
+                 control: Control | None = None,
+                 parameters: Parameters | None = None,
+                 verbose: bool = False):
         """
         :param src_path: List of paths to CBH files
         :param metadata: Metadata dictionary for Climate-by-HRU variables
@@ -58,84 +59,39 @@ class Cbh(object):
         self.metadata = metadata['cbh']
         self.__parameters = parameters
         self.__var_map = {}
-        self.__cbh_src: Dict[str, str] = {}
+        self.__cbh_src: dict[str, str] = {}
 
-        if isinstance(src_path, str):
-            src_path = Path(src_path)
-
-        if isinstance(src_path, list):
-            self.__src_path = [Path(ff).resolve() for ff in src_path]
-        else:
-            if '*' in src_path.name:
-                # wildcard character in filename so glob the path
-                self.__src_path = list(src_path.parent.glob(src_path.name))
-            else:
-                self.__src_path = [src_path.resolve()]
-
-        # con.print(f'CBH files: {self.__src_path}')
+        self.__src_path = self._normalize_paths(src_path)
 
         if parameters is not None:
             self.resolve_units()
 
-        assert self.__src_path is not None
-
         match engine:
             case 'netcdf':
-                ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
-                                       compat='no_conflicts', join='outer',
-                                       data_vars='minimal', decode_cf=True, engine='netcdf4',
-                                       parallel=False)
+                ds = self._read_netcdf()
             case 'zarr':
-                if len(self.__src_path) > 1:
-                    con.print('[red]ERROR[/]: Zarr engine does not support reading multiple files')
-                elif not self.__src_path[0].is_dir():
-                    con.print('[red]ERROR[/]: Zarr engine requires a directory of files')
-                else:
-                    ds = xr.open_zarr(self.__src_path[0], consolidated=True)
+                ds = self._read_zarr()
             case 'ascii':
-                cbh_files = {}
-                if control is None:
-                    con.print('[orange3]WARNING[/]: No control object provided; CBH variables may be missing metadata')
-
-                    for kk in self.__src_path:
-                        cbh_files[kk] = None
-                    ds = self._cbh_to_xarray(cbh_files)  # type: ignore
-                else:
-                    # When a control object is specified, the src_path indicates
-                    # the model directory and the *_day variables are read to get
-                    # candidate CBH files.
-                    cbh_file_vars = dict(albedo_day='albedo_hru',
-                                         cloud_cover_day='cloud_cover_cbh',
-                                         humidity_day='humidity_hru',
-                                         potet_day='potet',
-                                         precip_day='hru_ppt',
-                                         swrad_day='swrad',
-                                         tmax_day='tmax_hru',
-                                         tmin_day='tmin_hru',
-                                         transp_day='transp_on',
-                                         windspeed_day='windspeed_hru')
-
-                    for ctl_var, prms_var in cbh_file_vars.items():
-                        # Get the filename associated with the control variable
-                        cfile = control.get(ctl_var).values
-                        assert type(cfile) is str
-
-                        if (self.__src_path[0] / cfile).exists():
-                            if self.verbose:
-                                con.print(f'[green]INFO[/]: Found {cfile}')
-                            cbh_files[self.__src_path[0] / cfile] = prms_var
-
-                    ds = self._cbh_to_xarray(cbh_files)  # type: ignore # , variables=cbh_vars)
+                ds = self._read_ascii(control)
+            case _:
+                raise ValueError(f"Unknown engine: '{engine}'. Must be one of 'netcdf', 'zarr', or 'ascii'.")
 
         if 'nhm_id' in ds.data_vars:
-            # The dataset has nhm_id variable so use it as the nhru dimension
             ds = ds.assign_coords(nhru=ds.nhm_id)
             self.has_nhm_id = True
 
         for cvar in ds.data_vars:
-            self.__var_map[str(cvar)] = var_crosswalk.get(str(cvar), str(cvar))
+            self.__var_map[str(cvar)] = self._VAR_CROSSWALK.get(str(cvar), str(cvar))
 
         self.__dataset = ds
+
+    def __repr__(self) -> str:
+        """String representation of the Cbh object.
+
+        :returns: string with source path and variable count
+        """
+        nvars = len(self.__var_map)
+        return f"Cbh(src_path={self.__src_path}, variables={nvars})"
 
     @property
     def data(self) -> xr.Dataset:
@@ -147,13 +103,13 @@ class Cbh(object):
         return self.__dataset
 
     @property
-    def var_map(self) -> Dict[str, str]:
+    def var_map(self) -> dict[str, str]:
         """Return variable-to-prms_variable mapping."""
 
         return self.__var_map
 
     @property
-    def cbh_src(self) -> Dict[str, str]:
+    def cbh_src(self) -> dict[str, str]:
         """Return variable to source-file mapping."""
 
         return self.__cbh_src
@@ -184,10 +140,10 @@ class Cbh(object):
             self.__dataset = self.__dataset.assign_coords(nhru=self.__dataset.nhm_id)
             self.has_nhm_id = True
 
-    def write_ascii(self, filename: Union[str, Path],
+    def write_ascii(self, filename: str | Path,
                     variable: str,
-                    time_slice: Optional[Union[list, slice]] = None,
-                    hru_ids: Optional[Union[list, np.ndarray]] = None,
+                    time_slice: list | slice | None = None,
+                    hru_ids: list | np.ndarray | None = None,
                     na_rep: str = '-999',
                     float_format: str = '%0.2f'):
         """Write CBH data for selected variable to PRMS ASCII-formatted file.
@@ -212,12 +168,9 @@ class Cbh(object):
 
         # For out_order the first six columns contain the time information and
         # are always output for the cbh files
-        # out_order: List[Union[int, str]] = [kk for kk in self.__nhm_hrus]
         out_order = [kk for kk in hru_ids]
         for cc in ['second', 'minute', 'hour', 'day', 'month', 'year']:
             out_order.insert(0, cc)
-
-        # variable = var_crosswalk.get(variable, variable)
 
         if variable in self.__dataset.data_vars:
             ds = self.__dataset[variable].sel(nhru=hru_ids, time=time_slice).to_pandas()
@@ -230,22 +183,21 @@ class Cbh(object):
             ds['minute'] = 0
             ds['second'] = 0
 
-            out_cbh = open(filename, 'w')
-            out_cbh.write('Written by Bandit\n')
-            out_cbh.write(f'{var_crosswalk.get(variable, variable)} {len(hru_ids)}\n')
-            out_cbh.write('########################################\n')
-            ds.to_csv(out_cbh, columns=out_order, na_rep=na_rep, float_format=float_format,
-                      sep=' ', index=False, header=False, lineterminator='\n', encoding=None,
-                      chunksize=10)
-            out_cbh.close()
+            with open(filename, 'w') as out_cbh:
+                out_cbh.write('Written by Bandit\n')
+                out_cbh.write(f'{self._VAR_CROSSWALK.get(variable, variable)} {len(hru_ids)}\n')
+                out_cbh.write('########################################\n')
+                ds.to_csv(out_cbh, columns=out_order, na_rep=na_rep, float_format=float_format,
+                          sep=' ', index=False, header=False, lineterminator='\n', encoding=None,
+                          chunksize=10)
         else:
             print(f'WARNING: {variable} does not exist in source CBH files..skipping')
 
-    def write_netcdf(self, filename: Union[str, Path],
-                     variables: Optional[List[str]] = None,
-                     global_attrs: Optional[Dict] = None,
-                     time_slice: Optional[Union[list, slice]] = None,
-                     hru_ids: Optional[Union[list, np.ndarray]] = None):
+    def write_netcdf(self, filename: str | Path,
+                     variables: list[str] | None = None,
+                     global_attrs: dict | None = None,
+                     time_slice: list | slice | None = None,
+                     hru_ids: list | np.ndarray | None = None):
         """Write CBH variables to netCDF file.
 
         :param filename: name of netCDF output file
@@ -268,7 +220,6 @@ class Cbh(object):
             time_slice = slice(time_slice[0], time_slice[-1])
 
         ds = self.__dataset.sel(nhru=hru_ids, time=time_slice)
-        # ds = ds.sel(time=slice(self.__stdate, self.__endate), nhru=self.__nhm_hrus)
 
         if variables is None:
             pass
@@ -327,8 +278,95 @@ class Cbh(object):
 
         ds.load().to_netcdf(filename, engine='netcdf4', format='NETCDF4', encoding=encoding)
 
-    def _cbh_to_xarray(self, filename: dict[Path, Optional[str]]) -> xr.Dataset:
-        # variables: Optional[List[str]] = None) -> xr.Dataset:
+    # ------------------------------------------------------------------
+    # Private helper methods
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _normalize_paths(src_path: str | Path | list[str | Path]) -> list[Path]:
+        """Normalize source path(s) to a list of resolved Path objects.
+
+        :param src_path: Path(s) to CBH file(s)
+        :returns: List of resolved Path objects
+        """
+
+        if isinstance(src_path, str):
+            src_path = Path(src_path)
+
+        if isinstance(src_path, list):
+            return [Path(ff).resolve() for ff in src_path]
+        else:
+            if '*' in src_path.name:
+                return list(src_path.parent.glob(src_path.name))
+            else:
+                return [src_path.resolve()]
+
+    def _read_netcdf(self) -> xr.Dataset:
+        """Read CBH data from netCDF file(s).
+
+        :returns: xarray Dataset
+        """
+
+        return xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
+                                 compat='no_conflicts', join='outer',
+                                 data_vars='minimal', decode_cf=True, engine='netcdf4',
+                                 parallel=False)
+
+    def _read_zarr(self) -> xr.Dataset:
+        """Read CBH data from a Zarr store.
+
+        :returns: xarray Dataset
+        :raises ValueError: if multiple paths are provided or path is not a directory
+        """
+
+        if len(self.__src_path) > 1:
+            raise ValueError('Zarr engine does not support reading multiple files')
+        if not self.__src_path[0].is_dir():
+            raise ValueError('Zarr engine requires a directory')
+
+        return xr.open_zarr(self.__src_path[0], consolidated=True)
+
+    def _read_ascii(self, control: Control | None) -> xr.Dataset:
+        """Read CBH data from ASCII file(s).
+
+        :param control: Control object for PRMS model (optional)
+        :returns: xarray Dataset
+        """
+
+        cbh_files: dict[Path, str | None] = {}
+
+        if control is None:
+            con.print('[orange3]WARNING[/]: No control object provided; CBH variables may be missing metadata')
+
+            for kk in self.__src_path:
+                cbh_files[kk] = None
+        else:
+            # When a control object is specified, the src_path indicates
+            # the model directory and the *_day variables are read to get
+            # candidate CBH files.
+            cbh_file_vars = dict(albedo_day='albedo_hru',
+                                 cloud_cover_day='cloud_cover_cbh',
+                                 humidity_day='humidity_hru',
+                                 potet_day='potet',
+                                 precip_day='hru_ppt',
+                                 swrad_day='swrad',
+                                 tmax_day='tmax_hru',
+                                 tmin_day='tmin_hru',
+                                 transp_day='transp_on',
+                                 windspeed_day='windspeed_hru')
+
+            for ctl_var, prms_var in cbh_file_vars.items():
+                cfile = control.get(ctl_var).values
+                assert type(cfile) is str
+
+                if (self.__src_path[0] / cfile).exists():
+                    if self.verbose:
+                        con.print(f'[green]INFO[/]: Found {cfile}')
+                    cbh_files[self.__src_path[0] / cfile] = prms_var
+
+        return self._cbh_to_xarray(cbh_files)
+
+    def _cbh_to_xarray(self, filename: dict[Path, str | None]) -> xr.Dataset:
         """Convert ASCII CBH file(s) to xarray
 
         :param filename: list of CBH filepaths or a single CBH filename
@@ -369,13 +407,13 @@ class Cbh(object):
                 else:
                     # With ASCII files when cvar is None, usually the control object was not provided.
                     # Try looking up the variable name in the variable crosswalk.
-                    var_name = var_crosswalk.get(var_name, var_name)
+                    var_name = self._VAR_CROSSWALK.get(var_name, var_name)
 
                 self.__cbh_src[var_name] = cfile.name
 
                 line = fhdl.readline().rstrip()
 
-                if line[0:len(DATA_SEP)] != DATA_SEP:
+                if line[0:len(self._DATA_SEP)] != self._DATA_SEP:
                     if line.split()[0] == 'orad':
                         # This happens when orad_flag == 1
                         con.print(f'[red]ERROR[/]: Two variables in CBH file ({var_name}, orad). Data will not be read.')
@@ -404,15 +442,14 @@ class Cbh(object):
 
                 if cattrs['units'] == 'temp_units':
                     # For now just default to degrees_fahrenheit
-                    ds[cvar].attrs['units'] = temp_units[0]
+                    ds[cvar].attrs['units'] = self._TEMP_UNITS[0]
                 elif cattrs['units'] == 'precip_units':
                     # For now just default to inches
-                    ds[cvar].attrs['units'] = precip_units[0]
+                    ds[cvar].attrs['units'] = self._PRECIP_UNITS[0]
                 else:
                     ds[cvar].attrs['units'] = cattrs['units']
 
                 # Set the fill value
-                # con.print(f'{cvar}: {cattrs["datatype"]} -> {var_enc[cattrs["datatype"]]}')
                 ds[cvar].encoding.update(var_enc[cattrs['datatype']])
             else:
                 if cvar not in ['time', 'nhru']:
@@ -425,9 +462,9 @@ class Cbh(object):
         return ds
 
     @staticmethod
-    def _read_ascii_file(filename: Union[str, Path],
+    def _read_ascii_file(filename: str | Path,
                          datatype=np.float32,
-                         columns: Optional[List] = None) -> pd.DataFrame:
+                         columns: list | None = None) -> pd.DataFrame:
         """Reads a single ASCII CBH file.
 
         :param filename: name of the CBH file
@@ -457,16 +494,11 @@ class Cbh(object):
 
         df = pd.read_csv(filename, sep=' ', skipinitialspace=True,
                          skiprows=3, engine='c', dtype=types, low_memory=True,
-                         # skiprows=3, engine='c', memory_map=True,
-                         header=None, na_values=NA_VALS_DEFAULT,
+                         header=None, na_values=Cbh._NA_VALS_DEFAULT,
                          usecols=columns)
 
-        df[0] = pd.to_numeric(df[0], downcast='integer')
-        df[1] = pd.to_numeric(df[1], downcast='integer')
-        df[2] = pd.to_numeric(df[2], downcast='integer')
-        df[3] = pd.to_numeric(df[3], downcast='integer')
-        df[4] = pd.to_numeric(df[4], downcast='integer')
-        df[5] = pd.to_numeric(df[5], downcast='integer')
+        for col in time_col_names:
+            df[col] = pd.to_numeric(df[col], downcast='integer')
 
         # Rename columns with time information
         df.rename(columns=time_col_names, inplace=True)
