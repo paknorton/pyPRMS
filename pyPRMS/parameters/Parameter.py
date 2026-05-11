@@ -4,6 +4,7 @@ import functools
 import numpy as np
 import numpy.typing as npt
 import pandas as pd     # type: ignore
+from collections.abc import ValuesView
 from typing import Any, cast, NamedTuple
 import xml.etree.ElementTree as xmlET
 
@@ -85,6 +86,13 @@ class Parameter(object):
 
         self.__data: ParamDataRawType | None = None
         self.__modified = False
+
+    def __repr__(self) -> str:
+        """String representation of the Parameter object.
+
+        :return: string with parameter name and dimensions
+        """
+        return f"Parameter(name='{self.name}')"
 
     def __str__(self) -> str:
         """Pretty-print string representation of the parameter information.
@@ -257,7 +265,7 @@ class Parameter(object):
             return None
 
     @property
-    def is_scalar(self):
+    def is_scalar(self) -> bool:
         try:
             return 'one' in self.meta['dimensions']
         except KeyError:
@@ -413,7 +421,7 @@ class Parameter(object):
         :param dim_name: Name of dimension to reduce
         :param indices: List of indices to remove"""
 
-        if isinstance(indices, type(dict().values())):
+        if isinstance(indices, ValuesView):
             indices = list(indices)
 
         if self.__data is not None:
@@ -445,7 +453,7 @@ class Parameter(object):
         :param dim_name: name of dimension
         :param indices: local indices of HRUs or segments to extract"""
 
-        if isinstance(indices, type(dict().values())):
+        if isinstance(indices, ValuesView):
             indices = list(indices)
 
         if self.dimensions[dim_name].is_fixed:
