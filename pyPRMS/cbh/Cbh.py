@@ -61,75 +61,22 @@ class Cbh(object):
         self.__var_map = {}
         self.__cbh_src: dict[str, str] = {}
 
-        if isinstance(src_path, str):
-            src_path = Path(src_path)
-
-        if isinstance(src_path, list):
-            self.__src_path = [Path(ff).resolve() for ff in src_path]
-        else:
-            if '*' in src_path.name:
-                # wildcard character in filename so glob the path
-                self.__src_path = list(src_path.parent.glob(src_path.name))
-            else:
-                self.__src_path = [src_path.resolve()]
-
-        # con.print(f'CBH files: {self.__src_path}')
+        self.__src_path = self._normalize_paths(src_path)
 
         if parameters is not None:
             self.resolve_units()
 
-        assert self.__src_path is not None
-
         match engine:
             case 'netcdf':
-                ds = xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
-                                        compat='no_conflicts', join='outer',
-                                       data_vars='minimal', decode_cf=True, engine='netcdf4',
-                                       parallel=False)
+                ds = self._read_netcdf()
             case 'zarr':
-                if len(self.__src_path) > 1:
-                    con.print('[red]ERROR[/]: Zarr engine does not support reading multiple files')
-                elif not self.__src_path[0].is_dir():
-                    con.print('[red]ERROR[/]: Zarr engine requires a directory of files')
-                else:
-                    ds = xr.open_zarr(self.__src_path[0], consolidated=True)
+                ds = self._read_zarr()
             case 'ascii':
-                cbh_files = {}
-                if control is None:
-                    con.print('[orange3]WARNING[/]: No control object provided; CBH variables may be missing metadata')
-
-                    for kk in self.__src_path:
-                        cbh_files[kk] = None
-                    ds = self._cbh_to_xarray(cbh_files)  # type: ignore
-                else:
-                    # When a control object is specified, the src_path indicates
-                    # the model directory and the *_day variables are read to get
-                    # candidate CBH files.
-                    cbh_file_vars = dict(albedo_day='albedo_hru',
-                                         cloud_cover_day='cloud_cover_cbh',
-                                         humidity_day='humidity_hru',
-                                         potet_day='potet',
-                                         precip_day='hru_ppt',
-                                         swrad_day='swrad',
-                                         tmax_day='tmax_hru',
-                                         tmin_day='tmin_hru',
-                                         transp_day='transp_on',
-                                         windspeed_day='windspeed_hru')
-
-                    for ctl_var, prms_var in cbh_file_vars.items():
-                        # Get the filename associated with the control variable
-                        cfile = control.get(ctl_var).values
-                        assert type(cfile) is str
-
-                        if (self.__src_path[0] / cfile).exists():
-                            if self.verbose:
-                                con.print(f'[green]INFO[/]: Found {cfile}')
-                            cbh_files[self.__src_path[0] / cfile] = prms_var
-
-                    ds = self._cbh_to_xarray(cbh_files)  # type: ignore # , variables=cbh_vars)
+                ds = self._read_ascii(control)
+            case _:
+                raise ValueError(f"Unknown engine: '{engine}'. Must be one of 'netcdf', 'zarr', or 'ascii'.")
 
         if 'nhm_id' in ds.data_vars:
-            # The dataset has nhm_id variable so use it as the nhru dimension
             ds = ds.assign_coords(nhru=ds.nhm_id)
             self.has_nhm_id = True
 
@@ -327,6 +274,94 @@ class Cbh(object):
                                       contiguous=True)
 
         ds.load().to_netcdf(filename, engine='netcdf4', format='NETCDF4', encoding=encoding)
+
+    # ------------------------------------------------------------------
+    # Private helper methods
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _normalize_paths(src_path: str | Path | list[str | Path]) -> list[Path]:
+        """Normalize source path(s) to a list of resolved Path objects.
+
+        :param src_path: Path(s) to CBH file(s)
+        :returns: List of resolved Path objects
+        """
+
+        if isinstance(src_path, str):
+            src_path = Path(src_path)
+
+        if isinstance(src_path, list):
+            return [Path(ff).resolve() for ff in src_path]
+        else:
+            if '*' in src_path.name:
+                return list(src_path.parent.glob(src_path.name))
+            else:
+                return [src_path.resolve()]
+
+    def _read_netcdf(self) -> xr.Dataset:
+        """Read CBH data from netCDF file(s).
+
+        :returns: xarray Dataset
+        """
+
+        return xr.open_mfdataset(self.__src_path, chunks={}, combine='by_coords',
+                                 compat='no_conflicts', join='outer',
+                                 data_vars='minimal', decode_cf=True, engine='netcdf4',
+                                 parallel=False)
+
+    def _read_zarr(self) -> xr.Dataset:
+        """Read CBH data from a Zarr store.
+
+        :returns: xarray Dataset
+        :raises ValueError: if multiple paths are provided or path is not a directory
+        """
+
+        if len(self.__src_path) > 1:
+            raise ValueError('Zarr engine does not support reading multiple files')
+        if not self.__src_path[0].is_dir():
+            raise ValueError('Zarr engine requires a directory')
+
+        return xr.open_zarr(self.__src_path[0], consolidated=True)
+
+    def _read_ascii(self, control: Control | None) -> xr.Dataset:
+        """Read CBH data from ASCII file(s).
+
+        :param control: Control object for PRMS model (optional)
+        :returns: xarray Dataset
+        """
+
+        cbh_files: dict[Path, str | None] = {}
+
+        if control is None:
+            con.print('[orange3]WARNING[/]: No control object provided; CBH variables may be missing metadata')
+
+            for kk in self.__src_path:
+                cbh_files[kk] = None
+        else:
+            # When a control object is specified, the src_path indicates
+            # the model directory and the *_day variables are read to get
+            # candidate CBH files.
+            cbh_file_vars = dict(albedo_day='albedo_hru',
+                                 cloud_cover_day='cloud_cover_cbh',
+                                 humidity_day='humidity_hru',
+                                 potet_day='potet',
+                                 precip_day='hru_ppt',
+                                 swrad_day='swrad',
+                                 tmax_day='tmax_hru',
+                                 tmin_day='tmin_hru',
+                                 transp_day='transp_on',
+                                 windspeed_day='windspeed_hru')
+
+            for ctl_var, prms_var in cbh_file_vars.items():
+                cfile = control.get(ctl_var).values
+                assert type(cfile) is str
+
+                if (self.__src_path[0] / cfile).exists():
+                    if self.verbose:
+                        con.print(f'[green]INFO[/]: Found {cfile}')
+                    cbh_files[self.__src_path[0] / cfile] = prms_var
+
+        return self._cbh_to_xarray(cbh_files)
 
     def _cbh_to_xarray(self, filename: dict[Path, str | None]) -> xr.Dataset:
         # variables: list[str] | None = None) -> xr.Dataset:
