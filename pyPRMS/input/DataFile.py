@@ -218,10 +218,10 @@ class DataFile(object):
 
                 if len(line) == 0:
                     continue
-                if line[0:len(COMMENT)] == COMMENT:
+                if line.startswith(COMMENT):
                     header_info.append(line)
                     continue
-                if line[0:len(DATA_SEP)] == DATA_SEP:
+                if line.startswith(DATA_SEP):
                     break
 
                 # Get the input variable name and total size for the variable
@@ -310,14 +310,14 @@ class DataFile(object):
         line = next(it)
 
         try:
-            while line[0:len(STATION_START)] != STATION_START:
+            while not line.startswith(STATION_START):
                 line = next(it)
 
             # Process the station information
             self.__station_meta_header.append(line.strip())
 
             line = next(it)
-            if line[0:len('// ID')].lower() == '// id':
+            if line.lower().startswith('// id'):
                 # Process the station information
                 self.__station_meta_header.append(line.strip())
                 meta_vars = line.replace(COMMENT, '').strip().split()
@@ -328,7 +328,7 @@ class DataFile(object):
 
                 # Loop through the variables and read the station information for each one
                 for kk, vv in self.__input_vars_intern.items():
-                    if line[0:len(HEADER_SEP)] == HEADER_SEP:
+                    if line.startswith(HEADER_SEP):
                         continue
 
                     for sz in range(vv['size']):
@@ -375,11 +375,11 @@ class DataFile(object):
                         self.__df_file_metadata.loc[len(self.__df_file_metadata)] = [f'{sz+1}', kk]
 
         try:
-            while line[0:len(UNITS_START)] != UNITS_START:
+            while not line.startswith(UNITS_START):
                 line = next(it)
 
             # Process the units
-            while line[0:len(HEADER_SEP)] != HEADER_SEP:
+            while not line.startswith(HEADER_SEP):
                 for elem in (line.replace(UNITS_START, '').replace(COMMENT, '').replace(' ', '').split(',')):
                     try:
                         cvar, cunits = elem.split('=')
