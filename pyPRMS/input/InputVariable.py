@@ -25,9 +25,15 @@ class InputVariable(object):
         self.station_metadata = station_metadata
 
         if 'data_file' in metadata:
-            self.metadata = metadata['data_file'][name]
+            source = metadata['data_file']
         else:
-            self.metadata = metadata[name]
+            source = metadata
+
+        if name not in source:
+            available = list(source.keys())
+            raise ValueError(f"Variable '{name}' not found in metadata. Available: {available}")
+
+        self.metadata = source[name]
 
     def __repr__(self) -> str:
         """Concise string representation for debugging.
