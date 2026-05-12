@@ -55,6 +55,8 @@ class OutputVariables:
         for cvar, cfile in self.available_vars.items():
             self.__out_vars[cvar] = OutputVariable(cvar, cfile, self.metadata)
 
+        self._set_global_flags()
+
     def __repr__(self) -> str:
         return (f'OutputVariables(num_vars={len(self.__out_vars)}, '
                 f'model_dir={self.__model_dir!r})')
@@ -84,10 +86,6 @@ class OutputVariables:
                 for vv in varlist:
                     var_dict[vv] = f'{prefix}{vv}.csv'
 
-                    if ckind in ['nhru', 'nsegment']:
-                        # Option 2 outputs nhm_id or nhm_seg IDs for the header instead of local model IDs
-                        self.metadata[vv]['is_global'] = self.__control.get(f'{ckind}OutON_OFF').values == 2
-
         if self.__control.get('basinOutON_OFF').values == 1:
             filename = self.__control.get('basinOutBaseFileName').values
             varlist = self.__control.get('basinOutVar_names').values.tolist()
@@ -99,6 +97,21 @@ class OutputVariables:
                 var_dict[vv] = f'{filename}.csv'
 
         return var_dict
+
+    def _set_global_flags(self):
+        """Set the is_global flag on metadata for nhru/nsegment variables.
+
+        When the OutON_OFF control variable is set to 2, the output file
+        headers contain global (NHM) IDs instead of local model IDs.
+        """
+
+        for ckind in ['nhru', 'nsegment']:
+            if self.__control.get(f'{ckind}OutON_OFF').values == 2:
+                varlist = self.__control.get(f'{ckind}OutVar_names').values.tolist()
+
+                for vv in varlist:
+                    if vv in self.metadata:
+                        self.metadata[vv]['is_global'] = True
 
     def get(self, varname: str) -> OutputVariable:
         """Get output variable object.

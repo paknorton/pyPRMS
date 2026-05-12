@@ -99,9 +99,8 @@ class OutputCSV:
         # Check for comma first; some files have commas and spaces
         self.sep = ' '
 
-        match ',' in hdr1:
-            case True:
-                self.sep = ','
+        if ',' in hdr1:
+            self.sep = ','
 
         if self.verbose:
             con.print(f'[green]INFO[/]: value separator = {self.sep}')
