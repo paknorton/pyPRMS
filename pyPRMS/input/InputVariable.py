@@ -85,18 +85,25 @@ class InputVariable:
         self.__data.rename(columns=col_names, inplace=True)
 
     @property
+    def _id_column(self) -> str:
+        """Return the name of the station ID column in station_metadata.
+
+        The column name varies between files (e.g. 'id', 'ID') so we
+        use the first column which is always the station identifier.
+        """
+        return self.station_metadata.columns[0]
+
+    @property
     def file_metadata_str(self) -> list[str]:
         """Returns the input variable file metadata string.
 
         :returns: List of input variable file metadata strings
         """
 
-        flds = self.station_metadata.columns.tolist()
-        # mstr = [f'// {" ".join(flds)}']
+        id_col = self._id_column
         mstr = []
         for cstn in self.stations:
-            # mstr += f'// {" ".join(df_m.loc[df_m["id"] == cstn].values.tolist()[0])}\n'
-            mstr.append(f'// {" ".join(self.station_metadata.loc[self.station_metadata[flds[0]] == cstn].values.tolist()[0])}')
+            mstr.append(f'// {" ".join(self.station_metadata.loc[self.station_metadata[id_col] == cstn].values.tolist()[0])}')
 
         return mstr
 
@@ -140,7 +147,7 @@ class InputVariable:
         :returns: Input variable stations
         """
 
-        return self.station_metadata.iloc[:, 0].tolist()
+        return self.station_metadata[self._id_column].tolist()
 
     def drop(self, stations: list[str]):
         """Drop stations from the input variable.
@@ -155,5 +162,6 @@ class InputVariable:
         self.data.drop(columns=stations, inplace=True)
 
         # Drop the station metadata
-        self.station_metadata.drop(self.station_metadata[self.station_metadata['id'].isin(stations)].index,
+        id_col = self._id_column
+        self.station_metadata.drop(self.station_metadata[self.station_metadata[id_col].isin(stations)].index,
                                    axis=0, inplace=True)

@@ -17,7 +17,6 @@ STATION_START = '// Station'
 UNITS_START = '// Unit:'
 DATA_SEP = '####'
 COMMENT = '//'
-# NA_VALS_DEFAULT = ('-99.0', '-999.0')
 
 
 class DataFile:
@@ -421,7 +420,6 @@ class DataFile:
                                                     metadata=self._metadata,
                                                     station_metadata=self.__df_file_metadata.iloc[st_idx:(st_idx + cmeta['size'])],
                                                     file_units=cmeta.get('file_units', None))
-            # self.__input_vars_intern[cvar]['data'] = self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])]
             st_idx += cmeta['size']
 
     def _data_column_names(self) -> list[str]:
