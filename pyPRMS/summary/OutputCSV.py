@@ -43,6 +43,9 @@ class OutputCSV:
         self._read_csv_header()
         self._read_csv_ascii()
 
+    def __repr__(self) -> str:
+        return f'OutputCSV(filename={self.__filename!r})'
+
     @property
     def basin_vars(self) -> list[str]:
         """Returns the basin variables from the CSV output file.

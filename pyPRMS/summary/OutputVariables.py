@@ -55,6 +55,10 @@ class OutputVariables:
         for cvar, cfile in self.available_vars.items():
             self.__out_vars[cvar] = OutputVariable(cvar, cfile, self.metadata)
 
+    def __repr__(self) -> str:
+        return (f'OutputVariables(num_vars={len(self.__out_vars)}, '
+                f'model_dir={self.__model_dir!r})')
+
     @cached_property
     def available_vars(self) -> dict[str, str]:
         """Returns dictionary of available variables and file paths

@@ -42,6 +42,9 @@ class OutputVariable:
         else:
             self.metadata = metadata[name]
 
+    def __repr__(self) -> str:
+        return f'OutputVariable(name={self.__name!r}, filename={self.__filename!r})'
+
     @property
     def data(self) -> pd.DataFrame:
         """Returns the source model output as a pandas DataFrame
