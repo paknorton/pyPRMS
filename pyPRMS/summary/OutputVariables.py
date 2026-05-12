@@ -1,17 +1,8 @@
 import os
-import pandas as pd   # type: ignore
 import xarray as xr
 
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, List, Optional, Union
-
-# os.environ['USE_PYGEOS'] = '0'
-# import geopandas   # type: ignore
-# import cartopy.crs as ccrs  # type: ignore
-# from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
-# import matplotlib as mpl        # type: ignore
-# import matplotlib.pyplot as plt     # type: ignore
 
 from ..constants import MetaDataType
 from ..control.Control import Control
@@ -24,8 +15,8 @@ class OutputVariables(object):
     def __init__(self,
                  control: Control,
                  metadata: MetaDataType,
-                 model_dir: Optional[Union[str, os.PathLike, Path]] = None,
-                 verbose: Optional[bool] = False):
+                 model_dir: str | os.PathLike | Path | None = None,
+                 verbose: bool = False):
         """Initialize the model output object.
 
         The OutputVariables class reads ASCII model output files based on the
@@ -49,15 +40,15 @@ class OutputVariables(object):
         self.__out_vars = dict()
 
         self.__hru_poly = None
-        self.__hru_shape_key: Optional[str] = None
+        self.__hru_shape_key: str | None = None
         self.__seg_poly = None
-        self.__seg_shape_key: Optional[str] = None
+        self.__seg_shape_key: str | None = None
 
         for cvar, cfile in self.available_vars.items():
             self.__out_vars[cvar] = OutputVariable(cvar, cfile, self.metadata)
 
     @cached_property
-    def available_vars(self) -> Dict[str, str]:
+    def available_vars(self) -> dict[str, str]:
         """Returns dictionary of available variables and file paths
 
         :returns: Dictionary of available variables and file paths
@@ -106,8 +97,8 @@ class OutputVariables(object):
 
         return self.__out_vars[varname]
 
-    def write_netcdf(self, filename: Union[str, os.PathLike],
-                     varnames: Union[str, List[str]]):
+    def write_netcdf(self, filename: str | os.PathLike,
+                     varnames: str | list[str]):
         """Write selected output variables to netCDF file.
 
         :param filename: Name of the netCDF file

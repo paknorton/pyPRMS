@@ -3,7 +3,6 @@ import pandas as pd   # type: ignore
 import xarray as xr
 
 from pathlib import Path
-from typing import List, Optional, Union
 
 from ..constants import NEW_PTYPE_TO_DTYPE
 
@@ -17,7 +16,7 @@ class OutputVariable(object):
     """
 
     def __init__(self, name: str,
-                 filename: Union[str, Path],
+                 filename: str | Path,
                  metadata: dict):
         """Initialize the OutputVariable object.
 
@@ -58,9 +57,9 @@ class OutputVariable(object):
 
         return self.__filename
 
-    def to_csv(self, filename: Union[str, Path],
-               columns: Optional[List[int]] = None,
-               sep: Optional[str] = ','):
+    def to_csv(self, filename: str | Path,
+               columns: list[int] | None = None,
+               sep: str = ','):
         """Write the output variable to a CSV file.
 
         :param filename: Name of the output file
@@ -73,7 +72,7 @@ class OutputVariable(object):
 
         self.data.to_csv(filename, sep=sep, index=True, header=True, columns=columns, chunksize=50)
 
-    def to_netcdf(self, filename: Union[str, Path]):
+    def to_netcdf(self, filename: str | Path):
         """Write the output variable to a netCDF file.
 
         :param filename: Name of the netCDF output file

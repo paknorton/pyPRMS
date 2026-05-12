@@ -1,7 +1,6 @@
 import pandas as pd   # type: ignore
 
 from pathlib import Path
-from typing import Optional, Union
 
 from ..base.console import get_console_instance
 
@@ -12,8 +11,8 @@ class OutputCSV(object):
     """Class for working with PRMS CSV output files.
     """
 
-    def __init__(self, filename: Union[str, Path],
-                 verbose: Optional[bool] = False):
+    def __init__(self, filename: str | Path,
+                 verbose: bool = False):
         """Initialize the OutputCSV object.
 
         :param filename: Name of the PRMS CSV output file
