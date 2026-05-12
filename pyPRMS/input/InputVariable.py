@@ -1,6 +1,6 @@
-import pandas as pd   # type: ignore
+from __future__ import annotations
 
-from typing import Optional, Union
+import pandas as pd   # type: ignore
 
 
 class InputVariable(object):
@@ -10,7 +10,7 @@ class InputVariable(object):
                  data: pd.DataFrame,
                  metadata: dict,
                  station_metadata: pd.DataFrame,
-                 file_units: Optional[str] = None):
+                 file_units: str | None = None):
         """Initialize the InputVariable object.
 
         :param name: Name or kind of the input variable
@@ -87,7 +87,7 @@ class InputVariable(object):
         return mstr
 
     @property
-    def full_column_names(self) -> list:
+    def full_column_names(self) -> dict:
         col_names = {}
         for xx in self.__data.columns:
             col_names[xx] = f'{self.name}_{xx}'
@@ -103,7 +103,7 @@ class InputVariable(object):
         return self.__name
 
     @property
-    def file_units(self) -> Union[str, None]:
+    def file_units(self) -> str | None:
         """Returns the input variable units.
 
         :returns: Input variable units

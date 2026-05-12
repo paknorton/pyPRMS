@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import os
 import pandas as pd   # type: ignore
 
-from typing import Dict, List, Optional, Sequence, Union
+from collections.abc import Sequence
 
 from ..constants import MetaDataType
 from .InputVariable import InputVariable
@@ -22,9 +24,9 @@ class DataFile(object):
     """Class for working with PRMS ASCII input data files
     """
 
-    def __init__(self, filename: Union[str, os.PathLike],
+    def __init__(self, filename: str | os.PathLike,
                  metadata: MetaDataType,
-                 parameters: Parameters = None,
+                 parameters: Parameters | None = None,
                  missing: Sequence[str] = ('-99.9', '-999.0', '-9999.0'),
                  verbose: bool = False):
         """Create the DataFile object.
@@ -46,16 +48,16 @@ class DataFile(object):
         self.parameters = parameters
 
         self.__header = ''   # data file header from first line of the file
-        self.__station_meta_header = []   # header lines before station metadata (if provided)
-        self.__df_file_metadata: Optional[pd.DataFrame] = None
+        self.__station_meta_header: list[str] = []   # header lines before station metadata (if provided)
+        self.__df_file_metadata: pd.DataFrame | None = None
 
         # Dictionary of input variables and InputVariable objects
-        self.__input_vars: Dict[str, InputVariable] = {}
+        self.__input_vars: dict[str, InputVariable] = {}
 
         # Internal dictionary of input variables and associated file metadata
-        self.__input_vars_intern: Dict[str, Dict[str, Union[int, str, List[str]]]] = {}
+        self.__input_vars_intern: dict[str, dict[str, int | str | list[str]]] = {}
 
-        self.__data_raw: Optional[pd.DataFrame] = None
+        self.__data_raw: pd.DataFrame | None = None
 
         self.load_file(self.filename)
 
@@ -96,7 +98,7 @@ class DataFile(object):
         return self.__header
 
     @property
-    def input_variables(self) -> Dict[str, Dict[str, Union[int, str, List[str]]]]:
+    def input_variables(self) -> dict[str, dict[str, int | str | list[str]]]:
         """Get the input variables in the data file.
 
         :returns: Dictionary of input variables that are available in the data file
@@ -149,7 +151,7 @@ class DataFile(object):
 
         return self.__input_vars[name]
 
-    def load_file(self, filename: Union[str, os.PathLike]):
+    def load_file(self, filename: str | os.PathLike):
         """Read the PRMS ASCII streamflow data file.
 
         :param filename: name of data file
@@ -175,7 +177,7 @@ class DataFile(object):
 
                 # Get the input variable name and total size for the variable
                 nm: str
-                sz: Union[str, int]
+                sz: str | int
 
                 nm, sz = tuple(line.split())
                 sz = int(sz)
@@ -247,7 +249,7 @@ class DataFile(object):
         df.to_csv(outhdl, sep=' ', columns=out_order, index=False, header=False, na_rep='-999', encoding=None)
         outhdl.close()
 
-    def _add_file_metadata(self, header_info: List[str]):
+    def _add_file_metadata(self, header_info: list[str]):
         """Add file metadata from data file.
 
         :param header_info: list of header lines from the data file
@@ -358,7 +360,7 @@ class DataFile(object):
             # self.__input_vars_intern[cvar]['data'] = self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])]
             st_idx += cmeta['size']
 
-    def _data_column_names(self) -> List[str]:
+    def _data_column_names(self) -> list[str]:
         """Create column names for the dataframe.
 
         :returns: list of column names
