@@ -20,7 +20,7 @@ COMMENT = '//'
 # NA_VALS_DEFAULT = ('-99.0', '-999.0')
 
 
-class DataFile(object):
+class DataFile:
     """Class for working with PRMS ASCII input data files
     """
 
@@ -44,8 +44,8 @@ class DataFile(object):
         self.__missing = missing
         self.filename = filename
         self.__verbose = verbose
-        self.metadata = metadata['data_file']
-        self.parameters = parameters
+        self._metadata = metadata['data_file']
+        self._parameters = parameters
 
         self.__header = ''   # data file header from first line of the file
         self.__station_meta_header: list[str] = []   # header lines before station metadata (if provided)
@@ -89,7 +89,7 @@ class DataFile(object):
 
         global con
 
-        if self.parameters is None:
+        if self._parameters is None:
             # Resolve the units for each variable from the file units if possible
             for cvar in self.__input_vars.values():
                 if '_units' in cvar.metadata['units']:
@@ -159,6 +159,22 @@ class DataFile(object):
     def station_meta_header(self):
         return self.__station_meta_header
 
+    @property
+    def metadata(self) -> dict:
+        """Metadata for the data file variables.
+
+        :returns: Metadata dictionary
+        """
+        return self._metadata
+
+    @property
+    def parameters(self) -> Parameters | None:
+        """Parameters object associated with this data file.
+
+        :returns: Parameters object or None
+        """
+        return self._parameters
+
     def resolve_units(self):
         """Adjust units metadata for input variables that have an initial units value of
         precip_units, runoff_units, or temp_units.
@@ -166,7 +182,7 @@ class DataFile(object):
         :returns: None
         """
 
-        selected_units = self.parameters.user_defined_units
+        selected_units = self._parameters.user_defined_units
         for cvar in self.__input_vars.values():
             if cvar.metadata['units'] in selected_units:
                 cvar.metadata['units'] = selected_units[cvar.metadata['units']]
@@ -258,7 +274,7 @@ class DataFile(object):
             # Add data to each input variable
             self._add_variable_data()
 
-    def write_ascii(self, filename: str) -> None:
+    def write_ascii(self, filename: str | os.PathLike) -> None:
         """Write dataframe to ASCII formatted file.
 
         This routine always writes out missing data as -999
@@ -402,7 +418,7 @@ class DataFile(object):
         for cvar, cmeta in self.__input_vars_intern.items():
             self.__input_vars[cvar] = InputVariable(name=cvar,
                                                     data=self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])],
-                                                    metadata=self.metadata,
+                                                    metadata=self._metadata,
                                                     station_metadata=self.__df_file_metadata.iloc[st_idx:(st_idx + cmeta['size'])],
                                                     file_units=cmeta.get('file_units', None))
             # self.__input_vars_intern[cvar]['data'] = self.__data_raw.iloc[:, st_idx:(st_idx + cmeta['size'])]

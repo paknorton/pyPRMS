@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd   # type: ignore
 
 
-class InputVariable(object):
+class InputVariable:
     """Class for working with input variables."""
 
     def __init__(self, name: str,
@@ -85,7 +85,7 @@ class InputVariable(object):
         self.__data.rename(columns=col_names, inplace=True)
 
     @property
-    def file_metadata_str(self) -> list:
+    def file_metadata_str(self) -> list[str]:
         """Returns the input variable file metadata string.
 
         :returns: List of input variable file metadata strings
@@ -101,7 +101,7 @@ class InputVariable(object):
         return mstr
 
     @property
-    def full_column_names(self) -> dict:
+    def full_column_names(self) -> dict[str, str]:
         col_names = {}
         for xx in self.__data.columns:
             col_names[xx] = f'{self.name}_{xx}'
@@ -134,7 +134,7 @@ class InputVariable(object):
         return self.data.columns.size
 
     @property
-    def stations(self) -> list:
+    def stations(self) -> list[str]:
         """Returns the input variable stations.
 
         :returns: Input variable stations
@@ -142,8 +142,13 @@ class InputVariable(object):
 
         return self.station_metadata.iloc[:, 0].tolist()
 
-    def drop(self, stations: list):
-        """Drop stations from the input variable
+    def drop(self, stations: list[str]):
+        """Drop stations from the input variable.
+
+        .. note::
+            If this InputVariable belongs to a DataFile, call
+            :meth:`DataFile.invalidate_cache` after dropping stations so
+            the combined DataFrame is rebuilt on next access.
         """
 
         # Drop the station data
