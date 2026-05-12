@@ -99,8 +99,12 @@ class OutputVariables:
 
         :param varname: Name of output variable
         :returns: OutputVariable object
+        :raises KeyError: If varname is not an available output variable
         """
 
+        if varname not in self.__out_vars:
+            raise KeyError(f'Output variable not found: {varname!r}. '
+                           f'Available variables: {list(self.__out_vars.keys())}')
         return self.__out_vars[varname]
 
     def write_netcdf(self, filename: str | os.PathLike,
@@ -117,6 +121,9 @@ class OutputVariables:
         arr_list = []
 
         for cvar in varnames:
+            if cvar not in self.__out_vars:
+                raise KeyError(f'Output variable not found: {cvar!r}. '
+                               f'Available variables: {list(self.__out_vars.keys())}')
             arr_list.append(self.__out_vars[cvar].to_xarray())
 
         ds = xr.merge(arr_list)

@@ -29,6 +29,9 @@ class OutputVariable:
             filename = Path(filename)
         self.__filename = filename
 
+        if not self.__filename.exists():
+            raise FileNotFoundError(f'Output variable file not found: {self.__filename}')
+
         self.__name = name
         self.__data = None
 

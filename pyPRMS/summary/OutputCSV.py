@@ -35,6 +35,9 @@ class OutputCSV:
         self.__basin_vars = []
         self.__col_var = {}
 
+        if not self.__filename.exists():
+            raise FileNotFoundError(f'CSV output file not found: {self.__filename}')
+
         self._read_csv_header()
         self._read_csv_ascii()
 
@@ -81,13 +84,11 @@ class OutputCSV:
     def _read_csv_header(self):
         """Read the headers from a PRMS CSV model output file"""
 
-        fhdl = open(self.__filename, 'r')
-
-        # First row contains field names
-        # Second row is a a mix of field names (for the date) and data types
-        hdr1 = fhdl.readline().strip()
-        hdr2 = fhdl.readline().strip()
-        fhdl.close()
+        with open(self.__filename, 'r') as fhdl:
+            # First row contains field names
+            # Second row is a a mix of field names (for the date) and data types
+            hdr1 = fhdl.readline().strip()
+            hdr2 = fhdl.readline().strip()
 
         # Determine the value separator
         # Check for comma first; some files have commas and spaces
