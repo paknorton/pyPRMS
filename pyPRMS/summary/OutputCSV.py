@@ -39,24 +39,43 @@ class OutputCSV:
         self._read_csv_ascii()
 
     @property
-    def basin_vars(self):
-        """Returns the basin variables from the CSV output file."""
+    def basin_vars(self) -> list[str]:
+        """Returns the basin variables from the CSV output file.
+
+        :returns: List of basin variable names
+        """
         return self.__basin_vars
 
     @property
-    def data(self):
+    def data(self) -> pd.DataFrame:
+        """Returns the model output data as a pandas DataFrame.
+
+        :returns: DataFrame with time index and output variables as columns
+        """
         return self.__data
 
     @property
-    def pois(self):
+    def pois(self) -> list[str]:
+        """Returns the list of points-of-interest (POI) identifiers.
+
+        :returns: List of POI identifiers
+        """
         return self.__pois
 
     @property
-    def poi_segments(self):
+    def poi_segments(self) -> dict[str, int]:
+        """Returns mapping of POI identifiers to their segment indices.
+
+        :returns: Dictionary mapping POI ID to zero-based segment index
+        """
         return self.__poi_segments
 
     @property
-    def variables(self):
+    def variables(self) -> list[str]:
+        """Returns a sorted list of all variable names in the CSV output file.
+
+        :returns: Sorted list of variable names
+        """
         return sorted(list(self.__col_var.values()))
 
     def _read_csv_header(self):

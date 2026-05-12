@@ -12,6 +12,12 @@ from .OutputVariable import OutputVariable
 
 
 class OutputVariables:
+    """Collection of model output variables.
+
+    Reads ASCII model output files based on the output variables
+    defined in a PRMS model control file.
+    """
+
     def __init__(self,
                  control: Control,
                  metadata: MetaDataType,

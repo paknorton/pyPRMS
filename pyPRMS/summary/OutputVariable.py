@@ -148,6 +148,9 @@ class OutputVariable:
 
     def _read_file(self):
         """Read model variable output file.
+
+        Parses the CSV file and stores the result as a pandas DataFrame
+        with a time index and appropriately typed columns.
         """
 
         self.__data = pd.read_csv(self.__filename, sep=',', skipinitialspace=True,
