@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import pandas as pd   # type: ignore
+import pandas as pd
 
 
-class InputVariable(object):
+class InputVariable:
     """Class for working with input variables."""
 
     def __init__(self, name: str,
@@ -25,9 +25,23 @@ class InputVariable(object):
         self.station_metadata = station_metadata
 
         if 'data_file' in metadata:
-            self.metadata = metadata['data_file'][name]
+            source = metadata['data_file']
         else:
-            self.metadata = metadata[name]
+            source = metadata
+
+        if name not in source:
+            available = list(source.keys())
+            raise ValueError(f"Variable '{name}' not found in metadata. Available: {available}")
+
+        self.metadata = source[name]
+
+    def __repr__(self) -> str:
+        """Concise string representation for debugging.
+
+        :returns: String representation of the InputVariable object
+        """
+
+        return f"InputVariable(name={self.__name!r}, stations={self.num_stations}, rows={len(self.data)})"
 
     def __str__(self) -> str:
         """Pretty-print string representation of the data file input variable information.
@@ -65,29 +79,36 @@ class InputVariable(object):
 
         col_names = {}
         for xx in data_in.columns:
-            col_names[xx] = xx.split('_')[1]
+            col_names[xx] = xx.split('_', 1)[1]
 
         self.__data = data_in.copy()
         self.__data.rename(columns=col_names, inplace=True)
 
     @property
-    def file_metadata_str(self) -> list:
+    def _id_column(self) -> str:
+        """Return the name of the station ID column in station_metadata.
+
+        The column name varies between files (e.g. 'id', 'ID') so we
+        use the first column which is always the station identifier.
+        """
+        return self.station_metadata.columns[0]
+
+    @property
+    def file_metadata_str(self) -> list[str]:
         """Returns the input variable file metadata string.
 
         :returns: List of input variable file metadata strings
         """
 
-        flds = self.station_metadata.columns.tolist()
-        # mstr = [f'// {" ".join(flds)}']
+        id_col = self._id_column
         mstr = []
         for cstn in self.stations:
-            # mstr += f'// {" ".join(df_m.loc[df_m["id"] == cstn].values.tolist()[0])}\n'
-            mstr.append(f'// {" ".join(self.station_metadata.loc[self.station_metadata[flds[0]] == cstn].values.tolist()[0])}')
+            mstr.append(f'// {" ".join(self.station_metadata.loc[self.station_metadata[id_col] == cstn].values.tolist()[0])}')
 
         return mstr
 
     @property
-    def full_column_names(self) -> dict:
+    def full_column_names(self) -> dict[str, str]:
         col_names = {}
         for xx in self.__data.columns:
             col_names[xx] = f'{self.name}_{xx}'
@@ -120,21 +141,27 @@ class InputVariable(object):
         return self.data.columns.size
 
     @property
-    def stations(self) -> list:
+    def stations(self) -> list[str]:
         """Returns the input variable stations.
 
         :returns: Input variable stations
         """
 
-        return self.station_metadata.iloc[:, 0].tolist()
+        return self.station_metadata[self._id_column].tolist()
 
-    def drop(self, stations: list):
-        """Drop stations from the input variable
+    def drop(self, stations: list[str]):
+        """Drop stations from the input variable.
+
+        .. note::
+            If this InputVariable belongs to a DataFile, call
+            :meth:`DataFile.invalidate_cache` after dropping stations so
+            the combined DataFrame is rebuilt on next access.
         """
 
         # Drop the station data
         self.data.drop(columns=stations, inplace=True)
 
         # Drop the station metadata
-        self.station_metadata.drop(self.station_metadata[self.station_metadata['id'].isin(stations)].index,
+        id_col = self._id_column
+        self.station_metadata.drop(self.station_metadata[self.station_metadata[id_col].isin(stations)].index,
                                    axis=0, inplace=True)

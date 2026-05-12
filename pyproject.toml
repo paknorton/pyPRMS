@@ -36,6 +36,7 @@ dependencies = ["cartopy",
 [project.optional-dependencies]
 dev = ["mypy",
        "mypy_extensions",
+       "pandas-stubs",
        "pytest",
        "pytest-cov",
        "pytest-xdist",
