@@ -11,7 +11,7 @@ from .OutputVariable import OutputVariable
 #                             get_figsize, read_gis)
 
 
-class OutputVariables(object):
+class OutputVariables:
     def __init__(self,
                  control: Control,
                  metadata: MetaDataType,

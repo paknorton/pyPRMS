@@ -7,7 +7,7 @@ from ..base.console import get_console_instance
 con = None
 
 
-class OutputCSV(object):
+class OutputCSV:
     """Class for working with PRMS CSV output files.
     """
 

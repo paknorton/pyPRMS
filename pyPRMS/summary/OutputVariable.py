@@ -7,7 +7,7 @@ from pathlib import Path
 from ..constants import NEW_PTYPE_TO_DTYPE
 
 
-class OutputVariable(object):
+class OutputVariable:
     """Container for a single output variable
 
     Each OutputVariable instance contains the model output for a single
