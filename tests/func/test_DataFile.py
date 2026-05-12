@@ -162,3 +162,46 @@ class TestStreamflow:
         datafile_chk = DataFile(chk_filename, metadata=prms_meta, parameters=pdb, missing=('-999.0'), verbose=False)
 
         assert_frame_equal(datafile.data, datafile_chk.data, check_dtype=False)
+
+    def test_datafile_repr(self, datadir):
+        """Test that DataFile.__repr__ returns a useful string."""
+        sf_filename = datadir / 'sf_data_pipestem_bandit'
+
+        prms_meta = MetaData(verbose=False).metadata
+        datafile = DataFile(sf_filename, metadata=prms_meta, verbose=False)
+
+        result = repr(datafile)
+        assert 'DataFile(' in result
+        assert 'variables=1' in result
+        assert 'period=' in result
+
+    def test_input_variable_repr(self, datadir):
+        """Test that InputVariable.__repr__ returns a useful string."""
+        sf_filename = datadir / 'sf_data_pipestem_bandit'
+
+        prms_meta = MetaData(verbose=False).metadata
+        datafile = DataFile(sf_filename, metadata=prms_meta, verbose=False)
+        obs_sf = datafile.get('runoff')
+
+        result = repr(obs_sf)
+        assert 'InputVariable(' in result
+        assert "name='runoff'" in result
+        assert 'stations=1' in result
+        assert 'rows=731' in result
+
+    def test_invalidate_cache(self, datadir):
+        """Test that invalidate_cache forces the data property to rebuild."""
+        sf_filename = datadir / 'sf_data_downsizer'
+
+        prms_meta = MetaData(verbose=False).metadata
+        datafile = DataFile(sf_filename, metadata=prms_meta, verbose=False)
+
+        # First access builds the cache
+        df1 = datafile.data
+        assert df1 is datafile.data  # same object returned on second access
+
+        # Invalidate and verify a new frame is built
+        datafile.invalidate_cache()
+        df2 = datafile.data
+        assert df2 is not df1
+        assert_frame_equal(df1, df2)
