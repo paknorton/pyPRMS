@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-import pandas as pd   # type: ignore
+import pandas as pd
 
 from collections.abc import Sequence
 
