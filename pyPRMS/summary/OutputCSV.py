@@ -4,6 +4,8 @@ from pathlib import Path
 
 from ..base.console import get_console_instance
 
+__all__ = ['OutputCSV']
+
 con = None
 
 

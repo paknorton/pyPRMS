@@ -6,6 +6,8 @@ from pathlib import Path
 
 from ..constants import NEW_PTYPE_TO_DTYPE
 
+__all__ = ['OutputVariable']
+
 
 class OutputVariable:
     """Container for a single output variable

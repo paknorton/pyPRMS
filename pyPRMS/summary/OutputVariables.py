@@ -7,6 +7,8 @@ from pathlib import Path
 from ..constants import MetaDataType
 from ..control.Control import Control
 from .OutputVariable import OutputVariable
+
+__all__ = ['OutputVariables']
 # from ..plot_helpers import (set_colormap, get_projection, plot_line_collection, plot_polygon_collection,
 #                             get_figsize, read_gis)
 
