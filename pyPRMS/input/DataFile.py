@@ -58,8 +58,36 @@ class DataFile(object):
         self.__input_vars_intern: dict[str, dict[str, int | str | list[str]]] = {}
 
         self.__data_raw: pd.DataFrame | None = None
+        self.__data_combined: pd.DataFrame | None = None
 
         self.load_file(self.filename)
+        self._resolve_units()
+
+    @classmethod
+    def from_file(cls, filename: str | os.PathLike,
+                  metadata: MetaDataType,
+                  parameters: Parameters | None = None,
+                  missing: Sequence[str] = ('-99.9', '-999.0', '-9999.0'),
+                  verbose: bool = False) -> DataFile:
+        """Create a DataFile by reading from an ASCII data file.
+
+        This is equivalent to calling ``DataFile(...)`` directly but makes the
+        I/O step explicit.
+
+        :param filename: name of data file
+        :param metadata: Metadata for the data file variables
+        :param parameters: Parameters object
+        :param missing: list of missing values
+        :param verbose: output debugging information
+        :returns: DataFile instance
+        """
+
+        return cls(filename, metadata, parameters=parameters, missing=missing, verbose=verbose)
+
+    def _resolve_units(self):
+        """Resolve units for input variables using parameters or file metadata."""
+
+        global con
 
         if self.parameters is None:
             # Resolve the units for each variable from the file units if possible
@@ -71,23 +99,44 @@ class DataFile(object):
             # Resolve the units of each variable from the parameter file
             self.resolve_units()
 
+    def __repr__(self) -> str:
+        """Concise string representation for debugging.
+
+        :returns: String representation of the DataFile object
+        """
+
+        n_vars = len(self.__input_vars_intern)
+        if self.__data_raw is not None:
+            start = self.__data_raw.index.min()
+            end = self.__data_raw.index.max()
+            return f"DataFile(filename={self.filename!r}, variables={n_vars}, period={start} to {end})"
+        return f"DataFile(filename={self.filename!r}, variables={n_vars})"
+
     @property
     def data(self) -> pd.DataFrame:
-        """Pandas dataframe of the data file for each input variable
+        """Pandas dataframe of the data file for each input variable.
+
+        The result is cached after the first access. Call :meth:`invalidate_cache`
+        if the underlying variable data has been modified.
 
         :returns: Pandas dataframe of the data file
         """
-        first = True
-        for cvar in self.input_variables.keys():
-            tmp_df = self.get(cvar).data.copy()
-            tmp_df.rename(columns=self.get(cvar).full_column_names, inplace=True)
+        if self.__data_combined is None:
+            frames = []
+            for cvar in self.input_variables.keys():
+                tmp_df = self.get(cvar).data.copy()
+                tmp_df.rename(columns=self.get(cvar).full_column_names, inplace=True)
+                frames.append(tmp_df)
+            self.__data_combined = pd.concat(frames, axis=1)
+        return self.__data_combined
 
-            if first:
-                self.__data_raw = tmp_df
-                first = False
-            else:
-                self.__data_raw = pd.concat([self.__data_raw, tmp_df], axis=1)
-        return self.__data_raw
+    def invalidate_cache(self) -> None:
+        """Invalidate the cached combined DataFrame.
+
+        Call this after modifying individual input variable data so that the
+        next access to :attr:`data` rebuilds the combined frame.
+        """
+        self.__data_combined = None
 
     @property
     def file_metadata(self) -> pd.DataFrame:
@@ -228,26 +277,25 @@ class DataFile(object):
         df['minute'] = df.index.minute
         df['second'] = df.index.second
 
-        outhdl = open(filename, 'w')
-        outhdl.write(f'{self.__header}\n')
-        outhdl.write(f'{HEADER_SEP*15}\n')
+        with open(filename, 'w') as outhdl:
+            outhdl.write(f'{self.__header}\n')
+            outhdl.write(f'{HEADER_SEP*15}\n')
 
-        for xx in self.__station_meta_header:
-            outhdl.write(f'{xx}\n')
+            for xx in self.__station_meta_header:
+                outhdl.write(f'{xx}\n')
 
-        for kk in self.__input_vars.keys():
-            for mstr in self.get(kk).file_metadata_str:
-                outhdl.write(f'{mstr}\n')
+            for kk in self.__input_vars.keys():
+                for mstr in self.get(kk).file_metadata_str:
+                    outhdl.write(f'{mstr}\n')
 
-        outhdl.write(f'{HEADER_SEP*15}\n')
+            outhdl.write(f'{HEADER_SEP*15}\n')
 
-        for kk in self.__input_vars.keys():
-            outhdl.write(f'{kk} {self.get(kk).num_stations}\n')
+            for kk in self.__input_vars.keys():
+                outhdl.write(f'{kk} {self.get(kk).num_stations}\n')
 
-        outhdl.write(f'{DATA_SEP*15}\n')
+            outhdl.write(f'{DATA_SEP*15}\n')
 
-        df.to_csv(outhdl, sep=' ', columns=out_order, index=False, header=False, na_rep='-999', encoding=None)
-        outhdl.close()
+            df.to_csv(outhdl, sep=' ', columns=out_order, index=False, header=False, na_rep='-999', encoding=None)
 
     def _add_file_metadata(self, header_info: list[str]):
         """Add file metadata from data file.

@@ -29,6 +29,14 @@ class InputVariable(object):
         else:
             self.metadata = metadata[name]
 
+    def __repr__(self) -> str:
+        """Concise string representation for debugging.
+
+        :returns: String representation of the InputVariable object
+        """
+
+        return f"InputVariable(name={self.__name!r}, stations={self.num_stations}, rows={len(self.data)})"
+
     def __str__(self) -> str:
         """Pretty-print string representation of the data file input variable information.
 
@@ -65,7 +73,7 @@ class InputVariable(object):
 
         col_names = {}
         for xx in data_in.columns:
-            col_names[xx] = xx.split('_')[1]
+            col_names[xx] = xx.split('_', 1)[1]
 
         self.__data = data_in.copy()
         self.__data.rename(columns=col_names, inplace=True)
