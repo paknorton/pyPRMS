@@ -8,6 +8,14 @@ from ..constants import NEW_PTYPE_TO_DTYPE
 
 __all__ = ['OutputVariable']
 
+_LOCAL_DIM_DESC = {'nhru': 'Local model Hydrologic Response Unit ID (HRU)',
+                   'nsegment': 'Local model segment ID'}
+
+_GLOBAL_DIMS = dict(nhru=dict(varname='nhm_id',
+                              long_name='NHM Hydrologic Response Unit ID (HRU)'),
+                    nsegment=dict(varname='nhm_seg',
+                                  long_name='NHM segment ID'))
+
 
 class OutputVariable:
     """Container for a single output variable
@@ -97,18 +105,31 @@ class OutputVariable:
         :returns: xarray DataArray
         """
 
-        local_dim_desc = {'nhru': 'Local model Hydrologic Response Unit ID (HRU)',
-                          'nsegment': 'Local model segment ID'}
+        dim_name = self._resolve_dim_name()
+        da = self._build_data_array(dim_name)
+        self._set_time_encoding(da)
+        self._set_variable_attrs(da)
+        return da
 
-        global_dims = dict(nhru=dict(varname='nhm_id',
-                                     long_name='NHM Hydrologic Response Unit ID (HRU)'),
-                           nsegment=dict(varname='nhm_seg',
-                                         long_name='NHM segment ID'))
+    def _resolve_dim_name(self) -> str:
+        """Map the metadata dimension to a canonical dimension name.
+
+        :returns: Canonical dimension name (e.g. 'nhru', 'nsegment', 'one')
+        """
 
         dim_name = self.metadata['dimensions'][0]
 
         if dim_name in ['nssr', 'ngw']:
             dim_name = 'nhru'
+
+        return dim_name
+
+    def _build_data_array(self, dim_name: str) -> xr.DataArray:
+        """Build the xarray DataArray from the output data.
+
+        :param dim_name: Canonical dimension name
+        :returns: xarray DataArray with coordinates and dimension attributes set
+        """
 
         if dim_name == 'one':
             # Basin variable
@@ -128,31 +149,41 @@ class OutputVariable:
 
             if self.metadata.get('is_global', False):
                 # When is_global is true the file header contains global HRU or segment IDs
-                da[global_dims[dim_name]['varname']] = da[dim_name]
-                da[global_dims[dim_name]['varname']].attrs['long_name'] = global_dims[dim_name]['long_name']
+                da[_GLOBAL_DIMS[dim_name]['varname']] = da[dim_name]
+                da[_GLOBAL_DIMS[dim_name]['varname']].attrs['long_name'] = _GLOBAL_DIMS[dim_name]['long_name']
 
                 # Reset the nhru/nsegment coordinate variable values to 1..N
                 da[dim_name] = np.arange(1, self.data.shape[1]+1, dtype=np.int32)
 
             # Set attributes for local model dimensions
-            da[dim_name].attrs['long_name'] = local_dim_desc[dim_name]
+            da[dim_name].attrs['long_name'] = _LOCAL_DIM_DESC[dim_name]
 
-        # Set the time coordinate variable attributes
+        return da
+
+    def _set_time_encoding(self, da: xr.DataArray):
+        """Set time coordinate attributes and encoding on the DataArray.
+
+        :param da: DataArray to modify in place
+        """
+
         first_time = self.data.index[0]
         da.time.attrs['standard_name'] = 'time'
         da.time.attrs['long_name'] = 'time'
         da.time.encoding['units'] = f'days since {first_time.year}-{first_time.month:02d}-{first_time.day:02d} 00:00:00'
         da.time.encoding['calendar'] = 'standard'
 
-        # Output variable attributes
+    def _set_variable_attrs(self, da: xr.DataArray):
+        """Set output variable attributes and compression encoding.
+
+        :param da: DataArray to modify in place
+        """
+
         da.attrs['long_name'] = self.metadata['description']
         da.attrs['units'] = self.metadata['units']
         da.encoding.update(dict(_FillValue=None,
                                 compression='zlib',
                                 complevel=2,
                                 fletcher32=True))
-
-        return da
 
     def _read_file(self):
         """Read model variable output file.
