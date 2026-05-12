@@ -64,7 +64,7 @@ class OutputCSV:
 
     @property
     def pois(self) -> list[str]:
-        """Returns the list of points-of-interest (POI) identifiers.
+        """Returns the in-order list of points-of-interest (POI) identifiers.
 
         :returns: List of POI identifiers
         """
