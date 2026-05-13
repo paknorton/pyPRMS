@@ -25,15 +25,15 @@ def datadir(tmpdir, request):
 
 class TestOutputCSV:
 
-    # def test_OutputCSV_repr(self, datadir):
-    #     """The __repr__ should produce code to instantiate a Dimension object"""
-    #     str_cmp = "OutputCSV(filename=PosixPath('./test_OutputCSV/prms_basin_and_streamflow.csv'))"
-    #
-    #     filename = datadir / 'prms_streamflow.csv'
-    #     csv = OutputCSV(filename)
-    #
-    #     repr_str = repr(csv)
-    #     assert repr_str == str_cmp
+    def test_OutputCSV_repr(self, datadir):
+        """The __repr__ should produce code to instantiate a Dimension object"""
+        filename = datadir / 'prms_streamflow.csv'
+        csv = OutputCSV(filename)
+
+        str_cmp = f'OutputCSV(filename={filename})'
+    
+        repr_str = repr(csv)
+        assert repr_str == str_cmp
 
     def test_read_output_csv_streamflow(self, datadir):
         """Test reading a streamflow output CSV file."""
