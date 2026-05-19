@@ -195,7 +195,7 @@ class Parameters(object):
         return self.__hru_to_seg
 
     @property
-    def missing_params(self) -> Set:
+    def missing_params(self) -> set:
         """Get set of parameters that are required for the modules selected
         in the control file but are missing in the current set of parameters.
         """
@@ -254,7 +254,7 @@ class Parameters(object):
         return self.__seg_to_hru
 
     @property
-    def unneeded_parameters(self) -> Set:
+    def unneeded_parameters(self) -> set:
         """Get set of parameters that are defined but not needed by any of the
         modules selected in the control file.
 
@@ -347,7 +347,7 @@ class Parameters(object):
         self.__parameters[name] = Parameter(name=name, meta=self.metadata, global_dims=self.__dimensions, verbose=self.verbose)
 
     def add_metadata(self, name: str,
-                     metadata: Dict):
+                     metadata: dict):
         """Add a new parameter entry to the parameter metadata. This is useful for adding ad-hoc parameters.
 
         :param name: Name of the parameter
@@ -1587,7 +1587,7 @@ class Parameters(object):
 
         assert False, 'Parameters._read() must be defined by child class'
 
-    def _required_parameters(self) -> Set:
+    def _required_parameters(self) -> set:
         """Return set of parameters required by modules selected in control file.
 
         :returns: set of required parameter names
@@ -1610,7 +1610,7 @@ class Parameters(object):
         # in the metadata
         return self._trim_req_params(pset)
 
-    def _trim_req_params(self, param_set: Set) -> Set:
+    def _trim_req_params(self, param_set: set) -> set:
         """Remove parameters from a set of parameters that do not meet secondary requirements.
 
         :param param_set: set of parameter names

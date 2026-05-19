@@ -1,31 +1,30 @@
 import os
-import pandas as pd   # type: ignore
 import xarray as xr
 
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, List, Optional, Union
-
-# os.environ['USE_PYGEOS'] = '0'
-# import geopandas   # type: ignore
-# import cartopy.crs as ccrs  # type: ignore
-# from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # type: ignore
-# import matplotlib as mpl        # type: ignore
-# import matplotlib.pyplot as plt     # type: ignore
 
 from ..constants import MetaDataType
 from ..control.Control import Control
 from .OutputVariable import OutputVariable
+
+__all__ = ['OutputVariables']
 # from ..plot_helpers import (set_colormap, get_projection, plot_line_collection, plot_polygon_collection,
 #                             get_figsize, read_gis)
 
 
-class OutputVariables(object):
+class OutputVariables:
+    """Collection of model output variables.
+
+    Reads ASCII model output files based on the output variables
+    defined in a PRMS model control file.
+    """
+
     def __init__(self,
                  control: Control,
                  metadata: MetaDataType,
-                 model_dir: Optional[Union[str, os.PathLike, Path]] = None,
-                 verbose: Optional[bool] = False):
+                 model_dir: str | os.PathLike | Path | None = None,
+                 verbose: bool = False):
         """Initialize the model output object.
 
         The OutputVariables class reads ASCII model output files based on the
@@ -49,15 +48,21 @@ class OutputVariables(object):
         self.__out_vars = dict()
 
         self.__hru_poly = None
-        self.__hru_shape_key: Optional[str] = None
+        self.__hru_shape_key: str | None = None
         self.__seg_poly = None
-        self.__seg_shape_key: Optional[str] = None
+        self.__seg_shape_key: str | None = None
 
         for cvar, cfile in self.available_vars.items():
             self.__out_vars[cvar] = OutputVariable(cvar, cfile, self.metadata)
 
+        self._set_global_flags()
+
+    def __repr__(self) -> str:
+        return (f'OutputVariables(num_vars={len(self.__out_vars)}, '
+                f'model_dir={self.__model_dir!r})')
+
     @cached_property
-    def available_vars(self) -> Dict[str, str]:
+    def available_vars(self) -> dict[str, str]:
         """Returns dictionary of available variables and file paths
 
         :returns: Dictionary of available variables and file paths
@@ -81,10 +86,6 @@ class OutputVariables(object):
                 for vv in varlist:
                     var_dict[vv] = f'{prefix}{vv}.csv'
 
-                    if ckind in ['nhru', 'nsegment']:
-                        # Option 2 outputs nhm_id or nhm_seg IDs for the header instead of local model IDs
-                        self.metadata[vv]['is_global'] = self.__control.get(f'{ckind}OutON_OFF').values == 2
-
         if self.__control.get('basinOutON_OFF').values == 1:
             filename = self.__control.get('basinOutBaseFileName').values
             varlist = self.__control.get('basinOutVar_names').values.tolist()
@@ -97,17 +98,36 @@ class OutputVariables(object):
 
         return var_dict
 
+    def _set_global_flags(self):
+        """Set the is_global flag on metadata for nhru/nsegment variables.
+
+        When the OutON_OFF control variable is set to 2, the output file
+        headers contain global (NHM) IDs instead of local model IDs.
+        """
+
+        for ckind in ['nhru', 'nsegment']:
+            if self.__control.get(f'{ckind}OutON_OFF').values == 2:
+                varlist = self.__control.get(f'{ckind}OutVar_names').values.tolist()
+
+                for vv in varlist:
+                    if vv in self.metadata:
+                        self.metadata[vv]['is_global'] = True
+
     def get(self, varname: str) -> OutputVariable:
         """Get output variable object.
 
         :param varname: Name of output variable
         :returns: OutputVariable object
+        :raises KeyError: If varname is not an available output variable
         """
 
+        if varname not in self.__out_vars:
+            raise KeyError(f'Output variable not found: {varname!r}. '
+                           f'Available variables: {list(self.__out_vars.keys())}')
         return self.__out_vars[varname]
 
-    def write_netcdf(self, filename: Union[str, os.PathLike],
-                     varnames: Union[str, List[str]]):
+    def write_netcdf(self, filename: str | os.PathLike,
+                     varnames: str | list[str]):
         """Write selected output variables to netCDF file.
 
         :param filename: Name of the netCDF file
@@ -120,6 +140,9 @@ class OutputVariables(object):
         arr_list = []
 
         for cvar in varnames:
+            if cvar not in self.__out_vars:
+                raise KeyError(f'Output variable not found: {cvar!r}. '
+                               f'Available variables: {list(self.__out_vars.keys())}')
             arr_list.append(self.__out_vars[cvar].to_xarray())
 
         ds = xr.merge(arr_list)

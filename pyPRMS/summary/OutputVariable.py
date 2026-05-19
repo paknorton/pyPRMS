@@ -3,12 +3,21 @@ import pandas as pd   # type: ignore
 import xarray as xr
 
 from pathlib import Path
-from typing import List, Optional, Union
 
 from ..constants import NEW_PTYPE_TO_DTYPE
 
+__all__ = ['OutputVariable']
 
-class OutputVariable(object):
+_LOCAL_DIM_DESC = {'nhru': 'Local model Hydrologic Response Unit ID (HRU)',
+                   'nsegment': 'Local model segment ID'}
+
+_GLOBAL_DIMS = dict(nhru=dict(varname='nhm_id',
+                              long_name='NHM Hydrologic Response Unit ID (HRU)'),
+                    nsegment=dict(varname='nhm_seg',
+                                  long_name='NHM segment ID'))
+
+
+class OutputVariable:
     """Container for a single output variable
 
     Each OutputVariable instance contains the model output for a single
@@ -17,7 +26,7 @@ class OutputVariable(object):
     """
 
     def __init__(self, name: str,
-                 filename: Union[str, Path],
+                 filename: str | Path,
                  metadata: dict):
         """Initialize the OutputVariable object.
 
@@ -30,6 +39,9 @@ class OutputVariable(object):
             filename = Path(filename)
         self.__filename = filename
 
+        if not self.__filename.exists():
+            raise FileNotFoundError(f'Output variable file not found: {self.__filename}')
+
         self.__name = name
         self.__data = None
 
@@ -37,6 +49,9 @@ class OutputVariable(object):
             self.metadata = metadata['variables'][name]
         else:
             self.metadata = metadata[name]
+
+    def __repr__(self) -> str:
+        return f'OutputVariable(name={self.__name!r}, filename={self.__filename!r})'
 
     @property
     def data(self) -> pd.DataFrame:
@@ -58,9 +73,9 @@ class OutputVariable(object):
 
         return self.__filename
 
-    def to_csv(self, filename: Union[str, Path],
-               columns: Optional[List[int]] = None,
-               sep: Optional[str] = ','):
+    def to_csv(self, filename: str | Path,
+               columns: list[int] | None = None,
+               sep: str = ','):
         """Write the output variable to a CSV file.
 
         :param filename: Name of the output file
@@ -73,7 +88,7 @@ class OutputVariable(object):
 
         self.data.to_csv(filename, sep=sep, index=True, header=True, columns=columns, chunksize=50)
 
-    def to_netcdf(self, filename: Union[str, Path]):
+    def to_netcdf(self, filename: str | Path):
         """Write the output variable to a netCDF file.
 
         :param filename: Name of the netCDF output file
@@ -90,18 +105,31 @@ class OutputVariable(object):
         :returns: xarray DataArray
         """
 
-        local_dim_desc = {'nhru': 'Local model Hydrologic Response Unit ID (HRU)',
-                          'nsegment': 'Local model segment ID'}
+        dim_name = self._resolve_dim_name()
+        da = self._build_data_array(dim_name)
+        self._set_time_encoding(da)
+        self._set_variable_attrs(da)
+        return da
 
-        global_dims = dict(nhru=dict(varname='nhm_id',
-                                     long_name='NHM Hydrologic Response Unit ID (HRU)'),
-                           nsegment=dict(varname='nhm_seg',
-                                         long_name='NHM segment ID'))
+    def _resolve_dim_name(self) -> str:
+        """Map the metadata dimension to a canonical dimension name.
+
+        :returns: Canonical dimension name (e.g. 'nhru', 'nsegment', 'one')
+        """
 
         dim_name = self.metadata['dimensions'][0]
 
         if dim_name in ['nssr', 'ngw']:
             dim_name = 'nhru'
+
+        return dim_name
+
+    def _build_data_array(self, dim_name: str) -> xr.DataArray:
+        """Build the xarray DataArray from the output data.
+
+        :param dim_name: Canonical dimension name
+        :returns: xarray DataArray with coordinates and dimension attributes set
+        """
 
         if dim_name == 'one':
             # Basin variable
@@ -121,23 +149,35 @@ class OutputVariable(object):
 
             if self.metadata.get('is_global', False):
                 # When is_global is true the file header contains global HRU or segment IDs
-                da[global_dims[dim_name]['varname']] = da[dim_name]
-                da[global_dims[dim_name]['varname']].attrs['long_name'] = global_dims[dim_name]['long_name']
+                da[_GLOBAL_DIMS[dim_name]['varname']] = da[dim_name]
+                da[_GLOBAL_DIMS[dim_name]['varname']].attrs['long_name'] = _GLOBAL_DIMS[dim_name]['long_name']
 
                 # Reset the nhru/nsegment coordinate variable values to 1..N
                 da[dim_name] = np.arange(1, self.data.shape[1]+1, dtype=np.int32)
 
             # Set attributes for local model dimensions
-            da[dim_name].attrs['long_name'] = local_dim_desc[dim_name]
+            da[dim_name].attrs['long_name'] = _LOCAL_DIM_DESC[dim_name]
 
-        # Set the time coordinate variable attributes
+        return da
+
+    def _set_time_encoding(self, da: xr.DataArray):
+        """Set time coordinate attributes and encoding on the DataArray.
+
+        :param da: DataArray to modify in place
+        """
+
         first_time = self.data.index[0]
         da.time.attrs['standard_name'] = 'time'
         da.time.attrs['long_name'] = 'time'
         da.time.encoding['units'] = f'days since {first_time.year}-{first_time.month:02d}-{first_time.day:02d} 00:00:00'
         da.time.encoding['calendar'] = 'standard'
 
-        # Output variable attributes
+    def _set_variable_attrs(self, da: xr.DataArray):
+        """Set output variable attributes and compression encoding.
+
+        :param da: DataArray to modify in place
+        """
+
         da.attrs['long_name'] = self.metadata['description']
         da.attrs['units'] = self.metadata['units']
         da.encoding.update(dict(_FillValue=None,
@@ -145,10 +185,11 @@ class OutputVariable(object):
                                 complevel=2,
                                 fletcher32=True))
 
-        return da
-
     def _read_file(self):
         """Read model variable output file.
+
+        Parses the CSV file and stores the result as a pandas DataFrame
+        with a time index and appropriately typed columns.
         """
 
         self.__data = pd.read_csv(self.__filename, sep=',', skipinitialspace=True,

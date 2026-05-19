@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import numpy as np
 
 from pathlib import Path
-from typing import Optional, Union
 from ..constants import PTYPE_TO_DTYPE, VAR_DELIM
 from ..prms_helpers import get_file_iter
 from .Control import Control
@@ -21,10 +22,10 @@ class ControlFile(Control):
     # Create date: 2019-04-18
     # Description: Class object to handle reading and writing PRMS control files.
 
-    def __init__(self, filename: Union[str, Path],
+    def __init__(self, filename: str | Path,
                  metadata,
-                 include_missing: Optional[bool] = False,
-                 verbose: Optional[bool] = False):
+                 include_missing: bool | None = False,
+                 verbose: bool | None = False):
         super(ControlFile, self).__init__(metadata=metadata, include_missing=include_missing, verbose=verbose)
 
         global con
@@ -45,7 +46,7 @@ class ControlFile(Control):
         return self.__filename
 
     @filename.setter
-    def filename(self, filename: Union[str, Path]):
+    def filename(self, filename: str | Path):
         """Set the name of the control file and read it in.
 
         :param filename: Name of the control file

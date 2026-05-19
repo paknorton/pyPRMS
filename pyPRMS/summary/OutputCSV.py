@@ -1,19 +1,20 @@
 import pandas as pd   # type: ignore
 
 from pathlib import Path
-from typing import Optional, Union
 
 from ..base.console import get_console_instance
+
+__all__ = ['OutputCSV']
 
 con = None
 
 
-class OutputCSV(object):
+class OutputCSV:
     """Class for working with PRMS CSV output files.
     """
 
-    def __init__(self, filename: Union[str, Path],
-                 verbose: Optional[bool] = False):
+    def __init__(self, filename: str | Path,
+                 verbose: bool = False):
         """Initialize the OutputCSV object.
 
         :param filename: Name of the PRMS CSV output file
@@ -36,48 +37,70 @@ class OutputCSV(object):
         self.__basin_vars = []
         self.__col_var = {}
 
+        if not self.__filename.exists():
+            raise FileNotFoundError(f'CSV output file not found: {self.__filename}')
+
         self._read_csv_header()
         self._read_csv_ascii()
 
+    def __repr__(self) -> str:
+        return f'OutputCSV(filename={self.__filename})'
+
     @property
-    def basin_vars(self):
-        """Returns the basin variables from the CSV output file."""
+    def basin_vars(self) -> list[str]:
+        """Returns the basin variables from the CSV output file.
+
+        :returns: List of basin variable names
+        """
         return self.__basin_vars
 
     @property
-    def data(self):
+    def data(self) -> pd.DataFrame:
+        """Returns the model output data as a pandas DataFrame.
+
+        :returns: DataFrame with time index and output variables as columns
+        """
         return self.__data
 
     @property
-    def pois(self):
+    def pois(self) -> list[str]:
+        """Returns the in-order list of points-of-interest (POI) identifiers.
+
+        :returns: List of POI identifiers
+        """
         return self.__pois
 
     @property
-    def poi_segments(self):
+    def poi_segments(self) -> dict[str, int]:
+        """Returns mapping of POI identifiers to their segment indices.
+
+        :returns: Dictionary mapping POI ID to zero-based segment index
+        """
         return self.__poi_segments
 
     @property
-    def variables(self):
+    def variables(self) -> list[str]:
+        """Returns a sorted list of all variable names in the CSV output file.
+
+        :returns: Sorted list of variable names
+        """
         return sorted(list(self.__col_var.values()))
 
     def _read_csv_header(self):
         """Read the headers from a PRMS CSV model output file"""
 
-        fhdl = open(self.__filename, 'r')
-
-        # First row contains field names
-        # Second row is a a mix of field names (for the date) and data types
-        hdr1 = fhdl.readline().strip()
-        hdr2 = fhdl.readline().strip()
-        fhdl.close()
+        with open(self.__filename, 'r') as fhdl:
+            # First row contains field names
+            # Second row is a a mix of field names (for the date) and data types
+            hdr1 = fhdl.readline().strip()
+            hdr2 = fhdl.readline().strip()
 
         # Determine the value separator
         # Check for comma first; some files have commas and spaces
         self.sep = ' '
 
-        match ',' in hdr1:
-            case True:
-                self.sep = ','
+        if ',' in hdr1:
+            self.sep = ','
 
         if self.verbose:
             con.print(f'[green]INFO[/]: value separator = {self.sep}')

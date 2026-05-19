@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import datetime
 import numpy as np
 import numpy.typing as npt
-from typing import Callable, Dict, List, Optional, Sequence, Union
+from collections.abc import Callable, Sequence
 
 from ..constants import NEW_PTYPE_TO_DTYPE
 from pyPRMS.prms_helpers import cond_check, set_date
@@ -18,9 +20,9 @@ class ControlVariable(object):
     # Create date: 2019-04-18
 
     def __init__(self, name: str,
-                 value: Optional[Union[npt.NDArray, np.int32, np.float32, np.float64, np.str_]] = None,
-                 meta: Optional[Dict] = None,
-                 strict: Optional[bool] = True):
+                 value: npt.NDArray | np.int32 | np.float32 | np.float64 | np.str_ | None = None,
+                 meta: dict | None = None,
+                 strict: bool | None = True):
         """Initialize a control variable object.
 
         :param name: Name of control variable
@@ -30,7 +32,7 @@ class ControlVariable(object):
         """
 
         self.__name = name
-        self.__values: Union[np.ndarray, None] = None
+        self.__values: np.ndarray | None = None
 
         if meta is None:
             if strict:
@@ -89,7 +91,7 @@ class ControlVariable(object):
             return 1
 
     @property
-    def values(self) -> Union[np.ndarray, int, float, str, None]:
+    def values(self) -> np.ndarray | int | float | str | None:
         """Get the values for the control variable.
 
         If force_default is True then the default value is returned regardless
@@ -112,7 +114,7 @@ class ControlVariable(object):
                 return self.__values
 
     @values.setter
-    def values(self, data: Union[Sequence[str], str, int, float, datetime.datetime]):
+    def values(self, data: Sequence[str] | str | int | float | datetime.datetime):
         """Set the value(s) for the control variable.
 
         :param data: list or string of value(s)
@@ -157,7 +159,7 @@ class ControlVariable(object):
                     self.__values = np.array([data], dtype=cdtype)   # pragma: no cover
 
     @property
-    def value_meaning(self) -> Union[str, None]:
+    def value_meaning(self) -> str | None:
         """Returns the meaning for a given value if it exists.
 
         :returns: Control variable value meaning

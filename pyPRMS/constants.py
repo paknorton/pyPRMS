@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import numpy as np
 
 from packaging.version import Version
-from typing import Dict, List, NamedTuple, Union
 
 # Define aliases for static typing
-MetaDataType = Dict[str, Dict]
+MetaDataType = dict[str, dict]
 
 # Version = NamedTuple('Version', [('major', Union[int, None]),
 #                                  ('minor', Union[int, None]),
@@ -17,7 +18,7 @@ PRMS_VERSION = Version('5.2.1.1')
 PRMS6_DEV_VERSION = Version('60.0')
 
 # Order to write control file parameters for printing and writing a new control file
-ctl_order: List[str] = ['start_time', 'end_time', 'initial_deltat', 'executable_desc', 'executable_model', 'model_mode',
+ctl_order: list[str] = ['start_time', 'end_time', 'initial_deltat', 'executable_desc', 'executable_model', 'model_mode',
                         'param_file', 'data_file', 'model_output_file', 'print_debug',
                         'et_module', 'precip_module', 'soilzone_module', 'solrad_module', 'srunoff_module',
                         'strmflow_module', 'temp_module', 'transp_module',
@@ -68,7 +69,7 @@ ctl_order: List[str] = ['start_time', 'end_time', 'initial_deltat', 'executable_
 # ctl_summary_modules: List[str] = ['basin_sum', 'basin_summary', 'map_results',
 #                                   'nhru_summary', 'nsegment_summary', 'nsub_summary', 'subbasin']
 
-ctl_implicit_modules: Dict[str, str] = {'basin_module': 'basin',
+ctl_implicit_modules: dict[str, str] = {'basin_module': 'basin',
                                         'intcp_module': 'intcp',
                                         'obs_module': 'obs',
                                         'snow_module': 'snowcomp',
@@ -107,31 +108,31 @@ VAR_DELIM: str = '####'  # Used to delimit dimensions and parameters
 
 # These dimensions are related and should have same size
 # NOTE: 2025-02-05 PAN - this is currently needed by Bandit
-HRU_DIMS: List[str] = ['nhru', 'ngw', 'nssr']
+HRU_DIMS: list[str] = ['nhru', 'ngw', 'nssr']
 
 # Constants for NhmParamDb
-REGIONS: List[str] = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
+REGIONS: list[str] = ['r01', 'r02', 'r03', 'r04', 'r05', 'r06', 'r07', 'r08', 'r09',
                       'r10L', 'r10U', 'r11', 'r12', 'r13', 'r14', 'r15', 'r16', 'r17', 'r18']
 PARAMETERS_XML: str = 'parameters.xml'
 DIMENSIONS_XML: str = 'dimensions.xml'
 
 # 2025-01-24 PAN - used by Parameters.write_parameter_netcdf()
-NETCDF_DATATYPES: Dict[int, str] = {1: 'i4', 2: 'f4', 3: 'f8', 4: 'S1'}
+NETCDF_DATATYPES: dict[int, str] = {1: 'i4', 2: 'f4', 3: 'f8', 4: 'S1'}
 
 # 2025-01-24 PAN - used by Parameters.xml_global_parameters()
-NHM_DATATYPES: Dict[str, int] = {'I': 1, 'F': 2, 'D': 3, 'S': 4}
+NHM_DATATYPES: dict[str, int] = {'I': 1, 'F': 2, 'D': 3, 'S': 4}
 
 # 2025-01-24 PAN - used by ControlFile._read() and ParameterFile._read()
 PTYPE_TO_DTYPE = {1: np.int32, 2: np.float32, 3: np.float64, 4: np.str_}
 
 NEW_PTYPE_TO_DTYPE = {'int32': np.int32, 'float32': np.float32, 'float64': np.float64, 'string': np.str_, 'datetime': np.datetime64}
-PTYPE_TO_PRMS_TYPE: Dict[str, int] = {'int32': 1, 'float32': 2, 'float64': 3, 'string': 4, 'datetime': 1}
+PTYPE_TO_PRMS_TYPE: dict[str, int] = {'int32': 1, 'float32': 2, 'float64': 3, 'string': 4, 'datetime': 1}
 
 # Maps numeric type codes from XML to internal datatype strings (used by control metadata)
-NEW_DTYPE: Dict[int, str] = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
+NEW_DTYPE: dict[int, str] = {1: 'int32', 2: 'float32', 3: 'float64', 4: 'string'}
 
 # Maps single-character type codes from XML to internal datatype strings (used by parameter/variable metadata)
-NEW_PARAM_DTYPE: Dict[str, str] = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
+NEW_PARAM_DTYPE: dict[str, str] = {'I': 'int32', 'F': 'float32', 'D': 'float64', 'S': 'string'}
 
 # PARNAME_DATATYPES = {'long': 1, 'float': 2, 'double': 3, 'string': 4}
 # DATATYPE_TO_DTYPE = {1: int, 2: np.float32, 3: np.float64, 4: np.str_}
