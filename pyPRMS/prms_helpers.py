@@ -1,4 +1,6 @@
-from typing import Iterator, List, Optional, Set, Union
+from __future__ import annotations
+
+from collections.abc import Iterator
 
 import datetime
 import operator
@@ -20,7 +22,7 @@ cond_check = {'=': operator.eq,
               '<': operator.lt}
 
 
-def flex_type(val: Union[str, int, float, np.float32, np.float64, np.int32, np.int64]) -> str:
+def flex_type(val: str | int | float | np.float32 | np.float64 | np.int32 | np.int64) -> str:
     """Convert the given value to a string.
 
     :param val: Value to convert to a string
@@ -44,7 +46,7 @@ def flex_type(val: Union[str, int, float, np.float32, np.float64, np.int32, np.i
         return np.format_float_positional(val, precision=20, trim='0')
 
 
-def get_file_iter(filename: Union[str, os.PathLike]) -> Iterator[str]:
+def get_file_iter(filename: str | os.PathLike) -> Iterator[str]:
     """Reads a file and returns an iterator to the data
 
     :param filename: Name of the file to read
@@ -59,8 +61,8 @@ def get_file_iter(filename: Union[str, os.PathLike]) -> Iterator[str]:
 
 
 def get_streamnet_subset(dag_ds: nx.classes.digraph.DiGraph,
-                         uscutoff_seg: List[int],
-                         dsmost_seg: List[int]) -> nx.classes.digraph.DiGraph:
+                         uscutoff_seg: list[int],
+                         dsmost_seg: list[int]) -> nx.classes.digraph.DiGraph:
     """Extract subset of a stream network
 
     :param dag_ds: Directed, acyclic graph of downstream stream network
@@ -104,7 +106,7 @@ def get_streamnet_subset(dag_ds: nx.classes.digraph.DiGraph,
     # Given a d/s segment (dsmost_seg) create a subset of u/s segments
 
     # Get all unique segments u/s of the starting segment
-    uniq_seg_us: Set[int] = set()
+    uniq_seg_us: set[int] = set()
     if dsmost_seg:
         for xx in dsmost_seg:
             try:
@@ -159,7 +161,7 @@ def read_xml(filename: str) -> xmlET.Element:
     return xml_tree.getroot()
 
 
-def set_date(adate: Union[datetime.datetime, datetime.date, str, np.ndarray]) -> datetime.datetime:
+def set_date(adate: datetime.datetime | datetime.date | str | np.ndarray) -> datetime.datetime:
     """Return datetime object given a datetime or string of format YYYY-MM-DD
 
     :param adate: Datetime object or string (YYYY-MM-DD)

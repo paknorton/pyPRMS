@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
+from collections.abc import Sequence
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.colors import Normalize     # , LogNorm, PowerNorm
 from matplotlib.patches import Polygon
-from typing import Optional, Sequence, Set, Union
 
 import cartopy.crs as ccrs   # type: ignore
 import copy
@@ -218,9 +220,9 @@ def read_gis(filename: str, layer_name: str):
 
 def set_colormap(the_var: str,
                  param_data: pd.DataFrame,
-                 cmap: Optional[Union[str, colors.Colormap]] = None,
-                 min_val: Optional[Union[int, float]] = None,
-                 max_val: Optional[Union[int, float]] = None,
+                 cmap: str | colors.Colormap | None = None,
+                 min_val: int | float | None = None,
+                 max_val: int | float | None = None,
                  **kwargs):
     """Set the colormap for a plot.
 

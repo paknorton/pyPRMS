@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import numpy as np
 import operator
 import pandas as pd   # type: ignore
 import re
 
-from typing import Dict, List, Optional, Sequence, Union   # OrderedDict as OrderedDictType,
+from collections.abc import Sequence
 
 from rich.table import Table
 
@@ -27,8 +29,8 @@ class Control(object):
     # Create date: 2019-04-18
 
     def __init__(self, metadata: MetaDataType,
-                 include_missing: Optional[bool] = True,
-                 verbose: Optional[bool] = False):
+                 include_missing: bool | None = True,
+                 verbose: bool | None = False):
         """Create Control object.
         """
 
@@ -36,8 +38,8 @@ class Control(object):
         con = get_console_instance()
 
         # Container to hold dicionary of ControlVariables
-        self.__control_vars: Dict = {}
-        self.__header: Optional[List[str]] = None
+        self.__control_vars: dict = {}
+        self.__header: list[str] | None = None
 
         self.__metadata = metadata
         self.__verbose = verbose
@@ -54,7 +56,7 @@ class Control(object):
         return self.get(item)
 
     @property
-    def additional_modules(self) -> List[str]:
+    def additional_modules(self) -> list[str]:
         """Get list of summary modules in PRMS
         """
 
@@ -80,7 +82,7 @@ class Control(object):
         return active_modules
 
     @property
-    def cbh_files(self) -> List[str]:
+    def cbh_files(self) -> list[str]:
         """Get list of possible CBH filenames.
 
         :returns: list of CBH files
@@ -98,7 +100,7 @@ class Control(object):
         return sorted(list(set(cbh_files)))
 
     @property
-    def control_variables(self) -> Dict[str, ControlVariable]:
+    def control_variables(self) -> dict[str, ControlVariable]:
     # def control_variables(self) -> OrderedDictType[str, ControlVariable]:
         """Get control variable objects.
 
@@ -107,13 +109,13 @@ class Control(object):
         return self.__control_vars
 
     @property
-    def dynamic_parameters(self) -> List[str]:
+    def dynamic_parameters(self) -> list[str]:
         """Get list of parameter names for which a dynamic flag set.
 
         :returns: list of parameter names
         """
 
-        dyn_params: List[str] = []
+        dyn_params: list[str] = []
 
         for dv in self.__control_vars.keys():
             cvar = self.get(dv)
@@ -135,7 +137,7 @@ class Control(object):
         return len(self.dynamic_parameters) > 0
 
     @property
-    def header(self) -> Optional[Sequence[str]]:
+    def header(self) -> Sequence[str] | None:
         """Get header information defined for a control object.
 
         This is typically taken from the first two lines of a control file.
@@ -145,7 +147,7 @@ class Control(object):
         return self.__header
 
     @header.setter
-    def header(self, info: Union[Sequence[str], str, None]):
+    def header(self, info: Sequence[str] | str | None):
         """Set the header information.
 
         :param info: list or string of header line(s)
@@ -159,7 +161,7 @@ class Control(object):
             self.__header = [info]
 
     @property
-    def modules(self) -> Dict[str, str]:
+    def modules(self) -> dict[str, str]:
         """Get the modules defined in the control file.
 
         Note: climate_hru is changed to precipitation_hru, temperature_hru,
@@ -383,7 +385,7 @@ class Control(object):
         """
         # if len(cstr) == 0:
         #     return True
-        value: Union[int, str]
+        value: int | str
 
         var, op, value = cstr.split(' ')
         value = int(value)
