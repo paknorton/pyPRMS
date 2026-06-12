@@ -28,7 +28,7 @@ from ..Exceptions_custom import ParameterError, ParameterExistsError, ParameterN
 from .Parameter import Parameter, ParamDataRawType
 from ..plot_helpers import set_colormap, get_projection, plot_line_collection, plot_polygon_collection, get_figsize
 from ..prms_helpers import cond_check, flex_type, get_streamnet_subset
-from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, external_module_map, MetaDataType, NETCDF_DATATYPES,
+from ..constants import (CATEGORY_DELIM, DIMENSIONS_XML, external_module_map, HRU_DIMS, MetaDataType, NETCDF_DATATYPES,
                          NEW_PTYPE_TO_DTYPE, PRMS_VERSION, PRMS6_DEV_VERSION, PTYPE_TO_PRMS_TYPE, NHM_DATATYPES,
                          PARAMETERS_XML, VAR_DELIM)
 
@@ -77,6 +77,7 @@ class Parameters(object):
         self.__seg_shape_key: str | None = None
         self.__seg_to_hru: dict[int, list[int]] = dict()
         self.__hru_to_seg: dict[int, int] = dict()
+        self.__full_metadata = metadata
         self.metadata = metadata['parameters']
         self.prms_version = Version(metadata['info']['version'])
 
@@ -1686,3 +1687,134 @@ class Parameters(object):
         toseg_idx = list(set(xx[0] for xx in dag_ds_subset.edges))
 
         return toseg_idx
+
+    def _resize_dims(self,
+                     num_hru: int,
+                     num_seg: int,
+                     num_deplcrv: int,
+                     num_poi: int) -> dict[str, int]:
+        """Return a dictionary of dimensions resized for a model subset.
+
+        :param num_hru: Number of HRUs in the model subset
+        :param num_seg: Number of segments in the model subset
+        :param num_deplcrv: Number of snow depletion curves in the model subset
+        :param num_poi: Number of Points-of-Interest (POIs) in the model subset
+        :returns: Dictionary of the resized dimensions
+        """
+
+        dims = {kk.name: kk.size for kk in self.dimensions.values()}
+
+        for dd in list(dims.keys()):
+            if dd in HRU_DIMS:
+                dims[dd] = num_hru
+            elif dd == 'nsegment':
+                dims[dd] = num_seg
+            elif dd == 'ndeplval':
+                dims[dd] = num_deplcrv * 11
+                dims['ndepl'] = num_deplcrv
+            elif dd == 'npoigages':
+                dims[dd] = num_poi
+                dims['nobs'] = num_poi
+
+        return dims
+
+    def create_subset(self,
+                      hru_order_subset: list[int],
+                      new_hru_segment: list[int],
+                      new_nhm_seg: list[int],
+                      new_poi_gage_id: list[str],
+                      new_poi_gage_segment: list[int],
+                      new_poi_type: list[int],
+                      new_tosegment: list[int]) -> 'Parameters':
+        """Create a new Parameters object that is a subset of this parameter database.
+
+        :param hru_order_subset: List of HRUs to include in the subset
+        :param new_hru_segment: List of HRU segments for the HRU subset
+        :param new_nhm_seg: List of NHM segments for the subset
+        :param new_poi_gage_id: List of POI gage IDs for the subset
+        :param new_poi_gage_segment: List of POI gage segments for the subset
+        :param new_poi_type: List of POI types for the subset
+        :param new_tosegment: List of tosegment values for the subset
+        :returns: New Parameters object with the subset of parameters
+        """
+
+        # Get unique depletion curves referenced by the HRU subset
+        hru_deplcrv_subset = self.get_subset('hru_deplcrv', hru_order_subset)
+        uniq_deplcrv: list = np.unique(hru_deplcrv_subset).tolist()
+
+        # Build parameter list, removing POI params if no POIs exist
+        params = list(self.parameters.keys())
+
+        if len(new_poi_gage_segment) == 0:
+            con.print('[gold3]WARNING[/]: No POIs found for model subset')
+            for rp in ['poi_gage_id', 'poi_gage_segment', 'poi_type']:
+                if rp in params:
+                    params.remove(rp)
+
+        params.sort()
+
+        # Resize dimensions for the subset
+        dims = self._resize_dims(num_hru=len(hru_order_subset),
+                                 num_seg=len(new_nhm_seg),
+                                 num_deplcrv=len(uniq_deplcrv),
+                                 num_poi=len(new_poi_gage_segment))
+
+        # Build the new Parameters instance
+        new_ps = Parameters(metadata=self.__full_metadata)
+
+        for dd, dv in dims.items():
+            new_ps.dimensions.add(dd, dv)
+
+        for pp in params:
+            src_param = self.get(pp)
+
+            new_ps.add(name=pp)
+            cnew_param = new_ps.get(pp)
+
+            ndims = src_param.ndim
+            dim_order = list(src_param.dimensions.keys())
+            first_dimension = dim_order[0]
+            outdata = None
+
+            if ndims == 0:
+                # Scalar parameters
+                outdata = src_param.data
+            elif ndims == 1:
+                if first_dimension == 'nsegment':
+                    if pp in ['tosegment']:
+                        outdata = np.array(new_tosegment)
+                    else:
+                        outdata = self.get_subset(pp, new_nhm_seg)
+                elif first_dimension == 'ndeplval':
+                    # snarea_thresh - stored in C-order unlike other 2D arrays
+                    outdata = self.get_subset(pp, hru_order_subset)
+                elif first_dimension == 'npoigages':
+                    if pp == 'poi_gage_segment':
+                        outdata = np.array(new_poi_gage_segment)
+                    elif pp == 'poi_gage_id':
+                        outdata = np.array(new_poi_gage_id)
+                    elif pp == 'poi_type':
+                        outdata = np.array(new_poi_type)
+                    else:
+                        con.print(f'[red]ERROR[/]: Unknown parameter, {pp}, with dimension {first_dimension}')
+                elif first_dimension in HRU_DIMS:
+                    if pp == 'hru_deplcrv':
+                        outdata = self.get_subset(pp, hru_order_subset)
+                    elif pp == 'hru_segment':
+                        outdata = np.array(new_hru_segment)
+                    else:
+                        outdata = self.get_subset(pp, hru_order_subset)
+                else:
+                    con.print(f'[red]ERROR[/]: No rules to handle dimension {first_dimension}')
+            elif ndims == 2:
+                if first_dimension == 'nsegment':
+                    outdata = self.get_subset(pp, new_nhm_seg)
+                elif first_dimension in HRU_DIMS:
+                    outdata = self.get_subset(pp, hru_order_subset)
+                else:
+                    con.print(f'[red]ERROR[/]: No rules to handle 2D parameter, {pp}, '
+                              f'with dimension {first_dimension}')
+
+            cnew_param.data = outdata
+
+        return new_ps
