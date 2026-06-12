@@ -1991,3 +1991,58 @@ class Parameters(object):
                         new_poi_type.append(0)
 
         return new_poi_gage_segment, new_poi_gage_id, new_poi_type
+
+    def extract_subset(self,
+                       dag_ds_subset: nx.DiGraph,
+                       hru_noroute: npt.NDArray | None = None,
+                       keep_hru_order: bool = False,
+                       addl_gages: dict[str, int] | None = None) -> 'Parameters':
+        """Extract a spatial subset of parameters given a stream network subgraph.
+
+        This is a high-level method that orchestrates the full extraction workflow:
+        derives segment lists from the DAG, builds HRU/segment mappings, determines
+        HRU output order, subsets POIs, and creates the final Parameters subset.
+
+        :param dag_ds_subset: Directed acyclic graph representing the stream network subset
+            (as returned by get_streamnet_subset)
+        :param hru_noroute: Array of non-routed HRU IDs to include (segment=0)
+        :param keep_hru_order: If True, keep the original HRU-relative order
+        :param addl_gages: Optional dictionary of additional streamgages (gage_id -> nhm_seg)
+        :returns: New Parameters object containing the spatial subset
+
+        :raises ValueError: If no routed HRUs are associated with the subset segments
+        """
+
+        if hru_noroute is None:
+            hru_noroute = np.array([], dtype=np.int32)
+
+        # Derive segment arrays from the DAG edges
+        new_nhm_seg = np.array([ee[0] for ee in dag_ds_subset.edges])
+
+        # Build 1-based index mapping for segments
+        new_nhm_seg_to_idx1 = dict((ss, ii + 1) for ii, ss in enumerate(new_nhm_seg))
+
+        # Generate renumbered local tosegments (1-based, zero = outlet)
+        new_tosegment = [new_nhm_seg_to_idx1[ee[1]] if ee[1] in new_nhm_seg_to_idx1
+                         else 0 for ee in dag_ds_subset.edges]
+
+        # Build filtered seg-to-hru and hru-to-seg mappings
+        seg_to_hru, hru_to_seg = self.get_subset_maps(new_nhm_seg, hru_noroute)
+
+        if set(hru_to_seg.values()) == set(hru_noroute):
+            raise ValueError('No routed HRUs are associated with any of the subset segments')
+
+        # Determine HRU output order and renumbered hru_segment
+        hru_order_subset, new_hru_segment = self.get_output_order(hru_to_seg, seg_to_hru,
+                                                                  new_nhm_seg_to_idx1, hru_noroute,
+                                                                  keep_hru_order=keep_hru_order)
+
+        # Subset POI parameters
+        new_poi_gage_segment, new_poi_gage_id, new_poi_type = self.get_poi_subset(new_nhm_seg_to_idx1,
+                                                                                  seg_to_hru,
+                                                                                  addl_gages=addl_gages)
+
+        # Create the parameter subset
+        return self.create_subset(hru_order_subset, new_hru_segment, new_nhm_seg,
+                                  new_poi_gage_id, new_poi_gage_segment,
+                                  new_poi_type, new_tosegment)
