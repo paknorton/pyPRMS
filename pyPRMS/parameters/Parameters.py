@@ -1818,3 +1818,176 @@ class Parameters(object):
             cnew_param.data = outdata
 
         return new_ps
+
+    def get_subset_maps(self,
+                        seg_subset: npt.NDArray,
+                        hru_noroute: npt.NDArray | None = None) -> tuple[dict[int, list[int]], dict[int, int]]:
+        """Create dictionaries mapping segments to HRUs and HRUs to segments,
+        filtered by a segment subset and optional non-routed HRUs.
+
+        :param seg_subset: Array of segment IDs defining the spatial subset
+        :param hru_noroute: Array of non-routed HRU IDs to include (segment=0)
+        :returns: Tuple of (seg_to_hru, hru_to_seg) dictionaries
+        """
+
+        orig_hru_segment = self.get('hru_segment_nhm').data
+        orig_nhm_id = self.get('nhm_id').data
+
+        if hru_noroute is None:
+            hru_noroute = np.array([], dtype=np.int32)
+
+        seg_to_hru: dict[int, list[int]] = dict()
+        hru_to_seg: dict[int, int] = dict()
+
+        # Create boolean masks for efficient filtering
+        in_seg_subset = np.isin(orig_hru_segment, seg_subset)
+        in_hru_noroute = np.isin(orig_nhm_id, hru_noroute)
+
+        # Process in original order to maintain ordering
+        for cidx in range(len(orig_hru_segment)):
+            cseg = orig_hru_segment[cidx]
+            hid = orig_nhm_id[cidx]
+
+            if in_seg_subset[cidx]:
+                seg_to_hru.setdefault(cseg, []).append(hid)
+                hru_to_seg[hid] = cseg
+            elif in_hru_noroute[cidx]:
+                if cseg != 0:
+                    con.print(f'[orange3]WARNING[/]: Non-routed HRU {hid} routes to segment {cseg}; skipping.')
+                else:
+                    seg_to_hru.setdefault(cseg, []).append(hid)
+                    hru_to_seg[hid] = cseg
+
+        return seg_to_hru, hru_to_seg
+
+    def get_output_order(self,
+                         hru_to_seg: dict[int, int],
+                         seg_to_hru: dict[int, list[int]],
+                         new_nhm_seg_to_idx1: dict[int, int],
+                         hru_noroute: npt.NDArray | None = None,
+                         keep_hru_order: bool = False) -> tuple[list[int], list[int]]:
+        """Create lists of HRU IDs and renumbered HRU segments for a model subset.
+
+        HRU-related parameters can be output with either the legacy segment-oriented order
+        or maintaining their original HRU-relative order from the parameter database.
+
+        :param hru_to_seg: Dictionary mapping HRU IDs to segment IDs
+        :param seg_to_hru: Dictionary mapping segment IDs to lists of HRU IDs
+        :param new_nhm_seg_to_idx1: Dictionary mapping segment IDs to 1-based local indices
+        :param hru_noroute: Array of non-routed HRU IDs to include
+        :param keep_hru_order: If True, keep the original HRU-relative order
+        :returns: Tuple of (hru_order_subset, new_hru_segment) lists
+        """
+
+        orig_hru_segment = self.get('hru_segment_nhm').data
+        nhm_id_to_idx = self.get('nhm_id').index_map
+
+        if hru_noroute is None:
+            hru_noroute = np.array([], dtype=np.int32)
+
+        if keep_hru_order:
+            hru_order_subset = [kk for kk in hru_to_seg.keys()]
+
+            new_hru_segment = []
+            for cseg in hru_to_seg.values():
+                if cseg in new_nhm_seg_to_idx1:
+                    new_hru_segment.append(new_nhm_seg_to_idx1[cseg])
+                elif cseg == 0:
+                    new_hru_segment.append(0)
+                else:
+                    new_hru_segment.append(-1)
+        else:
+            # Get NHM HRU IDs ordered by the segments in the model subset
+            hru_order_subset = []
+            for cseg in new_nhm_seg_to_idx1.keys():
+                if cseg in seg_to_hru:
+                    for chru in seg_to_hru[cseg]:
+                        hru_order_subset.append(chru)
+                else:
+                    con.print(f'[orange3]WARNING[/]: Stream segment {cseg} has no HRUs connected to it.')
+
+            # Append the additional non-routed HRUs to the list
+            if len(hru_noroute) > 0:
+                for cseg in hru_noroute:
+                    if orig_hru_segment[nhm_id_to_idx[cseg]] == 0:
+                        hru_order_subset.append(cseg)
+                    else:
+                        con.print(f'[red]ERROR[/]: User-supplied HRU {cseg} routes to segment '
+                                  f'{orig_hru_segment[nhm_id_to_idx[cseg]]}; skipping.')
+
+            # Renumber hru_segments for the subset
+            new_hru_segment = []
+            for cseg, cidx in new_nhm_seg_to_idx1.items():
+                if cseg in seg_to_hru:
+                    for _ in seg_to_hru[cseg]:
+                        new_hru_segment.append(cidx)
+
+            # Append zeroes for each additional non-routed HRU
+            if len(hru_noroute) > 0:
+                for cseg in hru_noroute:
+                    if orig_hru_segment[nhm_id_to_idx[cseg]] == 0:
+                        new_hru_segment.append(0)
+
+        return hru_order_subset, new_hru_segment
+
+    def get_poi_subset(self,
+                       new_nhm_seg_to_idx1: dict[int, int],
+                       seg_to_hru: dict[int, list[int]],
+                       addl_gages: dict[str, int] | None = None) -> tuple[list[int], list[str], list[int]]:
+        """Create lists of POI segments, IDs, and types for a model subset.
+
+        Subsets the poi_gage_segment, poi_gage_id, and poi_type parameters based on
+        which segments are in the model subset. Optionally merges in user-specified
+        additional streamgages with conflict resolution.
+
+        :param new_nhm_seg_to_idx1: Dictionary mapping segment IDs to 1-based local indices
+        :param seg_to_hru: Dictionary mapping segment IDs to lists of HRU IDs
+        :param addl_gages: Optional dictionary of additional streamgages (gage_id -> nhm_seg)
+        :returns: Tuple of (poi_gage_segment, poi_gage_id, poi_type) lists
+        """
+
+        new_poi_gage_segment: list[int] = []
+        new_poi_gage_id: list[str] = []
+        new_poi_type: list[int] = []
+
+        if self.exists('poi_gage_segment'):
+            poi_gage_segment = self.get('poi_gage_segment').tolist()
+            poi_gage_id = self.get('poi_gage_id').tolist()
+            poi_type = self.get('poi_type').tolist()
+
+            # Look up each segment in the subset
+            nhm_seg_dict = self.get('nhm_seg').index_map
+            poi_gage_dict = self.get('poi_gage_segment').index_map
+
+            for ss in new_nhm_seg_to_idx1.keys():
+                sidx = nhm_seg_dict[ss] + 1
+                if sidx in poi_gage_segment:
+                    new_poi_gage_segment.append(new_nhm_seg_to_idx1[sidx])
+                    new_poi_gage_id.append(poi_gage_id[poi_gage_dict[sidx]])
+                    new_poi_type.append(poi_type[poi_gage_dict[sidx]])
+
+            # Add any valid user-specified streamgage, nhm_seg pairs
+            if addl_gages:
+                for ss, vv in addl_gages.items():
+                    if ss in new_poi_gage_id:
+                        idx = new_poi_gage_id.index(ss)
+                        con.print(f'[orange3]WARNING[/]: Existing POI {ss} overridden '
+                                  f'(was {new_poi_gage_segment[idx]}, now {new_nhm_seg_to_idx1[vv]})')
+                        new_poi_gage_segment[idx] = new_nhm_seg_to_idx1[vv]
+                        new_poi_type[idx] = 0
+                    elif new_nhm_seg_to_idx1[vv] in new_poi_gage_segment:
+                        sidx = new_poi_gage_segment.index(new_nhm_seg_to_idx1[vv])
+                        con.print(f'[orange3]WARNING[/]: User-specified streamgage ({ss}) '
+                                  f'has same nhm_seg ({new_nhm_seg_to_idx1[vv]}) '
+                                  f'as existing POI ({new_poi_gage_id[sidx]}); replacing streamgage ID')
+                        new_poi_gage_id[sidx] = ss
+                        new_poi_type[sidx] = 0
+                    elif vv not in seg_to_hru.keys():
+                        con.print(f'[orange3]WARNING[/]: User-specified streamgage ({ss}) has nhm_seg={vv} '
+                                  f'which is not part of the model subset; skipping.')
+                    else:
+                        new_poi_gage_id.append(ss)
+                        new_poi_gage_segment.append(new_nhm_seg_to_idx1[vv])
+                        new_poi_type.append(0)
+
+        return new_poi_gage_segment, new_poi_gage_id, new_poi_type
