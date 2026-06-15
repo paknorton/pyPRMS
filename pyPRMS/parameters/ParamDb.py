@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import pandas as pd     # type: ignore
+from pathlib import Path
 from typing import cast
 
 from ..constants import PRMS_VERSION
@@ -16,7 +17,7 @@ con = None
 
 
 class ParamDb(Parameters):
-    def __init__(self, paramdb_dir: str,
+    def __init__(self, paramdb_dir: str | Path,
                  metadata,
                  verbose: bool = False):
         """Initialize ParamDb object.

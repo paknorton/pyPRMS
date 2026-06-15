@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import numpy as np
+from pathlib import Path
 
 from ..Exceptions_custom import ParameterExistsError, ParameterNotValidError
 from .Parameters import Parameters
@@ -15,7 +16,7 @@ class ParameterFile(Parameters):
 
     """Class to handle reading PRMS parameter file format."""
 
-    def __init__(self, filename: str,
+    def __init__(self, filename: str | Path,
                  metadata,
                  verbose: bool = False):
         """Create the ParameterFile object.
@@ -45,7 +46,7 @@ class ParameterFile(Parameters):
         return self.__filename
 
     @filename.setter
-    def filename(self, name: str):
+    def filename(self, name: str | Path):
         """Set the name of the parameter file.
 
         :param name: name of parameter file

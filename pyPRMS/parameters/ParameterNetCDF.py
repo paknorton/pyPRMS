@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import xarray as xr
+from pathlib import Path
 
 from .Parameters import Parameters
 from ..base.console import get_console_instance
@@ -14,7 +15,7 @@ class ParameterNetCDF(Parameters):
     """Read parameter database stored in netCDF format"""
 
     def __init__(self,
-                 filename: str,
+                 filename: str | Path,
                  metadata,
                  verbose: bool = False):
         """Initialize ParamDb object.
