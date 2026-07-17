@@ -59,6 +59,22 @@ class TestParameter:
         assert not aparam.is_seg_param()
         assert not aparam.is_poi_param()
 
+    def test_param_outliers_string_bound(self, metadata_instance):
+        """outliers() should not crash for a bounded parameter whose limit is a dimension name."""
+        # lake_hru_id is a bounded parameter: its maximum is the dimension name
+        # 'nlake', which can't be compared numerically against the int data.
+        global_dimensions = Dimensions(metadata=MetaData(verbose=False).metadata)
+        global_dimensions.add(name='nhru', size=3)
+
+        aparam = Parameter(name='lake_hru_id', meta=metadata_instance, global_dims=global_dimensions)
+        aparam.data = np.array([0, 1, 2], dtype=np.int32)
+
+        result = aparam.outliers()
+
+        # The string maximum is skipped; the numeric minimum still applies.
+        assert result.under == 0
+        assert result.over == 0
+
     def test_create_parameter_no_metadata_strict(self):
         """A new parameter with no supplied metadata should have an empty dictionary
         for metadata"""

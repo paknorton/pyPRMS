@@ -407,11 +407,17 @@ class Parameter(object):
         values_under = 0
         values_over = 0
 
-        if self.meta.get('minimum', None) is not None:
-            values_under = np.count_nonzero(self.data_raw < self.meta.get('minimum'))   # type: ignore
+        minval = self.meta.get('minimum', None)
+        maxval = self.meta.get('maximum', None)
 
-        if self.meta.get('maximum', None) is not None:
-            values_over = np.count_nonzero(self.data_raw > self.meta.get('maximum'))   # type: ignore
+        # Bounded parameters store a dimension name (e.g. 'nhru') as the limit,
+        # so skip the comparison when a bound is a string. check_values() does
+        # the same.
+        if minval is not None and not isinstance(minval, str):
+            values_under = np.count_nonzero(self.data_raw < minval)   # type: ignore
+
+        if maxval is not None and not isinstance(maxval, str):
+            values_over = np.count_nonzero(self.data_raw > maxval)   # type: ignore
 
         return Outliers(self.__name, values_under, values_over)
 
