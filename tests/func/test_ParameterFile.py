@@ -224,9 +224,13 @@ class TestParameterFile:
         parameter_file = datadir / 'myparam.param'
         prms_meta = MetaData(verbose=False).metadata
 
+        # We need two independent copies of the metadata since it is modified in-place
+        # when the parameter file is read.
+        prms_meta_2 = MetaData(verbose=False).metadata.copy()
+
         ctl = ControlFile(control_file, metadata=prms_meta, verbose=False)
         pdb_orig = ParameterFile(parameter_file, metadata=prms_meta)
-        pdb = ParameterFile(parameter_file, metadata=prms_meta)
+        pdb = ParameterFile(parameter_file, metadata=prms_meta_2)
         pdb.control = ctl
 
         expected_diff = {'self_not_other': set(), 'other_not_self': {'pref_flow_infil_frac'}, 'diffs': {}}

@@ -47,7 +47,8 @@ class Cbh(object):
         :param src_path: List of paths to CBH files
         :param metadata: Metadata dictionary for Climate-by-HRU variables
         :param engine: Engine to use for reading CBH files (one of netcdf, zarr, or ascii)
-        :param control: Control object for PRMS model containing configuration information
+        :param control: Control object for PRMS model containing configuration information; only needed when reading ASCII CBH files
+        :param parameters: Parameters object containing model parameters
         :param verbose: Output debugging information
         """
 
@@ -85,6 +86,9 @@ class Cbh(object):
 
         self.__dataset = ds
 
+        if self.__parameters is not None:
+            self.set_nhm_id(self.__parameters.get('nhm_id').data)
+
     def __repr__(self) -> str:
         """String representation of the Cbh object.
 
@@ -115,7 +119,7 @@ class Cbh(object):
         return self.__cbh_src
 
     def resolve_units(self):
-        """Adjust units metadata for CBH variables that have an initial units value of
+        """Adjust `units` metadata for CBH variables that have an initial units value of
         precip_units or temp_units.
 
         :returns: None
@@ -362,7 +366,7 @@ class Cbh(object):
                 if (self.__src_path[0] / cfile).exists():
                     if self.verbose:
                         con.print(f'[green]INFO[/]: Found {cfile}')
-                    cbh_files[self.__src_path[0] / cfile] = prms_var
+                    cbh_files[str(self.__src_path[0] / cfile)] = prms_var
 
         return self._cbh_to_xarray(cbh_files)
 

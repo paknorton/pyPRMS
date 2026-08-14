@@ -10,9 +10,11 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd     # type: ignore
 import sys
+import warnings
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
+from copy import deepcopy
 from collections import defaultdict
 from collections.abc import KeysView, Sequence
 from functools import cached_property
@@ -66,7 +68,10 @@ class Parameters(object):
         con = get_console_instance()
         # con.print('Parameters: Console info: {}'.format(con))
 
-        self.__dimensions = Dimensions(metadata=metadata, verbose=verbose)
+        # A full, separate copy of the original metadata dictionary
+        self.__full_metadata = deepcopy(metadata)
+
+        self.__dimensions = deepcopy(Dimensions(metadata=metadata, verbose=verbose))
         self.__parameters: dict[str, Parameter] = dict()
 
         self.verbose = verbose
@@ -77,7 +82,6 @@ class Parameters(object):
         self.__seg_shape_key: str | None = None
         self.__seg_to_hru: dict[int, list[int]] = dict()
         self.__hru_to_seg: dict[int, int] = dict()
-        self.__full_metadata = metadata
         self.metadata = metadata['parameters']
         self.prms_version = Version(metadata['info']['version'])
 
@@ -331,7 +335,7 @@ class Parameters(object):
 
         :param name: A valid PRMS parameter name
 
-        :raises ParameterError: if parameter already exists or name is None
+        :raises ParameterError: If the parameter already exists or name is None
         """
 
         # Add a new parameter
@@ -344,6 +348,27 @@ class Parameters(object):
         for cdim in self.metadata[name]['dimensions']:
             if not self.__dimensions.exists(cdim):
                 raise KeyError(f'Global dimension, {cdim}, does not exist')
+
+        if self.metadata[name].get('is_bounded', False):
+            # Add the upper-bound dimension to the global dimensions
+            bounded_dim_name = self.metadata[name]['maximum']
+            if not self.__dimensions.exists(bounded_dim_name):
+                if bounded_dim_name == 'ndepl':
+                    # This is the one dimension where the size depends on another dimension
+                    self.dimensions.add(name=bounded_dim_name, size=int(self.dimensions.get('ndeplval').size / 11))
+                elif bounded_dim_name == 'nobs':
+                    # If this is missing it should be added with the same value as npoigages
+                    # or the metadata default if npoigages is also missing.
+                    if self.__dimensions.exists('npoigages'):
+                        self.dimensions.add(name=bounded_dim_name, size=self.dimensions.get('npoigages').size)
+                    else:
+                        self.__dimensions.add(bounded_dim_name)
+                else:
+                    self.__dimensions.add(bounded_dim_name)
+
+                con.print(f'[orange3]WARNING[/]: Bounded parameter, {name}, requires dimension, {bounded_dim_name}, '
+                          f'which is missing from global dimensions; '
+                          f'added with size = {self.__dimensions.get(bounded_dim_name).size}')
 
         self.__parameters[name] = Parameter(name=name, meta=self.metadata, global_dims=self.__dimensions, verbose=self.verbose)
 
@@ -436,7 +461,19 @@ class Parameters(object):
 
     def adjust_bounded_parameters(self):
         """Adjust the valid upper and lower values for bounded parameters.
+
+        .. deprecated::
+            Bounded parameters are now resolved at creation time in
+            :meth:`Parameter.__init__`. This method will be removed in a
+            future release.
         """
+
+        warnings.warn(
+            'adjust_bounded_parameters() is deprecated and will be removed in a future release. '
+            'Bounded parameters are now resolved at creation time.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
         for cparam in self.parameters.values():
             cmeta = cparam.meta
@@ -499,17 +536,10 @@ class Parameters(object):
                 pp_outliers = pp.outliers()
                 valid_min = pp.meta['minimum']
                 valid_max = pp.meta['maximum']
-                default_val = pp.meta['default']
 
-                if not (isinstance(valid_min, str) or isinstance(valid_max, str)):
-                    con.print(f'    [dark_orange]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside '
-                              + f'the valid range of ({valid_min}, {valid_max}); '
-                              + f'under/over=({pp_outliers.under}, {pp_outliers.over})')
-                elif valid_min == 'bounded':
-                    # TODO: Handling bounded parameters needs improvement
-                    con.print(f'    [dark_orange]WARNING[/]: Bounded parameter value(s) '
-                              + f'(range: {pp_stats.min}, {pp_stats.max}) outside '
-                              + f'the valid range of ({default_val}, {valid_max})')
+                con.print(f'    [dark_orange]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside '
+                          + f'the valid range of ({valid_min}, {valid_max}); '
+                          + f'under/over=({pp_outliers.under}, {pp_outliers.over})')
 
             dims = list(pp.dimensions.keys())
 
@@ -710,9 +740,31 @@ class Parameters(object):
 
         cparam = self.get(name)
 
+        if cparam.meta.get('datatype') == 'string':
+            return []
+
+        minval = cparam.meta.get('minimum', None)
+        maxval = cparam.meta.get('maximum', None)
+
+        if minval is None and maxval is None:
+            con.print(f'[orange3]WARNING[/]: {name}: both minimum and maximum are undefined; cannot determine outliers')
+            return []
+
+        if minval is None:
+            con.print(f'[orange3]WARNING[/]: {name}: minimum is undefined; only checking maximum bound')
+        elif maxval is None:
+            con.print(f'[orange3]WARNING[/]: {name}: maximum is undefined; only checking minimum bound')
+
         param_data = self.get_dataframe(name)
-        bad_value_ids = param_data[(param_data[name] < cparam.meta['minimum']) |
-                                   (param_data[name] > cparam.meta['maximum'])].index.tolist()
+
+        conditions = []
+        if minval is not None:
+            conditions.append(param_data[name] < minval)
+        if maxval is not None:
+            conditions.append(param_data[name] > maxval)
+
+        mask = conditions[0] if len(conditions) == 1 else (conditions[0] | conditions[1])
+        bad_value_ids = param_data[mask].index.tolist()
 
         return bad_value_ids
 

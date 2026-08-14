@@ -179,6 +179,4 @@ class ParameterFile(Parameters):
                 pass
 
             self.get(varname).data = vals    # type: ignore
-
-        self.adjust_bounded_parameters()
         self.__isloaded = True

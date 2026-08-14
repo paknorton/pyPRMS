@@ -298,6 +298,7 @@ class MetaData(object):
                         except ValueError:
                             if text == 'bounded':
                                 meta_dict[name][ek] = meta_dict[name]['default']
+                                meta_dict[name]['is_bounded'] = True
                             else:
                                 meta_dict[name][ek] = text
                 else:

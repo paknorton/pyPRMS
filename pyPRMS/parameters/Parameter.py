@@ -11,7 +11,7 @@ import xml.etree.ElementTree as xmlET
 from ..base.console import get_console_instance
 from ..constants import NEW_PTYPE_TO_DTYPE
 from ..dimensions.Dimensions import ParamDimensions
-from ..Exceptions_custom import FixedDimensionError
+from ..Exceptions_custom import FixedDimensionError, ParameterNotValidError
 
 con = None
 
@@ -78,10 +78,22 @@ class Parameter(object):
                         if global_dims is not None:
                             self.__dimensions[cname].size = global_dims.get(cname).size
                             self.__dimensions[cname].meta = global_dims[cname].meta
+
+                    # Resolve bounded parameter maximum from dimension name to numeric size
+                    if self.meta.get('is_bounded', False):
+                        if global_dims is None:
+                            raise ParameterNotValidError(f'Parameter, {self.name}, is bounded but no global dimensions were supplied')
+
+                        # Save the name of the bounded-dimension
+                        self.meta['bounded_dimension_name'] = self.meta.get('maximum')
+                        self.meta['maximum'] = global_dims.get(self.meta.get('bounded_dimension_name')).size
+
+                        if self.__verbose:   # pragma: no cover
+                            con.print(f'[bold]{self.name}[/]: valid upper bound adjusted to {self.meta["maximum"]}')
                 else:
                     raise ValueError(f'`{self.name}` does not exist in metadata')
             else:
-                # The meta must be supplied as an adhoc dictionary
+                # The metadata must be supplied as an adhoc dictionary
                 self.meta = meta
 
         self.__data: ParamDataRawType | None = None
@@ -353,12 +365,10 @@ class Parameter(object):
         minval = self.meta.get('minimum', None)
         maxval = self.meta.get('maximum', None)
 
-        if minval is not None and maxval is not None:
-            # Check both ends of the range
-            if not (isinstance(minval, str) or isinstance(maxval, str)):
+        if self.meta.get('datatype') != 'string':
+            if minval is not None and maxval is not None:
+                # Check both ends of the range
                 return (self.data_raw >= minval).all() and (self.data_raw <= maxval).all().item()
-            elif minval == 'bounded':
-                return (self.data_raw >= self.meta.get('default')).all().item()   # type: ignore
 
         return True
 
@@ -402,16 +412,28 @@ class Parameter(object):
         """Returns the number of values less than or greater than the valid range
 
         :returns: NamedTuple containing count of values less than and values greater than valid range
+        :raises ValueError: If minimum is greater than maximum
         """
 
         values_under = 0
         values_over = 0
 
-        if self.meta.get('minimum', None) is not None:
-            values_under = np.count_nonzero(self.data_raw < self.meta.get('minimum'))   # type: ignore
+        if self.meta.get('datatype') != 'string':
+            minval = self.meta.get('minimum', None)
+            maxval = self.meta.get('maximum', None)
 
-        if self.meta.get('maximum', None) is not None:
-            values_over = np.count_nonzero(self.data_raw > self.meta.get('maximum'))   # type: ignore
+            if minval is not None and maxval is not None:
+                if minval > maxval:
+                    raise ValueError(f'{self.name}: minimum ({minval}) is greater than maximum ({maxval})')
+
+                if minval == maxval:
+                    con.print(f'[orange3]WARNING[/]: {self.name}: minimum and maximum are both {minval}')
+
+            if minval is not None:
+                values_under = np.count_nonzero(self.data_raw < minval)   # type: ignore
+
+            if maxval is not None:
+                values_over = np.count_nonzero(self.data_raw > maxval)   # type: ignore
 
         return Outliers(self.__name, values_under, values_over)
 

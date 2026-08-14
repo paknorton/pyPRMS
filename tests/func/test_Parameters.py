@@ -51,19 +51,27 @@ class TestParameters:
 
         assert xmlET.tostring(xml) == expected_xml
 
+    def test_add_hru_deplcrv_with_no_ndeplval(self, pdb_instance):
+        with pytest.raises(ValueError):
+            pdb_instance.add(name='hru_deplcrv')
+
     @pytest.mark.parametrize('name', [('cov_type'),
                                       ('tmin_cbh_adj'),
                                       ('tmax_adj'),
                                       ('basin_solsta'),
+                                      ('hru_deplcrv'),
                                       ('poi_gage_id'),
                                       ('poi_gage_segment'),
                                       ('poi_type')])
     def test_add_valid_parameter(self, pdb_instance, name):
+        # Add ndeplval dimension so adding hru_deplcrv will succeed
+        pdb_instance.dimensions.add(name='ndeplval', size=11)
+
         pdb_instance.add(name=name)
         assert pdb_instance.exists(name=name)
 
     def test_parameters_str(self, pdb_instance):
-        expected = '----- Dimensions -----\nnhru: size=4\nnmonths: size=12\none: size=1\nnpoigages: size=4\nnobs: size=4\n----- Parameters -----\ntmax_cbh_adj [nhru, nmonths]\ncov_type [nhru]\ntmin_cbh_adj [nhru, nmonths]\ntmax_adj [nhru, nmonths]\nbasin_solsta [one]\npoi_gage_id [npoigages]\npoi_gage_segment [npoigages]\npoi_type [npoigages]\n'
+        expected = '----- Dimensions -----\nnhru: size=4\nnmonths: size=12\none: size=1\nnpoigages: size=4\nnobs: size=4\nndeplval: size=11\nnsol: size=0\nndepl: size=1\nnsegment: size=0\n----- Parameters -----\ntmax_cbh_adj [nhru, nmonths]\ncov_type [nhru]\ntmin_cbh_adj [nhru, nmonths]\ntmax_adj [nhru, nmonths]\nbasin_solsta [one]\nhru_deplcrv [nhru]\npoi_gage_id [npoigages]\npoi_gage_segment [npoigages]\npoi_type [npoigages]\n'
 
         assert pdb_instance.__str__() == expected
 
