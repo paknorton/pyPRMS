@@ -743,9 +743,28 @@ class Parameters(object):
         if cparam.meta.get('datatype') == 'string':
             return []
 
+        minval = cparam.meta.get('minimum', None)
+        maxval = cparam.meta.get('maximum', None)
+
+        if minval is None and maxval is None:
+            con.print(f'[orange3]WARNING[/]: {name}: both minimum and maximum are undefined; cannot determine outliers')
+            return []
+
+        if minval is None:
+            con.print(f'[orange3]WARNING[/]: {name}: minimum is undefined; only checking maximum bound')
+        elif maxval is None:
+            con.print(f'[orange3]WARNING[/]: {name}: maximum is undefined; only checking minimum bound')
+
         param_data = self.get_dataframe(name)
-        bad_value_ids = param_data[(param_data[name] < cparam.meta['minimum']) |
-                                   (param_data[name] > cparam.meta['maximum'])].index.tolist()
+
+        conditions = []
+        if minval is not None:
+            conditions.append(param_data[name] < minval)
+        if maxval is not None:
+            conditions.append(param_data[name] > maxval)
+
+        mask = conditions[0] if len(conditions) == 1 else (conditions[0] | conditions[1])
+        bad_value_ids = param_data[mask].index.tolist()
 
         return bad_value_ids
 
