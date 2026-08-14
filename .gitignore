@@ -70,3 +70,6 @@ Icon
 *.swp
 
 .idea
+
+.kiro
+.vscode
