@@ -4,10 +4,11 @@ import numpy as np
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
+from pyPRMS import Dimension
 from pyPRMS import Dimensions
 from pyPRMS import Parameter
 from pyPRMS import MetaData
-from pyPRMS.Exceptions_custom import FixedDimensionError
+from pyPRMS.Exceptions_custom import FixedDimensionError, ParameterNotValidError
 
 # @pytest.fixture(scope='class')
 # def dims_obj():
@@ -28,13 +29,27 @@ class TestParameter:
     # - modified flag set when data is changed
 
     @pytest.mark.parametrize('name, ndim', [('cov_type', 1),
-                                            ('tmax_adj', 2),
-                                            ('basin_solsta', 0)])
+                                            ('tmax_adj', 2)])
     def test_create_parameter(self, metadata_instance, name, ndim):
         # prms_meta = MetaData(verbose=False).metadata['parameters']
 
         aparam = Parameter(name=name, meta=metadata_instance)
         assert aparam.name == name and aparam.ndim == ndim
+
+    @pytest.mark.parametrize('name, ndim, bname', [('basin_solsta', 0, 'nsol')])
+    def test_create_bounded_parameter(self, metadata_instance, name, ndim, bname):
+        global_dimensions = Dimensions(metadata=MetaData(verbose=False).metadata)
+        for xx in metadata_instance[name]['dimensions']:
+            global_dimensions.add(name=xx)
+        global_dimensions.add(name=bname)
+
+        aparam = Parameter(name=name, meta=metadata_instance, global_dims=global_dimensions)
+        assert aparam.name == name and aparam.ndim == ndim
+
+    @pytest.mark.parametrize('name, ndim, bname', [('basin_solsta', 0, 'nsol')])
+    def test_create_bounded_parameter_nodims(self, metadata_instance, name, ndim, bname):
+        with pytest.raises(ParameterNotValidError):
+            aparam = Parameter(name=name, meta=metadata_instance)
 
     def test_create_parameter_bad(self, metadata_instance):
         """Add parameter which does not exist in metadata"""
@@ -77,15 +92,13 @@ class TestParameter:
         assert not aparam.is_poi_param()
 
     @pytest.mark.parametrize('name, isscalar', [('cov_type', False),
-                                                ('tmax_adj', False),
-                                                ('basin_solsta', True)])
+                                                ('tmax_adj', False)])
     def test_is_scalar(self, metadata_instance, name, isscalar):
         aparam = Parameter(name=name, meta=metadata_instance)
         assert aparam.name == name and aparam.is_scalar == isscalar
 
     @pytest.mark.parametrize('name, data', [('cov_type', np.array([1, 0, 1, 2], dtype=np.int32)),
-                                            ('tmax_adj', np.array([[2.0, 1.2, 3.3, 0], [2.2, 8, 4, 9]], dtype=np.float32)),
-                                            ('basin_solsta', np.int32(8))])
+                                            ('tmax_adj', np.array([[2.0, 1.2, 3.3, 0], [2.2, 8, 4, 9]], dtype=np.float32))])
     def test_new_param_data(self, metadata_instance, name, data):
         aparam = Parameter(name=name, meta=metadata_instance)
         aparam.data = data
@@ -100,17 +113,16 @@ class TestParameter:
             _ = aparam.data
 
     @pytest.mark.parametrize('name, data, expected', [('cov_type', np.array([1.4, 0, 1.6, 2.1], dtype=np.float32), np.array([1, 0, 1, 2], dtype=np.int32)),
-                                                      ('tmax_adj', np.array([[2, 1, 3, 0], [2, 8, 4, 9]], dtype=np.int32), np.array([[2.0, 1.0, 3.0, 0], [2.0, 8, 4, 9]], dtype=np.float32)),
-                                                      ('basin_solsta', np.float32(8.2), np.int32(8))])
+                                                      ('tmax_adj', np.array([[2, 1, 3, 0], [2, 8, 4, 9]], dtype=np.int32), np.array([[2.0, 1.0, 3.0, 0], [2.0, 8, 4, 9]], dtype=np.float32))])
     def test_new_param_data_cast(self, metadata_instance, name, data, expected):
         aparam = Parameter(name=name, meta=metadata_instance)
         aparam.data = data
 
         assert (aparam.data == expected).all()
 
-    @pytest.mark.parametrize('name, data, expected', [('basin_solsta', np.array([2], dtype=np.int32), 2),
-                                                      ('basin_solsta', np.array([3.0], dtype=np.float32), 3),
-                                                      ('basin_solsta', np.array([2.5], dtype=np.float32), 2)])
+    @pytest.mark.parametrize('name, data, expected', [('maxiter_sntemp', np.array([10], dtype=np.int32), 10),
+                                                      ('maxiter_sntemp', np.array([12.0], dtype=np.float32), 12),
+                                                      ('maxiter_sntemp', np.array([20.5], dtype=np.float32), 20)])
     def test_new_param_data_scalar_given_array(self, metadata_instance, name, data, expected):
         aparam = Parameter(name=name, meta=metadata_instance)
 
@@ -118,10 +130,10 @@ class TestParameter:
         assert aparam.data == expected
 
     def test_new_param_data_scalar_given_array_too_big(self, metadata_instance):
-        aparam = Parameter(name='basin_solsta', meta=metadata_instance)
+        aparam = Parameter(name='maxiter_sntemp', meta=metadata_instance)
 
         with pytest.raises(IndexError):
-            aparam.data = np.array([1, 2], dtype=np.int32)
+            aparam.data = np.array([10, 20], dtype=np.int32)
 
     @pytest.mark.parametrize('name, data', [('cov_type', np.array([1], dtype=np.int32)),
                                             ('tmax_adj', np.array([2.3], dtype=np.float32)),
@@ -144,12 +156,12 @@ class TestParameter:
 
         assert aparam.data.size == expected_size
 
-    @pytest.mark.parametrize('name, new_vals', [('basin_solsta', 4)])
+    @pytest.mark.parametrize('name, new_vals', [('gwstor_init', 4.0)])
     def test_param_update_element_nodata(self, metadata_instance, name, new_vals):
         """Test updating parameter element"""
         global_dimensions = Dimensions(metadata=MetaData(verbose=False).metadata)
         global_dimensions.add(name='nhru', size=2)
-        global_dimensions.add(name='one', size=1)
+        # global_dimensions.add(name='one', size=1)
 
         aparam = Parameter(name=name, meta=metadata_instance, global_dims=global_dimensions)
         assert aparam.modified is False
@@ -157,13 +169,13 @@ class TestParameter:
         with pytest.raises(TypeError):
             aparam.update_element(index=1, value=new_vals)
 
-    @pytest.mark.parametrize('name, data, new_vals', [('basin_solsta', np.array([2], dtype=np.int32), 4),
-                                                      ('basin_solsta', np.array([2], dtype=np.int32), np.array([4], dtype=np.int32)),
-                                                      ('basin_solsta', np.array([2], dtype=np.int32), [3])])
+    @pytest.mark.parametrize('name, data, new_vals', [('ncol', np.array([2], dtype=np.int32), 4),
+                                                      ('ncol', np.array([2], dtype=np.int32), np.array([4], dtype=np.int32)),
+                                                      ('ncol', np.array([2], dtype=np.int32), [3])])
     def test_param_update_element_scalar(self, metadata_instance, name, data, new_vals):
         """Test updating parameter element"""
         global_dimensions = Dimensions(metadata=MetaData(verbose=False).metadata)
-        global_dimensions.add(name='nhru', size=2)
+        # global_dimensions.add(name='nhru', size=2)
         global_dimensions.add(name='one', size=1)
 
         aparam = Parameter(name=name, meta=metadata_instance, global_dims=global_dimensions)
@@ -175,8 +187,8 @@ class TestParameter:
         assert not (aparam.data_raw == data).all()
         assert (aparam.data_raw == new_vals).all()
 
-    @pytest.mark.parametrize('name, data, new_vals', [('basin_solsta', np.array([2], dtype=np.int32), np.array([2, 3], dtype=np.int32)),
-                                                      ('basin_solsta', np.array([2], dtype=np.int32), [4, 5])])
+    @pytest.mark.parametrize('name, data, new_vals', [('ncol', np.array([2], dtype=np.int32), np.array([2, 3], dtype=np.int32)),
+                                                      ('ncol', np.array([2], dtype=np.int32), [4, 5])])
     def test_param_update_element_scalar_type_error(self, metadata_instance, name, data, new_vals):
         """Test updating parameter element"""
         global_dimensions = Dimensions(metadata=MetaData(verbose=False).metadata)
@@ -297,7 +309,7 @@ class TestParameter:
                                                             [2.0, 2.1, 2.2, 2.3, 2.5, 2.6, 2.7, 2.8, 2.0, 2.1, 2.2, 2.3],
                                                             [3.0, 3.1, 3.2, 3.3, 3.5, 3.6, 3.7, 3.8, 3.0, 3.1, 3.2, 3.3]], dtype=np.float32),
                                                   'nmonths'),
-                                                 ('basin_solsta',
+                                                 ('ncol',
                                                   np.int32(2),
                                                   'one'),])
     def test_param_subset_by_index_fixed_dim(self, metadata_instance, name, data, dim ):
@@ -353,7 +365,7 @@ class TestParameter:
             aparam.data = data
             aparam.data = new_data
 
-    @pytest.mark.parametrize('name, data, new_data', [('basin_solsta',
+    @pytest.mark.parametrize('name, data, new_data', [('ncol',
                                                        np.int32(8),
                                                        np.array([1, 0, 1, 2], dtype=np.int32))])
     def test_param_scalar_data_wrong_class(self, metadata_instance, name, data, new_data):
@@ -399,9 +411,14 @@ class TestParameter:
                                                            ('poi_type', False, False, True),
                                                            ('seg_elev', False, True, False),
                                                            ('seg_humidity', False, True, False),
-                                                           ('basin_solsta', False, False, False)])
+                                                           ('ncol', False, False, False)])
     def test_param_check_dim_type(self, metadata_instance, name, ishru, isseg, ispoi):
-        aparam = Parameter(name=name, meta=metadata_instance)
+        global_dimensions = Dimensions(metadata=MetaData(verbose=False).metadata)
+        for xx in metadata_instance[name]['dimensions']:
+            global_dimensions.add(name=xx)
+        global_dimensions.add(name='nsegment')
+
+        aparam = Parameter(name=name, meta=metadata_instance, global_dims=global_dimensions)
 
         assert (aparam.is_hru_param() == ishru and aparam.is_seg_param() == isseg and
                 aparam.is_poi_param() == ispoi)
@@ -521,7 +538,7 @@ class TestParameter:
     @pytest.mark.parametrize('name, data, expected', [('cov_type',
                                                        np.array([1, 2, 3], dtype=np.int32),
                                                        np.array([2, 2, 1, 3], dtype=np.int32)),
-                                                      ('basin_solsta',
+                                                      ('ncol',
                                                        np.int32(8),
                                                        np.array([8, 8, 8, 8], dtype=np.int32))])
     def test_stats(self, metadata_instance, name, data, expected):
@@ -559,9 +576,9 @@ class TestParameter:
                                                       ('hru_slope',
                                                        np.array([0.082, 0.106, 0.069, 0.073], dtype=np.float32),
                                                        '$id,hru_slope\n1,0.082\n2,0.106\n3,0.069\n4,0.073\n'),
-                                                      ('basin_solsta',
+                                                      ('ncol',
                                                        np.int32(8),
-                                                       '$id,basin_solsta\n1,8\n')])
+                                                       '$id,ncol\n1,8\n')])
     def test_toparamdb(self, metadata_instance, name, data, expected):
         """Test the toparamdb method"""
         aparam = Parameter(name=name, meta=metadata_instance)
