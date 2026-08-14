@@ -68,10 +68,15 @@ class Parameters(object):
         con = get_console_instance()
         # con.print('Parameters: Console info: {}'.format(con))
 
-        # A full, separate copy of the original metadata dictionary
+        # A pristine deep copy of the original metadata, never mutated.
+        # Used by create_subset() to build new Parameters instances.
         self.__full_metadata = deepcopy(metadata)
 
-        self.__dimensions = deepcopy(Dimensions(metadata=metadata, verbose=verbose))
+        # A separate working copy that this instance is free to mutate
+        # (e.g. bounded resolution, dimension size changes).
+        _working_metadata = deepcopy(metadata)
+
+        self.__dimensions = Dimensions(metadata=_working_metadata, verbose=verbose)
         self.__parameters: dict[str, Parameter] = dict()
 
         self.verbose = verbose
@@ -82,8 +87,8 @@ class Parameters(object):
         self.__seg_shape_key: str | None = None
         self.__seg_to_hru: dict[int, list[int]] = dict()
         self.__hru_to_seg: dict[int, int] = dict()
-        self.metadata = metadata['parameters']
-        self.prms_version = Version(metadata['info']['version'])
+        self.metadata = _working_metadata['parameters']
+        self.prms_version = Version(_working_metadata['info']['version'])
 
     def __contains__(self, name: str) -> bool:
         """Check if a parameter exists.
