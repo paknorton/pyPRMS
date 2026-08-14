@@ -35,7 +35,11 @@ class Dimension(object):
         else:
             if strict:
                 if name in meta:
-                    self.meta = meta[name]
+                    # Copy the entry so instance modifications (the size
+                    # setter writes self.meta['size']) do not mutate the
+                    # caller-supplied metadata dict, which may be shared
+                    # across instances.
+                    self.meta = dict(meta[name])
                 else:
                     raise ValueError(f'`{self.name}` does not exist in metadata')
             else:

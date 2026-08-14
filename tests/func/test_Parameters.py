@@ -171,3 +171,35 @@ class TestParameters:
         pdb_instance.add('foo')
 
         assert pdb_instance.get('foo').__str__() == expected
+
+
+class TestParametersSharedMetadata:
+
+    def test_shared_metadata_not_mutated(self):
+        """Creating parameters and dimensions must not modify the supplied
+        metadata dictionary, which may be shared across instances.
+
+        Regression test: bounded-maximum resolution (Parameter) and the
+        dimension size setter (Dimension) wrote through to the caller's
+        metadata, so a second Parameters instance built from the same
+        metadata dict saw a numeric 'maximum' where a dimension name was
+        expected and raised on add() of a bounded parameter.
+        """
+        prms_meta = MetaData(verbose=False).metadata
+        max_before = prms_meta['parameters']['outlet_sta']['maximum']
+        nobs_before = dict(prms_meta['dimensions']['nobs'])
+
+        for _ in range(2):   # the second iteration crashed before the fix
+            pdb = Parameters(metadata=prms_meta)
+            pdb.dimensions.add(name='one', size=1)
+            pdb.dimensions.add(name='npoigages', size=5)
+            pdb.dimensions.add(name='nobs', size=5)
+            pdb.add(name='outlet_sta')
+
+        # the instance sees the resolved bound
+        assert pdb.get('outlet_sta').meta['maximum'] == 5
+
+        # the shared metadata is untouched
+        assert prms_meta['parameters']['outlet_sta']['maximum'] == max_before
+        assert 'bounded_dimension_name' not in prms_meta['parameters']['outlet_sta']
+        assert prms_meta['dimensions']['nobs'] == nobs_before

@@ -69,7 +69,11 @@ class Parameter(object):
         else:
             if strict:
                 if name in meta:
-                    self.meta = meta[name]
+                    # Copy the entry so creation-time modifications (e.g. the
+                    # bounded maximum resolution below) do not mutate the
+                    # caller-supplied metadata dict, which may be shared
+                    # across Parameters instances.
+                    self.meta = dict(meta[name])
 
                     # Add the dimensions for this parameter
                     for cname in self.meta['dimensions']:
