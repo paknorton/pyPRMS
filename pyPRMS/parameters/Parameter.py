@@ -75,23 +75,21 @@ class Parameter(object):
                     for cname in self.meta['dimensions']:
                         self.__dimensions.add(cname)
 
-                        # TODO: 2026-08-12 PAN - if this is a bounded parameter and global_dims
-                        #       was not passed then what should happen? an error? a warning? nothing?
-                        # if self.meta.get('maximum') in list(self.dimensions.keys()):
-                        if self.meta.get('is_bounded', False):
-                            if global_dims is None:
-                                raise ParameterNotValidError(f'Parameter, {self.name}, is bounded but no global dimensions were supplied')
-
-                            # Save the name of the bounded-dimension
-                            self.meta['bounded_dimension_name'] = self.meta.get('maximum')
-                            self.meta['maximum'] = global_dims.get(self.meta.get('bounded_dimension_name')).size
-
-                            if self.__verbose:   # pragma: no cover
-                                con.print(f'[bold]{self.name}[/]: valid upper bound adjusted to {self.meta["maximum"]}')
-
                         if global_dims is not None:
                             self.__dimensions[cname].size = global_dims.get(cname).size
                             self.__dimensions[cname].meta = global_dims[cname].meta
+
+                    # Resolve bounded parameter maximum from dimension name to numeric size
+                    if self.meta.get('is_bounded', False):
+                        if global_dims is None:
+                            raise ParameterNotValidError(f'Parameter, {self.name}, is bounded but no global dimensions were supplied')
+
+                        # Save the name of the bounded-dimension
+                        self.meta['bounded_dimension_name'] = self.meta.get('maximum')
+                        self.meta['maximum'] = global_dims.get(self.meta.get('bounded_dimension_name')).size
+
+                        if self.__verbose:   # pragma: no cover
+                            con.print(f'[bold]{self.name}[/]: valid upper bound adjusted to {self.meta["maximum"]}')
                 else:
                     raise ValueError(f'`{self.name}` does not exist in metadata')
             else:
