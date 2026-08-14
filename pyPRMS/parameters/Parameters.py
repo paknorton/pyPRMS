@@ -357,8 +357,12 @@ class Parameters(object):
                     # This is the one dimension where the size depends on another dimension
                     self.dimensions.add(name=bounded_dim_name, size=int(self.dimensions.get('ndeplval').size / 11))
                 elif bounded_dim_name == 'nobs':
-                    # If this is missing it should be added with the same value as npoigages.
-                    self.dimensions.add(name=bounded_dim_name, size=self.dimensions.get('npoigages').size)
+                    # If this is missing it should be added with the same value as npoigages
+                    # or the metadata default if npoigages is also missing.
+                    if self.__dimensions.exists('npoigages'):
+                        self.dimensions.add(name=bounded_dim_name, size=self.dimensions.get('npoigages').size)
+                    else:
+                        self.__dimensions.add(bounded_dim_name)
                 else:
                     self.__dimensions.add(bounded_dim_name)
 
