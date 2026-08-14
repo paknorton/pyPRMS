@@ -117,8 +117,12 @@ class MetaData(object):
 
         meta_dict[name] = {}
 
-        try:
-            var_version = Version(elem.attrib.get('version'))
+        # Missing version/deprecated attributes are checked explicitly:
+        # relying on Version(None) to raise is fragile (packaging < 26.3
+        # raised TypeError, packaging >= 26.3 raises InvalidVersion).
+        version_attr = elem.attrib.get('version')
+        if version_attr is not None:
+            var_version = Version(version_attr)
 
             if var_version > req_version:
                 if self.__verbose:   # pragma: no cover
@@ -126,11 +130,10 @@ class MetaData(object):
                 del meta_dict[name]
                 return True
             meta_dict[name]['version'] = str(var_version)
-        except TypeError:
-            pass
 
-        try:
-            depr_version = Version(elem.attrib.get('deprecated'))
+        depr_attr = elem.attrib.get('deprecated')
+        if depr_attr is not None:
+            depr_version = Version(depr_attr)
 
             if depr_version <= req_version:
                 if self.__verbose:   # pragma: no cover
@@ -138,8 +141,6 @@ class MetaData(object):
                 del meta_dict[name]
                 return True
             meta_dict[name]['deprecated'] = depr_version
-        except TypeError:
-            pass
 
         return False
 

@@ -26,3 +26,16 @@ class TestMetaData:
     def test_metadata_version4(self):
         prms_meta = MetaData(version='4', verbose=True).metadata
         assert prms_meta['parameters'].get('soilzone_aet_flag', None) is None
+
+    def test_metadata_no_version_attributes(self):
+        """Entries lacking version/deprecated XML attributes are retained.
+
+        Regression test: packaging >= 26.3 raises InvalidVersion instead of
+        TypeError for Version(None), which crashed MetaData for any element
+        without these attributes.
+        """
+        prms_meta = MetaData(version='5.2.1.1', verbose=True).metadata
+        # cascade_flag has neither a version nor a deprecated attribute
+        assert 'cascade_flag' in prms_meta['control']
+        # nhruOutON_OFF has only a deprecated attribute
+        assert 'nhruOutON_OFF' in prms_meta['control']
