@@ -532,17 +532,10 @@ class Parameters(object):
                 pp_outliers = pp.outliers()
                 valid_min = pp.meta['minimum']
                 valid_max = pp.meta['maximum']
-                default_val = pp.meta['default']
 
-                # if not (isinstance(valid_min, str) or isinstance(valid_max, str)):
                 con.print(f'    [dark_orange]WARNING[/]: Value(s) (range: {pp_stats.min}, {pp_stats.max}) outside '
                           + f'the valid range of ({valid_min}, {valid_max}); '
                           + f'under/over=({pp_outliers.under}, {pp_outliers.over})')
-                # elif valid_min == 'bounded':
-                #     # TODO: Handling bounded parameters needs improvement
-                #     con.print(f'    [dark_orange]WARNING[/]: Bounded parameter value(s) '
-                #               + f'(range: {pp_stats.min}, {pp_stats.max}) outside '
-                #               + f'the valid range of ({default_val}, {valid_max})')
 
             dims = list(pp.dimensions.keys())
 

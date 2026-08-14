@@ -368,7 +368,6 @@ class Parameter(object):
         if self.meta.get('datatype') != 'string':
             if minval is not None and maxval is not None:
                 # Check both ends of the range
-                # if not (isinstance(minval, str) or isinstance(maxval, str)):
                 return (self.data_raw >= minval).all() and (self.data_raw <= maxval).all().item()
 
         return True
