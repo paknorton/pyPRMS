@@ -10,6 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd     # type: ignore
 import sys
+import warnings
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as xmlET
 
@@ -456,7 +457,19 @@ class Parameters(object):
 
     def adjust_bounded_parameters(self):
         """Adjust the valid upper and lower values for bounded parameters.
+
+        .. deprecated::
+            Bounded parameters are now resolved at creation time in
+            :meth:`Parameter.__init__`. This method will be removed in a
+            future release.
         """
+
+        warnings.warn(
+            'adjust_bounded_parameters() is deprecated and will be removed in a future release. '
+            'Bounded parameters are now resolved at creation time.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
         for cparam in self.parameters.values():
             cmeta = cparam.meta
