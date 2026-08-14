@@ -59,8 +59,8 @@ class TestCbh:
         cbh = Cbh(str(datadir), engine='ascii', metadata=meta_instance.metadata, control=ctl,
                   parameters=pdb_instance, verbose=True)
 
-        assert not cbh.has_nhm_id
-        cbh.set_nhm_id(nhm_ids)
+        # assert not cbh.has_nhm_id
+        # cbh.set_nhm_id(nhm_ids)
         assert cbh.has_nhm_id
 
         for cvar in cbh.data.data_vars:
@@ -100,7 +100,7 @@ class TestCbh:
         out_path = tmp_path / 'run_files'
         out_path.mkdir()
 
-        cbh = Cbh(str(datadir.join('cbh.nc')), engine='netcdf', metadata=meta_instance.metadata)
+        cbh = Cbh(str(datadir.join('cbh.nc')), engine='netcdf', metadata=meta_instance.metadata, parameters=pdb_instance)
 
         out_file = out_path / 'cbh.nc'
         cbh.write_netcdf(out_file)

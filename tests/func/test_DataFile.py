@@ -28,7 +28,7 @@ def datadir(tmpdir, request):
 
     return tmpdir
 
-class TestStreamflow:
+class TestDataFile:
 
     def test_read_datafile_single_station(self, datadir):
         sf_filename = datadir / 'sf_data_pipestem_bandit'
