@@ -743,6 +743,9 @@ class Parameters(object):
 
         cparam = self.get(name)
 
+        if cparam.meta.get('datatype') == 'string':
+            return []
+
         param_data = self.get_dataframe(name)
         bad_value_ids = param_data[(param_data[name] < cparam.meta['minimum']) |
                                    (param_data[name] > cparam.meta['maximum'])].index.tolist()
